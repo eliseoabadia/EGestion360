@@ -27,6 +27,8 @@ namespace EG.Web.Services.Modules.GRP.Presupuestales
 
                 MultipartApiHelper.AddString(form, "FkidAnioSis", header.FkidAnioSis?.ToString());
                 MultipartApiHelper.AddString(form, "Anio", header.Anio?.ToString());
+                MultipartApiHelper.AddString(form, "FkidEmpresaSis", header.FkidEmpresaSis?.ToString());
+                MultipartApiHelper.AddString(form, "EmpresaNombre", header.EmpresaNombre);
                 MultipartApiHelper.AddString(form, "Fecha", header.Fecha?.ToString("O"));
                 MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;

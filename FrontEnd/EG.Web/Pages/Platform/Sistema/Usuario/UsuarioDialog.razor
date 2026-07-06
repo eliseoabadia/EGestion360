@@ -1,4 +1,5 @@
 @using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Requests.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Dommain.DTOs.Responses
 @using EG.Common.GenericModel
@@ -7,6 +8,8 @@
 @inject IGenericCrudService<EmpresaResponse> empresaService
 @inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject IGenericCrudService<PersonaResponse> personaService
+@inject IGenericCrudService<AreaResponse> areaCatalogService
+@inject IGenericCrudService<UsuarioAreaResponse> usuarioAreaService
 @inject IGenericCrudService<SucursalResponse> sucursalService
 @inject IGenericCrudService<UsuarioSucursalResponse> usuarioSucursalService
 @inject ISnackbar Snackbar
@@ -90,6 +93,89 @@
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaRfc</MudText>
                             </MudItem>
                         </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
+                        <div class="d-flex align-center justify-space-between mb-2">
+                            <MudText Typo="Typo.subtitle2">Areas asignadas</MudText>
+                            <MudChip T="string"
+                                     Color="@(_areasPersona.Count > 0 ? Color.Success : Color.Default)"
+                                     Variant="Variant.Outlined"
+                                     Size="Size.Small">
+                                @_areasPersona.Count
+                            </MudChip>
+                        </div>
+                        <MudDivider Class="mb-3" />
+
+                        <MudGrid Spacing="2" Class="mb-3">
+                            <MudItem xs="12" md="8">
+                                <PagedAutocomplete Value="@_selectedArea"
+                                                   ValueChanged="@((LookupItem? item) => _selectedArea = item)"
+                                                   Label="Seleccione un area"
+                                                   LoadPage="LoadAreasPageAsync" />
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.AddLocationAlt"
+                                           Disabled="@(_selectedArea == null || _savingArea)"
+                                           OnClick="AsignarAreaPersonaAsync">
+                                    Asignar area
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+
+                        @if (_loadingAreasPersona)
+                        {
+                            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (!_areasPersona.Any())
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                                Esta persona no tiene areas asignadas.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <MudTable Items="@_areasPersona" Dense="true" Hover="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Area</MudTh>
+                                    <MudTh>Permisos</MudTh>
+                                    <MudTh Style="width: 56px;"></MudTh>
+                                </HeaderContent>
+                                <RowTemplate Context="areaAsignada">
+                                    <MudTd DataLabel="Area">@areaAsignada.UsuarioAreaDescripcion</MudTd>
+                                    <MudTd DataLabel="Permisos">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @if (areaAsignada.IsAdscrito)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Adscrito</MudChip>
+                                            }
+                                            @if (areaAsignada.EsSolicitante)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Solicitante</MudChip>
+                                            }
+                                            @if (areaAsignada.EsAutorizador)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Autorizador</MudChip>
+                                            }
+                                        </div>
+                                    </MudTd>
+                                    <MudTd DataLabel="Acciones" Class="text-right">
+                                        <MudTooltip Text="Retirar area">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           Disabled="@(_savingArea || !areaAsignada.PkidPersonaArea.HasValue)"
+                                                           OnClick="@(() => EliminarAreaPersonaAsync(areaAsignada))" />
+                                        </MudTooltip>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
                     </MudPaper>
                 </MudItem>
             }
@@ -208,6 +294,10 @@
     private string _personaTelefono = string.Empty;
     private string _personaClave = string.Empty;
     private string _personaRfc = string.Empty;
+    private LookupItem? _selectedArea;
+    private List<UsuarioAreaResponse> _areasPersona = new();
+    private bool _loadingAreasPersona;
+    private bool _savingArea;
 
     protected override async Task OnInitializedAsync()
     {
@@ -266,6 +356,7 @@
                             : $"{usuario.PersonaNombre} {usuario.PersonaPaterno} {usuario.PersonaMaterno}".Trim()
                     };
                     await CargarDatosPersona(usuario.IdPersona.Value);
+                    await CargarAreasPersona(usuario.IdPersona.Value);
                 }
             }
             else
@@ -297,13 +388,15 @@
         catch { }
     }
 
-    private void OnPersonaChanged(LookupItem? item)
+    private async Task OnPersonaChanged(LookupItem? item)
     {
         _selectedPersona = item;
         usuario.IdPersona = item?.Id;
+        _selectedArea = null;
         if (item != null)
         {
-            _ = CargarDatosPersona(item.Id);
+            await CargarDatosPersona(item.Id);
+            await CargarAreasPersona(item.Id);
         }
         else
         {
@@ -312,6 +405,7 @@
             _personaTelefono = string.Empty;
             _personaClave = string.Empty;
             _personaRfc = string.Empty;
+            _areasPersona.Clear();
         }
     }
 
@@ -327,6 +421,135 @@
             }) ?? Enumerable.Empty<LookupItem>(),
             TotalCount = response?.TotalCount ?? 0
         };
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await areaCatalogService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return new ComboLookupResult
+        {
+            Items = response?.Items?.Select(area => new LookupItem
+            {
+                Id = area.PkidArea,
+                Text = FormatAreaText(area)
+            }) ?? Enumerable.Empty<LookupItem>(),
+            TotalCount = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task CargarAreasPersona(int personaId)
+    {
+        _loadingAreasPersona = true;
+        try
+        {
+            var response = await usuarioAreaService.GetActionAsync($"persona/{personaId}");
+            if (response?.Success == true)
+            {
+                _areasPersona = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+            }
+            else
+            {
+                _areasPersona.Clear();
+                Snackbar.Add(response?.Message ?? "No se pudieron cargar las areas de la persona", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            _areasPersona.Clear();
+            Snackbar.Add($"Error al cargar areas: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingAreasPersona = false;
+        }
+    }
+
+    private async Task AsignarAreaPersonaAsync()
+    {
+        if (_selectedPersona == null || _selectedArea == null)
+        {
+            Snackbar.Add("Selecciona una persona y un area", Severity.Warning);
+            return;
+        }
+
+        if (_areasPersona.Any(x => x.PkidArea == _selectedArea.Id))
+        {
+            Snackbar.Add("El area ya esta asignada a la persona", Severity.Info);
+            _selectedArea = null;
+            return;
+        }
+
+        _savingArea = true;
+        try
+        {
+            var request = new UsuarioAreaAsignacionRequest
+            {
+                PersonaId = _selectedPersona.Id,
+                AreaId = _selectedArea.Id,
+                IsAdscrito = true,
+                EsSolicitante = true,
+                EsAutorizador = false
+            };
+
+            var response = await usuarioAreaService.PostActionAsync("persona-area", request);
+            if (response?.Success == true)
+            {
+                _areasPersona = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+                _selectedArea = null;
+                Snackbar.Add(response.Message ?? "Area asignada correctamente", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo asignar el area", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al asignar area: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingArea = false;
+        }
+    }
+
+    private async Task EliminarAreaPersonaAsync(UsuarioAreaResponse area)
+    {
+        if (!area.PkidPersonaArea.HasValue)
+        {
+            Snackbar.Add("No se encontro la asignacion del area", Severity.Warning);
+            return;
+        }
+
+        _savingArea = true;
+        try
+        {
+            var response = await usuarioAreaService.DeleteActionAsync($"persona-area/{area.PkidPersonaArea.Value}");
+            if (response?.Success == true)
+            {
+                _areasPersona = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+                Snackbar.Add(response.Message ?? "Area retirada correctamente", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo retirar el area", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al retirar area: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingArea = false;
+        }
+    }
+
+    private static string FormatAreaText(AreaResponse area)
+    {
+        return string.IsNullOrWhiteSpace(area.Clave)
+            ? area.Descripcion
+            : $"{area.Clave} - {area.Descripcion}".Trim();
     }
 
     private async Task CargarEmpresasUsuario()

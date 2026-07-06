@@ -5,13 +5,18 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Contracts.Modules.GRP.Contabilidad
+@using EG.Web.Contracts.Platform.DocumentRag
 @using EG.Web.Models
+@using EG.Web.Models.Platform.DocumentRag
 @using EG.Web.Pages.Shared
 @using EG.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
+@using System.Text
+@implements IAsyncDisposable
 
 @inject IPolizaAiImportService ImportService
+@inject IDocumentRagService RagService
 @inject IGenericCrudService<AniosResponse> AnioService
 @inject IGenericCrudService<TipoPolizaResponse> TipoPolizaService
 @inject IGenericCrudService<CuentaContableResponse> CuentaService
@@ -35,10 +40,11 @@
                                    ValueChanged="OnAnioChanged"
                                    Label="Anio"
                                    Required="true"
+                                   RequiredError="Selecciona un anio"
                                    LoadPage="LoadAniosPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="int?" @bind-Value="_header.FkidMesSis" Label="Mes" Variant="Variant.Outlined">
+                <MudSelect T="int?" @bind-Value="_header.FkidMesSis" Label="Mes" Variant="Variant.Outlined" Required="true" RequiredError="Selecciona un mes">
                     @foreach (var month in MonthOptions)
                     {
                         <MudSelectItem T="int?" Value="@month.Id">@month.Name</MudSelectItem>
@@ -50,42 +56,55 @@
                                    ValueChanged="OnTipoPolizaChanged"
                                    Label="Tipo de poliza"
                                    Required="true"
+                                   RequiredError="Selecciona un tipo de poliza"
                                    LoadPage="LoadTiposPolizaPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudTextField @bind-Value="_header.ClavePoliza"
                               Label="Clave sugerida"
                               Variant="Variant.Outlined"
-                              MaxLength="10" />
+                              MaxLength="10"
+                              Required="true"
+                              RequiredError="Captura la clave de poliza" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudDatePicker @bind-Date="_fechaPoliza"
                                Label="Fecha"
-                               Variant="Variant.Outlined" />
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Selecciona una fecha" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudTextField Value="@EmpresaText"
                               Label="Empresa seleccionada"
                               Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Selecciona una empresa"
                               ReadOnly="true" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="_header.NombrePoliza"
                               Label="Nombre de poliza"
                               Variant="Variant.Outlined"
-                              Lines="2" />
+                              Lines="2"
+                              Required="true"
+                              RequiredError="Captura el nombre de la poliza" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedCuentaDebe"
                                    ValueChanged="OnCuentaDebeChanged"
-                                   Label="Cuenta debe"
+                                   Label="@(AccountHelpLabel("Cuenta debe", true))"
+                                   Required="@IsAccountHelpRequired(true)"
+                                   RequiredError="Selecciona cuenta debe"
                                    Clearable="true"
                                    LoadPage="LoadCuentasPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedCuentaHaber"
                                    ValueChanged="OnCuentaHaberChanged"
-                                   Label="Cuenta haber"
+                                   Label="@(AccountHelpLabel("Cuenta haber", false))"
+                                   Required="@IsAccountHelpRequired(false)"
+                                   RequiredError="Selecciona cuenta haber"
                                    Clearable="true"
                                    LoadPage="LoadCuentasPageAsync" />
             </MudItem>
@@ -97,7 +116,7 @@
                    class="poliza-ai-file-input" />
         <label for="@_inputId" class="poliza-ai-dropzone">
             <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
-            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT")</span>
+            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT *")</span>
             <small>Columnas esperadas: Cuenta, Concepto, Debe y Haber</small>
         </label>
 
@@ -109,21 +128,120 @@
                        OnClick="Analyze">
                 Analizar archivo
             </MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Success"
-                       StartIcon="@Icons.Material.Filled.PostAdd"
-                       Disabled="@(!CanImport)"
-                       OnClick="Import">
-                Importar poliza
-            </MudButton>
+            <MudTooltip Text="@ImportBlockReason" Disabled="@CanImport">
+                <span>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.PostAdd"
+                               Disabled="@(!CanImport)"
+                               OnClick="Import">
+                        Importar poliza
+                    </MudButton>
+                </span>
+            </MudTooltip>
             @if (_busy)
             {
                 <MudProgressCircular Indeterminate="true" Size="Size.Small" />
             }
         </div>
 
+        <MudExpansionPanels Elevation="0" Class="mt-3">
+            <MudExpansionPanel Text="Asistente de carga y RAG" Expanded="@(_ragSession != null || _ragAnswer != null)">
+                <div class="poliza-rag-context">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">Anio @(_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-")</MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@EmpresaText</MudChip>
+                    @if (_ragSession != null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="@(_ragSession.IndexedChunkCount > 0 ? Color.Success : Color.Warning)" Variant="Variant.Filled">
+                            @_ragSession.IndexedChunkCount chunk(s)
+                        </MudChip>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_ragNotice))
+                {
+                    <MudAlert Severity="@_ragNoticeSeverity" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                        @_ragNotice
+                    </MudAlert>
+                }
+
+                <div class="poliza-rag-actions">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Schema"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantFields">
+                        Campos
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Rule"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantValidation">
+                        Validacion
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Troubleshoot"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantMapping">
+                        Mapeo
+                    </MudButton>
+                </div>
+
+                <div class="poliza-rag-question">
+                    <MudTextField @bind-Value="_ragQuestion"
+                                  Placeholder="Pregunta sobre el archivo cargado..."
+                                  Variant="Variant.Outlined"
+                                  Lines="2"
+                                  Disabled="@(_ragBusy || _busy)"
+                                  Immediate="true" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Send"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistant">
+                        Preguntar
+                    </MudButton>
+                    @if (_ragBusy)
+                    {
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                    }
+                </div>
+
+                @if (_ragAnswer != null)
+                {
+                    <div class="poliza-rag-answer">
+                        <strong>Respuesta</strong>
+                        <p>@_ragAnswer.Answer</p>
+                        @if (_ragAnswer.Citations.Count > 0)
+                        {
+                            <div class="poliza-rag-citations">
+                                @foreach (var citation in _ragAnswer.Citations.Take(3))
+                                {
+                                    <div>
+                                        <span>@citation.DocumentName - chunk @citation.ChunkIndex</span>
+                                        <small>@citation.Snippet</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+
         @if (_preview != null)
         {
+            @if (MissingAccountHelpFields.Count > 0)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    <strong>Falta para importar:</strong> @string.Join(", ", MissingAccountHelpFields)
+                </MudAlert>
+            }
             <MudDivider Class="my-3" />
             <div class="poliza-ai-summary">
                 <div><span>Debe</span><strong>@Money(_preview.TotalDebe)</strong></div>
@@ -194,10 +312,10 @@
         gap: 4px;
         min-height: 104px;
         margin-top: 12px;
-        border: 1px dashed #7b8798;
+        border: 1px dashed var(--mud-palette-lines-inputs);
         border-radius: 8px;
-        background: #f8fafc;
-        color: #263445;
+        background: var(--mud-palette-background-grey);
+        color: var(--mud-palette-text-primary);
         cursor: pointer;
         text-align: center;
     }
@@ -207,7 +325,7 @@
     }
 
     .poliza-ai-dropzone small {
-        color: #667085;
+        color: var(--mud-palette-text-secondary);
     }
 
     .poliza-ai-summary {
@@ -217,10 +335,10 @@
     }
 
     .poliza-ai-summary div {
-        border: 1px solid #d9dee8;
+        border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
         padding: 8px;
-        background: #ffffff;
+        background: var(--mud-palette-surface);
     }
 
     .poliza-ai-summary span,
@@ -229,7 +347,7 @@
     }
 
     .poliza-ai-summary span {
-        color: #667085;
+        color: var(--mud-palette-text-secondary);
         font-size: 0.76rem;
     }
 
@@ -239,6 +357,57 @@
 
     .poliza-ai-summary .warn {
         color: #a35200;
+    }
+
+    .poliza-rag-context,
+    .poliza-rag-actions,
+    .poliza-rag-question {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .poliza-rag-actions {
+        margin-top: 12px;
+    }
+
+    .poliza-rag-question {
+        margin-top: 10px;
+    }
+
+    .poliza-rag-question .mud-input-control {
+        flex: 1 1 320px;
+    }
+
+    .poliza-rag-answer {
+        margin-top: 10px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px;
+        background: var(--mud-palette-surface);
+    }
+
+    .poliza-rag-answer p {
+        margin: 6px 0 0;
+        white-space: pre-wrap;
+    }
+
+    .poliza-rag-citations {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .poliza-rag-citations div {
+        border-top: 1px solid var(--mud-palette-lines-default);
+        padding-top: 6px;
+    }
+
+    .poliza-rag-citations span,
+    .poliza-rag-citations small {
+        display: block;
+        color: var(--mud-palette-text-secondary);
     }
 </style>
 
@@ -264,9 +433,57 @@
     private List<PolizaAiImportDetailRequest> _baseDetails = [];
     private List<PolizaAiImportValidationMessage> _baseMessages = [];
     private DateTime? _fechaPoliza = DateTime.Today;
+    private DocumentRagSessionResponse? _ragSession;
+    private DocumentRagAskResponse? _ragAnswer;
+    private string _ragQuestion = string.Empty;
+    private string _assistantContext = string.Empty;
+    private string _ragNotice = string.Empty;
+    private Severity _ragNoticeSeverity = Severity.Info;
     private bool _busy;
+    private bool _ragBusy;
+    private bool _ragReleased;
 
-    private bool CanImport => _preview?.CanImport == true && _preview.EstaCuadrada && !_busy;
+    private bool CanImport => _preview?.CanImport == true
+        && _preview.EstaCuadrada
+        && !_busy
+        && MissingHeaderFields.Count == 0;
+    private IReadOnlyList<string> MissingHeaderFields => BuildMissingHeaderFields();
+    private IReadOnlyList<string> MissingAccountHelpFields => BuildMissingAccountHelpFields();
+    private string FirstBlockingError => _preview?.Messages.FirstOrDefault(IsError) is { } message
+        ? FormatMessage(message)
+        : "No hay errores pendientes.";
+    private string ImportBlockReason
+    {
+        get
+        {
+            if (_busy)
+                return "Proceso en curso.";
+            if (_file == null)
+                return "Selecciona un archivo.";
+
+            var missingHeader = MissingHeaderFields;
+            if (missingHeader.Count > 0)
+                return $"Falta: {string.Join(", ", missingHeader)}.";
+
+            if (_preview == null)
+                return "Analiza el archivo primero.";
+
+            var missingAccounts = MissingAccountHelpFields;
+            if (missingAccounts.Count > 0)
+                return $"Falta: {string.Join(", ", missingAccounts)}.";
+
+            if (!_preview.EstaCuadrada)
+                return $"La poliza no esta cuadrada. Diferencia {Money(_preview.Diferencia)}.";
+
+            return _preview.Messages.Any(IsError)
+                ? $"Corrige: {FirstBlockingError}"
+                : string.Empty;
+        }
+    }
+    private bool CanAskAssistant => (_preview != null || _ragSession?.IndexedChunkCount > 0)
+        && !_busy
+        && !_ragBusy
+        && !string.IsNullOrWhiteSpace(_ragQuestion);
     private string EmpresaText => _header.FkidEmpresaSis is > 0
         ? $"{_header.FkidEmpresaSis} - {SucursalStateService.EmpresaNombre}"
         : "Sin empresa seleccionada";
@@ -313,6 +530,7 @@
         _selectedAnio = value;
         _header.FkidAnioSis = value?.Id;
         _header.Anio = TryParseYear(value?.Text);
+        RefreshAssistantContext();
         return Task.CompletedTask;
     }
 
@@ -321,32 +539,39 @@
         _selectedTipoPoliza = value;
         _header.FkidTipoPolizaSis = value?.Id;
         _header.TipoPoliza = value?.Text;
+        RefreshAssistantContext();
         return Task.CompletedTask;
     }
 
     private Task OnCuentaDebeChanged(LookupItem? value)
     {
         _selectedCuentaDebe = value;
-        ApplyManualAccountsToPreview();
+        ApplyManualAccountsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnCuentaHaberChanged(LookupItem? value)
     {
         _selectedCuentaHaber = value;
-        ApplyManualAccountsToPreview();
+        ApplyManualAccountsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
-    private Task OnFileSelected(InputFileChangeEventArgs args)
+    private async Task OnFileSelected(InputFileChangeEventArgs args)
     {
+        if (_ragSession != null)
+            await ReleaseRagSessionAsync(showSnackbar: false);
+
         _file = args.GetMultipleFiles(1).FirstOrDefault();
         _preview = null;
         _baseDetails = [];
         _baseMessages = [];
         _selectedCuentaDebe = null;
         _selectedCuentaHaber = null;
-        return Task.CompletedTask;
+        _ragAnswer = null;
+        _ragNotice = string.Empty;
+        _ragQuestion = string.Empty;
+        _assistantContext = string.Empty;
     }
 
     private async Task Analyze()
@@ -376,7 +601,11 @@
                 _baseMessages = _preview.Messages.ToList();
                 SelectAccountsFromPreview();
                 ApplyManualAccountsToPreview();
+                RefreshAssistantContext();
             }
+
+            if (_preview != null)
+                await IndexFileForRagAsync();
 
             Snackbar.Add(response.Message, response.Data?.CanImport == true ? Severity.Success : Severity.Warning);
         }
@@ -431,6 +660,375 @@
         _header.FkidTipoPolizaSis = _selectedTipoPoliza?.Id ?? _header.FkidTipoPolizaSis;
         _header.TipoPoliza = _selectedTipoPoliza?.Text ?? _header.TipoPoliza;
         _header.FkidEmpresaSis ??= SucursalStateService.EmpresaId;
+    }
+
+    private async Task IndexFileForRagAsync()
+    {
+        if (_file == null)
+            return;
+
+        _ragBusy = true;
+        _ragNotice = "Indexando archivo para RAG...";
+        _ragNoticeSeverity = Severity.Info;
+        try
+        {
+            if (!await EnsureRagSessionAsync())
+                return;
+
+            var response = await RagService.UploadAsync(BuildRagSessionRequest(), _ragSession!.SessionId, _file);
+            if (response.Success && response.Data != null)
+            {
+                await RefreshRagSessionAsync();
+                _ragNoticeSeverity = response.Data.ChunkCount > 0 ? Severity.Success : Severity.Warning;
+                _ragNotice = response.Data.ChunkCount > 0
+                    ? "Archivo indexado para consultas RAG."
+                    : response.Data.Message;
+                _ragQuestion = string.IsNullOrWhiteSpace(_ragQuestion)
+                    ? "Que me falta para completar correctamente la poliza?"
+                    : _ragQuestion;
+            }
+            else
+            {
+                _ragNoticeSeverity = Severity.Warning;
+                _ragNotice = response.Message ?? "No fue posible indexar el archivo para RAG.";
+            }
+        }
+        finally
+        {
+            _ragBusy = false;
+        }
+    }
+
+    private async Task<bool> EnsureRagSessionAsync()
+    {
+        if (_ragSession != null)
+            return true;
+
+        var response = await RagService.CreateSessionAsync(BuildRagSessionRequest());
+        if (response.Success && response.Data != null)
+        {
+            _ragSession = response.Data;
+            _ragReleased = false;
+            return true;
+        }
+
+        _ragNoticeSeverity = Severity.Error;
+        _ragNotice = response.Message ?? "No fue posible crear la sesion RAG.";
+        return false;
+    }
+
+    private async Task RefreshRagSessionAsync()
+    {
+        if (_ragSession == null)
+            return;
+
+        var response = await RagService.GetSessionAsync(_ragSession.SessionId);
+        if (response.Success && response.Data != null)
+            _ragSession = response.Data;
+    }
+
+    private DocumentRagSessionRequest BuildRagSessionRequest() => new()
+    {
+        Modulo = "Contabilidad",
+        SubModulo = "Polizas",
+        Controlador = "Poliza",
+        Servicio = "AiImport",
+        FkidEmpresaSis = _header.FkidEmpresaSis,
+        Titulo = $"Poliza {_header.ClavePoliza ?? "sin clave"}",
+        Descripcion = $"Empresa: {EmpresaText}. Anio: {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}. Mes: {_header.FkidMesSis?.ToString() ?? "-"}. Archivo: {_file?.Name ?? "sin archivo"}."
+    };
+
+    private async Task AskAssistantFields()
+    {
+        _ragQuestion = "Que columnas y campos de poliza identifica el archivo?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private async Task AskAssistantValidation()
+    {
+        _ragQuestion = "Que errores o faltantes tiene esta carga de poliza?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private async Task AskAssistantMapping()
+    {
+        _ragQuestion = "Como se relacionan las cuentas, debe y haber con los campos manuales?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private Task AskAssistant() => AskAssistant(forcePreviewAnswer: false);
+
+    private async Task AskAssistant(bool forcePreviewAnswer)
+    {
+        if (!CanAskAssistant)
+            return;
+
+        _ragBusy = true;
+        _ragAnswer = null;
+        try
+        {
+            var questionText = _ragQuestion.Trim();
+            var previewAnswer = TryBuildPreviewAnswer(questionText, forcePreviewAnswer);
+            if (!string.IsNullOrWhiteSpace(previewAnswer))
+            {
+                SetLocalAssistantAnswer(questionText, previewAnswer);
+                return;
+            }
+
+            if (_ragSession?.IndexedChunkCount <= 0)
+            {
+                SetLocalAssistantAnswer(questionText, "Primero analiza un archivo para revisar sus validaciones y contenido indexado.");
+                return;
+            }
+
+            RefreshAssistantContext();
+            var question = $"{questionText}\n\nContexto operativo de la pagina:\n{_assistantContext}";
+            var response = await RagService.AskAsync(new DocumentRagAskRequest
+            {
+                SessionId = _ragSession!.SessionId,
+                Question = question,
+                TopK = 6
+            });
+
+            if (response.Success && response.Data != null)
+            {
+                _ragAnswer = response.Data;
+                if (!response.Data.AnsweredFromDocuments)
+                {
+                    var fallback = TryBuildPreviewAnswer(questionText, force: true);
+                    if (!string.IsNullOrWhiteSpace(fallback))
+                    {
+                        SetLocalAssistantAnswer(questionText, fallback);
+                        return;
+                    }
+
+                    Snackbar.Add("El RAG no encontro esa informacion en el archivo.", Severity.Warning);
+                }
+
+                return;
+            }
+
+            Snackbar.Add(response.Message ?? "No se pudo procesar la pregunta RAG.", Severity.Error);
+        }
+        finally
+        {
+            _ragBusy = false;
+        }
+    }
+
+    private string? TryBuildPreviewAnswer(string question, bool force)
+    {
+        if (_preview == null)
+            return null;
+
+        var normalized = NormalizeQuestion(question);
+        var wantsLoadAnalysis = force || ContainsAny(normalized,
+            "falta", "faltan", "completar", "carga", "cargar", "importar", "errores", "error",
+            "validacion", "validar", "campo", "campos", "columna", "columnas", "mapeo", "resolver",
+            "fila", "cuenta", "cuentas", "debe", "haber", "cuadrada", "diferencia", "poliza");
+
+        if (!wantsLoadAnalysis)
+            return null;
+
+        var errors = _preview.Messages.Where(IsError).ToList();
+        var warnings = _preview.Messages.Where(message => !IsError(message)).ToList();
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"Contexto de carga: empresa {EmpresaText}, anio {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}, mes {_header.FkidMesSis?.ToString() ?? "-"}.");
+        sb.AppendLine($"La poliza tiene {_preview.Details.Count} movimiento(s), debe {Money(_preview.TotalDebe)}, haber {Money(_preview.TotalHaber)} y diferencia {Money(_preview.Diferencia)}.");
+
+        if (_preview.CanImport && _preview.EstaCuadrada)
+        {
+            sb.AppendLine("La poliza ya esta lista. Puedes presionar Importar poliza.");
+        }
+        else
+        {
+            if (!_preview.EstaCuadrada)
+                sb.AppendLine($"Bloqueo: la poliza no esta cuadrada. La diferencia actual es {Money(_preview.Diferencia)}.");
+
+            if (errors.Count > 0)
+            {
+                sb.AppendLine("Para completar la carga necesitas resolver estos bloqueos:");
+                foreach (var message in errors.Take(8))
+                {
+                    sb.AppendLine($"- {FormatMessage(message)}");
+                }
+
+                if (errors.Count > 8)
+                    sb.AppendLine($"- Hay {errors.Count - 8} error(es) adicional(es).");
+            }
+        }
+
+        AppendAccountAction(sb, "Cuenta debe", _selectedCuentaDebe, detail => IsDebitOnly(detail) || IsDoubleAmount(detail));
+        AppendAccountAction(sb, "Cuenta haber", _selectedCuentaHaber, detail => IsCreditOnly(detail) || IsDoubleAmount(detail));
+
+        foreach (var message in warnings.Take(4))
+        {
+            sb.AppendLine($"Aviso: {FormatMessage(message)}");
+        }
+
+        if (ContainsAny(normalized, "campo", "campos", "columna", "columnas", "mapeo"))
+        {
+            sb.AppendLine("Columnas detectadas:");
+            sb.AppendLine(_preview.DetectedColumns.Count == 0
+                ? "- No se detectaron columnas."
+                : $"- {string.Join(", ", _preview.DetectedColumns.Take(24))}");
+            sb.AppendLine("Campos clave esperados: Cuenta, Concepto/Descripcion, Debe y Haber.");
+            sb.AppendLine("Si una fila trae Debe y Haber en la misma linea, se separa usando Cuenta debe y Cuenta haber.");
+        }
+
+        sb.AppendLine("Despues de ajustar cuentas manuales o corregir el archivo, presiona Analizar archivo otra vez si cambiaste el archivo. Importar poliza se habilita cuando no quedan errores y la poliza esta cuadrada.");
+        return sb.ToString().Trim();
+    }
+
+    private void SetLocalAssistantAnswer(string question, string answer)
+    {
+        _ragAnswer = new DocumentRagAskResponse
+        {
+            SessionId = _ragSession?.SessionId ?? Guid.Empty,
+            QuestionId = Guid.NewGuid(),
+            Question = question,
+            Answer = answer,
+            AnsweredFromDocuments = false,
+            AskedAtUtc = DateTime.UtcNow
+        };
+    }
+
+    private void RefreshAssistantContext()
+    {
+        _assistantContext = BuildAssistantContext();
+    }
+
+    private string BuildAssistantContext()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Ruta: /Contabilidad/Polizas.");
+        sb.AppendLine("Modulo/Submodulo: Contabilidad / Polizas.");
+        sb.AppendLine($"Empresa seleccionada: {EmpresaText}.");
+        sb.AppendLine($"Anio: {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}.");
+        sb.AppendLine($"Mes: {_header.FkidMesSis?.ToString() ?? "-"}.");
+        sb.AppendLine($"Tipo de poliza: {_selectedTipoPoliza?.Text ?? _header.TipoPoliza ?? "sin seleccionar"}.");
+        sb.AppendLine($"Fecha: {(_fechaPoliza ?? DateTime.Today):dd/MM/yyyy}.");
+        sb.AppendLine("Reglas de carga:");
+        sb.AppendLine("- El archivo debe contener movimientos de poliza.");
+        sb.AppendLine("- Campos clave: Cuenta, Concepto/Descripcion, Debe y Haber.");
+        sb.AppendLine("- La empresa, anio, mes y tipo de poliza forman parte del encabezado de la carga.");
+        sb.AppendLine("- La suma del Debe debe ser igual a la suma del Haber.");
+        sb.AppendLine("- Cada movimiento debe tener cuenta contable resuelta.");
+        sb.AppendLine("- Si una fila trae Debe y Haber, se puede dividir usando Cuenta debe y Cuenta haber.");
+        sb.AppendLine("- Importar poliza solo se habilita cuando no quedan errores y la poliza esta cuadrada.");
+        sb.AppendLine("Campos manuales seleccionados:");
+        AppendSelectedHelp(sb, "Cuenta debe", _selectedCuentaDebe);
+        AppendSelectedHelp(sb, "Cuenta haber", _selectedCuentaHaber);
+
+        if (_preview != null)
+        {
+            var errors = _preview.Messages.Count(IsError);
+            var warnings = _preview.Messages.Count - errors;
+            sb.AppendLine("Estado del analisis:");
+            sb.AppendLine($"- Movimientos: {_preview.Details.Count}.");
+            sb.AppendLine($"- Columnas detectadas: {_preview.DetectedColumns.Count}.");
+            sb.AppendLine($"- Debe: {Money(_preview.TotalDebe)}; Haber: {Money(_preview.TotalHaber)}; Diferencia: {Money(_preview.Diferencia)}.");
+            sb.AppendLine($"- Cuadrada: {(_preview.EstaCuadrada ? "si" : "no")}; errores: {errors}; avisos: {warnings}; puede importar: {(_preview.CanImport ? "si" : "no")}.");
+
+            foreach (var message in _preview.Messages.Take(12))
+            {
+                sb.AppendLine($"- {message.Severity}: {FormatMessage(message)}");
+            }
+        }
+
+        return sb.ToString().Trim();
+    }
+
+    private static void AppendSelectedHelp(StringBuilder sb, string label, LookupItem? value)
+    {
+        sb.AppendLine(value == null
+            ? $"- {label}: sin seleccionar."
+            : $"- {label}: {value.Text} (Id {value.Id}).");
+    }
+
+    private void AppendAccountAction(StringBuilder sb, string label, LookupItem? selected, Func<PolizaAiImportDetailRequest, bool> predicate)
+    {
+        var affectedRows = _baseMessages
+            .Where(message => message.Code is "ACCOUNT_REQUIRED" or "DOUBLE_AMOUNT")
+            .Select(message => message.RowNumber)
+            .Where(row => row.HasValue)
+            .Select(row => row!.Value)
+            .Distinct()
+            .Where(rowNumber => _baseDetails.Any(detail => detail.RowNumber == rowNumber && predicate(detail)))
+            .OrderBy(row => row)
+            .ToList();
+
+        if (affectedRows.Count == 0)
+            return;
+
+        var rowsText = string.Join(", ", affectedRows.Take(8));
+        if (affectedRows.Count > 8)
+            rowsText += $" y {affectedRows.Count - 8} mas";
+
+        if (selected == null)
+            sb.AppendLine($"Accion: selecciona {label} para cubrir fila(s) {rowsText}.");
+        else
+            sb.AppendLine($"Cubierto: {label} usa {selected.Text} para fila(s) {rowsText}.");
+    }
+
+    private IReadOnlyList<string> BuildMissingHeaderFields()
+    {
+        var missing = new List<string>();
+
+        if (_selectedAnio == null && _header.FkidAnioSis.GetValueOrDefault() <= 0)
+            missing.Add("Anio");
+        if (_header.FkidMesSis is < 1 or > 12 or null)
+            missing.Add("Mes");
+        if (_selectedTipoPoliza == null && _header.FkidTipoPolizaSis.GetValueOrDefault() <= 0)
+            missing.Add("Tipo de poliza");
+        if (_fechaPoliza == null)
+            missing.Add("Fecha");
+        if (_header.FkidEmpresaSis.GetValueOrDefault() <= 0)
+            missing.Add("Empresa seleccionada");
+
+        if (_preview != null)
+        {
+            if (string.IsNullOrWhiteSpace(_header.ClavePoliza))
+                missing.Add("Clave sugerida");
+            if (string.IsNullOrWhiteSpace(_header.NombrePoliza))
+                missing.Add("Nombre de poliza");
+        }
+
+        return missing;
+    }
+
+    private string AccountHelpLabel(string label, bool debit)
+        => IsAccountHelpRequired(debit) ? $"{label} *" : label;
+
+    private bool IsAccountHelpRequired(bool debit)
+        => _baseMessages.Any(message => IsAccountHelpMessageForSide(message, debit));
+
+    private IReadOnlyList<string> BuildMissingAccountHelpFields()
+    {
+        var missing = new List<string>();
+
+        if (_selectedCuentaDebe == null && IsAccountHelpRequired(debit: true))
+            missing.Add("Cuenta debe");
+        if (_selectedCuentaHaber == null && IsAccountHelpRequired(debit: false))
+            missing.Add("Cuenta haber");
+
+        return missing;
+    }
+
+    private bool IsAccountHelpMessageForSide(PolizaAiImportValidationMessage message, bool debit)
+    {
+        if (message.RowNumber == null
+            || (message.Code != "ACCOUNT_REQUIRED" && message.Code != "DOUBLE_AMOUNT"))
+            return false;
+
+        var detail = _baseDetails.FirstOrDefault(x => x.RowNumber == message.RowNumber);
+        if (detail == null)
+            return false;
+
+        return message.Code == "DOUBLE_AMOUNT"
+            ? IsDoubleAmount(detail)
+            : debit ? IsDebitOnly(detail) || IsDoubleAmount(detail) : IsCreditOnly(detail) || IsDoubleAmount(detail);
     }
 
     private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -492,6 +1090,19 @@
         _preview.CanImport = _preview.Details.Count > 0
             && _preview.EstaCuadrada
             && !_preview.Messages.Any(IsError);
+    }
+
+    private void ApplyManualAccountsAndRefreshAssistant()
+    {
+        ApplyManualAccountsToPreview();
+        RefreshAssistantContext();
+
+        if (_ragAnswer != null && !string.IsNullOrWhiteSpace(_ragQuestion))
+        {
+            var answer = TryBuildPreviewAnswer(_ragQuestion, force: true);
+            if (!string.IsNullOrWhiteSpace(answer))
+                SetLocalAssistantAnswer(_ragQuestion, answer);
+        }
     }
 
     private List<PolizaAiImportDetailRequest> BuildDetailsForImport()
@@ -619,6 +1230,23 @@
         return $"{location}{message.Message}";
     }
 
+    private static bool ContainsAny(string value, params string[] terms)
+        => terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+
+    private static string NormalizeQuestion(string value)
+    {
+        return (value ?? string.Empty)
+            .Trim()
+            .ToLowerInvariant()
+            .Replace("á", "a")
+            .Replace("é", "e")
+            .Replace("í", "i")
+            .Replace("ó", "o")
+            .Replace("ú", "u")
+            .Replace("ü", "u")
+            .Replace("ñ", "n");
+    }
+
     private static int? TryParseYear(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -628,7 +1256,36 @@
         return int.TryParse(first, out var year) ? year : null;
     }
 
-    private void Close() => MudDialog.Close(DialogResult.Cancel());
+    private async Task ReleaseRagSessionAsync(bool showSnackbar)
+    {
+        if (_ragSession == null || _ragReleased)
+            return;
+
+        var response = await RagService.ReleaseSessionAsync(_ragSession.SessionId);
+        _ragSession = null;
+        _ragAnswer = null;
+        _ragReleased = true;
+
+        if (showSnackbar)
+            Snackbar.Add(response.Message ?? "Memoria RAG liberada.", Severity.Success);
+    }
+
+    private async Task Close()
+    {
+        await ReleaseRagSessionAsync(showSnackbar: false);
+        MudDialog.Close(DialogResult.Cancel());
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await ReleaseRagSessionAsync(showSnackbar: false);
+        }
+        catch
+        {
+        }
+    }
 
     private sealed record MonthOption(int Id, string Name);
 }

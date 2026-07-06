@@ -285,6 +285,7 @@
         _asking = true;
         _busy = true;
         var question = _question.Trim();
+        var contextualQuestion = BuildContextualQuestion(question);
         await InvokeAsync(StateHasChanged);
 
         try
@@ -292,7 +293,7 @@
             var response = await RagService.AskAsync(new DocumentRagAskRequest
             {
                 SessionId = _session.SessionId,
-                Question = question
+                Question = contextualQuestion
             });
 
             if (response.Success && response.Data != null)
@@ -301,7 +302,7 @@
                 _session.History.Add(new DocumentRagHistoryItemResponse
                 {
                     QuestionId = response.Data.QuestionId,
-                    Question = response.Data.Question,
+                    Question = question,
                     Answer = response.Data.Answer,
                     AnsweredFromDocuments = response.Data.AnsweredFromDocuments,
                     AskedAtUtc = response.Data.AskedAtUtc,
@@ -373,6 +374,24 @@
     {
         _sessionRequest.EntidadId = long.TryParse(_entityIdText, out var entityId) ? entityId : null;
         return _sessionRequest;
+    }
+
+    private string BuildContextualQuestion(string question)
+    {
+        var request = BuildSessionRequest();
+        var contextLines = new[]
+        {
+            $"Modulo: {request.Modulo}",
+            $"Submodulo: {request.SubModulo ?? "-"}",
+            $"Controlador: {request.Controlador ?? "-"}",
+            $"Servicio: {request.Servicio ?? "-"}",
+            $"EntidadId: {request.EntidadId?.ToString() ?? "-"}",
+            $"EmpresaId: {request.FkidEmpresaSis?.ToString() ?? "-"}",
+            $"Titulo: {request.Titulo ?? "-"}",
+            $"Descripcion/reglas: {request.Descripcion ?? "-"}"
+        };
+
+        return $"{question}\n\nContexto operativo de la sesion:\n{string.Join('\n', contextLines)}";
     }
 
     private static string GetDocumentIcon(DocumentRagDocumentResponse document)

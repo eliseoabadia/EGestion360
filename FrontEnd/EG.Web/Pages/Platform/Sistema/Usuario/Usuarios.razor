@@ -172,7 +172,6 @@
             var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
                 new DialogOptions
                 {
-                    CloseButton = true,
                     MaxWidth = MaxWidth.Small,
                     FullWidth = true,
                     Position = DialogPosition.Center
@@ -206,10 +205,13 @@
     {
         try
         {
-            var parameters = new DialogParameters { ["UsuarioId"] = id };
+            var parameters = new DialogParameters
+            {
+                ["UsuarioId"] = id,
+                ["ReturnUrl"] = "/configuracion/sistema/usuarios"
+            };
             var options = new DialogOptions
             {
-                CloseButton = true,
                 MaxWidth = MaxWidth.Medium,
                 FullWidth = true,
             };

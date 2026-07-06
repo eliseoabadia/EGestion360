@@ -320,15 +320,33 @@
             return;
         }
 
+        var selectorParameters = new DialogParameters
+        {
+            ["AnioId"] = AnioStateService.AnioId!.Value,
+            ["AnioTexto"] = AnioStateService.AnioTexto ?? AnioStateService.AnioClave?.ToString(),
+            ["CurrencySymbol"] = _currencySymbol
+        };
+
+        var selectorDialog = await DialogService.ShowAsync<SeleccionarAnteproyectoAutorizadoDialog>(
+            "Seleccionar anteproyecto",
+            selectorParameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+
+        var selectorResult = await selectorDialog.Result;
+        if (selectorResult is not { Canceled: false } || selectorResult.Data is not EgresoAutorizadoResponse prefill)
+            return;
+
         var parameters = new DialogParameters
         {
             ["AnioId"] = AnioStateService.AnioId!.Value,
             ["CurrencySymbol"] = _currencySymbol,
-            ["CurrencyName"] = _currencyName
+            ["CurrencyName"] = _currencyName,
+            ["IsAuthorizationFlow"] = true,
+            ["PrefillItem"] = prefill
         };
 
-        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear presupuesto autorizado", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Autorizar presupuesto", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })

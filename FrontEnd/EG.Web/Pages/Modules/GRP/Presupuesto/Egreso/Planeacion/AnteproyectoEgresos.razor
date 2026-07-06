@@ -14,6 +14,7 @@
 @using System.Globalization
 @implements IDisposable
 @inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
 @inject HttpClient Http
@@ -22,7 +23,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="min-height: 100%;">
         <PageHeader Title="Anteproyecto de Egresos"
                     Subtitle="Planeacion mensual por programa, partida y area"
                     Icon="@Icons.Material.Filled.StackedLineChart"
@@ -55,7 +56,7 @@
             </div>
         </div>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+        <div Style="flex: 1 1 auto; min-height: 420px; overflow: visible;">
             <GenericTable TItem="EgresoProyectadoResponse"
                           @ref="table"
                           Title="Partidas del anteproyecto"
@@ -232,6 +233,7 @@
     {
         await base.OnInitializedAsync();
         await AnioStateService.InitializeAsync();
+        await SucursalStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
     }
@@ -652,9 +654,18 @@
             return;
         }
 
+        await SucursalStateService.InitializeAsync();
+        if (!HasSelectedEmpresa())
+        {
+            Snackbar.Add("Selecciona una empresa en el encabezado.", Severity.Warning);
+            return;
+        }
+
         var parameters = new DialogParameters
         {
-            ["CurrencySymbol"] = _currencySymbol
+            ["CurrencySymbol"] = _currencySymbol,
+            ["EmpresaId"] = SucursalStateService.EmpresaId,
+            ["EmpresaNombre"] = SucursalStateService.EmpresaNombreCorto ?? SucursalStateService.EmpresaNombre
         };
 
         var dialog = await DialogService.ShowAsync<AnteproyectoEgresosAiImportDialog>(
@@ -691,6 +702,9 @@
 
     private bool HasSelectedAnio() =>
         AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
+
+    private bool HasSelectedEmpresa() =>
+        SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 

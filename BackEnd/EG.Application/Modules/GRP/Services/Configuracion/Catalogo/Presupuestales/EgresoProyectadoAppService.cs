@@ -246,63 +246,67 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (!preview.CanImport)
                 return FailurePreview("El anteproyecto no puede importarse porque tiene errores de validacion.", "VALIDATION", preview);
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
             try
             {
-                var now = DateTime.Now;
-                var entities = preview.Rows.Select(row => new EgresoProyectado
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    FkidProgramaPres = row.FkidProgramaPres!.Value,
-                    FkidPartidaConta = row.FkidPartidaConta!.Value,
-                    FkidAreaSis = row.FkidAreaSis!.Value,
-                    Descripcion = row.Descripcion?.Trim() ?? string.Empty,
-                    Fecha = DateOnly.FromDateTime(row.Fecha ?? preview.Header.Fecha ?? DateTime.Today),
-                    FkidFuenteFinanciamientoPres = row.FkidFuenteFinanciamientoPres,
-                    FkidTipoGastoPres = row.FkidTipoGastoPres,
-                    FkidDigitoIdentificadorPres = row.FkidDigitoIdentificadorPres,
-                    FkidDestinoGastoPres = row.FkidDestinoGastoPres,
-                    FkidPyPres = row.FkidPyPres,
-                    Enero = row.Enero,
-                    Febrero = row.Febrero,
-                    Marzo = row.Marzo,
-                    Abril = row.Abril,
-                    Mayo = row.Mayo,
-                    Junio = row.Junio,
-                    Julio = row.Julio,
-                    Agosto = row.Agosto,
-                    Septiembre = row.Septiembre,
-                    Octubre = row.Octubre,
-                    Noviembre = row.Noviembre,
-                    Diciembre = row.Diciembre,
-                    Total = row.Total,
-                    Activo = true,
-                    FechaCreacion = now,
-                    UsuarioCreacion = usuarioActual
-                }).ToList();
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
 
-                _context.EgresoProyectados.AddRange(entities);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    var now = DateTime.Now;
+                    var entities = preview.Rows.Select(row => new EgresoProyectado
+                    {
+                        FkidProgramaPres = row.FkidProgramaPres!.Value,
+                        FkidPartidaConta = row.FkidPartidaConta!.Value,
+                        FkidAreaSis = row.FkidAreaSis!.Value,
+                        Descripcion = row.Descripcion?.Trim() ?? string.Empty,
+                        Fecha = DateOnly.FromDateTime(row.Fecha ?? preview.Header.Fecha ?? DateTime.Today),
+                        FkidFuenteFinanciamientoPres = row.FkidFuenteFinanciamientoPres,
+                        FkidTipoGastoPres = row.FkidTipoGastoPres,
+                        FkidDigitoIdentificadorPres = row.FkidDigitoIdentificadorPres,
+                        FkidDestinoGastoPres = row.FkidDestinoGastoPres,
+                        FkidPyPres = row.FkidPyPres,
+                        Enero = row.Enero,
+                        Febrero = row.Febrero,
+                        Marzo = row.Marzo,
+                        Abril = row.Abril,
+                        Mayo = row.Mayo,
+                        Junio = row.Junio,
+                        Julio = row.Julio,
+                        Agosto = row.Agosto,
+                        Septiembre = row.Septiembre,
+                        Octubre = row.Octubre,
+                        Noviembre = row.Noviembre,
+                        Diciembre = row.Diciembre,
+                        Total = row.Total,
+                        Activo = true,
+                        FechaCreacion = now,
+                        UsuarioCreacion = usuarioActual
+                    }).ToList();
 
-                preview.ImportedIds = entities.Select(x => x.PkidEgresoProyectado).ToList();
-                preview.ImportedCount = preview.ImportedIds.Count;
-                var importedViews = await _context.VwEgresoProyectados.AsNoTracking()
-                    .Where(x => preview.ImportedIds.Contains(x.PkidEgresoProyectado))
-                    .ToListAsync();
-                preview.ImportedRows = importedViews.Select(x => x.Adapt<EgresoProyectadoResponse>()).ToList();
+                    _context.EgresoProyectados.AddRange(entities);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
-                _logger.LogInformation(
-                    "Anteproyecto importado con IA. Usuario={Usuario}; Filas={Filas}; Total={Total}; Archivo={Archivo}",
-                    usuarioActual,
-                    preview.ImportedCount,
-                    preview.Total,
-                    request.SourceFileName);
+                    preview.ImportedIds = entities.Select(x => x.PkidEgresoProyectado).ToList();
+                    preview.ImportedCount = preview.ImportedIds.Count;
+                    var importedViews = await _context.VwEgresoProyectados.AsNoTracking()
+                        .Where(x => preview.ImportedIds.Contains(x.PkidEgresoProyectado))
+                        .ToListAsync();
+                    preview.ImportedRows = importedViews.Select(x => x.Adapt<EgresoProyectadoResponse>()).ToList();
 
-                return SuccessPreview("Anteproyecto importado correctamente con validacion previa.", preview);
+                    _logger.LogInformation(
+                        "Anteproyecto importado con IA. Usuario={Usuario}; Filas={Filas}; Total={Total}; Archivo={Archivo}",
+                        usuarioActual,
+                        preview.ImportedCount,
+                        preview.Total,
+                        request.SourceFileName);
+
+                    return SuccessPreview("Anteproyecto importado correctamente con validacion previa.", preview);
+                });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error al importar anteproyecto con IA. Usuario={Usuario}; Archivo={Archivo}", usuarioActual, request.SourceFileName);
                 return FailurePreview($"Error al importar anteproyecto: {ex.InnerException?.Message ?? ex.Message}", "ERROR", preview);
             }
@@ -402,6 +406,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             {
                 FkidAnioSis = PositiveOrNull(fallback.FkidAnioSis),
                 Anio = fallback.Anio ?? ParseInt(GetDetected(detectedHeaderValues, "Anio")),
+                FkidEmpresaSis = PositiveOrNull(fallback.FkidEmpresaSis),
+                EmpresaNombre = Trim(fallback.EmpresaNombre),
                 Fecha = fallback.Fecha?.Date ?? DateTime.Today
             };
 
@@ -447,6 +453,24 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 AddError(preview, "ANIO_INVALID", $"El anio {header.FkidAnioSis} no existe o esta inactivo.", field: "Anio");
             else
                 header.Anio = resolved.Clave;
+
+            if (!header.FkidEmpresaSis.HasValue || header.FkidEmpresaSis <= 0)
+            {
+                AddError(preview, "EMPRESA_REQUIRED", "Selecciona una empresa para importar el anteproyecto.", field: "Empresa");
+                return;
+            }
+
+            var empresa = await _context.Empresas.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidEmpresa == header.FkidEmpresaSis.Value && x.Activo);
+            if (empresa == null)
+            {
+                AddError(preview, "EMPRESA_INVALID", $"La empresa {header.FkidEmpresaSis} no existe o esta inactiva.", field: "Empresa");
+                return;
+            }
+
+            header.EmpresaNombre = string.IsNullOrWhiteSpace(empresa.NombreCorto)
+                ? empresa.Nombre
+                : empresa.NombreCorto;
         }
 
         private async Task ResolveRowsAsync(EgresoProyectadoAiImportPreviewResponse preview, IEnumerable<EgresoProyectadoAiImportRowRequest> rawRows)

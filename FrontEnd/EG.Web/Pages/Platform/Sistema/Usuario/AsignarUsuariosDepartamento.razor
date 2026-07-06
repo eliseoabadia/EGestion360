@@ -140,6 +140,9 @@
 
     @code {
     [Parameter] public int UsuarioId { get; set; }
+    [Parameter] public string ReturnUrl { get; set; } = "/configuracion/sistema/usuarios";
+
+    [CascadingParameter] private IMudDialogInstance? MudDialog { get; set; }
 
     [Inject]
     private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
@@ -323,7 +326,13 @@
 
     private void Volver()
     {
-        NavigationManager.NavigateTo("/usuarios");
+        if (MudDialog is not null)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        NavigationManager.NavigateTo(ReturnUrl, replace: true);
     }
 
     // Clase para los items del drag & drop

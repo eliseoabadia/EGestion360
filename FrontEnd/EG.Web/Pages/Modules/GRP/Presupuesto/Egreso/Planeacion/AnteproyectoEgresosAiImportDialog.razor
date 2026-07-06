@@ -5,18 +5,24 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Contracts.Modules.GRP.Presupuestales
+@using EG.Web.Contracts.Platform.DocumentRag
 @using EG.Web.Models
+@using EG.Web.Models.Platform.DocumentRag
 @using EG.Web.Pages.Shared
 @using EG.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 @using System.Globalization
+@using System.Text
+@implements IAsyncDisposable
 
 @inject IEgresoProyectadoAiImportService ImportService
+@inject IDocumentRagService RagService
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<PartidaResponse> PartidaService
 @inject IGenericCrudService<UsuarioAreaResponse> AreaService
 @inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -31,18 +37,30 @@
     </TitleContent>
     <DialogContent>
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="4">
                 <MudTextField Value="@BudgetYearText"
                               Label="Anio presupuestal"
                               Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Selecciona un anio presupuestal"
                               ReadOnly="true" />
             </MudItem>
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="4">
+                <MudTextField Value="@EmpresaText"
+                              Label="Empresa seleccionada"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Selecciona una empresa"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="4">
                 <MudDatePicker @bind-Date="_fecha"
                                Label="Fecha inicial por defecto"
                                DateFormat="dd/MM/yyyy"
                                Culture="@DateCulture"
-                               Variant="Variant.Outlined" />
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Selecciona una fecha inicial" />
             </MudItem>
         </MudGrid>
 
@@ -52,7 +70,7 @@
                    class="anteproyecto-ai-file-input" />
         <label for="@_inputId" class="anteproyecto-ai-dropzone">
             <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
-            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT")</span>
+            <span>@(_file?.Name ?? "Seleccionar Excel, CSV o TXT *")</span>
             <small>Columnas: Partida, Area, Descripcion, Fecha, Enero-Diciembre. Programa puede ir en ayuda.</small>
         </label>
 
@@ -62,60 +80,97 @@
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedPrograma"
                                            ValueChanged="OnProgramaChanged"
-                                           Label="Programa de ayuda"
+                                           Label="@(HelpLabel("Programa de ayuda", "PROGRAMA_REQUIRED"))"
+                                           Required="@(IsHelpFieldRequired("PROGRAMA_REQUIRED"))"
+                                           RequiredError="Selecciona programa de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadProgramasPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedPartida"
                                            ValueChanged="OnPartidaChanged"
-                                           Label="Partida de ayuda"
+                                           Label="@(HelpLabel("Partida de ayuda", "PARTIDA_REQUIRED"))"
+                                           Required="@(IsHelpFieldRequired("PARTIDA_REQUIRED"))"
+                                           RequiredError="Selecciona partida de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadPartidasPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedArea"
                                            ValueChanged="OnAreaChanged"
-                                           Label="Area de ayuda"
+                                           Label="@(HelpLabel("Area de ayuda", "AREA_REQUIRED"))"
+                                           Required="@(IsHelpFieldRequired("AREA_REQUIRED"))"
+                                           RequiredError="Selecciona area de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadAreasPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
                                            ValueChanged="OnFuenteFinanciamientoChanged"
-                                           Label="Fuente de ayuda"
+                                           Label="@(HelpLabel("Fuente de ayuda", "FUENTE_NOT_FOUND"))"
+                                           Required="@(IsHelpFieldRequired("FUENTE_NOT_FOUND"))"
+                                           RequiredError="Selecciona fuente de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadFuentesFinanciamientoPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedTipoGasto"
                                            ValueChanged="OnTipoGastoChanged"
-                                           Label="Tipo de gasto de ayuda"
+                                           Label="@(HelpLabel("Tipo de gasto de ayuda", "TIPO_GASTO_NOT_FOUND"))"
+                                           Required="@(IsHelpFieldRequired("TIPO_GASTO_NOT_FOUND"))"
+                                           RequiredError="Selecciona tipo de gasto de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadTiposGastoPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedDigitoIdentificador"
                                            ValueChanged="OnDigitoIdentificadorChanged"
-                                           Label="Digito de ayuda"
+                                           Label="@(HelpLabel("Digito de ayuda", "DIGITO_NOT_FOUND"))"
+                                           Required="@(IsHelpFieldRequired("DIGITO_NOT_FOUND"))"
+                                           RequiredError="Selecciona digito de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadDigitosIdentificadorPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <PagedAutocomplete Value="@_selectedDestinoGasto"
                                            ValueChanged="OnDestinoGastoChanged"
-                                           Label="Destino de ayuda"
+                                           Label="@(HelpLabel("Destino de ayuda", "DESTINO_NOT_FOUND"))"
+                                           Required="@(IsHelpFieldRequired("DESTINO_NOT_FOUND"))"
+                                           RequiredError="Selecciona destino de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadDestinosGastoPageAsync" />
                     </MudItem>
                     <MudItem xs="12" md="8">
                         <PagedAutocomplete Value="@_selectedPy"
                                            ValueChanged="OnPyChanged"
-                                           Label="PY de ayuda"
+                                           Label="@(HelpLabel("PY de ayuda", "PY_NOT_FOUND"))"
+                                           Required="@(IsHelpFieldRequired("PY_NOT_FOUND"))"
+                                           RequiredError="Selecciona PY de ayuda"
                                            Clearable="true"
                                            LoadPage="LoadPyPageAsync" />
                     </MudItem>
                 </MudGrid>
+                @if (_preview != null)
+                {
+                    @if (MissingHelpFields.Count > 0)
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                            <strong>Falta para importar:</strong> @string.Join(", ", MissingHelpFields)
+                        </MudAlert>
+                    }
+                    else if (_preview.Messages.Any(IsError))
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                            <strong>Corrige para importar:</strong> @FirstBlockingError
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                            Campos obligatorios completos.
+                        </MudAlert>
+                    }
+                }
             </MudExpansionPanel>
         </MudExpansionPanels>
 
@@ -123,22 +178,115 @@
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.PsychologyAlt"
-                       Disabled="@(_file == null || _busy || !HasSelectedAnio)"
+                       Disabled="@(_file == null || _busy || !HasSelectedAnio || !HasSelectedEmpresa)"
                        OnClick="Analyze">
                 Analizar archivo
             </MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Success"
-                       StartIcon="@Icons.Material.Filled.PostAdd"
-                       Disabled="@(!CanImport)"
-                       OnClick="Import">
-                Importar altas
-            </MudButton>
+            <MudTooltip Text="@ImportBlockReason" Disabled="@CanImport">
+                <span>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.PostAdd"
+                               Disabled="@(!CanImport)"
+                               OnClick="Import">
+                        Importar altas
+                    </MudButton>
+                </span>
+            </MudTooltip>
             @if (_busy)
             {
                 <MudProgressCircular Indeterminate="true" Size="Size.Small" />
             }
         </div>
+
+        <MudExpansionPanels Elevation="0" Class="mt-3">
+            <MudExpansionPanel Text="Asistente de carga y RAG" Expanded="@(_ragSession != null || _ragAnswer != null)">
+                <div class="anteproyecto-rag-context">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">Anio @BudgetYearText</MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@EmpresaText</MudChip>
+                    @if (_ragSession != null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="@(_ragSession.IndexedChunkCount > 0 ? Color.Success : Color.Warning)" Variant="Variant.Filled">
+                            @_ragSession.IndexedChunkCount chunk(s)
+                        </MudChip>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_ragNotice))
+                {
+                    <MudAlert Severity="@_ragNoticeSeverity" Variant="Variant.Outlined" Dense="true" Class="mt-2">
+                        @_ragNotice
+                    </MudAlert>
+                }
+
+                <div class="anteproyecto-rag-actions">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Schema"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantFields">
+                        Campos
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Rule"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantValidation">
+                        Validacion
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Troubleshoot"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistantMapping">
+                        Mapeo
+                    </MudButton>
+                </div>
+
+                <div class="anteproyecto-rag-question">
+                    <MudTextField @bind-Value="_ragQuestion"
+                                  Placeholder="Pregunta sobre el archivo cargado..."
+                                  Variant="Variant.Outlined"
+                                  Lines="2"
+                                  Disabled="@(_ragBusy || _busy)"
+                                  Immediate="true" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Send"
+                               Disabled="@(!CanAskAssistant)"
+                               OnClick="AskAssistant">
+                        Preguntar
+                    </MudButton>
+                    @if (_ragBusy)
+                    {
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                    }
+                </div>
+
+                @if (_ragAnswer != null)
+                {
+                    <div class="anteproyecto-rag-answer">
+                        <strong>Respuesta</strong>
+                        <p>@_ragAnswer.Answer</p>
+                        @if (_ragAnswer.Citations.Count > 0)
+                        {
+                            <div class="anteproyecto-rag-citations">
+                                @foreach (var citation in _ragAnswer.Citations.Take(3))
+                                {
+                                    <div>
+                                        <span>@citation.DocumentName - chunk @citation.ChunkIndex</span>
+                                        <small>@citation.Snippet</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
 
         @if (_preview != null)
         {
@@ -224,10 +372,10 @@
         gap: 4px;
         min-height: 104px;
         margin-top: 12px;
-        border: 1px dashed #7b8798;
+        border: 1px dashed var(--mud-palette-lines-inputs);
         border-radius: 8px;
-        background: #f8fafc;
-        color: #263445;
+        background: var(--mud-palette-background-grey);
+        color: var(--mud-palette-text-primary);
         cursor: pointer;
         text-align: center;
     }
@@ -237,7 +385,7 @@
     }
 
     .anteproyecto-ai-dropzone small {
-        color: #667085;
+        color: var(--mud-palette-text-secondary);
     }
 
     .anteproyecto-ai-summary {
@@ -247,10 +395,10 @@
     }
 
     .anteproyecto-ai-summary div {
-        border: 1px solid #d9dee8;
+        border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
         padding: 8px;
-        background: #ffffff;
+        background: var(--mud-palette-surface);
     }
 
     .anteproyecto-ai-summary span,
@@ -259,7 +407,7 @@
     }
 
     .anteproyecto-ai-summary span {
-        color: #667085;
+        color: var(--mud-palette-text-secondary);
         font-size: 0.76rem;
     }
 
@@ -270,10 +418,63 @@
     .anteproyecto-ai-summary .warn {
         color: #a35200;
     }
+
+    .anteproyecto-rag-context,
+    .anteproyecto-rag-actions,
+    .anteproyecto-rag-question {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .anteproyecto-rag-actions {
+        margin-top: 12px;
+    }
+
+    .anteproyecto-rag-question {
+        margin-top: 10px;
+    }
+
+    .anteproyecto-rag-question .mud-input-control {
+        flex: 1 1 320px;
+    }
+
+    .anteproyecto-rag-answer {
+        margin-top: 10px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        padding: 10px;
+        background: var(--mud-palette-surface);
+    }
+
+    .anteproyecto-rag-answer p {
+        margin: 6px 0 0;
+        white-space: pre-wrap;
+    }
+
+    .anteproyecto-rag-citations {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .anteproyecto-rag-citations div {
+        border-top: 1px solid var(--mud-palette-lines-default);
+        padding-top: 6px;
+    }
+
+    .anteproyecto-rag-citations span,
+    .anteproyecto-rag-citations small {
+        display: block;
+        color: var(--mud-palette-text-secondary);
+    }
 </style>
 
 @code {
     [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public int? EmpresaId { get; set; }
+    [Parameter] public string? EmpresaNombre { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -291,27 +492,90 @@
     private LookupItem? _selectedDestinoGasto;
     private LookupItem? _selectedPy;
     private DateTime? _fecha = DateTime.Today;
+    private DocumentRagSessionResponse? _ragSession;
+    private DocumentRagAskResponse? _ragAnswer;
+    private string _ragQuestion = string.Empty;
+    private string _assistantContext = string.Empty;
+    private string _ragNotice = string.Empty;
+    private Severity _ragNoticeSeverity = Severity.Info;
     private bool _busy;
+    private bool _ragBusy;
+    private bool _ragReleased;
 
     private bool HasSelectedAnio => AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0;
-    private bool CanImport => _preview?.CanImport == true && !_busy;
+    private bool HasSelectedEmpresa => SelectedEmpresaId.HasValue && SelectedEmpresaId.Value > 0;
+    private bool CanImport => _preview?.CanImport == true
+        && !_busy
+        && _file != null
+        && HasSelectedAnio
+        && HasSelectedEmpresa
+        && _fecha.HasValue;
+    private IReadOnlyList<string> MissingHelpFields => BuildMissingHelpFields();
+    private string FirstBlockingError => _preview?.Messages.FirstOrDefault(IsError) is { } message
+        ? FormatMessage(message)
+        : "No hay errores pendientes.";
+    private string ImportBlockReason
+    {
+        get
+        {
+            if (_busy)
+                return "Proceso en curso.";
+            if (!HasSelectedAnio)
+                return "Selecciona un anio presupuestal.";
+            if (!HasSelectedEmpresa)
+                return "Selecciona una empresa.";
+            if (_fecha == null)
+                return "Selecciona una fecha inicial.";
+            if (_file == null)
+                return "Selecciona un archivo.";
+            if (_preview == null)
+                return "Analiza el archivo primero.";
+
+            var missing = MissingHelpFields;
+            if (missing.Count > 0)
+                return $"Falta: {string.Join(", ", missing)}.";
+
+            return _preview.Messages.Any(IsError)
+                ? $"Corrige: {FirstBlockingError}"
+                : string.Empty;
+        }
+    }
+    private bool CanAskAssistant => (_preview != null || _ragSession?.IndexedChunkCount > 0)
+        && !_busy
+        && !_ragBusy
+        && !string.IsNullOrWhiteSpace(_ragQuestion);
     private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioStateService.AnioId?.ToString() ?? "Sin anio";
+    private int? SelectedEmpresaId => EmpresaId.GetValueOrDefault() > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+    private string EmpresaText => !string.IsNullOrWhiteSpace(EmpresaNombre)
+        ? EmpresaNombre!
+        : !string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombreCorto)
+            ? SucursalStateService.EmpresaNombreCorto!
+            : SucursalStateService.EmpresaNombre ?? "Sin empresa";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
 
     protected override async Task OnInitializedAsync()
     {
         await AnioStateService.InitializeAsync();
+        await SucursalStateService.InitializeAsync();
+        EmpresaId ??= SucursalStateService.EmpresaId;
+        EmpresaNombre ??= SucursalStateService.EmpresaNombreCorto ?? SucursalStateService.EmpresaNombre;
     }
 
-    private Task OnFileSelected(InputFileChangeEventArgs args)
+    private async Task OnFileSelected(InputFileChangeEventArgs args)
     {
+        if (_ragSession != null)
+            await ReleaseRagSessionAsync(showSnackbar: false);
+
         _file = args.GetMultipleFiles(1).FirstOrDefault();
         _preview = null;
         _baseRows = [];
         _baseMessages = [];
+        _ragAnswer = null;
+        _ragNotice = string.Empty;
+        _ragQuestion = string.Empty;
+        _assistantContext = string.Empty;
         ClearHelpFields();
-        return Task.CompletedTask;
     }
 
     private async Task Analyze()
@@ -322,6 +586,12 @@
         if (!HasSelectedAnio)
         {
             Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedEmpresa)
+        {
+            Snackbar.Add("Selecciona una empresa en el encabezado.", Severity.Warning);
             return;
         }
 
@@ -336,7 +606,11 @@
                 _baseMessages = _preview.Messages.ToList();
                 SelectHelpFieldsFromPreview();
                 ApplyHelpFieldsToPreview();
+                RefreshAssistantContext();
             }
+
+            if (_preview != null)
+                await IndexFileForRagAsync();
 
             Snackbar.Add(response.Message, response.Data?.CanImport == true ? Severity.Success : Severity.Warning);
         }
@@ -381,8 +655,356 @@
     {
         FkidAnioSis = AnioStateService.AnioId,
         Anio = AnioStateService.AnioClave,
+        FkidEmpresaSis = SelectedEmpresaId,
+        EmpresaNombre = EmpresaText,
         Fecha = _fecha ?? DateTime.Today
     };
+
+    private async Task IndexFileForRagAsync()
+    {
+        if (_file == null)
+            return;
+
+        _ragBusy = true;
+        _ragNotice = "Indexando archivo para RAG...";
+        _ragNoticeSeverity = Severity.Info;
+        try
+        {
+            if (!await EnsureRagSessionAsync())
+                return;
+
+            var response = await RagService.UploadAsync(BuildRagSessionRequest(), _ragSession!.SessionId, _file);
+            if (response.Success && response.Data != null)
+            {
+                await RefreshRagSessionAsync();
+                _ragNoticeSeverity = response.Data.ChunkCount > 0 ? Severity.Success : Severity.Warning;
+                _ragNotice = response.Data.ChunkCount > 0
+                    ? "Archivo indexado para consultas RAG."
+                    : response.Data.Message;
+                _ragQuestion = string.IsNullOrWhiteSpace(_ragQuestion)
+                    ? "Que campos del anteproyecto se detectan en el archivo?"
+                    : _ragQuestion;
+            }
+            else
+            {
+                _ragNoticeSeverity = Severity.Warning;
+                _ragNotice = response.Message ?? "No fue posible indexar el archivo para RAG.";
+            }
+        }
+        finally
+        {
+            _ragBusy = false;
+        }
+    }
+
+    private async Task<bool> EnsureRagSessionAsync()
+    {
+        if (_ragSession != null)
+            return true;
+
+        var response = await RagService.CreateSessionAsync(BuildRagSessionRequest());
+        if (response.Success && response.Data != null)
+        {
+            _ragSession = response.Data;
+            _ragReleased = false;
+            return true;
+        }
+
+        _ragNoticeSeverity = Severity.Error;
+        _ragNotice = response.Message ?? "No fue posible crear la sesion RAG.";
+        return false;
+    }
+
+    private async Task RefreshRagSessionAsync()
+    {
+        if (_ragSession == null)
+            return;
+
+        var response = await RagService.GetSessionAsync(_ragSession.SessionId);
+        if (response.Success && response.Data != null)
+            _ragSession = response.Data;
+    }
+
+    private DocumentRagSessionRequest BuildRagSessionRequest() => new()
+    {
+        Modulo = "Planeacion",
+        SubModulo = "Anteproyecto_Egresos",
+        Controlador = "EgresoProyectado",
+        Servicio = "AiImport",
+        FkidEmpresaSis = SelectedEmpresaId,
+        Titulo = $"Anteproyecto de egresos {BudgetYearText}",
+        Descripcion = $"Anio presupuestal: {BudgetYearText}. Empresa: {EmpresaText}. Archivo: {_file?.Name ?? "sin archivo"}."
+    };
+
+    private async Task AskAssistantFields()
+    {
+        _ragQuestion = "Que columnas y campos de anteproyecto identifica el archivo?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private async Task AskAssistantValidation()
+    {
+        _ragQuestion = "Que posibles errores o faltantes se observan para cargar el anteproyecto?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private async Task AskAssistantMapping()
+    {
+        _ragQuestion = "Como se pueden relacionar los datos del archivo con programa, partida, area y meses?";
+        await AskAssistant(forcePreviewAnswer: true);
+    }
+
+    private Task AskAssistant() => AskAssistant(forcePreviewAnswer: false);
+
+    private async Task AskAssistant(bool forcePreviewAnswer)
+    {
+        if (!CanAskAssistant)
+            return;
+
+        _ragBusy = true;
+        _ragAnswer = null;
+        try
+        {
+            var questionText = _ragQuestion.Trim();
+            var previewAnswer = TryBuildPreviewAnswer(questionText, forcePreviewAnswer);
+            if (!string.IsNullOrWhiteSpace(previewAnswer))
+            {
+                SetLocalAssistantAnswer(questionText, previewAnswer);
+                return;
+            }
+
+            if (_ragSession?.IndexedChunkCount <= 0)
+            {
+                SetLocalAssistantAnswer(questionText, "Primero analiza un archivo para que pueda revisar sus validaciones y su contenido indexado.");
+                return;
+            }
+
+            RefreshAssistantContext();
+            var question = $"{questionText}\n\nContexto operativo de la pagina:\n{_assistantContext}";
+            var response = await RagService.AskAsync(new DocumentRagAskRequest
+            {
+                SessionId = _ragSession!.SessionId,
+                Question = question,
+                TopK = 6
+            });
+
+            if (response.Success && response.Data != null)
+            {
+                _ragAnswer = response.Data;
+                if (!response.Data.AnsweredFromDocuments)
+                {
+                    var fallback = TryBuildPreviewAnswer(questionText, force: true);
+                    if (!string.IsNullOrWhiteSpace(fallback))
+                    {
+                        SetLocalAssistantAnswer(questionText, fallback);
+                        return;
+                    }
+
+                    Snackbar.Add("El RAG no encontro esa informacion en el archivo.", Severity.Warning);
+                }
+
+                return;
+            }
+
+            Snackbar.Add(response.Message ?? "No se pudo procesar la pregunta RAG.", Severity.Error);
+        }
+        finally
+        {
+            _ragBusy = false;
+        }
+    }
+
+    private string? TryBuildPreviewAnswer(string question, bool force)
+    {
+        if (_preview == null)
+            return null;
+
+        var normalized = NormalizeQuestion(question);
+        var wantsLoadAnalysis = force || ContainsAny(normalized,
+            "falta", "faltan", "completar", "carga", "cargar", "importar", "errores", "error",
+            "validacion", "validar", "campo", "campos", "columna", "columnas", "mapeo", "resolver",
+            "fila", "area", "programa", "partida", "meses", "importe");
+
+        if (!wantsLoadAnalysis)
+            return null;
+
+        var errors = _preview.Messages.Where(IsError).ToList();
+        var warnings = _preview.Messages.Where(message => !IsError(message)).ToList();
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"Contexto de carga: anio {BudgetYearText}, empresa {EmpresaText}.");
+        sb.AppendLine($"El archivo tiene {_preview.Rows.Count} fila(s), {_preview.DetectedColumns.Count} columna(s) detectada(s) y total {Money(_preview.Total)}.");
+
+        if (_preview.CanImport)
+        {
+            sb.AppendLine("La carga ya esta lista. Puedes presionar Importar altas.");
+        }
+        else if (errors.Count > 0)
+        {
+            sb.AppendLine("Para completar la carga necesitas resolver estos bloqueos:");
+            foreach (var message in errors.Take(8))
+            {
+                sb.AppendLine($"- {FormatMessage(message)}");
+            }
+
+            if (errors.Count > 8)
+                sb.AppendLine($"- Hay {errors.Count - 8} error(es) adicional(es).");
+        }
+        else
+        {
+            sb.AppendLine("No hay errores bloqueantes, pero revisa los avisos antes de importar.");
+        }
+
+        AppendHelpAction(sb, "PROGRAMA_REQUIRED", _selectedPrograma, "Programa de ayuda");
+        AppendHelpAction(sb, "PARTIDA_REQUIRED", _selectedPartida, "Partida de ayuda");
+        AppendHelpAction(sb, "AREA_REQUIRED", _selectedArea, "Area de ayuda");
+        AppendHelpAction(sb, "FUENTE_NOT_FOUND", _selectedFuenteFinanciamiento, "Fuente de ayuda");
+        AppendHelpAction(sb, "TIPO_GASTO_NOT_FOUND", _selectedTipoGasto, "Tipo de gasto de ayuda");
+        AppendHelpAction(sb, "DIGITO_NOT_FOUND", _selectedDigitoIdentificador, "Digito de ayuda");
+        AppendHelpAction(sb, "DESTINO_NOT_FOUND", _selectedDestinoGasto, "Destino de ayuda");
+        AppendHelpAction(sb, "PY_NOT_FOUND", _selectedPy, "PY de ayuda");
+
+        if (warnings.Count > 0)
+        {
+            var monthWarnings = warnings.Count(message => message.Code.Equals("MONTH_CLEARED", StringComparison.OrdinalIgnoreCase));
+            if (monthWarnings > 0)
+            {
+                sb.AppendLine($"Aviso: {monthWarnings} importe(s) mensual(es) se limpiaron porque quedan antes de la fecha inicial {_fecha:dd/MM/yyyy}. Esto no bloquea la importacion.");
+            }
+
+            foreach (var message in warnings.Where(message => !message.Code.Equals("MONTH_CLEARED", StringComparison.OrdinalIgnoreCase)).Take(4))
+            {
+                sb.AppendLine($"Aviso: {FormatMessage(message)}");
+            }
+        }
+
+        if (ContainsAny(normalized, "campo", "campos", "columna", "columnas", "mapeo"))
+        {
+            sb.AppendLine("Columnas detectadas:");
+            sb.AppendLine(_preview.DetectedColumns.Count == 0
+                ? "- No se detectaron columnas."
+                : $"- {string.Join(", ", _preview.DetectedColumns.Take(24))}");
+            sb.AppendLine("Campos clave esperados: Programa, Partida, Area, Descripcion, Fecha, Enero-Diciembre y clasificacion opcional FF/TG/DI/DG/PY.");
+        }
+
+        sb.AppendLine("Despues de corregir los campos de ayuda o el archivo, presiona Analizar archivo otra vez. Importar altas se habilita cuando el estado quede Listo.");
+        return sb.ToString().Trim();
+    }
+
+    private void SetLocalAssistantAnswer(string question, string answer)
+    {
+        _ragAnswer = new DocumentRagAskResponse
+        {
+            SessionId = _ragSession?.SessionId ?? Guid.Empty,
+            QuestionId = Guid.NewGuid(),
+            Question = question,
+            Answer = answer,
+            AnsweredFromDocuments = false,
+            AskedAtUtc = DateTime.UtcNow
+        };
+    }
+
+    private void RefreshAssistantContext()
+    {
+        _assistantContext = BuildAssistantContext();
+    }
+
+    private string BuildAssistantContext()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Ruta: /Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos.");
+        sb.AppendLine($"Modulo/Submodulo: Planeacion / Anteproyecto_Egresos.");
+        sb.AppendLine($"Anio presupuestal seleccionado: {BudgetYearText}.");
+        sb.AppendLine($"Empresa seleccionada: {EmpresaText}.");
+        sb.AppendLine($"Fecha inicial por defecto: {(_fecha ?? DateTime.Today):dd/MM/yyyy}.");
+        sb.AppendLine("Reglas de carga:");
+        sb.AppendLine("- El archivo debe contener filas de anteproyecto de egresos.");
+        sb.AppendLine("- Campos clave: Programa, Partida, Area, Descripcion, Fecha, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre y Diciembre.");
+        sb.AppendLine("- Programa, Partida y Area son obligatorios; si el archivo no los resuelve, se pueden completar con los campos de ayuda.");
+        sb.AppendLine("- Fuente, Tipo de gasto, Digito, Destino y PY son clasificaciones opcionales; si vienen en archivo y no se encuentran, pueden corregirse con los campos de ayuda.");
+        sb.AppendLine("- Los importes mensuales no pueden ser negativos y cada fila debe tener al menos un importe mayor a cero.");
+        sb.AppendLine("- Los meses anteriores a la fecha inicial se limpian automaticamente y generan avisos, no necesariamente bloqueos.");
+        sb.AppendLine("- Importar altas solo se habilita cuando no quedan mensajes de severidad Error.");
+        sb.AppendLine("Campos de ayuda seleccionados:");
+        AppendSelectedHelp(sb, "Programa", _selectedPrograma);
+        AppendSelectedHelp(sb, "Partida", _selectedPartida);
+        AppendSelectedHelp(sb, "Area", _selectedArea);
+        AppendSelectedHelp(sb, "Fuente", _selectedFuenteFinanciamiento);
+        AppendSelectedHelp(sb, "Tipo de gasto", _selectedTipoGasto);
+        AppendSelectedHelp(sb, "Digito", _selectedDigitoIdentificador);
+        AppendSelectedHelp(sb, "Destino", _selectedDestinoGasto);
+        AppendSelectedHelp(sb, "PY", _selectedPy);
+
+        if (_preview != null)
+        {
+            var errors = _preview.Messages.Count(IsError);
+            var warnings = _preview.Messages.Count - errors;
+            sb.AppendLine("Estado del analisis:");
+            sb.AppendLine($"- Filas: {_preview.Rows.Count}.");
+            sb.AppendLine($"- Columnas detectadas: {_preview.DetectedColumns.Count}.");
+            sb.AppendLine($"- Total: {Money(_preview.Total)}.");
+            sb.AppendLine($"- Errores: {errors}; avisos: {warnings}; puede importar: {(_preview.CanImport ? "si" : "no")}.");
+
+            foreach (var message in _preview.Messages.Take(12))
+            {
+                sb.AppendLine($"- {message.Severity}: {FormatMessage(message)}");
+            }
+        }
+
+        return sb.ToString().Trim();
+    }
+
+    private static void AppendSelectedHelp(StringBuilder sb, string label, LookupItem? value)
+    {
+        sb.AppendLine(value == null
+            ? $"- {label}: sin seleccionar."
+            : $"- {label}: {value.Text} (Id {value.Id}).");
+    }
+
+    private void AppendHelpAction(StringBuilder sb, string code, LookupItem? selected, string label)
+    {
+        var affectedRows = _baseMessages
+            .Where(message => message.Code.Equals(code, StringComparison.OrdinalIgnoreCase))
+            .Select(message => message.RowNumber)
+            .Where(row => row.HasValue)
+            .Select(row => row!.Value)
+            .Distinct()
+            .OrderBy(row => row)
+            .ToList();
+
+        if (affectedRows.Count == 0)
+            return;
+
+        var rowsText = string.Join(", ", affectedRows.Take(8));
+        if (affectedRows.Count > 8)
+            rowsText += $" y {affectedRows.Count - 8} mas";
+
+        if (selected == null)
+        {
+            sb.AppendLine($"Accion: selecciona {label} para cubrir fila(s) {rowsText}.");
+        }
+        else
+        {
+            sb.AppendLine($"Cubierto: {label} usa {selected.Text} para fila(s) {rowsText}.");
+        }
+    }
+
+    private static bool ContainsAny(string value, params string[] terms)
+        => terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+
+    private static string NormalizeQuestion(string value)
+    {
+        return (value ?? string.Empty)
+            .Trim()
+            .ToLowerInvariant()
+            .Replace("á", "a")
+            .Replace("é", "e")
+            .Replace("í", "i")
+            .Replace("ó", "o")
+            .Replace("ú", "u")
+            .Replace("ü", "u")
+            .Replace("ñ", "n");
+    }
 
     private async Task<ComboLookupResult> LoadProgramasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
@@ -433,57 +1055,70 @@
     private Task OnProgramaChanged(LookupItem? value)
     {
         _selectedPrograma = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnPartidaChanged(LookupItem? value)
     {
         _selectedPartida = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnAreaChanged(LookupItem? value)
     {
         _selectedArea = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnFuenteFinanciamientoChanged(LookupItem? value)
     {
         _selectedFuenteFinanciamiento = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnTipoGastoChanged(LookupItem? value)
     {
         _selectedTipoGasto = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnDigitoIdentificadorChanged(LookupItem? value)
     {
         _selectedDigitoIdentificador = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnDestinoGastoChanged(LookupItem? value)
     {
         _selectedDestinoGasto = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
     }
 
     private Task OnPyChanged(LookupItem? value)
     {
         _selectedPy = value;
-        ApplyHelpFieldsToPreview();
+        ApplyHelpFieldsAndRefreshAssistant();
         return Task.CompletedTask;
+    }
+
+    private void ApplyHelpFieldsAndRefreshAssistant()
+    {
+        ApplyHelpFieldsToPreview();
+        RefreshAssistantContext();
+
+        if (_ragAnswer != null && !string.IsNullOrWhiteSpace(_ragQuestion))
+        {
+            var answer = TryBuildPreviewAnswer(_ragQuestion, force: true);
+            if (!string.IsNullOrWhiteSpace(answer))
+                SetLocalAssistantAnswer(_ragQuestion, answer);
+        }
     }
 
     private void ApplyHelpFieldsToPreview()
@@ -535,6 +1170,32 @@
         _selectedDigitoIdentificador ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidDigitoIdentificadorPres is > 0), x => x.FkidDigitoIdentificadorPres, x => BuildText(x.DigitoIdentificador, x.DigitoIdentificadorDescripcion));
         _selectedDestinoGasto ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidDestinoGastoPres is > 0), x => x.FkidDestinoGastoPres, x => BuildText(x.DestinoGasto, x.DestinoGastoDescripcion));
         _selectedPy ??= ToLookup(_baseRows.FirstOrDefault(x => x.FkidPyPres is > 0), x => x.FkidPyPres, x => BuildText(x.Py, x.PyDescripcion));
+    }
+
+    private string HelpLabel(string label, string code)
+        => IsHelpFieldRequired(code) ? $"{label} *" : label;
+
+    private bool IsHelpFieldRequired(string code)
+        => _baseMessages.Any(message => message.Code.Equals(code, StringComparison.OrdinalIgnoreCase) && IsError(message));
+
+    private IReadOnlyList<string> BuildMissingHelpFields()
+    {
+        var missing = new List<string>();
+        AddMissingHelpField(missing, "PROGRAMA_REQUIRED", _selectedPrograma, "Programa de ayuda");
+        AddMissingHelpField(missing, "PARTIDA_REQUIRED", _selectedPartida, "Partida de ayuda");
+        AddMissingHelpField(missing, "AREA_REQUIRED", _selectedArea, "Area de ayuda");
+        AddMissingHelpField(missing, "FUENTE_NOT_FOUND", _selectedFuenteFinanciamiento, "Fuente de ayuda");
+        AddMissingHelpField(missing, "TIPO_GASTO_NOT_FOUND", _selectedTipoGasto, "Tipo de gasto de ayuda");
+        AddMissingHelpField(missing, "DIGITO_NOT_FOUND", _selectedDigitoIdentificador, "Digito de ayuda");
+        AddMissingHelpField(missing, "DESTINO_NOT_FOUND", _selectedDestinoGasto, "Destino de ayuda");
+        AddMissingHelpField(missing, "PY_NOT_FOUND", _selectedPy, "PY de ayuda");
+        return missing;
+    }
+
+    private void AddMissingHelpField(List<string> missing, string code, LookupItem? selected, string label)
+    {
+        if (selected == null && IsHelpFieldRequired(code))
+            missing.Add(label);
     }
 
     private bool CanResolveWithHelpField(EgresoProyectadoAiImportValidationMessage message)
@@ -771,5 +1432,34 @@
         _selectedPy = null;
     }
 
-    private void Close() => MudDialog.Close(DialogResult.Cancel());
+    private async Task ReleaseRagSessionAsync(bool showSnackbar)
+    {
+        if (_ragSession == null || _ragReleased)
+            return;
+
+        var response = await RagService.ReleaseSessionAsync(_ragSession.SessionId);
+        _ragSession = null;
+        _ragAnswer = null;
+        _ragReleased = true;
+
+        if (showSnackbar)
+            Snackbar.Add(response.Message ?? "Memoria RAG liberada.", Severity.Success);
+    }
+
+    private async Task Close()
+    {
+        await ReleaseRagSessionAsync(showSnackbar: false);
+        MudDialog.Close(DialogResult.Cancel());
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await ReleaseRagSessionAsync(showSnackbar: false);
+        }
+        catch
+        {
+        }
+    }
 }

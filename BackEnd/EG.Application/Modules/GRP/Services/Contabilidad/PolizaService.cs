@@ -142,66 +142,70 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             if (!preview.CanImport)
                 return FailurePreview("La poliza no puede importarse porque tiene errores de validacion.", "VALIDATION", preview);
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
             try
             {
-                var now = DateTime.Now;
-                var poliza = new Poliza
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    FkidAnioSis = preview.Header.FkidAnioSis!.Value,
-                    FkidMesSis = preview.Header.FkidMesSis!.Value,
-                    FkidTipoPolizaSis = preview.Header.FkidTipoPolizaSis!.Value,
-                    ClavePoliza = preview.Header.ClavePoliza!,
-                    NombrePoliza = preview.Header.NombrePoliza!,
-                    FechaPoliza = preview.Header.FechaPoliza!.Value,
-                    EstaBalanceado = true,
-                    Activo = true,
-                    FechaCreacion = now,
-                    UsuarioCreacion = usuarioActual,
-                    PermitirModificar = preview.Header.PermitirModificar,
-                    Autorizado = preview.Header.Autorizado
-                };
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
 
-                _context.Polizas.Add(poliza);
-                await _context.SaveChangesAsync();
-
-                foreach (var detail in preview.Details)
-                {
-                    _context.PolizaDetalles.Add(new PolizaDetalle
+                    var now = DateTime.Now;
+                    var poliza = new Poliza
                     {
-                        FkidPolizaConta = poliza.PkidPoliza,
-                        FkidCuentaContableConta = detail.FkidCuentaContableConta!.Value,
-                        FkidTipoDetallePolizaSis = detail.FkidTipoDetallePolizaSis,
-                        Descripcion = string.IsNullOrWhiteSpace(detail.Descripcion) ? null : detail.Descripcion.Trim(),
-                        ImporteDebe = detail.ImporteDebe.GetValueOrDefault() == 0m ? null : detail.ImporteDebe,
-                        ImporteHaber = detail.ImporteHaber.GetValueOrDefault() == 0m ? null : detail.ImporteHaber,
+                        FkidAnioSis = preview.Header.FkidAnioSis!.Value,
+                        FkidMesSis = preview.Header.FkidMesSis!.Value,
+                        FkidTipoPolizaSis = preview.Header.FkidTipoPolizaSis!.Value,
+                        ClavePoliza = preview.Header.ClavePoliza!,
+                        NombrePoliza = preview.Header.NombrePoliza!,
+                        FechaPoliza = preview.Header.FechaPoliza!.Value,
+                        EstaBalanceado = true,
                         Activo = true,
                         FechaCreacion = now,
-                        UsuarioCreacion = usuarioActual
-                    });
-                }
+                        UsuarioCreacion = usuarioActual,
+                        PermitirModificar = preview.Header.PermitirModificar,
+                        Autorizado = preview.Header.Autorizado
+                    };
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    _context.Polizas.Add(poliza);
+                    await _context.SaveChangesAsync();
 
-                preview.ImportedPolizaId = poliza.PkidPoliza;
-                var view = await _context.VwPolizas.AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.PkidPoliza == poliza.PkidPoliza);
-                preview.Poliza = view?.Adapt<PolizaResponse>() ?? poliza.Adapt<PolizaResponse>();
+                    foreach (var detail in preview.Details)
+                    {
+                        _context.PolizaDetalles.Add(new PolizaDetalle
+                        {
+                            FkidPolizaConta = poliza.PkidPoliza,
+                            FkidCuentaContableConta = detail.FkidCuentaContableConta!.Value,
+                            FkidTipoDetallePolizaSis = detail.FkidTipoDetallePolizaSis,
+                            Descripcion = string.IsNullOrWhiteSpace(detail.Descripcion) ? null : detail.Descripcion.Trim(),
+                            ImporteDebe = detail.ImporteDebe.GetValueOrDefault() == 0m ? null : detail.ImporteDebe,
+                            ImporteHaber = detail.ImporteHaber.GetValueOrDefault() == 0m ? null : detail.ImporteHaber,
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual
+                        });
+                    }
 
-                _logger.LogInformation(
-                    "Poliza importada con IA. Usuario={Usuario}; PolizaId={PolizaId}; Clave={Clave}; Detalles={Detalles}; Archivo={Archivo}",
-                    usuarioActual,
-                    poliza.PkidPoliza,
-                    poliza.ClavePoliza,
-                    preview.Details.Count,
-                    request.SourceFileName);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
-                return SuccessPreview("Poliza importada correctamente con validacion previa.", preview);
+                    preview.ImportedPolizaId = poliza.PkidPoliza;
+                    var view = await _context.VwPolizas.AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.PkidPoliza == poliza.PkidPoliza);
+                    preview.Poliza = view?.Adapt<PolizaResponse>() ?? poliza.Adapt<PolizaResponse>();
+
+                    _logger.LogInformation(
+                        "Poliza importada con IA. Usuario={Usuario}; PolizaId={PolizaId}; Clave={Clave}; Detalles={Detalles}; Archivo={Archivo}",
+                        usuarioActual,
+                        poliza.PkidPoliza,
+                        poliza.ClavePoliza,
+                        preview.Details.Count,
+                        request.SourceFileName);
+
+                    return SuccessPreview("Poliza importada correctamente con validacion previa.", preview);
+                });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error al importar poliza con IA. Usuario={Usuario}; Archivo={Archivo}", usuarioActual, request.SourceFileName);
                 return FailurePreview($"Error al importar poliza: {ex.InnerException?.Message ?? ex.Message}", "ERROR", preview);
             }

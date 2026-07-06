@@ -82,6 +82,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 {
                     FkidAnioSis = request.FkidAnioSis,
                     Anio = request.Anio,
+                    FkidEmpresaSis = request.FkidEmpresaSis ?? _userContext.TryGetCurrentEmpresaId(),
+                    EmpresaNombre = request.EmpresaNombre,
                     Fecha = request.Fecha
                 }
             };
@@ -93,6 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("ai-import/confirm")]
         public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> ConfirmAiImport([FromBody] EgresoProyectadoAiImportConfirmRequest request)
         {
+            request.Header.FkidEmpresaSis ??= _userContext.TryGetCurrentEmpresaId();
             var result = await _appService.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
@@ -190,6 +193,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     {
         public int? FkidAnioSis { get; set; }
         public int? Anio { get; set; }
+        public int? FkidEmpresaSis { get; set; }
+        public string? EmpresaNombre { get; set; }
         public DateTime? Fecha { get; set; }
         public IFormFile? File { get; set; }
     }

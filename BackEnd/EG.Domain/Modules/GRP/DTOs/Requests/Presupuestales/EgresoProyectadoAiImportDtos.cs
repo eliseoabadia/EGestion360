@@ -22,6 +22,8 @@ namespace EG.Domain.DTOs.Requests.Presupuestales
     {
         public int? FkidAnioSis { get; set; }
         public int? Anio { get; set; }
+        public int? FkidEmpresaSis { get; set; }
+        public string? EmpresaNombre { get; set; }
         public DateTime? Fecha { get; set; }
     }
 

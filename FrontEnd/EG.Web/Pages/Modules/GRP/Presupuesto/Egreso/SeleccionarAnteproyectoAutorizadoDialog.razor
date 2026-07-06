@@ -1,0 +1,277 @@
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Web.Contracts
+@using MudBlazor
+
+@inject IGenericCrudService<EgresoProyectadoResponse> AnteproyectoService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <div class="anteproyecto-picker-title">
+            <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Success" />
+            <div>
+                <MudText Typo="Typo.h6">Seleccionar anteproyecto</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">El presupuesto autorizado se generara desde el anteproyecto elegido.</MudText>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="anteproyecto-picker">
+            <MudTextField T="string"
+                          Value="@_search"
+                          ValueChanged="OnSearchChanged"
+                          Label="Buscar anteproyecto"
+                          Placeholder="Programa, partida, area, PY o descripcion"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true" />
+
+            @if (_loading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-3" />
+                <MudSkeleton Height="48px" Class="my-2" />
+                <MudSkeleton Height="48px" Class="my-2" />
+                <MudSkeleton Height="48px" Class="my-2" />
+            }
+            else if (_items.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-3">
+                    No hay anteproyectos pendientes de autorizar para el anio seleccionado.
+                </MudAlert>
+            }
+            else
+            {
+                <div class="picker-summary">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Anio @AnioTexto</MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">@FilteredItems.Count() pendiente(s)</MudChip>
+                </div>
+
+                <MudTable Items="@FilteredItems" Dense="true" Hover="true" Elevation="0" FixedHeader="true" Height="420px" Class="anteproyecto-picker-table">
+                    <HeaderContent>
+                        <MudTh>Anteproyecto</MudTh>
+                        <MudTh>Clasificacion</MudTh>
+                        <MudTh>Descripcion</MudTh>
+                        <MudTh class="money-cell">Total</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(context.ProgramaClaveNombre ?? context.ProgramaClave)</div>
+                            <span>@TextOrDash(context.PartidaClaveNombre ?? context.PartidaClave)</span><br />
+                            <span>@TextOrDash(context.AreaNombre)</span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="main-cell">@TextOrDash(context.FuenteFinanciamientoClaveNombre)</div>
+                            <span>TG: @TextOrDash(context.TipoGastoClaveNombre)</span><br />
+                            <span>DI: @TextOrDash(context.DigitoIdentificadorClaveNombre)</span><br />
+                            <span>PY: @TextOrDash(context.PyClaveNombre)</span>
+                        </MudTd>
+                        <MudTd>@TextOrDash(context.Descripcion)</MudTd>
+                        <MudTd class="money-cell"><strong>@Money(context.Total ?? 0m)</strong></MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Input"
+                                       OnClick="@(() => SelectItem(context))">
+                                Usar
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Color="Color.Secondary">No hay coincidencias con el filtro.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .anteproyecto-picker-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .anteproyecto-picker {
+        min-height: 220px;
+    }
+
+    .picker-summary {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 12px 0 8px;
+        flex-wrap: wrap;
+    }
+
+    .anteproyecto-picker-table .main-cell {
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .anteproyecto-picker-table span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .anteproyecto-picker-table .money-cell {
+        text-align: right;
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    [Parameter] public int AnioId { get; set; }
+    [Parameter] public string? AnioTexto { get; set; }
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private readonly List<EgresoProyectadoResponse> _items = [];
+    private bool _loading = true;
+    private string _search = string.Empty;
+
+    private IEnumerable<EgresoProyectadoResponse> FilteredItems
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_search))
+            {
+                return _items;
+            }
+
+            var filter = Normalize(_search);
+            return _items.Where(item =>
+                Contains(item.ProgramaClaveNombre, filter) ||
+                Contains(item.ProgramaClave, filter) ||
+                Contains(item.PartidaClaveNombre, filter) ||
+                Contains(item.PartidaClave, filter) ||
+                Contains(item.AreaNombre, filter) ||
+                Contains(item.FuenteFinanciamientoClaveNombre, filter) ||
+                Contains(item.TipoGastoClaveNombre, filter) ||
+                Contains(item.DigitoIdentificadorClaveNombre, filter) ||
+                Contains(item.PyClaveNombre, filter) ||
+                Contains(item.Descripcion, filter));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            var response = await AnteproyectoService.GetAllPaginadoAsync(
+                1,
+                500,
+                string.Empty,
+                "ProgramaClave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["FkidAnioSis"] = AnioId });
+
+            var items = response?.Items?
+                .Where(x => x.Activo && !x.EstaAutorizado && !x.PkidEgresoAutorizado.HasValue)
+                .OrderBy(x => x.ProgramaClave)
+                .ThenBy(x => x.PartidaClave)
+                .ThenBy(x => x.AreaNombre)
+                .ToList() ?? [];
+
+            _items.Clear();
+            _items.AddRange(items);
+
+            if (response?.Success != true && !string.IsNullOrWhiteSpace(response?.Message))
+            {
+                Snackbar.Add(response.Message, Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No fue posible cargar anteproyectos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnSearchChanged(string value) => _search = value ?? string.Empty;
+
+    private void SelectItem(EgresoProyectadoResponse item)
+    {
+        MudDialog.Close(DialogResult.Ok(MapToAutorizado(item)));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private EgresoAutorizadoResponse MapToAutorizado(EgresoProyectadoResponse item) => new()
+    {
+        FkidEgresoProyectadoPres = item.PkidEgresoProyectado,
+        FkidAnioSis = item.FkidAnioSis,
+        AnioClave = item.AnioClave,
+        FkidProgramaPres = item.FkidProgramaPres,
+        ProgramaClave = item.ProgramaClave,
+        ProgramaDescripcion = item.ProgramaDescripcion,
+        ProgramaClaveNombre = item.ProgramaClaveNombre,
+        FkidPartidaConta = item.FkidPartidaConta,
+        PartidaClave = item.PartidaClave,
+        PartidaDescripcion = item.PartidaDescripcion,
+        PartidaClaveNombre = item.PartidaClaveNombre,
+        FkidAreaSis = item.FkidAreaSis,
+        AreaClave = item.AreaClave,
+        AreaNombre = item.AreaNombre,
+        FkidFuenteFinanciamientoPres = item.FkidFuenteFinanciamientoPres,
+        FuenteFinanciamientoClave = item.FuenteFinanciamientoClave,
+        FuenteFinanciamientoDescripcion = item.FuenteFinanciamientoDescripcion,
+        FuenteFinanciamientoClaveNombre = item.FuenteFinanciamientoClaveNombre,
+        FkidTipoGastoPres = item.FkidTipoGastoPres,
+        TipoGastoClave = item.TipoGastoClave,
+        TipoGastoDescripcion = item.TipoGastoDescripcion,
+        TipoGastoClaveNombre = item.TipoGastoClaveNombre,
+        FkidDigitoIdentificadorPres = item.FkidDigitoIdentificadorPres,
+        DigitoIdentificadorClave = item.DigitoIdentificadorClave,
+        DigitoIdentificadorDescripcion = item.DigitoIdentificadorDescripcion,
+        DigitoIdentificadorClaveNombre = item.DigitoIdentificadorClaveNombre,
+        FkidDestinoGastoPres = item.FkidDestinoGastoPres,
+        DestinoGastoClave = item.DestinoGastoClave,
+        DestinoGastoDescripcion = item.DestinoGastoDescripcion,
+        DestinoGastoClaveNombre = item.DestinoGastoClaveNombre,
+        FkidPyPres = item.FkidPyPres,
+        PyClave = item.PyClave,
+        PyDescripcion = item.PyDescripcion,
+        PyClaveNombre = item.PyClaveNombre,
+        Descripcion = item.Descripcion,
+        Fecha = item.Fecha,
+        Enero = item.Enero,
+        Febrero = item.Febrero,
+        Marzo = item.Marzo,
+        Abril = item.Abril,
+        Mayo = item.Mayo,
+        Junio = item.Junio,
+        Julio = item.Julio,
+        Agosto = item.Agosto,
+        Septiembre = item.Septiembre,
+        Octubre = item.Octubre,
+        Noviembre = item.Noviembre,
+        Diciembre = item.Diciembre,
+        Total = item.Total,
+        FechaAutorizacion = DateTime.Now
+    };
+
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static bool Contains(string? value, string filter) => Normalize(value).Contains(filter, StringComparison.Ordinal);
+    private static string Normalize(string? value) => (value ?? string.Empty).Trim().ToUpperInvariant();
+}

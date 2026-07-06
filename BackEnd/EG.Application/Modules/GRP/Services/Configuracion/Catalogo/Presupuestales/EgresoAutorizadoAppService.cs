@@ -8,6 +8,8 @@ using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 {
@@ -18,12 +20,14 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         private const string StoredProcedure = "PRES.SP_MantenimientoEgresoAutorizado";
         private readonly EGestionContext _context;
         private readonly IUserContextService _userContext;
+        private readonly ILogger<EgresoAutorizadoAppService> _logger;
 
         public EgresoAutorizadoAppService(
             GenericService<EgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse> service,
             GenericService<VwEgresoAutorizado, EgresoAutorizadoDto, EgresoAutorizadoResponse> serviceView,
             EGestionContext context,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            ILogger<EgresoAutorizadoAppService> logger)
             : base(
                 service,
                 serviceView,
@@ -37,6 +41,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             _context = context;
             _userContext = userContext;
+            _logger = logger;
         }
 
         public override Task<PagedResult<EgresoAutorizadoResponse>> CreateAsync(EgresoAutorizadoResponse response, int usuarioActual)
@@ -213,6 +218,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     };
                 }
 
+                await NotifyPresupuestoAutorizadoAsync(autorizadoId, pkidEgresoProyectado, usuarioActual);
+
                 return await GetByIdAsync(autorizadoId);
             }
             catch (Exception ex)
@@ -292,6 +299,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 _context.EgresoAutorizados.Add(autorizado);
                 await _context.SaveChangesAsync();
 
+                await NotifyPresupuestoAutorizadoAsync(
+                    autorizado.PkidEgresoAutorizado,
+                    autorizado.FkidEgresoProyectadoPres,
+                    usuarioActual);
+
                 return await GetByIdAsync(autorizado.PkidEgresoAutorizado);
             }
             catch (Exception ex)
@@ -355,6 +367,52 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             response.Noviembre = existing.Noviembre;
             response.Diciembre = existing.Diciembre;
             response.Total = existing.Total;
+        }
+
+        private async Task NotifyPresupuestoAutorizadoAsync(
+            int pkidEgresoAutorizado,
+            int? pkidEgresoProyectado,
+            int usuarioActual)
+        {
+            try
+            {
+                var idNotification = new SqlParameter("@IdNotificacion", SqlDbType.BigInt)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
+                var titulo = $"Presupuesto autorizado {pkidEgresoAutorizado}";
+                var mensaje = pkidEgresoProyectado.HasValue
+                    ? $"Se autorizo el anteproyecto {pkidEgresoProyectado.Value} como presupuesto autorizado."
+                    : "Se creo un presupuesto autorizado.";
+                var jsonData = pkidEgresoProyectado.HasValue
+                    ? $"{{\"id\":{pkidEgresoAutorizado},\"egresoProyectadoId\":{pkidEgresoProyectado.Value}}}"
+                    : $"{{\"id\":{pkidEgresoAutorizado}}}";
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC SIS.sp_NotificacionCrearPorPermiso @ClaveTipo, @Fk_IdUsuarioOrigen, @Modulo, @SubModulo, @Accion, @Evento, @Entidad, @Fk_IdEntidad, @Titulo, @Mensaje, @Url, @JsonData, @IdUser, @IdNotificacion OUTPUT",
+                    new SqlParameter("@ClaveTipo", "AUTORIZACION_REALIZADA"),
+                    new SqlParameter("@Fk_IdUsuarioOrigen", usuarioActual),
+                    new SqlParameter("@Modulo", "Egreso"),
+                    new SqlParameter("@SubModulo", "Presupuesto_Autorizado"),
+                    new SqlParameter("@Accion", "view"),
+                    new SqlParameter("@Evento", "Autorizado"),
+                    new SqlParameter("@Entidad", "EgresoAutorizado"),
+                    new SqlParameter("@Fk_IdEntidad", pkidEgresoAutorizado),
+                    new SqlParameter("@Titulo", titulo),
+                    new SqlParameter("@Mensaje", mensaje),
+                    new SqlParameter("@Url", "/Presupuesto/Egreso/Presupuesto_Autorizado"),
+                    new SqlParameter("@JsonData", jsonData),
+                    new SqlParameter("@IdUser", usuarioActual),
+                    idNotification);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "No se pudo crear la notificacion de presupuesto autorizado {PkidEgresoAutorizado}.",
+                    pkidEgresoAutorizado);
+            }
         }
 
         private static SqlParameter[] BuildParameters(int action, int? id, EgresoAutorizadoResponse? response, int? usuarioActual)
