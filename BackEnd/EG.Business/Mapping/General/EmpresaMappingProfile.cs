@@ -12,6 +12,14 @@ namespace EG.Business.Mapping.General
             config.NewConfig<Empresa, EmpresaDto>()
                 .TwoWays(); // Permite mapear ambos sentidos
 
+            config.NewConfig<Empresa, EmpresaResponse>()
+                .Map(dest => dest.EmpresaNombre, src => src.Nombre)
+                .Map(dest => dest.EmpresaActivo, src => src.Activo)
+                .Map(dest => dest.EmpresaFechaCreacion, src => src.FechaCreacion)
+                .Map(dest => dest.EmpresaUsuarioCreacion, src => src.UsuarioCreacion ?? 0)
+                .Map(dest => dest.EmpresaFechaModificacion, src => src.FechaModificacion)
+                .Map(dest => dest.EmpresaUsuarioModificacion, src => src.UsuarioModificacion)
+                .IgnoreNullValues(true);
             // View -> Response (para consultas)
             config.NewConfig<VwEstadoEmpresa, EmpresaResponse>()
                 .Map(dest => dest.EmpresaNombre, src => src.EmpresaNombre)

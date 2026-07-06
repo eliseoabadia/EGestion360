@@ -105,42 +105,4 @@
             StateHasChanged();
         }
     }
-
-    protected override async Task DeleteItem(int id)
-    {
-        if (!CanDelete)
-        {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
-            return;
-        }
-
-        var response = await Service.GetByIdAsync(id);
-        var departamentoNombre = response?.Data?.DepartamentoNombre ?? "el departamento";
-
-        var parameters = new DialogParameters
-        {
-            ["Id"] = id,
-            ["ItemName"] = departamentoNombre,
-            ["DeleteFunc"] = new Func<int, Task<bool>>(async (deleteId) =>
-            {
-                var deleteResponse = await Service.DeleteAsync(deleteId);
-                if (deleteResponse?.Success == true)
-                {
-                    Snackbar.Add(deleteResponse.Message ?? "Departamento eliminado correctamente", Severity.Success);
-                    await table.ReloadData();
-                    return true;
-                }
-                else
-                {
-                    Snackbar.Add(deleteResponse?.Message ?? "Error al eliminar", Severity.Error);
-                    return false;
-                }
-            })
-        };
-
-        var dialog = await DialogService.ShowAsync(DeleteDialogType, $"Eliminar {SubModuleName}", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        await dialog.Result;
-    }
 }

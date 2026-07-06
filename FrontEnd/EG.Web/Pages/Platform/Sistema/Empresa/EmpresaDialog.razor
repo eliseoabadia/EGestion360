@@ -59,7 +59,10 @@
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="empresa.RazonSocial"
                               Label="Razón Social"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La razon social es requerida"
+                              Validation="@(new Func<string?, IEnumerable<string>>(ValidarRazonSocial))" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="empresa.Giro"
@@ -398,6 +401,18 @@
             yield return "El formato del RFC no es válido";
     }
 
+    private IEnumerable<string> ValidarRazonSocial(string? razonSocial)
+    {
+        if (string.IsNullOrWhiteSpace(razonSocial))
+        {
+            yield return "La razon social es requerida";
+            yield break;
+        }
+
+        if (razonSocial.Trim().Length > 200)
+            yield return "La razon social no puede exceder 200 caracteres";
+    }
+
     private IEnumerable<string> ValidarNombreCorto(string? nombreCorto)
     {
         if (!string.IsNullOrWhiteSpace(nombreCorto) && nombreCorto.Trim().Length > 64)
@@ -429,6 +444,7 @@
 
         errors.AddRange(ValidarNombre(empresa.EmpresaNombre));
         errors.AddRange(ValidarRFC(empresa.Rfc));
+        errors.AddRange(ValidarRazonSocial(empresa.RazonSocial));
         errors.AddRange(ValidarNombreCorto(empresa.NombreCorto));
 
         if (!estadoSeleccionado.HasValue)

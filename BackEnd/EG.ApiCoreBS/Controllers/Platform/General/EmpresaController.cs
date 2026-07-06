@@ -80,33 +80,47 @@ namespace EG.ApiCoreBS.Controllers.General
         [HttpPost]
         public async Task<ActionResult<PagedResult<EmpresaResponse>>> Create([FromBody] EmpresaDto dto)
         {
-            var usuarioActual = _userContext.GetCurrentUserId();
-            var result = await _appService.CreateAsync(dto, usuarioActual);
-            return CreatedAtAction(nameof(GetById), new { id = result.PkidEmpresa }, new PagedResult<EmpresaResponse>
+            try
             {
-                Success = true,
-                Message = "Empresa creada correctamente",
-                Code = "SUCCESS",
-                Data = result,
-                Items = [result],
-                TotalCount = 1
-            });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.CreateAsync(dto, usuarioActual);
+                return CreatedAtAction(nameof(GetById), new { id = result.PkidEmpresa }, Success("Empresa creada correctamente", result));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(Failure(ex.Message, "INVALID_DATA"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(Failure(ex.Message, "BUSINESS_RULE"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, Failure($"Error al crear empresa: {ex.Message}", "ERROR"));
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<PagedResult<EmpresaResponse>>> Update(int id, [FromBody] EmpresaDto dto)
         {
-            var usuarioActual = _userContext.GetCurrentUserId();
-            var result = await _appService.UpdateAsync(id, dto, usuarioActual);
-            return Ok(new PagedResult<EmpresaResponse>
+            try
             {
-                Success = true,
-                Message = "Empresa actualizada correctamente",
-                Code = "SUCCESS",
-                Data = result,
-                Items = [result],
-                TotalCount = 1
-            });
+                var usuarioActual = _userContext.GetCurrentUserId();
+                var result = await _appService.UpdateAsync(id, dto, usuarioActual);
+                return Ok(Success("Empresa actualizada correctamente", result));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(Failure(ex.Message, "INVALID_DATA"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(Failure(ex.Message, "BUSINESS_RULE"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, Failure($"Error al actualizar empresa: {ex.Message}", "ERROR"));
+            }
         }
 
         [HttpDelete("{id}")]
@@ -126,13 +140,15 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new PagedResult<EmpresaResponse>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "BUSINESS_RULE",
-                    TotalCount = 0
-                });
+                return Conflict(Failure(ex.Message, "BUSINESS_RULE"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(Failure(ex.Message, "INVALID_DATA"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, Failure($"Error al eliminar empresa: {ex.Message}", "ERROR"));
             }
         }
 
@@ -149,6 +165,26 @@ namespace EG.ApiCoreBS.Controllers.General
             var result = await _appService.BuscarAsync(request);
             return Ok(result);
         }
+
+        private static PagedResult<EmpresaResponse> Success(string message, EmpresaResponse result) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Data = result,
+                Items = [result],
+                TotalCount = 1
+            };
+
+        private static PagedResult<EmpresaResponse> Failure(string message, string code) =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
 
         [HttpPost("{id:int}/logo")]
         [RequestSizeLimit(MaxLogoSizeBytes)]

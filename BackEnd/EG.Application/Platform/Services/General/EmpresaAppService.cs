@@ -34,6 +34,9 @@ namespace EG.Application.Services.General
 
         private void ConfigureService()
         {
+            _service.DisableEmpresaFilter();
+            _serviceView.DisableEmpresaFilter();
+
             // Includes para la entidad Empresa
             _service.AddInclude(e => e.EmpresaEstados);
             _service.AddInclude(e => e.Sucursals);
@@ -316,7 +319,7 @@ namespace EG.Application.Services.General
         {
             try
             {
-                _service.ClearConfiguration();
+                _serviceView.ClearConfiguration();
                 ConfigureService();
 
                 var pagedRequest = new PagedRequest
@@ -328,7 +331,7 @@ namespace EG.Application.Services.General
                     SortDirection = request.SortDirection
                 };
 
-                var result = await _service.GetAllPaginadoAsync(pagedRequest);
+                var result = await _serviceView.GetAllPaginadoAsync(pagedRequest);
                 return new PagedResult<EmpresaResponse>
                 {
                     Success = true,
@@ -357,16 +360,20 @@ namespace EG.Application.Services.General
                 if (id <= 0)
                     throw new ArgumentException("ID de empresa inválido", nameof(id));
 
-                var _empresa = await _service.GetByIdAsync(id, idPropertyName: "PkidEmpresa");
-                var empresa = _empresa.Adapt<EmpresaDto>();
+                var empresa = await _context.Empresas
+                    .FirstOrDefaultAsync(item => item.PkidEmpresa == id);
+
                 if (empresa == null)
                     throw new InvalidOperationException("Empresa no encontrada");
+
+                if (!empresa.Activo)
+                    throw new InvalidOperationException("La empresa ya se encuentra inactiva");
 
                 empresa.Activo = false;
                 empresa.FechaModificacion = DateTime.Now;
                 empresa.UsuarioModificacion = usuarioActual;
 
-                await _service.UpdateAsync(id, empresa);
+                await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
