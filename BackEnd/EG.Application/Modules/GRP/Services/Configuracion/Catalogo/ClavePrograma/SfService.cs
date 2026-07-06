@@ -13,16 +13,12 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
     {
         private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
         private readonly GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> _serviceView;
-        private readonly EGestionContext _context;
-
         public SfService(
             GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
-            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView,
-            EGestionContext context)
+            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView)
         {
             _service = service;
             _serviceView = serviceView;
-            _context = context;
             ConfigureService();
             ConfigureValidations();
         }
@@ -86,32 +82,7 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
                 throw new InvalidOperationException(blockReason);
             }
 
-            var affectedRows = await _context.Sfs
-                .Where(e => e.PkidSf == id && e.Activo)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(e => e.Activo, false)
-                    .SetProperty(e => e.FechaModificacion, DateTime.UtcNow));
-
-            if (affectedRows <= 0)
-            {
-                var exists = await _context.Sfs
-                    .AsNoTracking()
-                    .AnyAsync(e => e.PkidSf == id);
-
-                if (!exists)
-                {
-                    throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
-                }
-            }
-
-            var stillActive = await _context.Sfs
-                .AsNoTracking()
-                .AnyAsync(e => e.PkidSf == id && e.Activo);
-
-            if (stillActive)
-            {
-                throw new InvalidOperationException($"No fue posible eliminar la subfuncion con ID {id}; el registro sigue activo en la base de datos.");
-            }
+            await _service.DeleteAsync(id);
         }
 
         public async Task<string?> GetDeleteBlockReasonAsync(int id)

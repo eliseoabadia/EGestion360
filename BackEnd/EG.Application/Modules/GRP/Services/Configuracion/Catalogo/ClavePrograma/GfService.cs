@@ -101,8 +101,10 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
             // Validar todas las reglas de negocio
             if (!await _service.CanAddAsync(dto))
             {
+                throw new InvalidOperationException("Ya existe un grupo funcional activo con esa clave o descripcion.");
             }
-                await _service.AddAsync(dto);
+
+            await _service.AddAsync(dto);
 
             // Obtener usuario creado
             var _result = await _service.GetByIdAsync(dto.PkidGf, idPropertyName: "PkidGf");
@@ -115,10 +117,11 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
             dto.UsuarioModificacion = usuarioModificacion;
             dto.FechaModificacion = DateTime.Now;
 
-            // Validar todas las reglas de negocio
-            //if (!await _service.CanUpdateAsync(dto))
-            //{
-            //}
+            if (!await _service.CanUpdateAsync(id, dto))
+            {
+                throw new InvalidOperationException("Ya existe otro grupo funcional activo con esa clave o descripcion.");
+            }
+
             await _service.UpdateAsync(id, dto);
 
 

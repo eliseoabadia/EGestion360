@@ -12,34 +12,23 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
     public class RamoAppServices : IRamoAppServices
     {
         private readonly GenericService<Ramo, RamoDto, RamoResponse> _service;
-        private readonly EGestionContext _context;
 
-        public RamoAppServices(
-            GenericService<Ramo, RamoDto, RamoResponse> service,
-            EGestionContext context)
+        public RamoAppServices(GenericService<Ramo, RamoDto, RamoResponse> service)
         {
             _service = service;
-            _context = context;
             ConfigureValidations();
         }
 
         private void ConfigureValidations()
         {
-            _service.AddValidationRule("UniqueRamo", async (dto) =>
-            {
-                var itemDto = dto as RamoDto;
-                if (itemDto == null) return true;
-                return !await _service.GetQueryWithIncludes()
-                    .AnyAsync(r => r.Clave == itemDto.Clave && r.Activo);
-            });
+            _service.AddValidationRule("UniqueRamo", async dto =>
+                !await _service.GetQueryWithIncludes()
+                    .AnyAsync(r => r.Clave == dto.Clave && r.Activo));
 
             _service.AddValidationRuleWithId("UniqueRamoUpdate", async (dto, id) =>
-            {
-                var itemDto = dto as RamoDto;
-                if (itemDto == null || !id.HasValue) return true;
-                return !await _service.GetQueryWithIncludes()
-                    .AnyAsync(r => r.Clave == itemDto.Clave && r.PkidRamo != id.Value && r.Activo);
-            });
+                !id.HasValue ||
+                !await _service.GetQueryWithIncludes()
+                    .AnyAsync(r => r.Clave == dto.Clave && r.PkidRamo != id.Value && r.Activo));
         }
 
         public async Task<IEnumerable<RamoResponse>> GetAllAsync()
@@ -52,7 +41,9 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             return await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
         }
 
-        public async Task<PagedResult<RamoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<RamoResponse, bool>? predicate = null)
+        public async Task<PagedResult<RamoResponse>> GetAllPaginadoAsync(
+            PagedRequest pageRequest,
+            Func<RamoResponse, bool>? predicate = null)
         {
             try
             {
@@ -60,13 +51,15 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 var items = result.Items.AsEnumerable();
 
                 if (predicate != null)
+                {
                     items = items.Where(predicate);
+                }
 
                 return new PagedResult<RamoResponse>
                 {
-                    Success = true,
-                    Message = "Ramos obtenidos correctamente",
-                    Code = "SUCCESS",
+                    Success = result.Success,
+                    Message = result.Success ? "Ramos obtenidos correctamente" : result.Message,
+                    Code = result.Success ? "SUCCESS" : result.Code,
                     Items = items.ToList(),
                     TotalCount = result.TotalCount
                 };
@@ -86,8 +79,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public async Task<RamoResponse> CreateAsync(RamoResponse response, int usuarioCreacion)
         {
-            if (response == null)
-                throw new ArgumentNullException(nameof(response), "Los datos del Ramo son requeridos");
+            ArgumentNullException.ThrowIfNull(response);
 
             var dto = response.Adapt<RamoDto>();
             dto.Activo = true;
@@ -97,7 +89,9 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             dto.UsuarioModificacion = null;
 
             if (!await _service.CanAddAsync(dto))
+            {
                 throw new InvalidOperationException("Ya existe un Ramo activo con esa clave");
+            }
 
             await _service.AddAsync(dto);
             return await _service.GetByIdAsync(dto.PkidRamo, idPropertyName: "PkidRamo");
@@ -105,11 +99,12 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public async Task<RamoResponse> UpdateAsync(int id, RamoResponse response, int usuarioModificacion)
         {
-            if (response == null)
-                throw new ArgumentNullException(nameof(response), "Los datos del Ramo son requeridos");
+            ArgumentNullException.ThrowIfNull(response);
 
             if (id <= 0)
-                throw new ArgumentException("ID de Ramo inválido", nameof(id));
+            {
+                throw new ArgumentException("ID de Ramo invalido", nameof(id));
+            }
 
             var dto = response.Adapt<RamoDto>();
             dto.PkidRamo = id;
@@ -117,7 +112,9 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             dto.UsuarioModificacion = usuarioModificacion;
 
             if (!await _service.CanUpdateAsync(id, dto))
+            {
                 throw new InvalidOperationException("Ya existe otro Ramo activo con esa clave");
+            }
 
             await _service.UpdateAsync(id, dto);
             return await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
@@ -126,17 +123,17 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         public async Task<bool> DeleteAsync(int id, int usuarioActual)
         {
             if (id <= 0)
-                throw new ArgumentException("ID de Ramo inválido", nameof(id));
+            {
+                throw new ArgumentException("ID de Ramo invalido", nameof(id));
+            }
 
-            var entity = await _context.Ramos.FirstOrDefaultAsync(r => r.PkidRamo == id && r.Activo);
+            var entity = await _service.GetByIdAsync(id, idPropertyName: "PkidRamo");
             if (entity == null)
+            {
                 return false;
+            }
 
-            entity.Activo = false;
-            entity.FechaModificacion = DateTime.Now;
-            entity.UsuarioModificacion = usuarioActual;
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
             return true;
         }
 

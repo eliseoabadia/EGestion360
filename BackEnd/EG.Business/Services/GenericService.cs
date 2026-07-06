@@ -405,8 +405,10 @@ namespace EG.Business.Services
 
         public virtual async Task AddAsync(TDto dto)
         {
+            ApplyCreationAuditIfPresent(dto);
             ApplyCurrentEmpresaIfPresent(dto);
             var entity = dto.Adapt<TEntity>();
+            ApplyCreationAuditIfPresent(entity);
             ApplyCurrentEmpresaIfPresent(entity);
             await _repository.AddAsync(entity);
 
@@ -434,6 +436,7 @@ namespace EG.Business.Services
 
             ApplyCurrentEmpresaIfPresent(dto);
             EntityUpdateMapper.Apply(dto, existing);
+            ApplyModificationAuditIfPresent(existing);
             ApplyCurrentEmpresaIfPresent(existing);
             await _repository.UpdateAsync(existing);
         }
@@ -447,6 +450,62 @@ namespace EG.Business.Services
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
             await _repository.SoftDeleteAsync(id);
+        }
+
+        private void ApplyCreationAuditIfPresent(object target)
+        {
+            SetPropertyIfPresent(target, "Activo", true, onlyWhenDefault: true);
+            SetPropertyIfPresent(target, "UsuarioCreacion", _userContext?.TryGetCurrentUserId(), onlyWhenDefault: true);
+            SetPropertyIfPresent(target, "FechaCreacion", DateTime.Now, onlyWhenDefault: true);
+        }
+
+        private void ApplyModificationAuditIfPresent(object target)
+        {
+            SetPropertyIfPresent(target, "UsuarioModificacion", _userContext?.TryGetCurrentUserId(), onlyWhenDefault: false);
+            SetPropertyIfPresent(target, "FechaModificacion", DateTime.Now, onlyWhenDefault: false);
+        }
+
+        private static void SetPropertyIfPresent(object target, string propertyName, object? value, bool onlyWhenDefault)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            var property = target.GetType().GetProperty(
+                propertyName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (property == null || !property.CanWrite)
+            {
+                return;
+            }
+
+            if (onlyWhenDefault && !IsDefaultValue(property.GetValue(target), property.PropertyType))
+            {
+                return;
+            }
+
+            var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+            var convertedValue = targetType.IsInstanceOfType(value)
+                ? value
+                : Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+            property.SetValue(target, convertedValue);
+        }
+
+        private static bool IsDefaultValue(object? value, Type propertyType)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            if (targetType == typeof(string))
+            {
+                return string.IsNullOrWhiteSpace(value as string);
+            }
+
+            return value.Equals(Activator.CreateInstance(targetType));
         }
 
         public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest _params)
