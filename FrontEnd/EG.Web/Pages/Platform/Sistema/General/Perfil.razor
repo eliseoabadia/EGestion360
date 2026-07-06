@@ -1,7 +1,9 @@
 @page "/configuracion/sistema/general"
 @page "/perfil"
 @using EG.Web.Auth
+@using EG.Web.Contracts.Platform.FirmaDocumental
 @using EG.Web.Helpers
+@using EG.Web.Models.Platform.FirmaDocumental
 @using EG.Domain.DTOs.Responses.General
 @using EG.Dommain.DTOs.Responses
 @using EG.Web.Services
@@ -12,12 +14,13 @@
 @inject NavigationManager NavigationManager
 @inject IGenericCrudService<UsuarioResponse> usuarioService
 @inject ProfileService profileService
+@inject IFirmaDocumentalService FirmaDocumentalService
 @inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<MudContainer Class="profile-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100vh;">
+<MudContainer Class="profile-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100%;">
     @if (!_isInitialized)
     {
         <!-- Loading inicial -->
@@ -161,6 +164,77 @@
                                Disabled="@loading"
                                FullWidth="true">
                         Actualizar contrasena
+                    </MudButton>
+                </section>
+
+                <section class="profile-certificate">
+                    <div class="profile-section-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">Certificado PFX</MudText>
+                    </div>
+
+                    @if (_firmaCertificates.Any())
+                    {
+                        <div class="profile-certificate-current">
+                            <div>
+                                <MudText Typo="Typo.body2" Class="profile-certificate-name">@CurrentCertificateLabel</MudText>
+                                <MudText Typo="Typo.caption" Class="profile-muted">
+                                    @CurrentCertificateDetail
+                                </MudText>
+                            </div>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@(CurrentCertificate?.Vencido == true ? Color.Error : Color.Success)">
+                                @(CurrentCertificate?.Vencido == true ? "Vencido" : "Vigente")
+                            </MudChip>
+                        </div>
+                    }
+                    else if (_firmaCertificatesLoading)
+                    {
+                        <div class="profile-certificate-loading">
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <MudText Typo="Typo.caption" Class="profile-muted">Consultando certificados...</MudText>
+                        </div>
+                    }
+
+                    <MudTextField Label="Alias"
+                                  @bind-Value="_pfxAlias"
+                                  Margin="Margin.Dense"
+                                  Placeholder="e.firma principal"
+                                  Disabled="@(loading || _pfxUploading)" />
+
+                    <MudTextField Label="Contrasena del PFX"
+                                  @bind-Value="_pfxPassword"
+                                  InputType="InputType.Password"
+                                  Margin="Margin.Dense"
+                                  Disabled="@(loading || _pfxUploading)" />
+
+                    <InputFile id="@_pfxInputId"
+                               OnChange="SelectPfxCertificate"
+                               accept=".pfx,.p12"
+                               class="profile-pfx-input" />
+                    <label for="@_pfxInputId" class="profile-pfx-dropzone">
+                        <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+                        <span>@PfxSelectedFileLabel</span>
+                        <small>PFX/P12 max. 5 MB</small>
+                    </label>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.EnhancedEncryption"
+                               OnClick="UploadPfxCertificateAsync"
+                               Disabled="@(!CanUploadPfx)"
+                               FullWidth="true">
+                        @if (_pfxUploading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span>Guardar PFX</span>
+                        }
                     </MudButton>
                 </section>
             </aside>
@@ -315,7 +389,14 @@
     private string currentPassword = string.Empty;
     private string newPassword = string.Empty;
     private string confirmPassword = string.Empty;
+    private readonly string _pfxInputId = $"perfil-pfx-{Guid.NewGuid():N}";
+    private List<FirmaCertificadoUsuarioResponse> _firmaCertificates = new();
+    private IBrowserFile? _selectedPfxFile;
+    private string _pfxAlias = string.Empty;
+    private string _pfxPassword = string.Empty;
     private bool showPassword = false;
+    private bool _pfxUploading = false;
+    private bool _firmaCertificatesLoading = false;
     private bool _isInitialized = false;
     private bool _isClientSide = false;
     private int _userId;
@@ -337,6 +418,25 @@
     private const int EmpresaPageSize = 25;
     private InputType PasswordInputType => showPassword ? InputType.Text : InputType.Password;
     private string PasswordAdornmentIcon => showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility;
+    private bool CanUploadPfx => !loading
+        && !_pfxUploading
+        && _selectedPfxFile != null
+        && !string.IsNullOrWhiteSpace(_pfxPassword);
+    private string PfxSelectedFileLabel => _selectedPfxFile == null
+        ? "Seleccionar PFX del usuario"
+        : _selectedPfxFile.Name;
+    private FirmaCertificadoUsuarioResponse? CurrentCertificate => _firmaCertificates
+        .OrderBy(x => x.Vencido)
+        .ThenByDescending(x => x.FechaRegistro)
+        .FirstOrDefault();
+    private string CurrentCertificateLabel => CurrentCertificate == null
+        ? "Sin certificado"
+        : string.IsNullOrWhiteSpace(CurrentCertificate.Alias)
+            ? "Certificado registrado"
+            : CurrentCertificate.Alias;
+    private string CurrentCertificateDetail => CurrentCertificate == null
+        ? "No hay certificado PFX registrado."
+        : $"{TextOrDash(CurrentCertificate.RFC)} - vence {CurrentCertificate.VigenteHasta:dd/MM/yyyy}";
     private bool IsSelfProfileRoute => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/').Equals("perfil", StringComparison.OrdinalIgnoreCase);
     private bool ProfileFieldsDisabled => loading || IsSelfProfileRoute;
     private string ProfileTitle => IsSelfProfileRoute ? "Perfil" : "Mi perfil";
@@ -452,6 +552,7 @@
 
                 await LoadUserProfileData();
                 await LoadEmpresas();
+                await LoadFirmaCertificatesAsync();
             }
             catch (Exception ex)
             {
@@ -636,6 +737,81 @@
     {
         showPassword = !showPassword;
     }
+
+    private async Task LoadFirmaCertificatesAsync()
+    {
+        _firmaCertificatesLoading = true;
+        try
+        {
+            var empresaId = userProfile.PkidEmpresa > 0 ? userProfile.PkidEmpresa : (int?)null;
+            var response = await FirmaDocumentalService.GetCertificatesAsync(empresaId);
+            _firmaCertificates = response?.Items?.ToList() ?? new List<FirmaCertificadoUsuarioResponse>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No se pudieron consultar certificados PFX: {ex.Message}", Severity.Warning);
+            _firmaCertificates = new List<FirmaCertificadoUsuarioResponse>();
+        }
+        finally
+        {
+            _firmaCertificatesLoading = false;
+        }
+    }
+
+    private void SelectPfxCertificate(InputFileChangeEventArgs args)
+    {
+        _selectedPfxFile = args.File;
+        if (string.IsNullOrWhiteSpace(_pfxAlias) && _selectedPfxFile != null)
+        {
+            _pfxAlias = Path.GetFileNameWithoutExtension(_selectedPfxFile.Name);
+        }
+    }
+
+    private async Task UploadPfxCertificateAsync()
+    {
+        if (_selectedPfxFile == null)
+        {
+            Snackbar.Add("Selecciona un archivo PFX o P12.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_pfxPassword))
+        {
+            Snackbar.Add("Captura la contrasena del PFX.", Severity.Warning);
+            return;
+        }
+
+        _pfxUploading = true;
+        StateHasChanged();
+
+        try
+        {
+            var empresaId = userProfile.PkidEmpresa > 0 ? userProfile.PkidEmpresa : (int?)null;
+            var response = await FirmaDocumentalService.UploadCertificateAsync(_pfxAlias, _pfxPassword, empresaId, _selectedPfxFile);
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Certificado PFX guardado en boveda.", Severity.Success);
+                _pfxPassword = string.Empty;
+                _selectedPfxFile = null;
+                await LoadFirmaCertificatesAsync();
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No se pudo guardar el PFX.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al subir certificado PFX: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _pfxUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string TextOrDash(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private async Task CambiarPasswordAsync()
     {
