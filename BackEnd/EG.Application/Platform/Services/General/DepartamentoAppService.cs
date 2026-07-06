@@ -122,7 +122,7 @@ namespace EG.Application.Services.General
             if (response == null || string.IsNullOrWhiteSpace(response.DepartamentoNombre))
                 throw new ArgumentException("Nombre de departamento es requerido");
 
-            var nombre = response.DepartamentoNombre.Trim();
+            var nombre = Trim(response.DepartamentoNombre, 128);
             if (response.PkidEmpresa <= 0)
                 throw new ArgumentException("Empresa es requerida");
 
@@ -145,8 +145,8 @@ namespace EG.Application.Services.General
             {
                 FkidEmpresaSis = response.PkidEmpresa,
                 Nombre = nombre,
-                Descripcion = response.Descripcion?.Trim(),
-                NivelJerarquico = response.NivelJerarquico,
+                Descripcion = TrimOrNull(response.Descripcion, 255),
+                NivelJerarquico = NormalizeNivel(response.NivelJerarquico),
                 Activo = true,
                 FechaCreacion = DateTime.Now,
                 UsuarioCreacion = usuarioActual
@@ -178,7 +178,7 @@ namespace EG.Application.Services.General
             if (!empresaActiva)
                 throw new KeyNotFoundException("Empresa no encontrada o inactiva");
 
-            var nombre = response.DepartamentoNombre.Trim();
+            var nombre = Trim(response.DepartamentoNombre, 128);
             var duplicate = await _context.Departamentos
                 .AsNoTracking()
                 .AnyAsync(x =>
@@ -191,9 +191,9 @@ namespace EG.Application.Services.General
 
             entity.FkidEmpresaSis = response.PkidEmpresa;
             entity.Nombre = nombre;
-            entity.Descripcion = response.Descripcion?.Trim();
-            entity.NivelJerarquico = response.NivelJerarquico;
-            entity.Activo = response.DepartamentoActivo;
+            entity.Descripcion = TrimOrNull(response.Descripcion, 255);
+            entity.NivelJerarquico = NormalizeNivel(response.NivelJerarquico);
+            entity.Activo = true;
             entity.FechaModificacion = DateTime.Now;
             entity.UsuarioModificacion = usuarioActual;
 
@@ -271,6 +271,29 @@ namespace EG.Application.Services.General
 
             if (stillActive)
                 throw new InvalidOperationException($"No fue posible dar de baja el departamento \"{departamento.Nombre}\"; el registro sigue activo en la base de datos");
+        }
+
+        private static int NormalizeNivel(int? nivel)
+        {
+            if (!nivel.HasValue || nivel.Value <= 0)
+                return 1;
+
+            return nivel.Value > 99 ? 99 : nivel.Value;
+        }
+
+        private static string Trim(string value, int maxLength)
+        {
+            var trimmed = (value ?? string.Empty).Trim();
+            return trimmed.Length <= maxLength ? trimmed : trimmed.Substring(0, maxLength);
+        }
+
+        private static string? TrimOrNull(string? value, int maxLength)
+        {
+            var trimmed = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(trimmed))
+                return null;
+
+            return trimmed.Length <= maxLength ? trimmed : trimmed.Substring(0, maxLength);
         }
     }
 }

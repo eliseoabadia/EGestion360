@@ -39,7 +39,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            dto.Adapt(entity);
+            EG.Business.Services.EntityUpdateMapper.Apply(dto, entity);
             entity.FechaModificacion = DateTime.UtcNow;
             entity.UsuarioModificacion = usuarioId;
             await _repository.UpdateAsync(entity);
@@ -55,7 +55,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 
         public async Task<PagedResult<TipoDoctoClcResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var query = _repository.QueryWithIncludes(x => true);
+            var query = _repository.QueryWithIncludes(x => x.Activo);
 
             if (!string.IsNullOrWhiteSpace(request.Filtro))
             {

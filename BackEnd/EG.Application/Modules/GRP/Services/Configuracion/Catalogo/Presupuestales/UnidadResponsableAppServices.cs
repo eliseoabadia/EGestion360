@@ -140,7 +140,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             if (duplicate.Any())
                 throw new InvalidOperationException("Ya existe otra Unidad Responsable activa con esa clave");
 
-            dto.Adapt(entity);
+            EG.Business.Services.EntityUpdateMapper.Apply(dto, entity);
             entity.FechaModificacion = dto.FechaModificacion;
             entity.UsuarioModificacion = dto.UsuarioModificacion;
             await _repository.UpdateAsync(entity);

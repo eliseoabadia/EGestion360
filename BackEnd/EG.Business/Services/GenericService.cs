@@ -433,7 +433,7 @@ namespace EG.Business.Services
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
 
             ApplyCurrentEmpresaIfPresent(dto);
-            dto.Adapt(existing);
+            EntityUpdateMapper.Apply(dto, existing);
             ApplyCurrentEmpresaIfPresent(existing);
             await _repository.UpdateAsync(existing);
         }

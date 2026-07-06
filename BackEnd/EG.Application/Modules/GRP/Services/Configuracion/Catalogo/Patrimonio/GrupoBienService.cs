@@ -145,7 +145,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     };
                 }
 
-                dto.Adapt(entity);
+                EG.Business.Services.EntityUpdateMapper.Apply(dto, entity);
                 entity.FechaModificacion = dto.FechaModificacion;
                 entity.UsuarioModificacion = dto.UsuarioModificacion;
                 await _repository.UpdateAsync(entity);

@@ -96,7 +96,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             if (duplicate.Any())
                 throw new InvalidOperationException("Ya existe otro concepto con esa descripción");
 
-            dto.Adapt(entity);
+            EG.Business.Services.EntityUpdateMapper.Apply(dto, entity);
             entity.FechaModificacion = dto.FechaModificacion;
             entity.UsuarioModificacion = dto.UsuarioModificacion;
             await _repository.UpdateAsync(entity);

@@ -79,6 +79,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await SucursalStateService.InitializeAsync();
         await CargarEmpresas();
 
         if (Id.HasValue)
@@ -122,6 +123,8 @@
             if (response?.Success == true && response.Data != null)
             {
                 departamento = response.Data;
+                departamento.DepartamentoActivo = true;
+                departamento.NivelJerarquico ??= 1;
             }
             else
             {
@@ -163,6 +166,11 @@
         {
             Snackbar.Add("Debe seleccionar la empresa del departamento.", Severity.Warning);
             return;
+        }
+
+        if (!departamento.NivelJerarquico.HasValue || departamento.NivelJerarquico <= 0)
+        {
+            departamento.NivelJerarquico = 1;
         }
 
         try

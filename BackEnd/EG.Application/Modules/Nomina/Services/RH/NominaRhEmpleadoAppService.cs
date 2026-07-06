@@ -221,6 +221,10 @@ namespace EG.Application.Services.Nomina
                 }
 
                 var item = MapEmpleado(reader);
+                await reader.DisposeAsync();
+
+                await EnsureSystemUserForPersonaAsync(item, usuarioActual);
+
                 return Success(
                     id.HasValue ? "Empleado actualizado correctamente" : "Empleado creado correctamente",
                     [item],
@@ -259,6 +263,111 @@ namespace EG.Application.Services.Nomina
             };
             return parameter;
         }
+
+        private async Task EnsureSystemUserForPersonaAsync(NominaRhEmpleadoResponse item, int usuarioActual)
+        {
+            if (item.Id <= 0)
+            {
+                return;
+            }
+
+            var technicalAspNetUserId = BuildTechnicalAspNetUserId(item.Id);
+            var existing = await _context.Usuarios
+                .FirstOrDefaultAsync(usuario =>
+                    usuario.FkidPersonaNom == item.Id ||
+                    usuario.AspNetUserId == technicalAspNetUserId);
+
+            var now = DateTime.Now;
+            var payrollId = await ResolveUniquePayrollIdAsync(item.Empleado, item.Id, existing?.PkIdUsuario);
+
+            if (existing is null)
+            {
+                _context.Usuarios.Add(new Usuario
+                {
+                    FkidEmpresaSis = item.EmpresaId,
+                    FkidPersonaNom = item.Id,
+                    AspNetUserId = technicalAspNetUserId,
+                    PayrollId = payrollId,
+                    EsAdministrador = false,
+                    Activo = true,
+                    FechaCreacion = now,
+                    UsuarioCreacion = usuarioActual
+                });
+            }
+            else
+            {
+                existing.FkidPersonaNom ??= item.Id;
+
+                if (item.EmpresaId.HasValue)
+                {
+                    existing.FkidEmpresaSis = item.EmpresaId;
+                }
+
+                if (string.IsNullOrWhiteSpace(existing.AspNetUserId))
+                {
+                    existing.AspNetUserId = technicalAspNetUserId;
+                }
+
+                existing.PayrollId = payrollId;
+                existing.Activo = true;
+                existing.FechaModificacion = now;
+                existing.UsuarioModificacion = usuarioActual;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<string> ResolveUniquePayrollIdAsync(string? empleado, int personaId, int? currentUsuarioId)
+        {
+            var basePayrollId = NormalizePayrollId(empleado, personaId);
+            var candidate = basePayrollId;
+
+            if (!await PayrollExistsAsync(candidate, currentUsuarioId))
+            {
+                return candidate;
+            }
+
+            for (var attempt = 0; attempt < 100; attempt++)
+            {
+                var suffix = attempt == 0 ? $"-{personaId}" : $"-{personaId}-{attempt}";
+                candidate = WithSuffix(basePayrollId, suffix, 20);
+
+                if (!await PayrollExistsAsync(candidate, currentUsuarioId))
+                {
+                    return candidate;
+                }
+            }
+
+            return WithSuffix("NOM", $"-{personaId}-{Guid.NewGuid():N}", 20);
+        }
+
+        private Task<bool> PayrollExistsAsync(string payrollId, int? currentUsuarioId)
+            => _context.Usuarios.AnyAsync(usuario =>
+                usuario.PayrollId == payrollId &&
+                (!currentUsuarioId.HasValue || usuario.PkIdUsuario != currentUsuarioId.Value));
+
+        private static string NormalizePayrollId(string? empleado, int personaId)
+        {
+            var value = string.IsNullOrWhiteSpace(empleado)
+                ? $"NOM-{personaId}"
+                : empleado.Trim();
+
+            return value.Length <= 20 ? value : value[..20];
+        }
+
+        private static string WithSuffix(string value, string suffix, int maxLength)
+        {
+            if (suffix.Length >= maxLength)
+            {
+                return suffix[^maxLength..];
+            }
+
+            var prefixLength = maxLength - suffix.Length;
+            var prefix = value.Length <= prefixLength ? value : value[..prefixLength];
+            return $"{prefix}{suffix}";
+        }
+
+        private static string BuildTechnicalAspNetUserId(int personaId) => $"NOM-PERSONA-{personaId}";
 
         internal static int? ReadIntFilter(PagedRequest request, string key)
         {

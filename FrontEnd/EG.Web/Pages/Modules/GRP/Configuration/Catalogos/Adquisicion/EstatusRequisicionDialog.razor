@@ -6,12 +6,12 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EstatusRequisicionResponse"
-                 Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Small"
-                 ActionText="@actionText"
-                 ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
-                 OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Small"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EstatusRequisicionResponse"
                     @ref="form"
@@ -21,29 +21,42 @@
         <MudGrid GutterSize="2">
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripción"
+                              Label="Descripcion"
                               Variant="Variant.Outlined"
                               Required="true"
-                              RequiredError="La descripción es requerida" />
+                              RequiredError="La descripcion es requerida"
+                              MaxLength="50" />
             </MudItem>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Color"
                               Label="Color"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              InputType="InputType.Color"
+                              Required="true"
+                              RequiredError="El color es requerido"
+                              Validation="@(new Func<string, IEnumerable<string>>(ValidarColor))" />
             </MudItem>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="6" Class="d-flex align-center">
+                <MudChip T="string"
+                         Size="Size.Small"
+                         Style="@($"background-color: {PreviewColor}; color: white; min-width: 92px; justify-content: center;")">
+                    @PreviewColor
+                </MudChip>
+            </MudItem>
+            <MudItem xs="12" sm="6">
                 <MudNumericField @bind-Value="item.Orden"
                                  Label="Orden"
                                  Variant="Variant.Outlined"
-                                 Required="true" />
+                                 Required="true"
+                                 Min="0"
+                                 Max="999" />
             </MudItem>
-            <MudItem xs="12">
+            <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Icono"
                               Label="Icono"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
             </MudItem>
-
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -54,11 +67,12 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private BaseEntityForm<EstatusRequisicionResponse> form = null!;
-    private EstatusRequisicionResponse item = new() { Activo = true, Orden = 0 };
+    private EstatusRequisicionResponse item = new() { Activo = true, Color = "#1A73E8", Orden = 0 };
 
-    private string dialogTitle => Id.HasValue ? "Editar Estatus de Requisición" : "Nuevo Estatus de Requisición";
+    private string dialogTitle => Id.HasValue ? "Editar Estatus de Requisicion" : "Nuevo Estatus de Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string PreviewColor => IsValidColor(item.Color) ? NormalizeColor(item.Color) : "#1A73E8";
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,10 +86,16 @@
     {
         try
         {
-            var response = await Service.GetByIdAsync(Id.Value);
+            var response = await Service.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
+                item.Activo = true;
+                item.Color = NormalizeColor(item.Color);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible cargar el estatus.", Severity.Warning);
             }
         }
         catch (Exception ex)
@@ -84,30 +104,39 @@
         }
     }
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos obligatorios del estatus.", Severity.Warning);
+            return;
+        }
+
+        item.Descripcion = Trim(item.Descripcion);
+        item.Icono = Trim(item.Icono);
+        item.Color = NormalizeColor(item.Color);
+        item.Activo = true;
+
         try
         {
-            bool success;
+            ApiResponse<EstatusRequisicionResponse>? response;
             if (Id.HasValue)
             {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
+                response = await Service.UpdateAsync(item, Id.Value);
             }
             else
             {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
+                response = await Service.CreateAsync(item);
             }
 
-            if (success)
+            if (response?.Success == true)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Estatus de Requisición actualizado correctamente" : "Estatus de Requisición creado correctamente", Severity.Success);
+                Snackbar.Add(response.Message ?? (Id.HasValue ? "Estatus actualizado correctamente" : "Estatus creado correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+                Snackbar.Add(response?.Message ?? "No fue posible guardar el estatus.", Severity.Error);
             }
         }
         catch (Exception ex)
@@ -115,4 +144,41 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+
+    private IEnumerable<string> ValidarColor(string color)
+    {
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            yield return "El color es requerido";
+            yield break;
+        }
+
+        if (!IsValidColor(color))
+            yield return "Usa formato #RRGGBB";
+    }
+
+    private static string NormalizeColor(string? value)
+    {
+        var color = Trim(value);
+        if (string.IsNullOrWhiteSpace(color))
+            return "#1A73E8";
+
+        if (!color.StartsWith("#"))
+            color = "#" + color;
+
+        return color.ToUpperInvariant();
+    }
+
+    private static bool IsValidColor(string? value)
+    {
+        var color = NormalizeColor(value);
+        return color.Length == 7 && color.Skip(1).All(IsHex);
+    }
+
+    private static bool IsHex(char value)
+        => (value >= '0' && value <= '9') ||
+           (value >= 'A' && value <= 'F') ||
+           (value >= 'a' && value <= 'f');
+
+    private static string Trim(string? value) => (value ?? string.Empty).Trim();
 }

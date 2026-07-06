@@ -1,5 +1,6 @@
 ﻿using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -53,10 +54,7 @@ namespace EG.Infrastructure
 
             prop.SetValue(entity, false);
             var entry = _context.Entry(entity);
-            MarkOnlyActivePropertyModified(entry);
-            await SaveChangesOrThrowAsync(
-                $"No fue posible dar de baja {typeof(T).Name} con ID {id} porque la base de datos no confirmo el cambio.");
-            await EnsureEntityIsInactiveAsync(id, activePropertyName ?? "Activo");
+            await PersistSoftDeleteAsync(entry, id, activePropertyName ?? "Activo");
         }
 
         public async Task<bool> HasActiveChildrenAsync<TChild>(string childForeignKeyProperty, int parentId, string? childActiveProperty = "Activo") where TChild : class
@@ -124,13 +122,12 @@ namespace EG.Infrastructure
                 entry.State = EntityState.Modified;
             }
 
+            MarkPrimaryKeyPropertiesUnmodified(entry);
+
             if (TryGetInactiveEntityId(entity, out var id))
             {
                 await EnsureNoActiveDependentsAsync(id);
-                MarkOnlyActivePropertyModified(entry);
-                await SaveChangesOrThrowAsync(
-                    $"No fue posible dar de baja {typeof(T).Name} con ID {id} porque la base de datos no confirmo el cambio.");
-                await EnsureEntityIsInactiveAsync(id, "Activo");
+                await PersistSoftDeleteAsync(entry, id, "Activo");
                 return;
             }
 
@@ -207,39 +204,81 @@ namespace EG.Infrastructure
             return value is bool active && !active;
         }
 
-        private static void MarkOnlyActivePropertyModified(EntityEntry entry)
+        private static void MarkOnlySoftDeletePropertiesModified(EntityEntry entry, string activePropertyName)
         {
             foreach (var property in entry.Properties)
             {
                 property.IsModified = false;
             }
 
-            var activeProperty = entry.Properties.FirstOrDefault(property =>
-                string.Equals(property.Metadata.Name, "Activo", StringComparison.OrdinalIgnoreCase));
+            var softDeleteProperties = entry.Properties.Where(property =>
+                string.Equals(property.Metadata.Name, activePropertyName, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(property.Metadata.Name, "FechaModificacion", StringComparison.OrdinalIgnoreCase));
 
-            if (activeProperty != null)
+            foreach (var property in softDeleteProperties)
             {
-                activeProperty.IsModified = true;
+                if (string.Equals(property.Metadata.Name, "FechaModificacion", StringComparison.OrdinalIgnoreCase) &&
+                    IsDateTimeProperty(property.Metadata.ClrType))
+                {
+                    property.CurrentValue = DateTime.Now;
+                }
+
+                property.IsModified = true;
             }
         }
 
-        private async Task SaveChangesOrThrowAsync(string message)
+        private static void MarkPrimaryKeyPropertiesUnmodified(EntityEntry entry)
         {
-            var affectedRows = await _context.SaveChangesAsync();
-            if (affectedRows <= 0)
+            var primaryKey = entry.Metadata.FindPrimaryKey();
+            if (primaryKey == null)
             {
-                throw new InvalidOperationException(message);
+                return;
             }
+
+            foreach (var property in primaryKey.Properties)
+            {
+                entry.Property(property.Name).IsModified = false;
+            }
+        }
+
+        private async Task PersistSoftDeleteAsync(EntityEntry entry, int id, string activePropertyName)
+        {
+            MarkOnlySoftDeletePropertiesModified(entry, activePropertyName);
+            var affectedRows = await _context.SaveChangesAsync();
+
+            if (affectedRows > 0 && !await IsEntityStillActiveAsync(id, activePropertyName))
+            {
+                return;
+            }
+
+            var directRows = await ExecuteSoftDeleteDirectAsync(id, activePropertyName);
+            if (directRows > 0 || !await IsEntityStillActiveAsync(id, activePropertyName))
+            {
+                await EnsureEntityIsInactiveAsync(id, activePropertyName);
+                return;
+            }
+
+            throw new InvalidOperationException(
+                $"No fue posible dar de baja {typeof(T).Name} con ID {id}; el registro sigue activo en la base de datos.");
         }
 
         private async Task EnsureEntityIsInactiveAsync(int id, string activePropertyName)
         {
+            if (await IsEntityStillActiveAsync(id, activePropertyName))
+            {
+                throw new InvalidOperationException(
+                    $"No fue posible dar de baja {typeof(T).Name} con ID {id}; el registro sigue activo en la base de datos.");
+            }
+        }
+
+        private async Task<bool> IsEntityStillActiveAsync(int id, string activePropertyName)
+        {
             var entityType = _context.Model.FindEntityType(typeof(T));
             var primaryKeyProperty = entityType?.FindPrimaryKey()?.Properties.SingleOrDefault();
-            var activeProperty = entityType?.FindProperty(activePropertyName);
+            var activeProperty = FindPropertyIgnoreCase(entityType, activePropertyName);
             if (primaryKeyProperty == null || activeProperty == null || !IsBooleanProperty(activeProperty.ClrType))
             {
-                return;
+                return false;
             }
 
             var parameter = Expression.Parameter(typeof(T), "entity");
@@ -262,12 +301,66 @@ namespace EG.Infrastructure
                 Expression.Equal(activeAccess, comparableActiveValue));
 
             var lambda = Expression.Lambda<Func<T, bool>>(predicate, parameter);
-            var stillActive = await _dbSet.AsNoTracking().AnyAsync(lambda);
-            if (stillActive)
+            return await _dbSet.AsNoTracking().AnyAsync(lambda);
+        }
+
+        private async Task<int> ExecuteSoftDeleteDirectAsync(int id, string activePropertyName)
+        {
+            var entityType = _context.Model.FindEntityType(typeof(T));
+            var primaryKeyProperty = entityType?.FindPrimaryKey()?.Properties.SingleOrDefault();
+            var activeProperty = FindPropertyIgnoreCase(entityType, activePropertyName);
+            if (entityType == null ||
+                primaryKeyProperty == null ||
+                activeProperty == null ||
+                !IsBooleanProperty(activeProperty.ClrType))
             {
-                throw new InvalidOperationException(
-                    $"No fue posible dar de baja {typeof(T).Name} con ID {id}; el registro sigue activo en la base de datos.");
+                return 0;
             }
+
+            var tableIdentifier = GetTableIdentifier(entityType);
+            if (!tableIdentifier.HasValue)
+            {
+                return 0;
+            }
+
+            var keyColumn = primaryKeyProperty.GetColumnName(tableIdentifier.Value);
+            var activeColumn = activeProperty.GetColumnName(tableIdentifier.Value);
+            if (string.IsNullOrWhiteSpace(keyColumn) || string.IsNullOrWhiteSpace(activeColumn))
+            {
+                return 0;
+            }
+
+            var assignments = new List<string>
+            {
+                $"{QuoteIdentifier(activeColumn)} = CAST(0 AS bit)"
+            };
+
+            var fechaModificacionProperty = FindPropertyIgnoreCase(entityType, "FechaModificacion");
+            if (fechaModificacionProperty != null && IsDateTimeProperty(fechaModificacionProperty.ClrType))
+            {
+                var fechaModificacionColumn = fechaModificacionProperty.GetColumnName(tableIdentifier.Value);
+                if (!string.IsNullOrWhiteSpace(fechaModificacionColumn))
+                {
+                    assignments.Add($"{QuoteIdentifier(fechaModificacionColumn)} = @fechaModificacion");
+                }
+            }
+
+            var sql =
+                $"UPDATE {QuoteTableName(tableIdentifier.Value.Schema, tableIdentifier.Value.Name)} " +
+                $"SET {string.Join(", ", assignments)} " +
+                $"WHERE {QuoteIdentifier(keyColumn)} = @id AND {QuoteIdentifier(activeColumn)} = CAST(1 AS bit)";
+
+            var parameters = new List<object>
+            {
+                new SqlParameter("@id", ConvertToPropertyType(id, primaryKeyProperty.ClrType))
+            };
+
+            if (assignments.Any(assignment => assignment.Contains("@fechaModificacion", StringComparison.Ordinal)))
+            {
+                parameters.Add(new SqlParameter("@fechaModificacion", DateTime.Now));
+            }
+
+            return await _context.Database.ExecuteSqlRawAsync(sql, parameters.ToArray());
         }
 
         private bool TryGetInactiveEntityId(T entity, out int id)
@@ -385,6 +478,42 @@ namespace EG.Infrastructure
         {
             var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
             return Convert.ChangeType(value, targetType);
+        }
+
+        private static bool IsDateTimeProperty(Type propertyType)
+        {
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            return targetType == typeof(DateTime);
+        }
+
+        private static IProperty? FindPropertyIgnoreCase(IEntityType? entityType, string propertyName)
+        {
+            return entityType?
+                .GetProperties()
+                .FirstOrDefault(property => string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static StoreObjectIdentifier? GetTableIdentifier(IEntityType entityType)
+        {
+            var tableName = entityType.GetTableName();
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                return null;
+            }
+
+            return StoreObjectIdentifier.Table(tableName, entityType.GetSchema());
+        }
+
+        private static string QuoteTableName(string? schema, string table)
+        {
+            return string.IsNullOrWhiteSpace(schema)
+                ? QuoteIdentifier(table)
+                : $"{QuoteIdentifier(schema)}.{QuoteIdentifier(table)}";
+        }
+
+        private static string QuoteIdentifier(string identifier)
+        {
+            return $"[{identifier.Replace("]", "]]")}]";
         }
 
 

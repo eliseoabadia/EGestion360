@@ -6,12 +6,12 @@
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ProveedorResponse"
-                 Title="@dialogTitle"
-                 MaxWidth="MaxWidth.Medium"
-                 ActionText="@actionText"
-                 ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
-                 OnConfirm="GuardarCambiosAsync">
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos..."
+                OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ProveedorResponse"
                     @ref="form"
@@ -22,73 +22,90 @@
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Clave"
                               Label="Clave"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La clave es requerida"
+                              MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Rfc"
                               Label="RFC"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              Required="true"
+                              RequiredError="El RFC es requerido"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Nombre"
                               Label="Nombre"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              Required="true"
+                              RequiredError="El nombre es requerido"
+                              MaxLength="500" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Calle"
                               Label="Calle"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="6">
                 <MudTextField @bind-Value="item.Numero"
-                              Label="Número"
-                              Variant="Variant.Outlined" />
+                              Label="Numero"
+                              Variant="Variant.Outlined"
+                              MaxLength="10" />
             </MudItem>
             <MudItem xs="6">
                 <MudTextField @bind-Value="item.NumeroInt"
-                              Label="Número Interior"
-                              Variant="Variant.Outlined" />
+                              Label="Numero interior"
+                              Variant="Variant.Outlined"
+                              MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Colonia"
                               Label="Colonia"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Cp"
-                              Label="Código Postal"
-                              Variant="Variant.Outlined" />
+                              Label="Codigo postal"
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Ciudad"
                               Label="Ciudad"
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Email"
                               Label="Email"
                               Variant="Variant.Outlined"
-                              Required="true" />
+                              Required="true"
+                              RequiredError="El email es requerido"
+                              MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.TelefonoInstitucional"
-                              Label="Teléfono"
-                              Variant="Variant.Outlined" />
+                              Label="Telefono"
+                              Variant="Variant.Outlined"
+                              MaxLength="20" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.PaginaWeb"
-                              Label="Página Web"
-                              Variant="Variant.Outlined" />
+                              Label="Pagina web"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Notas"
                               Label="Notas"
                               Variant="Variant.Outlined"
+                              MaxLength="500"
                               Lines="2" />
             </MudItem>
-
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -117,10 +134,15 @@
     {
         try
         {
-            var response = await Service.GetByIdAsync(Id.Value);
+            var response = await Service.GetByIdAsync(Id!.Value);
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
+                item.Activo = true;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible cargar el proveedor.", Severity.Warning);
             }
         }
         catch (Exception ex)
@@ -129,30 +151,36 @@
         }
     }
 
-    private async Task GuardarCambiosAsync()
+    private async Task GuardarCambiosAsync(bool _)
     {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos obligatorios del proveedor.", Severity.Warning);
+            return;
+        }
+
+        NormalizeItem();
+
         try
         {
-            bool success;
+            ApiResponse<ProveedorResponse>? response;
             if (Id.HasValue)
             {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
+                response = await Service.UpdateAsync(item, Id.Value);
             }
             else
             {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
+                response = await Service.CreateAsync(item);
             }
 
-            if (success)
+            if (response?.Success == true)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Proveedor actualizado correctamente" : "Proveedor creado correctamente", Severity.Success);
+                Snackbar.Add(response.Message ?? (Id.HasValue ? "Proveedor actualizado correctamente" : "Proveedor creado correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+                Snackbar.Add(response?.Message ?? "No fue posible guardar el proveedor.", Severity.Error);
             }
         }
         catch (Exception ex)
@@ -160,4 +188,24 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+
+    private void NormalizeItem()
+    {
+        item.Activo = true;
+        item.Clave = Trim(item.Clave).ToUpperInvariant();
+        item.Rfc = Trim(item.Rfc).ToUpperInvariant();
+        item.Nombre = Trim(item.Nombre);
+        item.Email = Trim(item.Email);
+        item.Calle = Trim(item.Calle);
+        item.Numero = Trim(item.Numero);
+        item.NumeroInt = Trim(item.NumeroInt);
+        item.Colonia = Trim(item.Colonia);
+        item.Cp = Trim(item.Cp);
+        item.Ciudad = Trim(item.Ciudad);
+        item.TelefonoInstitucional = Trim(item.TelefonoInstitucional);
+        item.PaginaWeb = Trim(item.PaginaWeb);
+        item.Notas = Trim(item.Notas);
+    }
+
+    private static string Trim(string? value) => (value ?? string.Empty).Trim();
 }

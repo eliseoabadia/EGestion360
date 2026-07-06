@@ -30,7 +30,10 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var items = await _context.VwProveedors.ToListAsync();
+                var items = await _context.VwProveedors
+                    .AsNoTracking()
+                    .Where(item => item.Activo)
+                    .ToListAsync();
                 return new PagedResult<ProveedorResponse>
                 {
                     Items = items.Adapt<List<ProveedorResponse>>(),
@@ -54,7 +57,15 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var entity = await _context.VwProveedors.FirstOrDefaultAsync(e => e.PkidProveedor == id);
+                var entity = await _context.Proveedors
+                    .AsNoTracking()
+                    .Include(e => e.FkIdTipoProveedorSisNavigation)
+                    .Include(e => e.FkidEstatusProveedorSisNavigation)
+                    .Include(e => e.FkidCuentaContableSisNavigation)
+                    .Include(e => e.FkidMunicipioSisNavigation)
+                    .Include(e => e.FkidEstadoSisNavigation)
+                    .Include(e => e.FkidPaisSisNavigation)
+                    .FirstOrDefaultAsync(e => e.PkidProveedor == id && e.Activo);
                 if (entity == null)
                     return new PagedResult<ProveedorResponse>
                     {
@@ -89,7 +100,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var dto = response.Adapt<ProveedorDto>();
+                var dto = await NormalizeForSaveAsync(response);
                 dto.UsuarioCreacion = usuarioActual;
                 dto.FechaCreacion = DateTime.UtcNow;
                 dto.FechaAlta = DateTime.UtcNow;
@@ -108,14 +119,29 @@ namespace EG.Application.Services.Adquisicion
                 }
 
                 var entity = dto.Adapt<Proveedor>();
-                await _repository.AddAsync(entity);
+                _context.Proveedors.Add(entity);
+                await _context.SaveChangesAsync();
+
+                var created = await GetByIdAsync(entity.PkidProveedor);
 
                 return new PagedResult<ProveedorResponse>
                 {
                     Success = true,
                     Message = "Proveedor creado correctamente",
                     Code = "SUCCESS",
+                    Data = created.Data,
+                    Items = created.Data != null ? new List<ProveedorResponse> { created.Data } : new List<ProveedorResponse>(),
                     TotalCount = 1
+                };
+            }
+            catch (ArgumentException ex)
+            {
+                return new PagedResult<ProveedorResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "VALIDATION",
+                    TotalCount = 0
                 };
             }
             catch (Exception ex)
@@ -134,7 +160,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                var entity = await _context.Proveedors.FirstOrDefaultAsync(item => item.PkidProveedor == id && item.Activo);
                 if (entity == null)
                     return new PagedResult<ProveedorResponse>
                     {
@@ -144,10 +170,11 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                var dto = response.Adapt<ProveedorDto>();
+                var dto = await NormalizeForSaveAsync(response);
                 dto.PkidProveedor = id;
                 dto.UsuarioModificacion = usuarioActual;
                 dto.FechaModificacion = DateTime.UtcNow;
+                dto.Activo = true;
 
                 var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Rfc.ToLower() == dto.Rfc.ToLower() && e.PkidProveedor != id && e.Activo);
                 if (duplicate.Any())
@@ -161,17 +188,29 @@ namespace EG.Application.Services.Adquisicion
                     };
                 }
 
-                dto.Adapt(entity);
-                entity.FechaModificacion = dto.FechaModificacion;
-                entity.UsuarioModificacion = dto.UsuarioModificacion;
-                await _repository.UpdateAsync(entity);
+                ApplyValues(entity, dto);
+                await _context.SaveChangesAsync();
+
+                var updated = await GetByIdAsync(id);
 
                 return new PagedResult<ProveedorResponse>
                 {
                     Success = true,
                     Message = "Proveedor actualizado correctamente",
                     Code = "SUCCESS",
+                    Data = updated.Data,
+                    Items = updated.Data != null ? new List<ProveedorResponse> { updated.Data } : new List<ProveedorResponse>(),
                     TotalCount = 1
+                };
+            }
+            catch (ArgumentException ex)
+            {
+                return new PagedResult<ProveedorResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "VALIDATION",
+                    TotalCount = 0
                 };
             }
             catch (Exception ex)
@@ -190,7 +229,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                var entity = await _context.Proveedors.FirstOrDefaultAsync(item => item.PkidProveedor == id);
                 if (entity == null)
                     return new PagedResult<bool>
                     {
@@ -200,7 +239,37 @@ namespace EG.Application.Services.Adquisicion
                         TotalCount = 0
                     };
 
-                await _repository.DeleteAsync(id);
+                if (!entity.Activo)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = true,
+                        Message = "Proveedor ya se encuentra inactivo",
+                        Code = "SUCCESS",
+                        Data = true,
+                        Items = new List<bool> { true },
+                        TotalCount = 1
+                    };
+                }
+
+                entity.Activo = false;
+                entity.FechaModificacion = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                var stillActive = await _context.Proveedors
+                    .AsNoTracking()
+                    .AnyAsync(item => item.PkidProveedor == id && item.Activo);
+                if (stillActive)
+                {
+                    return new PagedResult<bool>
+                    {
+                        Success = false,
+                        Message = $"No fue posible dar de baja Proveedor con ID {id}; el registro sigue activo en la base de datos.",
+                        Code = "ERROR",
+                        TotalCount = 0
+                    };
+                }
+
                 return new PagedResult<bool>
                 {
                     Success = true,
@@ -227,7 +296,10 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
-                var query = _context.VwProveedors.AsQueryable();
+                var query = _context.VwProveedors
+                    .AsNoTracking()
+                    .Where(item => item.Activo)
+                    .AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
@@ -281,5 +353,184 @@ namespace EG.Application.Services.Adquisicion
                 };
             }
         }
+
+        private async Task<ProveedorDto> NormalizeForSaveAsync(ProveedorResponse response)
+        {
+            if (response == null)
+                throw new ArgumentException("Los datos del proveedor son requeridos.");
+
+            var nombre = Required(response.Nombre, "Nombre", 500);
+            var rfc = Required(response.Rfc, "RFC", 50).ToUpperInvariant();
+            var email = Required(response.Email, "Email", 50);
+            var clave = Trim(response.Clave, 10);
+            if (string.IsNullOrWhiteSpace(clave))
+                clave = GenerateClave(rfc, nombre);
+
+            var location = await ResolveLocationAsync(response);
+
+            return new ProveedorDto
+            {
+                PkidProveedor = response.PkidProveedor,
+                FkIdTipoProveedorSis = await ResolveOptionalIdAsync(
+                    response.FkIdTipoProveedorSis,
+                    _context.TipoProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkIdTipoProveedor)),
+                FkidEstatusProveedorSis = await ResolveOptionalIdAsync(
+                    response.FkidEstatusProveedorSis,
+                    _context.EstatusProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkidEstatusProveedor)),
+                FkidCuentaContableSis = response.FkidCuentaContableSis > 0 ? response.FkidCuentaContableSis : null,
+                FkidPaisSis = location.PaisId,
+                FkidEstadoSis = location.EstadoId,
+                FkidMunicipioSis = location.MunicipioId,
+                FkidResponsableSis = response.FkidResponsableSis > 0 ? response.FkidResponsableSis : null,
+                FkidAesectorSis = response.FkidAesectorSis > 0 ? response.FkidAesectorSis : null,
+                FkidAedivisionSis = response.FkidAedivisionSis > 0 ? response.FkidAedivisionSis : null,
+                FkidAegrupoSis = response.FkidAegrupoSis > 0 ? response.FkidAegrupoSis : null,
+                FkidAeclaseSis = response.FkidAeclaseSis > 0 ? response.FkidAeclaseSis : null,
+                Nombre = nombre,
+                Rfc = rfc,
+                Email = email,
+                Clave = clave,
+                Calle = Trim(response.Calle, 50),
+                Numero = Trim(response.Numero, 10),
+                NumeroInt = Trim(response.NumeroInt, 10),
+                Colonia = Trim(response.Colonia, 50),
+                Cp = Trim(response.Cp, 50),
+                Ciudad = Trim(response.Ciudad, 50),
+                TelefonoInstitucional = Trim(response.TelefonoInstitucional, 20),
+                PaginaWeb = Trim(response.PaginaWeb, 100),
+                Notas = Trim(response.Notas, 500),
+                Curp = Trim(response.Curp, 18),
+                Activo = true
+            };
+        }
+
+        private static void ApplyValues(Proveedor entity, ProveedorDto dto)
+        {
+            entity.FkIdTipoProveedorSis = dto.FkIdTipoProveedorSis;
+            entity.FkidEstatusProveedorSis = dto.FkidEstatusProveedorSis;
+            entity.FkidCuentaContableSis = dto.FkidCuentaContableSis;
+            entity.FkidPaisSis = dto.FkidPaisSis;
+            entity.FkidEstadoSis = dto.FkidEstadoSis;
+            entity.FkidMunicipioSis = dto.FkidMunicipioSis;
+            entity.FkidResponsableSis = dto.FkidResponsableSis;
+            entity.FkidAesectorSis = dto.FkidAesectorSis;
+            entity.FkidAedivisionSis = dto.FkidAedivisionSis;
+            entity.FkidAegrupoSis = dto.FkidAegrupoSis;
+            entity.FkidAeclaseSis = dto.FkidAeclaseSis;
+            entity.Nombre = dto.Nombre;
+            entity.Rfc = dto.Rfc;
+            entity.Email = dto.Email;
+            entity.Clave = dto.Clave;
+            entity.Calle = dto.Calle;
+            entity.Numero = dto.Numero;
+            entity.NumeroInt = dto.NumeroInt;
+            entity.Colonia = dto.Colonia;
+            entity.Cp = dto.Cp;
+            entity.Ciudad = dto.Ciudad;
+            entity.TelefonoInstitucional = dto.TelefonoInstitucional;
+            entity.PaginaWeb = dto.PaginaWeb;
+            entity.Notas = dto.Notas;
+            entity.Curp = dto.Curp;
+            entity.Activo = dto.Activo;
+            entity.FechaModificacion = dto.FechaModificacion;
+            entity.UsuarioModificacion = dto.UsuarioModificacion;
+        }
+
+        private async Task<ProviderLocation> ResolveLocationAsync(ProveedorResponse response)
+        {
+            if (response.FkidMunicipioSis > 0)
+            {
+                var byMunicipio = await FindLocationAsync(municipioId: response.FkidMunicipioSis);
+                if (byMunicipio != null)
+                    return byMunicipio;
+            }
+
+            if (response.FkidEstadoSis > 0)
+            {
+                var byEstado = await FindLocationAsync(estadoId: response.FkidEstadoSis);
+                if (byEstado != null)
+                    return byEstado;
+            }
+
+            if (response.FkidPaisSis > 0)
+            {
+                var byPais = await FindLocationAsync(paisId: response.FkidPaisSis);
+                if (byPais != null)
+                    return byPais;
+            }
+
+            var fallback = await FindLocationAsync();
+            return fallback ?? throw new ArgumentException("No hay pais, estado y municipio activos para registrar proveedores.");
+        }
+
+        private async Task<ProviderLocation?> FindLocationAsync(int? municipioId = null, int? estadoId = null, int? paisId = null)
+        {
+            var query =
+                from municipio in _context.Municipios.AsNoTracking()
+                join estado in _context.Estados.AsNoTracking() on municipio.FkidEstadoSis equals estado.PkidEstado
+                join pais in _context.Paises.AsNoTracking() on estado.FkidPaisSis equals pais.PkidPais
+                where municipio.Activo && estado.Activo && pais.Activo
+                select new
+                {
+                    PaisId = pais.PkidPais,
+                    EstadoId = estado.PkidEstado,
+                    MunicipioId = municipio.PkidMunicipio
+                };
+
+            if (municipioId.GetValueOrDefault() > 0)
+                query = query.Where(item => item.MunicipioId == municipioId!.Value);
+
+            if (estadoId.GetValueOrDefault() > 0)
+                query = query.Where(item => item.EstadoId == estadoId!.Value);
+
+            if (paisId.GetValueOrDefault() > 0)
+                query = query.Where(item => item.PaisId == paisId!.Value);
+
+            var row = await query
+                .OrderBy(item => item.PaisId)
+                .ThenBy(item => item.EstadoId)
+                .ThenBy(item => item.MunicipioId)
+                .FirstOrDefaultAsync();
+
+            return row == null
+                ? null
+                : new ProviderLocation(row.PaisId, row.EstadoId, row.MunicipioId);
+        }
+
+        private static async Task<int?> ResolveOptionalIdAsync(int? requestedId, IQueryable<int> activeIds)
+        {
+            if (requestedId.HasValue && requestedId.Value > 0 && await activeIds.AnyAsync(id => id == requestedId.Value))
+                return requestedId.Value;
+
+            var first = await activeIds.OrderBy(id => id).FirstOrDefaultAsync();
+            return first > 0 ? first : null;
+        }
+
+        private static string Required(string? value, string label, int maxLength)
+        {
+            var trimmed = Trim(value, maxLength);
+            if (string.IsNullOrWhiteSpace(trimmed))
+                throw new ArgumentException($"{label} es requerido.");
+
+            return trimmed;
+        }
+
+        private static string Trim(string? value, int maxLength)
+        {
+            var trimmed = (value ?? string.Empty).Trim();
+            return trimmed.Length <= maxLength ? trimmed : trimmed.Substring(0, maxLength);
+        }
+
+        private static string GenerateClave(string rfc, string nombre)
+        {
+            var source = string.IsNullOrWhiteSpace(rfc) ? nombre : rfc;
+            var cleaned = new string(source.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+            if (string.IsNullOrWhiteSpace(cleaned))
+                cleaned = "PROV";
+
+            return cleaned.Length <= 10 ? cleaned : cleaned.Substring(0, 10);
+        }
+
+        private sealed record ProviderLocation(int PaisId, int EstadoId, int MunicipioId);
     }
 }

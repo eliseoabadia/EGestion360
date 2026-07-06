@@ -1,0 +1,294 @@
+@using MudBlazor
+@using EG.Domain.DTOs.Responses.General
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+
+@inject IGenericCrudService<SucursalResponse> Service
+@inject IGenericCrudService<EmpresaResponse> EmpresaService
+@inject IGenericCrudService<EstadoResponse> EstadoService
+@inject SucursalStateService SucursalStateService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="SucursalResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos de la sucursal..."
+                OnConfirm="GuardarCambiosAsync">
+
+    <BaseEntityForm TEntity="SucursalResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Empresa"
+                           @bind-Value="item.FkidEmpresaSis"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar una empresa">
+                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                    @foreach (var empresa in empresas)
+                    {
+                        <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect Label="Estado"
+                           @bind-Value="item.FkidEstadoSis"
+                           T="int"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Debe seleccionar un estado">
+                    <MudSelectItem T="int" Value="0">Seleccione un estado</MudSelectItem>
+                    @foreach (var estado in estados)
+                    {
+                        <MudSelectItem T="int" Value="@estado.PkidEstado">@estado.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.CodigoSucursal"
+                              Label="Codigo"
+                              Variant="Variant.Outlined"
+                              MaxLength="20"
+                              Counter="20"
+                              Required="true"
+                              RequiredError="El codigo es requerido"
+                              Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarTexto(value, "codigo", 2, 20)))" />
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="item.Nombre"
+                              Label="Nombre"
+                              Variant="Variant.Outlined"
+                              MaxLength="100"
+                              Counter="100"
+                              Required="true"
+                              RequiredError="El nombre es requerido"
+                              Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarTexto(value, "nombre", 3, 100)))" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Alias"
+                              Label="Alias"
+                              Variant="Variant.Outlined"
+                              MaxLength="100"
+                              Counter="100" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Email"
+                              Label="Correo"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Email"
+                              MaxLength="250"
+                              Counter="250" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Direccion"
+                              Label="Direccion"
+                              Variant="Variant.Outlined"
+                              MaxLength="250"
+                              Lines="2" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Colonia"
+                              Label="Colonia"
+                              Variant="Variant.Outlined"
+                              MaxLength="80" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.Ciudad"
+                              Label="Ciudad"
+                              Variant="Variant.Outlined"
+                              MaxLength="80" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.CodigoPostal"
+                              Label="Codigo postal"
+                              Variant="Variant.Outlined"
+                              MaxLength="12" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.TelefonoPrincipal"
+                              Label="Telefono principal"
+                              Variant="Variant.Outlined"
+                              MaxLength="30" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.TelefonoSecundario"
+                              Label="Telefono secundario"
+                              Variant="Variant.Outlined"
+                              MaxLength="30" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="item.EsMatriz"
+                           Color="Color.Info"
+                           Label="Sucursal matriz" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="item.EsActiva"
+                           Color="Color.Success"
+                           Label="Sucursal activa" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<SucursalResponse> form = null!;
+    private SucursalResponse item = new() { Activo = true, EsActiva = true };
+    private IList<EmpresaResponse> empresas = new List<EmpresaResponse>();
+    private IList<EstadoResponse> estados = new List<EstadoResponse>();
+
+    private string dialogTitle => Id.HasValue ? "Editar Sucursal" : "Nueva Sucursal";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCatalogosAsync();
+
+        if (Id.HasValue)
+        {
+            await CargarSucursalAsync();
+        }
+        else
+        {
+            item.FkidEmpresaSis = SucursalStateService.EmpresaId ?? 0;
+            item.EsActiva = true;
+            item.Activo = true;
+        }
+    }
+
+    private async Task CargarCatalogosAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+
+        var empresasResponse = await EmpresaService.GetAllAsync();
+        if (empresasResponse?.Success == true && empresasResponse.Items != null)
+        {
+            empresas = empresasResponse.Items
+                .Where(x => x.EmpresaActivo)
+                .OrderBy(x => x.EmpresaNombre)
+                .ToList();
+        }
+
+        var estadosResponse = await EstadoService.GetAllAsync();
+        if (estadosResponse?.Success == true && estadosResponse.Items != null)
+        {
+            estados = estadosResponse.Items
+                .Where(x => x.Activo)
+                .OrderBy(x => x.Nombre)
+                .ToList();
+        }
+    }
+
+    private async Task CargarSucursalAsync()
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                item = response.Data;
+                item.Activo = response.Data.Activo;
+                item.EsActiva = response.Data.EsActiva;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible cargar la sucursal.", Severity.Warning);
+            }
+        }
+        catch
+        {
+            Snackbar.Add("No fue posible cargar la sucursal.", Severity.Error);
+        }
+    }
+
+    private IEnumerable<string> ValidarTexto(string? value, string label, int minLength, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            yield return $"El {label} es requerido";
+            yield break;
+        }
+
+        var text = value.Trim();
+        if (text.Length < minLength)
+        {
+            yield return $"El {label} debe tener al menos {minLength} caracteres";
+        }
+
+        if (text.Length > maxLength)
+        {
+            yield return $"El {label} no puede exceder {maxLength} caracteres";
+        }
+    }
+
+    private async Task GuardarCambiosAsync(bool _)
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Completa los campos obligatorios de la sucursal.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidEmpresaSis <= 0)
+        {
+            Snackbar.Add("Debe seleccionar la empresa de la sucursal.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidEstadoSis <= 0)
+        {
+            Snackbar.Add("Debe seleccionar el estado de la sucursal.", Severity.Warning);
+            return;
+        }
+
+        item.Nombre = item.Nombre?.Trim() ?? string.Empty;
+        item.CodigoSucursal = item.CodigoSucursal?.Trim() ?? string.Empty;
+        item.Alias = item.Alias?.Trim() ?? string.Empty;
+        item.Activo = item.EsActiva;
+
+        try
+        {
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? $"Sucursal {(Id.HasValue ? "actualizada" : "creada")} correctamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible guardar la sucursal.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar sucursal: {ex.Message}", Severity.Error);
+        }
+    }
+}

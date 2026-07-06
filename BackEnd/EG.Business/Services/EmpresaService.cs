@@ -36,7 +36,7 @@ namespace EG.Business.Services
             if (existingEmpresa == null)
                 throw new KeyNotFoundException($"Empresa {empresaId} No encontrada.");
 
-            dto.Adapt(existingEmpresa);
+            EntityUpdateMapper.Apply(dto, existingEmpresa);
             await _repository.UpdateAsync(existingEmpresa);
         }
 
@@ -46,7 +46,7 @@ namespace EG.Business.Services
             if (existingEmpresa == null)
                 throw new KeyNotFoundException($"Empresa {empresaId} No encontrada.");
 
-            dto.Adapt(existingEmpresa);
+            EntityUpdateMapper.Apply(dto, existingEmpresa);
             await _repository.UpdateAsync(existingEmpresa);
         }
 

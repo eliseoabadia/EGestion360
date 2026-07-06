@@ -113,7 +113,7 @@ namespace EG.Business.Services
             if (existingEmp == null)
                 throw new KeyNotFoundException($"User with ID {empId} not found.");
 
-            dto.Adapt(existingEmp);
+            EntityUpdateMapper.Apply(dto, existingEmp);
             await _repository.UpdateAsync(existingEmp);
             return true;
         }

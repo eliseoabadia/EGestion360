@@ -1,0 +1,131 @@
+@page "/configuracion/sistema/sucursal"
+@using EG.Domain.DTOs.Responses.General
+@using EG.Web.Pages.Shared
+@using EG.Web.Shared
+@inherits BaseCrudPage<SucursalResponse, SucursalResponse>
+
+<AccessVerification IsInitialized="@IsInitialized"
+                    HasAccess="@HasAccess"
+                    NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+        <PageHeader Title="Gestion de Sucursales"
+                    Subtitle="Administra las sedes operativas por empresa"
+                    Icon="@Icons.Material.Filled.Store"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
+                    OnRefresh="() => table.ReloadData()" />
+
+        <GenericTable TItem="SucursalResponse"
+                      @ref="table"
+                      Title="Lista de Sucursales"
+                      SearchPlaceholder="Buscar por nombre, codigo, empresa, ciudad o estado..."
+                      ShowExportButton="@CanExport"
+                      ServerDataFunc="LoadServerData"
+                      ExportFunc="ExportToExcel"
+                      SearchString="@SearchString"
+                      SearchStringChanged="(s) => SearchString = s"
+                      OnSearch="OnSearch">
+
+            <Header>
+                <MudTh>Acciones</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PkidSucursal" T="SucursalResponse">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="CodigoSucursal" T="SucursalResponse">Codigo</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Nombre" T="SucursalResponse">Sucursal</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="SucursalResponse">Empresa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Ciudad" T="SucursalResponse">Ciudad</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="NombreEstado" T="SucursalResponse">Estado</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EsMatriz" T="SucursalResponse">Matriz</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="EsActiva" T="SucursalResponse">Activa</MudTableSortLabel></MudTh>
+            </Header>
+
+            <Row Context="sucursal">
+                <MudTd>
+                    <MudTooltip Text="Editar sucursal">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Visible="@CanUpdate"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditItem(sucursal.PkidSucursal))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar sucursal">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Disabled="@sucursal.EsMatriz"
+                                       OnClick="@(() => DeleteItem(sucursal.PkidSucursal))" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd>@sucursal.PkidSucursal</MudTd>
+                <MudTd>@sucursal.CodigoSucursal</MudTd>
+                <MudTd>@sucursal.Nombre</MudTd>
+                <MudTd>@sucursal.NombreEmpresa</MudTd>
+                <MudTd>@sucursal.Ciudad</MudTd>
+                <MudTd>@sucursal.NombreEstado</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@(sucursal.EsMatriz ? Color.Info : Color.Default)">
+                        @(sucursal.EsMatriz ? "Si" : "No")
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="@(sucursal.EsActiva && sucursal.Activo ? Color.Success : Color.Default)">
+                        @(sucursal.EsActiva && sucursal.Activo ? "Activa" : "Inactiva")
+                    </MudChip>
+                </MudTd>
+            </Row>
+        </GenericTable>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<SucursalResponse> table = null!;
+
+    protected override string ModuleName => "Sistema";
+    protected override string SubModuleName => "Sucursal";
+
+    protected override Type CreateDialogType => typeof(SucursalDialog);
+    protected override Type EditDialogType => typeof(SucursalDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<SucursalResponse>);
+
+    protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<SucursalResponse> items)
+    {
+        return items.Select(s => new
+        {
+            ID = s.PkidSucursal,
+            Codigo = s.CodigoSucursal,
+            Sucursal = s.Nombre,
+            Empresa = s.NombreEmpresa,
+            Direccion = s.Direccion,
+            Ciudad = s.Ciudad,
+            Estado = s.NombreEstado,
+            Telefono = s.TelefonoPrincipal,
+            Email = s.Email,
+            Matriz = s.EsMatriz ? "Si" : "No",
+            Activa = s.EsActiva && s.Activo ? "Si" : "No"
+        });
+    }
+
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            return response?.Data?.Nombre ?? "la sucursal";
+        }
+        catch
+        {
+            return "la sucursal";
+        }
+    }
+
+    protected override async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+            StateHasChanged();
+        }
+    }
+}

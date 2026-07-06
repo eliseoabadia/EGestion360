@@ -34,7 +34,7 @@ namespace EG.Business.Services
             if (existingUsuario == null)
                 throw new KeyNotFoundException($"Usuario {UsuarioId} No encontrada.");
 
-            dto.Adapt(existingUsuario);
+            EntityUpdateMapper.Apply(dto, existingUsuario);
             await _repository.UpdateAsync(existingUsuario);
         }
 
@@ -44,12 +44,12 @@ namespace EG.Business.Services
             if (existingUsuario == null)
             {
                 existingUsuario = new PerfilUsuario();
-                dto.Adapt(existingUsuario);
+                EntityUpdateMapper.Apply(dto, existingUsuario);
                 await _repository.AddAsync(existingUsuario);
             }
             else
             {
-                dto.Adapt(existingUsuario);
+                EntityUpdateMapper.Apply(dto, existingUsuario);
                 await _repository.UpdateAsync(existingUsuario);
             }
         }

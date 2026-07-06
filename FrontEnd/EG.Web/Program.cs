@@ -23,7 +23,7 @@ internal class Program
         // Configurar MudBlazor con localizaci�n y Snackbar
         builder.Services.AddMudServices(config =>
         {
-            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
             config.SnackbarConfiguration.PreventDuplicates = true;
             config.SnackbarConfiguration.NewestOnTop = true;
             config.SnackbarConfiguration.ShowCloseIcon = true;
