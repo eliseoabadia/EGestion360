@@ -25,6 +25,7 @@ Tienes asignadas varias sucursales. Por favor, selecciona una para continuar:
 <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-3" Color="Color.Primary" />
 <div>
 <MudText><strong>@sucursal.NombreSucursal</strong></MudText>
+<MudText Typo="Typo.caption">@sucursal.NombreEmpresa</MudText>
 <MudText Typo="Typo.caption">@sucursal.DireccionSucursal</MudText>
 </div>
 </div>
@@ -45,8 +46,19 @@ public List<UsuarioSucursalResponse> Sucursales { get; set; } = new();
         await SucursalStateService.SetSucursalAsync(
             sucursal.IdSucursal,
             sucursal.NombreSucursal ?? string.Empty,
-            sucursal.IdEmpresaPersona,
+            GetEmpresaId(sucursal),
             sucursal.NombreEmpresa);
         MudDialog.Close(DialogResult.Ok(sucursal));
+    }
+
+    private static int? GetEmpresaId(UsuarioSucursalResponse sucursal)
+    {
+        if (sucursal.PkidEmpresa > 0)
+            return sucursal.PkidEmpresa;
+
+        if (sucursal.IdEmpresa.GetValueOrDefault() > 0)
+            return sucursal.IdEmpresa;
+
+        return null;
     }
 }

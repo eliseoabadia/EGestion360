@@ -6,8 +6,10 @@ namespace EG.Web.Services
     public class SucursalStateService
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly HttpClient _httpClient;
         private const string SUCURSAL_KEY = "sucursal_seleccionada";
         private const string EMPRESA_KEY = "empresa_seleccionada";
+        private const string EMPRESA_HEADER = "X-Empresa-Id";
 
         public event Action<int, string>? OnSucursalChanged;
         public event Action<int>? OnEmpresaChanged;
@@ -18,9 +20,10 @@ namespace EG.Web.Services
         public string? EmpresaNombre { get; private set; }
         public string? EmpresaNombreCorto { get; private set; }
 
-        public SucursalStateService(IJSRuntime jsRuntime)
+        public SucursalStateService(IJSRuntime jsRuntime, HttpClient httpClient)
         {
             _jsRuntime = jsRuntime;
+            _httpClient = httpClient;
         }
 
         public async Task InitializeAsync()
@@ -38,6 +41,7 @@ namespace EG.Web.Services
                         EmpresaId = sucursal.EmpresaId;
                         EmpresaNombre = sucursal.EmpresaNombre;
                         EmpresaNombreCorto = sucursal.EmpresaNombreCorto;
+                        ApplyEmpresaHeader();
                     }
                 }
             }
@@ -74,6 +78,7 @@ namespace EG.Web.Services
             if (empresaId.HasValue)
             {
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", EMPRESA_KEY, empresaId.Value.ToString());
+                ApplyEmpresaHeader();
                 OnEmpresaChanged?.Invoke(empresaId.Value);
             }
             
@@ -97,6 +102,7 @@ namespace EG.Web.Services
             if (EmpresaId.HasValue)
             {
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", EMPRESA_KEY, EmpresaId.Value.ToString());
+                ApplyEmpresaHeader();
             }
 
             if (SucursalId.HasValue)
@@ -128,6 +134,7 @@ namespace EG.Web.Services
             EmpresaNombreCorto = null;
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", SUCURSAL_KEY);
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", EMPRESA_KEY);
+            ApplyEmpresaHeader();
             OnSucursalChanged?.Invoke(0, string.Empty);
             OnEmpresaChanged?.Invoke(0);
         }
@@ -146,6 +153,16 @@ namespace EG.Web.Services
             }
             catch { }
             return null;
+        }
+
+        private void ApplyEmpresaHeader()
+        {
+            _httpClient.DefaultRequestHeaders.Remove(EMPRESA_HEADER);
+
+            if (EmpresaId.HasValue && EmpresaId.Value > 0)
+            {
+                _httpClient.DefaultRequestHeaders.Add(EMPRESA_HEADER, EmpresaId.Value.ToString());
+            }
         }
 
         private class SucursalSeleccionada

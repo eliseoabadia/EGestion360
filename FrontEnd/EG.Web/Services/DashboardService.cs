@@ -12,6 +12,8 @@ namespace EG.Web.Services
         private readonly IJSRuntime _jsRuntime;
         private readonly JsonSerializerOptions _jsonOptions;
         private const string TOKENKEY = "authToken";
+        private const string EMPRESA_KEY = "empresa_seleccionada";
+        private const string EMPRESA_HEADER = "X-Empresa-Id";
 
         public DashboardService(HttpClient httpClient, IJSRuntime jsRuntime)
         {
@@ -28,6 +30,10 @@ namespace EG.Web.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, "api/Dashboard");
                 if (!string.IsNullOrEmpty(token))
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var empresaId = await GetSelectedEmpresaIdAsync();
+                if (empresaId.HasValue)
+                    request.Headers.Add(EMPRESA_HEADER, empresaId.Value.ToString());
 
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
@@ -62,6 +68,18 @@ namespace EG.Web.Services
                 return rawToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
                     ? rawToken.Substring("Bearer ".Length)
                     : rawToken;
+            }
+            catch { return null; }
+        }
+
+        private async Task<int?> GetSelectedEmpresaIdAsync()
+        {
+            try
+            {
+                var empresaIdRaw = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", EMPRESA_KEY);
+                return int.TryParse(empresaIdRaw, out var empresaId) && empresaId > 0
+                    ? empresaId
+                    : null;
             }
             catch { return null; }
         }

@@ -33,17 +33,16 @@
         <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
             <MudTabPanel Text="Datos" Icon="@Icons.Material.Filled.Person">
         <MudGrid GutterSize="2">
-            <!-- Empresa -->
             <MudItem xs="12" md="6">
-                <MudSelect Label="Empresa"
+                <MudSelect Label="Empresa predeterminada"
                            Value="@usuario.IdEmpresa"
                            ValueChanged="OnEmpresaChanged"
                            T="int"
                            Variant="Variant.Outlined"
                            Required="true"
-                           RequiredError="Debe seleccionar una empresa"
+                           RequiredError="Debe seleccionar una empresa predeterminada"
                            For="@(() => usuario.IdEmpresa)">
-                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                    <MudSelectItem T="int" Value="0">Seleccione una empresa predeterminada</MudSelectItem>
                     @foreach (var empresa in listadoEmpresas)
                     {
                         <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
@@ -338,7 +337,7 @@
         </MudGrid>
             </MudTabPanel>
 
-            <MudTabPanel Text="Empresas" Icon="@Icons.Material.Filled.Business">
+            <MudTabPanel Text="Empresas login" Icon="@Icons.Material.Filled.Business">
                 @if (!Id.HasValue)
                 {
                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
@@ -355,11 +354,26 @@
                         <HeaderContent>
                             <MudTh>Empresa</MudTh>
                             <MudTh>Sucursal de acceso</MudTh>
+                            <MudTh>Tipo</MudTh>
                             <MudTh>Acceso</MudTh>
                         </HeaderContent>
                         <RowTemplate Context="empresa">
                             <MudTd DataLabel="Empresa">@empresa.NombreEmpresa</MudTd>
                             <MudTd DataLabel="Sucursal de acceso">@empresa.NombreSucursal</MudTd>
+                            <MudTd DataLabel="Tipo">
+                                @if (empresa.IdEmpresa == GetEmpresaUsuarioId())
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                        Predeterminada
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
+                                        Adicional
+                                    </MudChip>
+                                }
+                            </MudTd>
                             <MudTd DataLabel="Acceso">
                                 <MudSwitch T="bool"
                                            Value="@empresa.Asignada"
@@ -880,6 +894,14 @@
             : $"{empresa} - {nombre}".Trim();
     }
 
+    private static int GetEmpresaIdFromUsuarioSucursal(UsuarioSucursalResponse asignacion)
+    {
+        if (asignacion.PkidEmpresa > 0)
+            return asignacion.PkidEmpresa;
+
+        return asignacion.IdEmpresa.GetValueOrDefault();
+    }
+
     private async Task CargarEmpresasUsuario()
     {
         if (!Id.HasValue)
@@ -889,14 +911,19 @@
         try
         {
             var asignacionesResponse = await usuarioSucursalService.GetActionAsync($"usuario/{Id.Value}");
-            var sucursalesAsignadas = asignacionesResponse?.Items?
+            var asignacionesActivas = asignacionesResponse?.Items?
                 .Where(x => x.AsignacionActiva)
-                .Select(x => x.IdSucursal)
-                .ToHashSet() ?? new HashSet<int>();
+                .ToList() ?? new List<UsuarioSucursalResponse>();
 
             _empresasUsuario = listadoEmpresas
                 .Select(empresa =>
                 {
+                    var asignacionEmpresa = asignacionesActivas
+                        .Where(x => GetEmpresaIdFromUsuarioSucursal(x) == empresa.PkidEmpresa)
+                        .OrderByDescending(x => x.EsMatriz)
+                        .ThenBy(x => x.NombreSucursal)
+                        .FirstOrDefault();
+
                     var sucursal = listadoSucursales
                         .Where(x => x.FkidEmpresaSis == empresa.PkidEmpresa)
                         .OrderByDescending(x => x.EsMatriz)
@@ -907,10 +934,10 @@
                     {
                         IdEmpresa = empresa.PkidEmpresa,
                         NombreEmpresa = empresa.EmpresaNombre ?? empresa.RazonSocial ?? $"Empresa {empresa.PkidEmpresa}",
-                        IdSucursal = sucursal?.PkidSucursal ?? 0,
-                        NombreSucursal = sucursal?.Nombre ?? "Sin sucursal activa",
-                        Asignada = sucursal != null && sucursalesAsignadas.Contains(sucursal.PkidSucursal),
-                        PuedeAsignarse = sucursal != null
+                        IdSucursal = asignacionEmpresa?.IdSucursal ?? sucursal?.PkidSucursal ?? 0,
+                        NombreSucursal = asignacionEmpresa?.NombreSucursal ?? sucursal?.Nombre ?? "Sin sucursal activa",
+                        Asignada = asignacionEmpresa != null,
+                        PuedeAsignarse = asignacionEmpresa != null || sucursal != null
                     };
                 })
                 .OrderBy(x => x.NombreEmpresa)
@@ -1013,6 +1040,12 @@
 
             if (response?.Success == true)
             {
+                var usuarioId = Id ?? response.Data?.PkIdUsuario ?? response.Items?.FirstOrDefault()?.PkIdUsuario ?? 0;
+                if (usuarioId > 0)
+                {
+                    await EnsureEmpresaPredeterminadaAsignadaAsync(usuarioId, usuario.IdEmpresa);
+                }
+
                 var message = response.Message ?? $"Usuario {(Id.HasValue ? "actualizado" : "creado")} exitosamente";
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
@@ -1025,6 +1058,46 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task EnsureEmpresaPredeterminadaAsignadaAsync(int usuarioId, int empresaId)
+    {
+        if (usuarioId <= 0 || empresaId <= 0)
+            return;
+
+        var asignacionesResponse = await usuarioSucursalService.GetActionAsync($"usuario/{usuarioId}");
+        var yaAsignada = asignacionesResponse?.Items?
+            .Where(x => x.AsignacionActiva)
+            .Any(x => GetEmpresaIdFromUsuarioSucursal(x) == empresaId) == true;
+
+        if (yaAsignada)
+            return;
+
+        var sucursal = listadoSucursales
+            .Where(x => x.FkidEmpresaSis == empresaId)
+            .OrderByDescending(x => x.EsMatriz)
+            .ThenBy(x => x.Nombre)
+            .FirstOrDefault();
+
+        if (sucursal == null)
+        {
+            Snackbar.Add("La empresa predeterminada no tiene sucursal activa para habilitar login.", Severity.Warning);
+            return;
+        }
+
+        var response = await usuarioSucursalService.CreateAsync(new UsuarioSucursalResponse
+        {
+            PkIdUsuario = usuarioId,
+            IdSucursal = sucursal.PkidSucursal,
+            PuedeAcceder = true,
+            PuedeOperar = true,
+            AsignacionActiva = true
+        });
+
+        if (response?.Success != true)
+        {
+            Snackbar.Add(response?.Message ?? "No se pudo habilitar la empresa predeterminada para login", Severity.Warning);
         }
     }
 

@@ -12,6 +12,8 @@ namespace EG.Web.Services
         private readonly HttpClient _httpClient = httpClient;
         private readonly IJSRuntime js = js;
         public static readonly string TOKENKEY = "TOKENKEY";
+        private const string EMPRESA_KEY = "empresa_seleccionada";
+        private const string EMPRESA_HEADER = "X-Empresa-Id";
 
         private static JsonSerializerOptions JsonDefaultOptions => new()
         {
@@ -24,6 +26,13 @@ namespace EG.Web.Services
             if (!string.IsNullOrEmpty(token))
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var empresaId = await js.GetFromLocalStorage(EMPRESA_KEY);
+            _httpClient.DefaultRequestHeaders.Remove(EMPRESA_HEADER);
+            if (int.TryParse(empresaId, out var selectedEmpresaId) && selectedEmpresaId > 0)
+            {
+                _httpClient.DefaultRequestHeaders.Add(EMPRESA_HEADER, selectedEmpresaId.ToString());
             }
         }
 

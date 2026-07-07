@@ -18,6 +18,8 @@ namespace EG.Web.Services
         protected readonly IConfiguration _configuration;
 
         public static readonly string TOKENKEY = "authToken";
+        private const string EMPRESA_KEY = "empresa_seleccionada";
+        private const string EMPRESA_HEADER = "X-Empresa-Id";
         private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromSeconds(30);
         private string? _cachedToken;
         private DateTimeOffset _cachedTokenExpiresAt = DateTimeOffset.MinValue;
@@ -116,7 +118,36 @@ namespace EG.Web.Services
 
             var request = new HttpRequestMessage(method, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            await AddEmpresaHeaderAsync(request);
             return request;
+        }
+
+        private async Task AddEmpresaHeaderAsync(HttpRequestMessage request)
+        {
+            var empresaId = await GetSelectedEmpresaIdAsync();
+            if (empresaId.HasValue && empresaId.Value > 0)
+            {
+                request.Headers.Remove(EMPRESA_HEADER);
+                request.Headers.Add(EMPRESA_HEADER, empresaId.Value.ToString());
+            }
+        }
+
+        private async Task<int?> GetSelectedEmpresaIdAsync()
+        {
+            if (!IsClientSide())
+                return null;
+
+            try
+            {
+                var empresaIdRaw = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", EMPRESA_KEY);
+                return int.TryParse(empresaIdRaw, out var empresaId) && empresaId > 0
+                    ? empresaId
+                    : null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         protected async Task<T?> SendRequestAsync<T>(

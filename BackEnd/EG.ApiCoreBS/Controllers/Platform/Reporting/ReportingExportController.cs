@@ -1,4 +1,5 @@
 using DevExpress.XtraReports.Services;
+using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace EG.ApiCoreBS.Controllers.Reporting;
 public sealed class ReportingExportController : ControllerBase
 {
     private readonly IReportProvider _reportProvider;
+    private readonly IUserContextService _userContext;
 
-    public ReportingExportController(IReportProvider reportProvider)
+    public ReportingExportController(IReportProvider reportProvider, IUserContextService userContext)
     {
         _reportProvider = reportProvider;
+        _userContext = userContext;
     }
 
     [HttpGet("pdf")]
@@ -51,7 +54,7 @@ public sealed class ReportingExportController : ControllerBase
         }
 
         TrySetContextParameter(parameters, "IdEmpleado", GetUserId());
-        TrySetContextParameter(parameters, "IdEmpresa", User.FindFirstValue("empresaId"));
+        TrySetContextParameter(parameters, "IdEmpresa", _userContext.TryGetCurrentEmpresaId()?.ToString());
 
         var query = BuildQuery(parameters);
         return string.IsNullOrWhiteSpace(query) ? reportName : $"{reportName}?{query}";

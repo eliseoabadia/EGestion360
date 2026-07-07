@@ -591,7 +591,7 @@
                     await SucursalStateService.SetSucursalAsync(
                         sucursalesUsuario.Items[0].IdSucursal,
                         sucursalesUsuario.Items[0].NombreSucursal,
-                        sucursalesUsuario.Items[0].IdEmpresaPersona,
+                        GetEmpresaId(sucursalesUsuario.Items[0]),
                         sucursalesUsuario.Items[0].NombreEmpresa);
                     Snackbar.Add("Bienvenido.", Severity.Success);
                     NavigateToAuthenticatedHome();
@@ -675,6 +675,17 @@
             $"/?login=1&t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
             forceLoad: true,
             replace: true);
+    }
+
+    private static int? GetEmpresaId(UsuarioSucursalResponse sucursal)
+    {
+        if (sucursal.PkidEmpresa > 0)
+            return sucursal.PkidEmpresa;
+
+        if (sucursal.IdEmpresa.GetValueOrDefault() > 0)
+            return sucursal.IdEmpresa;
+
+        return null;
     }
 
     private async Task<ApiResponse<UsuarioSucursalResponse>> LoadSucursalesUsuarioAsync(int usuarioId, string? accessToken)
