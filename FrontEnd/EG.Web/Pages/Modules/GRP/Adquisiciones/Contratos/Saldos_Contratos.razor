@@ -15,7 +15,7 @@
                     NavigateToHome="NavigateToHome">
     <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
         <PageHeader Title="Saldos de Contratos"
-                    Subtitle="Comprometido no devengado por contrato"
+                    Subtitle="Presupuesto disponible para generar contratos"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
@@ -23,20 +23,20 @@
         <MudGrid Spacing="2" Class="mb-2">
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card metric-primary" Elevation="0">
-                    <span>Saldo visible</span>
-                    <strong>@Money(Elements.Sum(x => x.Total))</strong>
+                    <span>Disponible visible</span>
+                    <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card" Elevation="0">
-                    <span>Contratado</span>
-                    <strong>@Money(Elements.Sum(x => x.TotalContratado))</strong>
+                    <span>Programas</span>
+                    <strong>@Elements.Select(x => x.FkidProgramaPres).Distinct().Count().ToString("N0", NumberCulture)</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card" Elevation="0">
-                    <span>Devengado</span>
-                    <strong>@Money(Elements.Sum(x => x.TotalDevengado))</strong>
+                    <span>Partidas</span>
+                    <strong>@Elements.Select(x => x.FkidPartidaConta).Distinct().Count().ToString("N0", NumberCulture)</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
@@ -49,8 +49,8 @@
 
         <GenericTable TItem="SaldosContratoResponse"
                       @ref="table"
-                      Title="Contratos con saldo"
-                      SearchPlaceholder="Buscar por contrato, requisicion o descripcion..."
+                      Title="Presupuesto disponible"
+                      SearchPlaceholder="Buscar por programa, partida, area, PY o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -58,40 +58,57 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
             <Header>
-                <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="SaldosContratoResponse">Contrato</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FkidRequisicionOrco" T="SaldosContratoResponse">Requisicion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="SaldosContratoResponse">Fecha</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TotalContratado" T="SaldosContratoResponse">Contratado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TotalDevengado" T="SaldosContratoResponse">Devengado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Total" T="SaldosContratoResponse">Saldo</MudTableSortLabel></MudTh>
-                <MudTh>Calendario</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="SaldosContratoResponse">Programa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="SaldosContratoResponse">Partida</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="SaldosContratoResponse">Area</MudTableSortLabel></MudTh>
+                <MudTh>Clasificacion</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="SaldosContratoResponse">Descripcion</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Total" T="SaldosContratoResponse">Disponible</MudTableSortLabel></MudTh>
+                <MudTh>Meses</MudTh>
             </Header>
             <Row Context="item">
                 <MudTd>
-                    <div class="main-cell">@TextOrDash(item.NumeroContrato)</div>
-                    <span>@TextOrDash(item.Descripcion)</span>
+                    <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
+                    <span>@TextOrDash(item.ProgramaDescripcion)</span>
                 </MudTd>
-                <MudTd>@(item.FkidRequisicionOrco?.ToString() ?? "-")</MudTd>
-                <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>@Money(item.TotalContratado)</MudTd>
-                <MudTd>@Money(item.TotalDevengado)</MudTd>
-                <MudTd><strong>@Money(item.Total)</strong></MudTd>
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
+                    <span>@TextOrDash(item.PartidaDescripcion)</span>
+                </MudTd>
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.AreaNombre)</div>
+                    <span>@TextOrDash(item.AreaClave)</span>
+                </MudTd>
+                <MudTd>
+                    <div class="stacked-lines">
+                        <span>FF: @TextOrDash(item.FuenteFinanciamientoClaveNombre)</span>
+                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span>
+                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span>
+                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span>
+                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
+                    </div>
+                </MudTd>
+                <MudTd>
+                    <div class="main-cell">@TextOrDash(item.Descripcion)</div>
+                    <span>@TextOrDash(item.DescripcionRequisicion)</span>
+                </MudTd>
+                <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
                 <MudTd>
                     <div class="months-line">
-                        <span>ENE @Money(item.Ene)</span>
-                        <span>FEB @Money(item.Feb)</span>
-                        <span>MAR @Money(item.Mar)</span>
-                        <span>ABR @Money(item.Abr)</span>
-                        <span>MAY @Money(item.May)</span>
-                        <span>JUN @Money(item.Jun)</span>
+                        <span>ENE @Money(item.Enero ?? 0m)</span>
+                        <span>FEB @Money(item.Febrero ?? 0m)</span>
+                        <span>MAR @Money(item.Marzo ?? 0m)</span>
+                        <span>ABR @Money(item.Abril ?? 0m)</span>
+                        <span>MAY @Money(item.Mayo ?? 0m)</span>
+                        <span>JUN @Money(item.Junio ?? 0m)</span>
                     </div>
                     <div class="months-line">
-                        <span>JUL @Money(item.Jul)</span>
-                        <span>AGO @Money(item.Ago)</span>
-                        <span>SEP @Money(item.Sep)</span>
-                        <span>OCT @Money(item.Oct)</span>
-                        <span>NOV @Money(item.Nov)</span>
-                        <span>DIC @Money(item.Dic)</span>
+                        <span>JUL @Money(item.Julio ?? 0m)</span>
+                        <span>AGO @Money(item.Agosto ?? 0m)</span>
+                        <span>SEP @Money(item.Septiembre ?? 0m)</span>
+                        <span>OCT @Money(item.Octubre ?? 0m)</span>
+                        <span>NOV @Money(item.Noviembre ?? 0m)</span>
+                        <span>DIC @Money(item.Diciembre ?? 0m)</span>
                     </div>
                 </MudTd>
             </Row>
@@ -100,13 +117,15 @@
 </AccessVerification>
 
 <style>
-    .contratos-dashboard { height: 100vh; overflow: hidden; padding: 12px; display: flex; flex-direction: column; }
+    .contratos-dashboard { min-height: 100%; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow: visible; }
     .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
     .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
     .metric-card strong { color: #111827; font-size: 1.1rem; line-height: 1.4; overflow-wrap: anywhere; }
     .metric-primary { border-left: 4px solid #2563eb; }
     .main-cell { font-weight: 700; color: #111827; }
     .main-cell + span { color: #6b7280; font-size: .78rem; }
+    .stacked-lines { display: flex; flex-direction: column; gap: 2px; min-width: 220px; }
+    .stacked-lines span { color: #475569; font-size: .76rem; }
     .months-line { display: flex; flex-wrap: wrap; gap: 6px; }
     .months-line span { font-size: .72rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 5px; color: #334155; }
 </style>
@@ -121,7 +140,7 @@
     protected override Type CreateDialogType => typeof(object);
     protected override Type EditDialogType => typeof(object);
     protected override Type DeleteDialogType => typeof(DeleteDialog<SaldosContratoResponse>);
-    protected override string GetDefaultSortLabel() => "NumeroContrato";
+    protected override string GetDefaultSortLabel() => "ProgramaClave";
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,26 +154,31 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<SaldosContratoResponse> items) => items.Select(x => new
     {
-        x.PkidContrato,
-        x.NumeroContrato,
+        x.PkidEgresoAutorizado,
+        Anio = x.AnioClave,
+        Programa = x.ProgramaClaveNombre,
+        Partida = x.PartidaClaveNombre,
+        Area = x.AreaNombre,
+        Fuente = x.FuenteFinanciamientoClaveNombre,
+        TipoGasto = x.TipoGastoClaveNombre,
+        Digito = x.DigitoIdentificadorClaveNombre,
+        Destino = x.DestinoGastoClaveNombre,
+        PY = x.PyClaveNombre,
         x.Descripcion,
-        x.FkidRequisicionOrco,
-        Fecha = x.FechaContrato.ToString("dd/MM/yyyy"),
-        x.Ene,
-        x.Feb,
-        x.Mar,
-        x.Abr,
-        x.May,
-        x.Jun,
-        x.Jul,
-        x.Ago,
-        x.Sep,
-        x.Oct,
-        x.Nov,
-        x.Dic,
-        x.TotalContratado,
-        x.TotalDevengado,
-        Saldo = x.Total
+        Fecha = x.Fecha.ToString("dd/MM/yyyy"),
+        x.Enero,
+        x.Febrero,
+        x.Marzo,
+        x.Abril,
+        x.Mayo,
+        x.Junio,
+        x.Julio,
+        x.Agosto,
+        x.Septiembre,
+        x.Octubre,
+        x.Noviembre,
+        x.Diciembre,
+        Disponible = x.Total
     });
 
     protected override async Task ReloadData()

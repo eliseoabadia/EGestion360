@@ -103,7 +103,22 @@ namespace EG.ApiCoreBS.Controllers.Contratos
 
     [Route("api/[controller]")]
     public class EstadoContratoController(
-        IAdquisicionCrudAppService<EstadoContratoResponse> service,
+        IEstadoContratoAppService service,
         IUserContextService userContext)
-        : ContratosUpdateOnlyControllerBase<EstadoContratoResponse>(service, userContext);
+        : ContratosControllerBase<EstadoContratoResponse>(service, userContext)
+    {
+        [HttpPost("{id:int}/autorizar")]
+        public async Task<ActionResult<PagedResult<EstadoContratoResponse>>> Autorizar(int id)
+        {
+            var result = await service.AutorizarAsync(id, UserContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id:int}/liberar-remanente")]
+        public async Task<ActionResult<PagedResult<EstadoContratoResponse>>> LiberarRemanente(int id)
+        {
+            var result = await service.LiberarRemanenteAsync(id, UserContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+    }
 }

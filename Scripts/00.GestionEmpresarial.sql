@@ -587,9 +587,9 @@ VALUES
 
 (2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Planeacion_Gastos', 'PRETS01', 'Planeación de gastos', 'view,view-menu,delete,new,update,CanExportToExcel', 195),
 (2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Saldos_Cuentas', 'PRETS02', 'Saldos Cuentas', 'view,view-menu,delete,new,update,CanExportToExcel', 196),
-(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Reintegros', 'PRETS03', 'Solicitud de reintegros', 'view,view-menu,delete,new,update,CanExportToExcel', 197),
-(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Autorizar_Solicitud_Reingresos', 'PRETS04', 'Autorizar solicitud de reingresos', 'view,view-menu,delete,new,update,CanExportToExcel', 198),
-(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Provision_Pago', 'PRETS05', 'Provisión del Pago', 'view,view-menu,delete,new,update,CanExportToExcel', 199),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitud_Reintegros', 'PRETS03', 'Solicitud de reintegros', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 197),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Autorizar_Solicitud_Reingresos', 'PRETS04', 'Autorizar solicitud de reingresos', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 198),
+(2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Provision_Pago', 'PRETS05', 'Provisión del Pago', 'view,view-menu,delete,new,update,CanExportToExcel,authorize', 199),
 
 (2, 'Presupuesto', 'Tesoreria', NULL, 'app://{0}/{1}', GETDATE(), 'Inversiones', 'PRETI01', 'Inversiones', 'view,view-menu', 200),
 (2, 'Tesoreria', 'Inversiones', NULL, 'app://{0}/{1}', GETDATE(), 'Banco', 'PRETIS01', 'Banco', 'view,view-menu,delete,new,update,CanExportToExcel', 201),
@@ -972,9 +972,9 @@ EXEC spConfiguracionDeRolYClaims 'PEF_Unipartida_TES', 'Provision_Pago', '10000'
 EXEC spConfiguracionDeRolYClaims 'PEF_Unipartida_TES', 'ElaboracionCheque_Transferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Planeacion_Gastos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Saldos_Cuentas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Solicitud_Reintegros', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Autorizar_Solicitud_Reingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Solicitud_Reintegros', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Autorizar_Solicitud_Reingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Inversiones', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Banco', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Cuenta_Bancaria', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1035,9 +1035,9 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,v
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Contratos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Clasificacion_Bienes_Muebles', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bajas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';

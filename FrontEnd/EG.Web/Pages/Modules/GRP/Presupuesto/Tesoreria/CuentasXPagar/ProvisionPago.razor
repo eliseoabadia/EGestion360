@@ -1,30 +1,33 @@
-@page "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago"
-@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Autorizar_Solicitud_Reingresos"
 @page "/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
 @using EG.Web.Shared
 @using MudBlazor
+@implements IDisposable
 @inherits BaseCrudPage<CLCResponse, CLCResponse>
 
 @inject IGenericCrudService<CLCDetalleResponse> DetalleService
 @inject IGenericCrudService<CLCFacturaResponse> FacturaService
+@inject SucursalStateService SucursalStateService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height:100%;overflow:visible;">
         @if (SelectedClc == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
                 <PageHeader Title="Provisión del pago"
                             Subtitle="CLC, calendario presupuestal y facturas asociadas"
                             Icon="@Icons.Material.Filled.RequestQuote"
                             CanCreate="@CanCreate"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="CLCResponse" @ref="table" Title="CLC"
+                <div Style="flex-grow:1;overflow:visible;min-height:0;">
+                    <GenericTable TItem="CLCResponse" @ref="table" Title="Solicitudes por autorizar"
                                   SearchPlaceholder="Buscar CLC, contrato, proveedor o póliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -45,7 +48,7 @@
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(item))" />
                                 <DocumentSupportButton Modulo="CuentasXPagar"
-                                                       SubModulo="Provision_Pago"
+                                                       SubModulo="Autorizar_Solicitud_Reingresos"
                                                        Controlador="CLC"
                                                        EntidadId="@item.PkidClc"
                                                        FkidEmpresaSis="@item.FkidEmpresaSis"
@@ -53,7 +56,7 @@
                                                        RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidClc))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidClc))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidClc))" />
                             </MudTd>
                             <MudTd>@TextOrDash(item.NumClc)</MudTd>
                             <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
@@ -68,7 +71,7 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;gap:8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
@@ -78,7 +81,7 @@
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
                     <DocumentSupportButton Modulo="CuentasXPagar"
-                                           SubModulo="Provision_Pago"
+                                           SubModulo="Autorizar_Solicitud_Reingresos"
                                            Controlador="CLC"
                                            EntidadId="@SelectedClc.PkidClc"
                                            FkidEmpresaSis="@SelectedClc.FkidEmpresaSis"
@@ -89,8 +92,8 @@
                     <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />
                 </MudPaper>
 
-                <MudGrid Spacing="2" Style="min-height:0;flex-grow:1;overflow:hidden;">
-                    <MudItem xs="12" lg="7" Style="height:100%;overflow:hidden;">
+                <MudGrid Spacing="2" Style="min-height:0;flex-grow:1;overflow:visible;">
+                    <MudItem xs="12" lg="7" Style="height:100%;overflow:visible;">
                         <GenericTable TItem="CLCDetalleResponse" @ref="detalleTable" Title="Detalle presupuestal"
                                       SearchPlaceholder="Buscar partida..."
                                       ServerDataFunc="LoadDetalles"
@@ -109,7 +112,7 @@
                             </Row>
                         </GenericTable>
                     </MudItem>
-                    <MudItem xs="12" lg="5" Style="height:100%;overflow:hidden;">
+                    <MudItem xs="12" lg="5" Style="height:100%;overflow:visible;">
                         <GenericTable TItem="CLCFacturaResponse" @ref="facturaTable" Title="Facturas en CLC"
                                       SearchPlaceholder="Buscar factura..."
                                       ServerDataFunc="LoadFacturas"
@@ -143,12 +146,19 @@
     private string facturaSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "CuentasXPagar";
-    protected override string SubModuleName => "Provision_Pago";
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Autorizar_Solicitud_Reingresos";
     protected override Type CreateDialogType => typeof(CLCDialog);
     protected override Type EditDialogType => typeof(CLCDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<CLCResponse>);
     protected override string GetDefaultSortLabel() => "FechaSolicitud";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        await SucursalStateService.InitializeAsync();
+    }
+
     protected override IEnumerable<object> MapToExcelData(IEnumerable<CLCResponse> items) => items.Select(x => new { x.NumClc, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaSolicitud.ToString("dd/MM/yyyy"), x.ImporteTotal, x.EstatusDescripcion });
     protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumClc ?? "la CLC";
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
@@ -261,4 +271,7 @@
         item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
         item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
         item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+
+    private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
+    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
 }

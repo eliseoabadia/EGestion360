@@ -358,14 +358,14 @@ namespace EG.Application.Services.Contratos
     }
 
     public class SaldosContratoAppService(
-        GenericService<VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse> service,
-        GenericService<VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse> serviceView)
-        : AdquisicionCrudAppService<VwEgreCompNoDev, VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse>(
+        GenericService<VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse> service,
+        GenericService<VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse> serviceView)
+        : AdquisicionCrudAppService<VwEgresoDisponible, VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse>(
             service,
             serviceView,
-            "PkidContrato",
-            "Saldos de contrato",
-            (dto, id) => dto.PkidContrato = id)
+            "PkidEgresoAutorizado",
+            "Saldos disponibles para contrato",
+            (dto, id) => dto.PkidEgresoAutorizado = id)
     {
         public override Task<PagedResult<SaldosContratoResponse>> CreateAsync(SaldosContratoResponse response, int usuarioActual) =>
             Task.FromResult(ReadOnlyFailure<SaldosContratoResponse>());
@@ -398,9 +398,45 @@ namespace EG.Application.Services.Contratos
             (dto, id) => dto.PkidContrato = id,
             "PRES.SP_MantenimientoContrato",
             response => response.PkidContrato,
-            BuildParameters)
+            BuildParameters),
+            IEstadoContratoAppService
     {
+        private const int EstatusBorrador = 1;
+        private const int EstatusVigente = 2;
+        private const int EstatusConcluido = 3;
+        private const int TipoPolizaLiberacionRemanente = 4;
+        private const int TipoDetalleComprometido = 1;
+        private const int TipoDetallePorEjercer = 2;
+
         private readonly EGestionContext _context = context;
+
+        public override async Task<PagedResult<EstadoContratoResponse>> CreateAsync(EstadoContratoResponse response, int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, currentId: null);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            response.Estatus = EstatusBorrador;
+
+            var created = await base.CreateAsync(response, usuarioActual);
+            var contratoId = ResolveResultId(created, response.PkidContrato);
+            if (!created.Success || contratoId <= 0)
+            {
+                return created;
+            }
+
+            var detailValidation = await EnsureDetailsFromAutorizacionAsync(contratoId, response.FkidAutorizacionSuficienciaPres, usuarioActual);
+            if (detailValidation != null)
+            {
+                return detailValidation;
+            }
+
+            var refreshed = await GetByIdAsync(contratoId);
+            refreshed.Message = "Contrato creado con partidas de la autorizacion de suficiencia.";
+            return refreshed;
+        }
 
         public override async Task<PagedResult<EstadoContratoResponse>> UpdateAsync(int id, EstadoContratoResponse response, int usuarioActual)
         {
@@ -418,15 +454,616 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("El contrato ya fue autorizado. No se puede modificar el estado.", "LOCKED");
             }
 
-            response.Estatus = Math.Max(1, response.Estatus);
+            var validation = await NormalizeAndValidateAsync(response, id);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            response.Estatus = current.Estatus;
             return await base.UpdateAsync(id, response, usuarioActual);
         }
 
-        public override Task<PagedResult<EstadoContratoResponse>> CreateAsync(EstadoContratoResponse response, int usuarioActual) =>
-            Task.FromResult(Failure<EstadoContratoResponse>("El estado de contrato no permite altas desde esta pantalla.", "READ_ONLY"));
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.Contratos1
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
 
-        public override Task<PagedResult<bool>> DeleteAsync(int id) =>
-            Task.FromResult(Failure<bool>("El estado de contrato no permite eliminaciones desde esta pantalla.", "READ_ONLY"));
+            if (current == null)
+            {
+                return Failure<bool>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+            }
+
+            if (current.Estatus > 1)
+            {
+                return Failure<bool>("El contrato ya fue autorizado. No se puede eliminar.", "LOCKED");
+            }
+
+            return await base.DeleteAsync(id);
+        }
+
+        public async Task<PagedResult<EstadoContratoResponse>> AutorizarAsync(int id, int usuarioActual)
+        {
+            var current = await _context.Contratos1
+                .Include(x => x.ContratoDetalles)
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+
+            if (current == null)
+            {
+                return Failure<EstadoContratoResponse>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+            }
+
+            if (current.Estatus != EstatusBorrador)
+            {
+                return Failure<EstadoContratoResponse>("Solo se pueden autorizar contratos en borrador.", "LOCKED");
+            }
+
+            var activeDetails = current.ContratoDetalles.Where(x => x.Activo).ToList();
+            if (activeDetails.Count == 0)
+            {
+                return Failure<EstadoContratoResponse>("El contrato no tiene partidas generadas desde la autorizacion de suficiencia.");
+            }
+
+            var totalDetails = activeDetails.Sum(DetailTotal);
+            if (totalDetails <= 0m)
+            {
+                return Failure<EstadoContratoResponse>("El total de las partidas del contrato debe ser mayor a cero.");
+            }
+
+            current.Estatus = EstatusVigente;
+            current.FechaModificacion = DateTime.Now;
+            current.UsuarioModificacion = usuarioActual;
+            await _context.SaveChangesAsync();
+
+            return await RefreshedAsync(id, "Contrato autorizado correctamente. Ya no se puede editar ni eliminar.");
+        }
+
+        public async Task<PagedResult<EstadoContratoResponse>> LiberarRemanenteAsync(int id, int usuarioActual)
+        {
+            var current = await _context.Contratos1
+                .Include(x => x.ContratoDetalles)
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+
+            if (current == null)
+            {
+                return Failure<EstadoContratoResponse>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+            }
+
+            if (current.Estatus < EstatusVigente)
+            {
+                return Failure<EstadoContratoResponse>("Primero autoriza el contrato antes de liberar remanentes.");
+            }
+
+            if (current.Estatus >= EstatusConcluido)
+            {
+                return Failure<EstadoContratoResponse>("El contrato ya esta cerrado.");
+            }
+
+            var saldo = await _context.VwEgreCompNoDevs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidContrato == id);
+
+            if (saldo == null)
+            {
+                return Failure<EstadoContratoResponse>("No se encontro informacion de remanente para este contrato.");
+            }
+
+            var remanente = decimal.Round(saldo.Total.GetValueOrDefault(), 2);
+            if (remanente <= 0m)
+            {
+                current.Estatus = EstatusConcluido;
+                current.FechaModificacion = DateTime.Now;
+                current.UsuarioModificacion = usuarioActual;
+                await _context.SaveChangesAsync();
+                return await RefreshedAsync(id, "Contrato cerrado. No habia remanente pendiente por liberar.");
+            }
+
+            if (!saldo.FkidAnioSis.HasValue || saldo.FkidAnioSis.Value <= 0)
+            {
+                return Failure<EstadoContratoResponse>("No se pudo resolver el anio presupuestal del contrato.");
+            }
+
+            var positiveDetails = current.ContratoDetalles
+                .Where(x => x.Activo && DetailTotal(x) > 0m)
+                .ToList();
+
+            if (positiveDetails.Count == 0)
+            {
+                return Failure<EstadoContratoResponse>("El contrato no tiene partidas positivas para calcular remanente.");
+            }
+
+            var releaseDetails = BuildReleaseDetails(current, positiveDetails, remanente, usuarioActual);
+            var matrizValidation = await ValidateMatrizAsync(saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, releaseDetails);
+            if (matrizValidation != null)
+            {
+                return matrizValidation;
+            }
+
+            var strategy = _context.Database.CreateExecutionStrategy();
+            try
+            {
+                return await strategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                    var now = DateTime.Now;
+                    var poliza = new Poliza
+                    {
+                        FkidAnioSis = saldo.FkidAnioSis.Value,
+                        FkidMesSis = current.FechaFinVigencia?.Month ?? DateTime.Today.Month,
+                        FkidTipoPolizaSis = TipoPolizaLiberacionRemanente,
+                        ClavePoliza = await BuildPolizaClaveAsync(id),
+                        NombrePoliza = BuildPolizaNombre(current),
+                        FechaPoliza = now,
+                        EstaBalanceado = true,
+                        Activo = true,
+                        FechaCreacion = now,
+                        UsuarioCreacion = usuarioActual,
+                        PermitirModificar = false,
+                        Autorizado = true,
+                        FechaSolicitud = now,
+                        FechaAutorizacion = now
+                    };
+
+                    _context.Polizas.Add(poliza);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var detail in releaseDetails)
+                    {
+                        detail.FechaCreacion = now;
+                        detail.UsuarioCreacion = usuarioActual;
+                        _context.ContratoDetalles.Add(detail);
+                    }
+
+                    var matrices = await GetMatricesAsync(saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, releaseDetails);
+                    foreach (var group in releaseDetails.GroupBy(x => x.FkidPartidaConta))
+                    {
+                        var importe = decimal.Round(Math.Abs(group.Sum(DetailTotal)), 2);
+                        if (importe <= 0m)
+                        {
+                            continue;
+                        }
+
+                        var matriz = matrices[group.Key];
+                        _context.PolizaDetalles.Add(new PolizaDetalle
+                        {
+                            FkidCuentaContableConta = matriz.FkidCuentaContablePorEjercer,
+                            FkidPolizaConta = poliza.PkidPoliza,
+                            Descripcion = BuildPolizaDetalleDescripcion(current),
+                            ImporteDebe = importe,
+                            ImporteHaber = null,
+                            FkidReferencia = current.PkidContrato,
+                            FkidTipoDetallePolizaSis = await GetTipoDetalleOrNullAsync(TipoDetallePorEjercer),
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual
+                        });
+
+                        _context.PolizaDetalles.Add(new PolizaDetalle
+                        {
+                            FkidCuentaContableConta = matriz.FkidCuentaContableComprometido,
+                            FkidPolizaConta = poliza.PkidPoliza,
+                            Descripcion = BuildPolizaDetalleDescripcion(current),
+                            ImporteDebe = null,
+                            ImporteHaber = importe,
+                            FkidReferencia = current.PkidContrato,
+                            FkidTipoDetallePolizaSis = await GetTipoDetalleOrNullAsync(TipoDetalleComprometido),
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual
+                        });
+                    }
+
+                    current.Estatus = EstatusConcluido;
+                    current.FkidPolizaConta = poliza.PkidPoliza;
+                    current.Observaciones = AppendObservation(current.Observaciones, $"Remanente liberado por {remanente:0.00}.");
+                    current.FechaModificacion = now;
+                    current.UsuarioModificacion = usuarioActual;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return await RefreshedAsync(id, $"Remanente liberado por {remanente:0.00}. Poliza {poliza.ClavePoliza} generada y balanceada.");
+                });
+            }
+            catch (UserVisibleException ex)
+            {
+                return Failure<EstadoContratoResponse>(ex.UserMessage, ex.Code);
+            }
+            catch (Exception ex)
+            {
+                LogException("liberar remanente", ex);
+                return Failure<EstadoContratoResponse>("No fue posible liberar el remanente del contrato.", "ERROR");
+            }
+        }
+
+        private async Task<PagedResult<EstadoContratoResponse>?> EnsureDetailsFromAutorizacionAsync(
+            int contratoId,
+            int autorizacionId,
+            int usuarioActual)
+        {
+            var hasDetails = await _context.ContratoDetalles
+                .AnyAsync(x => x.FkidContratoPres == contratoId && x.Activo);
+
+            if (hasDetails)
+            {
+                return null;
+            }
+
+            var contrato = await _context.Contratos1
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidContrato == contratoId && x.Activo);
+
+            if (contrato == null)
+            {
+                return Failure<EstadoContratoResponse>("No se encontro el contrato recien creado.", "NOT_FOUND");
+            }
+
+            var detallesAutorizados = await _context.AutorizacionSuficienciaDetalles
+                .AsNoTracking()
+                .Where(x => x.FkidAutorizacionSuficienciaPres == autorizacionId && x.Activo)
+                .ToListAsync();
+
+            if (detallesAutorizados.Count == 0)
+            {
+                return Failure<EstadoContratoResponse>("La autorizacion no tiene partidas para generar el contrato.");
+            }
+
+            var now = DateTime.Now;
+            foreach (var detail in detallesAutorizados)
+            {
+                _context.ContratoDetalles.Add(new ContratoDetalle
+                {
+                    FkidEmpresaSis = contrato.FkidEmpresaSis,
+                    FkidContratoPres = contratoId,
+                    FkidAutorizacionSuficienciaDetallePres = detail.PkidAutorizacionSuficienciaDetalle,
+                    FkidPartidaConta = detail.FkidPartidaConta,
+                    Enero = detail.Enero,
+                    Febrero = detail.Febrero,
+                    Marzo = detail.Marzo,
+                    Abril = detail.Abril,
+                    Mayo = detail.Mayo,
+                    Junio = detail.Junio,
+                    Julio = detail.Julio,
+                    Agosto = detail.Agosto,
+                    Septiembre = detail.Septiembre,
+                    Octubre = detail.Octubre,
+                    Noviembre = detail.Noviembre,
+                    Diciembre = detail.Diciembre,
+                    Observaciones = string.IsNullOrWhiteSpace(detail.Observaciones)
+                        ? "Partida generada desde autorizacion de suficiencia."
+                        : detail.Observaciones,
+                    Activo = true,
+                    FechaCreacion = now,
+                    UsuarioCreacion = usuarioActual
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return null;
+        }
+
+        private async Task<PagedResult<EstadoContratoResponse>?> ValidateMatrizAsync(
+            int anioId,
+            int programaId,
+            IReadOnlyCollection<ContratoDetalle> releaseDetails)
+        {
+            var tipoPolizaExists = await _context.TipoPolizas
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidTipoPoliza == TipoPolizaLiberacionRemanente && x.Activo);
+
+            if (!tipoPolizaExists)
+            {
+                return Failure<EstadoContratoResponse>("No existe el tipo de poliza para liberacion de remanentes.");
+            }
+
+            var matrices = await GetMatricesAsync(anioId, programaId, releaseDetails);
+            var missing = releaseDetails
+                .Select(x => x.FkidPartidaConta)
+                .Distinct()
+                .Where(partida => !matrices.TryGetValue(partida, out var matriz) ||
+                                  matriz.FkidCuentaContablePorEjercer <= 0 ||
+                                  matriz.FkidCuentaContableComprometido <= 0)
+                .ToList();
+
+            return missing.Count == 0
+                ? null
+                : Failure<EstadoContratoResponse>(
+                    $"Falta matriz de conversion con cuentas Por ejercer/Comprometido para partida(s): {string.Join(", ", missing)}.");
+        }
+
+        private async Task<Dictionary<int, MatrizConversion>> GetMatricesAsync(
+            int anioId,
+            int programaId,
+            IReadOnlyCollection<ContratoDetalle> details)
+        {
+            var partidas = details
+                .Select(x => x.FkidPartidaConta)
+                .Distinct()
+                .ToList();
+
+            return await _context.MatrizConversions
+                .AsNoTracking()
+                .Where(x =>
+                    x.Activo &&
+                    x.FkidAnioSis == anioId &&
+                    x.FkidProgramaPres == programaId &&
+                    partidas.Contains(x.FkidPartidaSis))
+                .GroupBy(x => x.FkidPartidaSis)
+                .Select(x => x.First())
+                .ToDictionaryAsync(x => x.FkidPartidaSis);
+        }
+
+        private static List<ContratoDetalle> BuildReleaseDetails(
+            Contrato1 contrato,
+            IReadOnlyCollection<ContratoDetalle> sourceDetails,
+            decimal remanente,
+            int usuarioActual)
+        {
+            var totalSource = sourceDetails.Sum(DetailTotal);
+            if (totalSource <= 0m)
+            {
+                return [];
+            }
+
+            var ratio = Math.Min(1m, remanente / totalSource);
+            var details = sourceDetails
+                .Select(source => new ContratoDetalle
+                {
+                    FkidEmpresaSis = contrato.FkidEmpresaSis,
+                    FkidContratoPres = contrato.PkidContrato,
+                    FkidAutorizacionSuficienciaDetallePres = source.FkidAutorizacionSuficienciaDetallePres,
+                    FkidPartidaConta = source.FkidPartidaConta,
+                    Enero = ReleaseAmount(source.Enero, ratio),
+                    Febrero = ReleaseAmount(source.Febrero, ratio),
+                    Marzo = ReleaseAmount(source.Marzo, ratio),
+                    Abril = ReleaseAmount(source.Abril, ratio),
+                    Mayo = ReleaseAmount(source.Mayo, ratio),
+                    Junio = ReleaseAmount(source.Junio, ratio),
+                    Julio = ReleaseAmount(source.Julio, ratio),
+                    Agosto = ReleaseAmount(source.Agosto, ratio),
+                    Septiembre = ReleaseAmount(source.Septiembre, ratio),
+                    Octubre = ReleaseAmount(source.Octubre, ratio),
+                    Noviembre = ReleaseAmount(source.Noviembre, ratio),
+                    Diciembre = ReleaseAmount(source.Diciembre, ratio),
+                    Observaciones = "Liberacion de remanente del contrato.",
+                    Activo = true,
+                    UsuarioCreacion = usuarioActual
+                })
+                .Where(x => Math.Abs(DetailTotal(x)) > 0m)
+                .ToList();
+
+            if (details.Count == 0)
+            {
+                return details;
+            }
+
+            var targetTotal = -decimal.Round(remanente, 2);
+            var currentTotal = decimal.Round(details.Sum(DetailTotal), 2);
+            var delta = targetTotal - currentTotal;
+            if (delta != 0m)
+            {
+                ApplyDelta(details, delta);
+            }
+
+            return details;
+        }
+
+        private static decimal DetailTotal(ContratoDetalle detail) =>
+            detail.Enero.GetValueOrDefault() +
+            detail.Febrero.GetValueOrDefault() +
+            detail.Marzo.GetValueOrDefault() +
+            detail.Abril.GetValueOrDefault() +
+            detail.Mayo.GetValueOrDefault() +
+            detail.Junio.GetValueOrDefault() +
+            detail.Julio.GetValueOrDefault() +
+            detail.Agosto.GetValueOrDefault() +
+            detail.Septiembre.GetValueOrDefault() +
+            detail.Octubre.GetValueOrDefault() +
+            detail.Noviembre.GetValueOrDefault() +
+            detail.Diciembre.GetValueOrDefault();
+
+        private static decimal? ReleaseAmount(decimal? source, decimal ratio)
+        {
+            var value = source.GetValueOrDefault();
+            return value == 0m ? 0m : -decimal.Round(value * ratio, 2);
+        }
+
+        private static void ApplyDelta(IReadOnlyList<ContratoDetalle> details, decimal delta)
+        {
+            var target = details.FirstOrDefault(x => x.Diciembre.GetValueOrDefault() != 0m) ?? details[0];
+            target.Diciembre = target.Diciembre.GetValueOrDefault() + delta;
+        }
+
+        private async Task<int?> GetTipoDetalleOrNullAsync(int id)
+        {
+            var exists = await _context.TipoDetallePolizas
+                .AsNoTracking()
+                .AnyAsync(x => x.PkIdTipoDetallePoliza == id && x.Activo);
+
+            return exists ? id : null;
+        }
+
+        private async Task<string> BuildPolizaClaveAsync(int contratoId)
+        {
+            var baseClave = $"LR{contratoId}";
+            if (baseClave.Length > 8)
+            {
+                baseClave = $"LR{contratoId % 1000000:000000}";
+            }
+
+            for (var suffix = 0; suffix < 100; suffix++)
+            {
+                var suffixText = suffix == 0 ? string.Empty : suffix.ToString();
+                var maxBaseLength = Math.Max(1, 10 - suffixText.Length);
+                var candidate = baseClave.Length > maxBaseLength
+                    ? baseClave[..maxBaseLength] + suffixText
+                    : baseClave + suffixText;
+
+                var exists = await _context.Polizas
+                    .AsNoTracking()
+                    .AnyAsync(x => x.Activo && x.ClavePoliza == candidate);
+
+                if (!exists)
+                {
+                    return candidate;
+                }
+            }
+
+            return Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
+        }
+
+        private static string BuildPolizaNombre(Contrato1 contrato)
+        {
+            var numero = string.IsNullOrWhiteSpace(contrato.NumeroContrato)
+                ? contrato.PkidContrato.ToString()
+                : contrato.NumeroContrato.Trim();
+
+            return $"Liberacion de remanente del contrato {numero}";
+        }
+
+        private static string BuildPolizaDetalleDescripcion(Contrato1 contrato)
+        {
+            var numero = string.IsNullOrWhiteSpace(contrato.NumeroContrato)
+                ? contrato.PkidContrato.ToString()
+                : contrato.NumeroContrato.Trim();
+
+            return $"Liberacion de remanente contrato {numero}";
+        }
+
+        private static string AppendObservation(string? current, string addition)
+        {
+            return string.IsNullOrWhiteSpace(current)
+                ? addition
+                : $"{current.Trim()} | {addition}";
+        }
+
+        private async Task<PagedResult<EstadoContratoResponse>> RefreshedAsync(int id, string message)
+        {
+            var result = await GetByIdAsync(id);
+            result.Message = message;
+            return result;
+        }
+
+        private static int ResolveResultId(PagedResult<EstadoContratoResponse> result, int fallback)
+        {
+            if (result.Data?.PkidContrato > 0)
+            {
+                return result.Data.PkidContrato;
+            }
+
+            var itemId = result.Items?.FirstOrDefault()?.PkidContrato ?? 0;
+            return itemId > 0 ? itemId : fallback;
+        }
+
+        private async Task<PagedResult<EstadoContratoResponse>?> NormalizeAndValidateAsync(
+            EstadoContratoResponse response,
+            int? currentId)
+        {
+            if (response == null)
+            {
+                return Failure<EstadoContratoResponse>("El contrato no contiene datos.");
+            }
+
+            if (response.FkidAutorizacionSuficienciaPres <= 0)
+            {
+                return Failure<EstadoContratoResponse>("Debe seleccionar una autorizacion de suficiencia.");
+            }
+
+            var autorizacion = await _context.AutorizacionSuficiencia
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.PkidAutorizacionSuficiencia == response.FkidAutorizacionSuficienciaPres &&
+                    x.Activo);
+
+            if (autorizacion == null)
+            {
+                return Failure<EstadoContratoResponse>("La autorizacion de suficiencia no existe o esta inactiva.");
+            }
+
+            if (autorizacion.Estatus < 2)
+            {
+                return Failure<EstadoContratoResponse>("La autorizacion de suficiencia debe estar autorizada antes de generar contrato.");
+            }
+
+            var duplicate = await _context.Contratos1
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidAutorizacionSuficienciaPres == response.FkidAutorizacionSuficienciaPres &&
+                    x.PkidContrato != (currentId ?? response.PkidContrato));
+
+            if (duplicate)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "Ya existe un contrato activo para esta autorizacion de suficiencia.",
+                    "DUPLICATE");
+            }
+
+            if (response.FkidProveedorSis <= 0)
+            {
+                return Failure<EstadoContratoResponse>("Debe seleccionar un proveedor.");
+            }
+
+            var proveedorExists = await _context.Proveedors
+                .AsNoTracking()
+                .AnyAsync(x => x.PkidProveedor == response.FkidProveedorSis && x.Activo);
+
+            if (!proveedorExists)
+            {
+                return Failure<EstadoContratoResponse>("El proveedor seleccionado no existe o esta inactivo.");
+            }
+
+            if (response.FkidPolizaConta.HasValue && response.FkidPolizaConta.Value > 0)
+            {
+                var polizaExists = await _context.Polizas
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidPoliza == response.FkidPolizaConta.Value && x.Activo);
+
+                if (!polizaExists)
+                {
+                    return Failure<EstadoContratoResponse>("La poliza seleccionada no existe o esta inactiva.");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(response.NumeroContrato))
+            {
+                return Failure<EstadoContratoResponse>("El numero de contrato es requerido.");
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Descripcion))
+            {
+                return Failure<EstadoContratoResponse>("La descripcion del contrato es requerida.");
+            }
+
+            if (response.MontoTotal <= 0m)
+            {
+                return Failure<EstadoContratoResponse>("El monto total debe ser mayor a cero.");
+            }
+
+            if (response.FechaContrato == default)
+            {
+                response.FechaContrato = DateOnly.FromDateTime(DateTime.Today);
+            }
+
+            if (response.FechaInicioVigencia.HasValue &&
+                response.FechaFinVigencia.HasValue &&
+                response.FechaFinVigencia.Value < response.FechaInicioVigencia.Value)
+            {
+                return Failure<EstadoContratoResponse>("La fecha fin de vigencia no puede ser anterior al inicio.");
+            }
+
+            response.FkidEmpresaSis = autorizacion.FkidEmpresaSis;
+            response.NumeroContrato = response.NumeroContrato.Trim();
+            response.Descripcion = response.Descripcion.Trim();
+            response.PlazoEjecucion ??= string.Empty;
+            response.Observaciones ??= string.Empty;
+            response.Estatus = response.Estatus <= 0 ? 1 : response.Estatus;
+            response.Activo = true;
+
+            return null;
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, EstadoContratoResponse? response, int? usuarioActual)
         {

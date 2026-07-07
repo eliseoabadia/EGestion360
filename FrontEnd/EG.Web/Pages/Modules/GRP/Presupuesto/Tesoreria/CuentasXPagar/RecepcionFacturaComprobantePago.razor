@@ -1,21 +1,26 @@
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Factura_Pago"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Solicitud_Reintegros"
 @page "/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
 @using EG.Web.Shared
 @using MudBlazor
+@implements IDisposable
 @inherits BaseCrudPage<FacturaResponse, FacturaResponse>
 
 @inject IGenericCrudService<FacturaDetalleResponse> DetalleService
+@inject SucursalStateService SucursalStateService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height:100%;overflow:visible;">
         @if (SelectedFactura == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
                 <PageHeader Title="Recepción de facturas y comprobantes de pago"
                             Subtitle="Facturas recibidas por contrato, con captura parcial por partida"
                             Icon="@Icons.Material.Filled.ReceiptLong"
@@ -23,8 +28,8 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Facturas"
+                <div Style="flex-grow:1;overflow:visible;min-height:0;">
+                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Solicitudes"
                                   SearchPlaceholder="Buscar factura, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -46,15 +51,15 @@
                             <MudTd>
                                 <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(item))" /></MudTooltip>
                                 <DocumentSupportButton Modulo="CuentasXPagar"
-                                                       SubModulo="RecepcionFactura_ComprobantePago"
+                                                       SubModulo="Solicitud_Reintegros"
                                                        Controlador="Factura"
                                                        EntidadId="@item.PkidFactura"
                                                        FkidEmpresaSis="@item.FkidEmpresaSis"
                                                        RegistroTitulo="@TextOrDash(item.NumFactura)"
                                                        RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
-                                <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
+                                <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
                                 <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidFactura))" /></MudTooltip>
-                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
                             </MudTd>
                             <MudTd>@item.PkidFactura</MudTd>
                             <MudTd>@TextOrDash(item.NumFactura)</MudTd>
@@ -70,7 +75,7 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;gap:8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
@@ -80,13 +85,13 @@
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
                     <DocumentSupportButton Modulo="CuentasXPagar"
-                                           SubModulo="RecepcionFactura_ComprobantePago"
+                                           SubModulo="Solicitud_Reintegros"
                                            Controlador="Factura"
                                            EntidadId="@SelectedFactura.PkidFactura"
                                            FkidEmpresaSis="@SelectedFactura.FkidEmpresaSis"
                                            RegistroTitulo="@TextOrDash(SelectedFactura.NumFactura)"
                                            RegistroDescripcion="@($"{TextOrDash(SelectedFactura.NumeroContrato)} | {TextOrDash(SelectedFactura.ProveedorNombre)}")" />
-                    <MudTooltip Text="Provisionar pago"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
+                    <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
                     <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
                 </MudPaper>
 
@@ -100,7 +105,7 @@
                     </MudGrid>
                 </MudPaper>
 
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                <div Style="flex-grow:1;overflow:visible;min-height:0;">
                     <GenericTable TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetallesServerData"
@@ -138,12 +143,18 @@
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "CuentasXPagar";
-    protected override string SubModuleName => "RecepcionFactura_ComprobantePago";
+    protected override string ModuleName => "Tesoreria";
+    protected override string SubModuleName => "Solicitud_Reintegros";
     protected override Type CreateDialogType => typeof(FacturaDialog);
     protected override Type EditDialogType => typeof(FacturaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<FacturaResponse>);
     protected override string GetDefaultSortLabel() => "FechaEmision";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        await SucursalStateService.InitializeAsync();
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<FacturaResponse> items) =>
         items.Select(x => new { x.PkidFactura, x.NumFactura, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.Total, x.EstatusDescripcion });
@@ -246,7 +257,7 @@
             ["PrefillFacturas"] = clcFacturas
         };
 
-        var dialog = await DialogService.ShowAsync<CLCDialog>("Provision del pago", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var dialog = await DialogService.ShowAsync<CLCDialog>("Autorizar solicitud", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if ((await dialog.Result) is { Canceled: false })
         {
             factura.Estatus = Math.Max(factura.Estatus, 2);
@@ -273,4 +284,7 @@
             default: item.Diciembre = value; break;
         }
     }
+
+    private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
+    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
 }

@@ -1,15 +1,20 @@
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Cheque_Transferencia"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago"
 @page "/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Services
 @using EG.Web.Shared
 @using MudBlazor
+@implements IDisposable
 @inherits BaseCrudPage<ChequeResponse, ChequeResponse>
 
 @inject IGenericCrudService<ChequePartidaResponse> PartidaService
+@inject SucursalStateService SucursalStateService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100vh;overflow:hidden;">

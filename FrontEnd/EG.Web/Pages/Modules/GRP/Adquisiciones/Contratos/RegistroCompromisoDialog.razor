@@ -1,8 +1,25 @@
+@using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Contratos
+@using EG.Domain.DTOs.Responses.General
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
+@using EG.Web.Services
 @using MudBlazor
+
 @inject IGenericCrudService<OrcoContratoResponse> Service
+@inject IGenericCrudService<OrdenCompraResponse> OrdenCompraService
+@inject IGenericCrudService<TipoContratoResponse> TipoContratoService
+@inject IGenericCrudService<TipoDocumentoResponse> TipoDocumentoService
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject IGenericCrudService<ModalidadResponse> ModalidadService
+@inject IGenericCrudService<TipoGarantiaResponse> TipoGarantiaService
+@inject IGenericCrudService<ProcedimientoContratacionResponse> ProcedimientoService
+@inject IGenericCrudService<ArticuloResponse> ArticuloService
+@inject IGenericCrudService<FraccionResponse> FraccionService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="OrcoContratoResponse"
@@ -11,77 +28,185 @@
                 ActionText="@ActionText"
                 ProcessingText="@ProcessingText"
                 OnConfirm="SaveAsync">
-    <MudGrid Spacing="2">
-        <MudItem xs="12" md="4">
-            <MudTextField @bind-Value="item.Numero" Label="Numero" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudDatePicker Date="@item.FechaContrato" DateChanged="d => item.FechaContrato = d ?? DateTime.Today" Label="Fecha contrato" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int?" @bind-Value="item.FkidOrdenCompraOrco" Label="Orden de compra" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" Required="true" Lines="2" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int" @bind-Value="item.FkidTipoContratoOrco" Label="Tipo contrato" Variant="Variant.Outlined" Required="true" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int" @bind-Value="item.FkidTipoDocumentoOrco" Label="Tipo documento" Variant="Variant.Outlined" Required="true" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int?" @bind-Value="item.FkidAreaSis" Label="Area" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="decimal" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Format="0.00" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="decimal" @bind-Value="item.MontoMaximo" Label="Monto maximo" Variant="Variant.Outlined" Format="0.00" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="decimal?" @bind-Value="item.Penalizacion" Label="Penalizacion" Variant="Variant.Outlined" Format="0.00" />
-        </MudItem>
-        <MudItem xs="12" md="3">
-            <MudDatePicker Date="@item.FechaRecepcion" DateChanged="d => item.FechaRecepcion = d" Label="Recepcion" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="3">
-            <MudDatePicker Date="@item.FechaFirmaContrato" DateChanged="d => item.FechaFirmaContrato = d" Label="Firma" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="3">
-            <MudDatePicker Date="@item.FechaVigenciaInicio" DateChanged="d => item.FechaVigenciaInicio = d" Label="Inicio vigencia" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="3">
-            <MudDatePicker Date="@item.FechaVigenciaFin" DateChanged="d => item.FechaVigenciaFin = d" Label="Fin vigencia" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int?" @bind-Value="item.FkidModalidadOrco" Label="Modalidad" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int?" @bind-Value="item.FkidProcedimientoContratacionOrco" Label="Procedimiento" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudNumericField T="int?" @bind-Value="item.FkidTipoGarantiaOrco" Label="Tipo garantia" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="item.SesionSubcomite" Label="Sesion subcomite" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="item.FundamentoJuridico" Label="Fundamento juridico" Variant="Variant.Outlined" Lines="2" />
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Variant="Variant.Outlined" Lines="2" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudSwitch T="bool" @bind-Value="item.IsSesionExtraordinaria" Label="Sesion extraordinaria" Color="Color.Primary" />
-        </MudItem>
-        <MudItem xs="12" md="4">
-            <MudDatePicker Date="@item.FechaSesionSubcomite" DateChanged="d => item.FechaSesionSubcomite = d" Label="Fecha subcomite" Variant="Variant.Outlined" />
-        </MudItem>
-    </MudGrid>
+    <BaseEntityForm TEntity="OrcoContratoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@Title">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Selecciona la orden de compra y el formulario completa proveedor, empresa, descripcion base y monto para registrar el compromiso.
+                </MudAlert>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedOrdenCompra"
+                                   ValueChanged="OnOrdenCompraChanged"
+                                   Label="Orden de compra*"
+                                   Required="true"
+                                   RequiredError="La orden de compra es requerida"
+                                   LoadPage="LoadOrdenesCompraPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudTextField Value="@EmpresaText" Label="Empresa" Variant="Variant.Outlined" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudTextField Value="@ProveedorText" Label="Proveedor" Variant="Variant.Outlined" ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudTextField @bind-Value="item.Numero" Label="Numero" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaContrato"
+                               Label="Fecha contrato*"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha del contrato es requerida" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaRecepcion" Label="Recepcion" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudDatePicker @bind-Date="_fechaFirma" Label="Firma" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="item.Descripcion"
+                              Label="Descripcion*"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Lines="2"
+                              MaxLength="500"
+                              RequiredError="La descripcion es requerida" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoContrato"
+                                   ValueChanged="value => _selectedTipoContrato = value"
+                                   Label="Tipo de contrato*"
+                                   Required="true"
+                                   RequiredError="El tipo de contrato es requerido"
+                                   LoadPage="LoadTiposContratoPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedTipoDocumento"
+                                   ValueChanged="value => _selectedTipoDocumento = value"
+                                   Label="Tipo de documento*"
+                                   Required="true"
+                                   RequiredError="El tipo de documento es requerido"
+                                   LoadPage="LoadTiposDocumentoPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="value => _selectedArea = value"
+                                   Label="Area*"
+                                   Required="true"
+                                   RequiredError="El area es requerida"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedModalidad"
+                                   ValueChanged="value => _selectedModalidad = value"
+                                   Label="Modalidad*"
+                                   Required="true"
+                                   RequiredError="La modalidad es requerida"
+                                   LoadPage="LoadModalidadesPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedProcedimiento"
+                                   ValueChanged="OnProcedimientoChanged"
+                                   Label="Procedimiento*"
+                                   Required="true"
+                                   RequiredError="El procedimiento es requerido"
+                                   LoadPage="LoadProcedimientosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <PagedAutocomplete Value="@_selectedGarantia"
+                                   ValueChanged="value => _selectedGarantia = value"
+                                   Label="Tipo garantia*"
+                                   Required="true"
+                                   RequiredError="La garantia es requerida"
+                                   LoadPage="LoadGarantiasPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedArticulo"
+                                   ValueChanged="OnArticuloChanged"
+                                   Label="Articulo"
+                                   Clearable="true"
+                                   LoadPage="LoadArticulosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedFraccion"
+                                   ValueChanged="value => _selectedFraccion = value"
+                                   Label="Fraccion"
+                                   Clearable="true"
+                                   LoadPage="LoadFraccionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudNumericField T="decimal"
+                                 @bind-Value="item.MontoMinimo"
+                                 Label="Monto minimo*"
+                                 Variant="Variant.Outlined"
+                                 Culture="@NumberCulture"
+                                 Format="0.00"
+                                 Min="0m"
+                                 Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudNumericField T="decimal"
+                                 @bind-Value="item.MontoMaximo"
+                                 Label="Monto maximo*"
+                                 Variant="Variant.Outlined"
+                                 Culture="@NumberCulture"
+                                 Format="0.00"
+                                 Min="0m"
+                                 Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudNumericField T="decimal?"
+                                 @bind-Value="item.Penalizacion"
+                                 Label="Penalizacion"
+                                 Variant="Variant.Outlined"
+                                 Culture="@NumberCulture"
+                                 Format="0.00"
+                                 Min="0m" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudTextField Value="@Money(item.MontoMaximo)" Label="Total compromiso" Variant="Variant.Outlined" ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaVigenciaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaVigenciaFin" Label="Fin vigencia" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.FundamentoJuridico" Label="Fundamento juridico" Variant="Variant.Outlined" Lines="2" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Variant="Variant.Outlined" Lines="2" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="item.SesionSubcomite" Label="Sesion subcomite" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSwitch T="bool" @bind-Value="item.IsSesionExtraordinaria" Label="Sesion extraordinaria" Color="Color.Primary" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_fechaSesionSubcomite" Label="Fecha subcomite" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+    </BaseEntityForm>
 </BaseCrudDialog>
 
 @code {
@@ -89,32 +214,130 @@
     [Parameter] public int EmpresaId { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private OrcoContratoResponse item = new() { Activo = true, FechaContrato = DateTime.Today, FkidEstatusContratoOrco = 1 };
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private BaseEntityForm<OrcoContratoResponse> form = null!;
+    private OrcoContratoResponse item = new()
+    {
+        Activo = true,
+        FechaContrato = DateTime.Today,
+        FkidEstatusContratoOrco = 1,
+        Numero = string.Empty,
+        Descripcion = string.Empty
+    };
+
+    private DateTime? _fechaContrato = DateTime.Today;
+    private DateTime? _fechaRecepcion;
+    private DateTime? _fechaFirma;
+    private DateTime? _fechaVigenciaInicio;
+    private DateTime? _fechaVigenciaFin;
+    private DateTime? _fechaSesionSubcomite;
+    private LookupItem? _selectedOrdenCompra;
+    private LookupItem? _selectedTipoContrato;
+    private LookupItem? _selectedTipoDocumento;
+    private LookupItem? _selectedArea;
+    private LookupItem? _selectedModalidad;
+    private LookupItem? _selectedProcedimiento;
+    private LookupItem? _selectedGarantia;
+    private LookupItem? _selectedArticulo;
+    private LookupItem? _selectedFraccion;
+
     private string Title => Id.HasValue ? "Editar Registro de Compromiso" : "Nuevo Registro de Compromiso";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string EmpresaText => string.IsNullOrWhiteSpace(item.EmpresaNombre)
+        ? TextOrDash(SucursalStateService.EmpresaNombre)
+        : item.EmpresaNombre;
+    private string ProveedorText => string.IsNullOrWhiteSpace(item.ProveedorNombre)
+        ? "-"
+        : $"{item.ProveedorNombre} {item.ProveedorRfc}".Trim();
 
     protected override async Task OnInitializedAsync()
     {
+        await SucursalStateService.InitializeAsync();
+
         if (Id.HasValue)
         {
-            var response = await Service.GetByIdAsync(Id.Value);
-            if (response?.Success == true && response.Data != null)
-            {
-                item = response.Data;
-            }
+            await LoadItemAsync(Id.Value);
             return;
         }
 
-        item.FkidEmpresaSis = EmpresaId;
+        item.FkidEmpresaSis = EmpresaId > 0
+            ? EmpresaId
+            : SucursalStateService.EmpresaId ?? 0;
+    }
+
+    private async Task LoadItemAsync(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        if (response?.Success != true || response.Data == null)
+        {
+            Snackbar.Add("No fue posible cargar el registro.", Severity.Error);
+            return;
+        }
+
+        item = response.Data;
+        _fechaContrato = item.FechaContrato == default ? DateTime.Today : item.FechaContrato;
+        _fechaRecepcion = item.FechaRecepcion;
+        _fechaFirma = item.FechaFirmaContrato;
+        _fechaVigenciaInicio = item.FechaVigenciaInicio;
+        _fechaVigenciaFin = item.FechaVigenciaFin;
+        _fechaSesionSubcomite = item.FechaSesionSubcomite;
+
+        _selectedOrdenCompra = item.FkidOrdenCompraOrco.HasValue
+            ? new LookupItem { Id = item.FkidOrdenCompraOrco.Value, Text = BuildOrdenText(item.NumeroOrdenCompra, item.OrdenCompraDescripcion, item.MontoMaximo) }
+            : null;
+        _selectedTipoContrato = new LookupItem { Id = item.FkidTipoContratoOrco, Text = TextOrId(item.TipoContratoDescripcion, item.FkidTipoContratoOrco) };
+        _selectedTipoDocumento = new LookupItem { Id = item.FkidTipoDocumentoOrco, Text = TextOrId(item.TipoDocumentoDescripcion, item.FkidTipoDocumentoOrco) };
+        _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = TextOrId(item.AreaNombre, item.FkidAreaSis.Value) } : null;
+        _selectedModalidad = item.FkidModalidadOrco.HasValue ? new LookupItem { Id = item.FkidModalidadOrco.Value, Text = TextOrId(item.ModalidadDescripcion, item.FkidModalidadOrco.Value) } : null;
+        _selectedProcedimiento = item.FkidProcedimientoContratacionOrco.HasValue ? new LookupItem { Id = item.FkidProcedimientoContratacionOrco.Value, Text = TextOrId(item.ProcedimientoContratacionDescripcion, item.FkidProcedimientoContratacionOrco.Value) } : null;
+        _selectedGarantia = item.FkidTipoGarantiaOrco.HasValue ? new LookupItem { Id = item.FkidTipoGarantiaOrco.Value, Text = TextOrId(item.TipoGarantiaDescripcion, item.FkidTipoGarantiaOrco.Value) } : null;
+        _selectedArticulo = item.FkidArticuloOrco.HasValue ? new LookupItem { Id = item.FkidArticuloOrco.Value, Text = TextOrId(item.ArticuloDescripcion, item.FkidArticuloOrco.Value) } : null;
+        _selectedFraccion = item.FkidFraccionOrco.HasValue ? new LookupItem { Id = item.FkidFraccionOrco.Value, Text = TextOrId(item.FraccionDescripcion, item.FkidFraccionOrco.Value) } : null;
     }
 
     private async Task SaveAsync(bool _)
     {
-        if (EmpresaId > 0)
+        if (!await form.ValidateAsync())
         {
-            item.FkidEmpresaSis = EmpresaId;
+            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
         }
+
+        if (_selectedOrdenCompra == null ||
+            _selectedTipoContrato == null ||
+            _selectedTipoDocumento == null ||
+            _selectedArea == null ||
+            _selectedModalidad == null ||
+            _selectedProcedimiento == null ||
+            _selectedGarantia == null)
+        {
+            Snackbar.Add("Completa los catalogos obligatorios marcados con *.", Severity.Warning);
+            return;
+        }
+
+        item.FkidOrdenCompraOrco = _selectedOrdenCompra.Id;
+        item.FkidTipoContratoOrco = _selectedTipoContrato.Id;
+        item.FkidTipoDocumentoOrco = _selectedTipoDocumento.Id;
+        item.FkidAreaSis = _selectedArea.Id;
+        item.FkidModalidadOrco = _selectedModalidad.Id;
+        item.FkidProcedimientoContratacionOrco = _selectedProcedimiento.Id;
+        item.FkidTipoGarantiaOrco = _selectedGarantia.Id;
+        item.FkidArticuloOrco = _selectedArticulo?.Id;
+        item.FkidFraccionOrco = _selectedFraccion?.Id;
+        item.FechaContrato = _fechaContrato ?? DateTime.Today;
+        item.FechaRecepcion = _fechaRecepcion;
+        item.FechaFirmaContrato = _fechaFirma;
+        item.FechaVigenciaInicio = _fechaVigenciaInicio;
+        item.FechaVigenciaFin = _fechaVigenciaFin;
+        item.FechaSesionSubcomite = _fechaSesionSubcomite;
+        item.FkidEstatusContratoOrco = item.FkidEstatusContratoOrco <= 0 ? 1 : item.FkidEstatusContratoOrco;
+        item.Numero ??= string.Empty;
+        item.FundamentoJuridico ??= string.Empty;
+        item.PlazoEjecucion ??= string.Empty;
+        item.FlArchivo ??= string.Empty;
+        item.Justificacion ??= string.Empty;
+        item.SesionSubcomite ??= string.Empty;
 
         var response = Id.HasValue
             ? await Service.UpdateAsync(item, Id.Value)
@@ -129,4 +352,153 @@
 
         Snackbar.Add(response?.Message ?? "No fue posible guardar el registro.", Severity.Error);
     }
+
+    private async Task OnOrdenCompraChanged(LookupItem? value)
+    {
+        _selectedOrdenCompra = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await OrdenCompraService.GetByIdAsync(value.Id);
+        if (response?.Data == null)
+        {
+            return;
+        }
+
+        var orden = response.Data;
+        item.FkidEmpresaSis = orden.FkidEmpresaSis;
+        item.EmpresaNombre = orden.EmpresaNombre;
+        item.FkidProveedorSis = orden.FkidProveedorSis;
+        item.ProveedorNombre = orden.ProveedorNombre;
+        item.ProveedorRfc = orden.ProveedorRfc;
+        item.NumeroOrdenCompra = orden.NumeroOrdenCompra;
+        item.OrdenCompraDescripcion = orden.Descripcion;
+        item.Descripcion = string.IsNullOrWhiteSpace(item.Descripcion) ? orden.Descripcion : item.Descripcion;
+        item.MontoMaximo = item.MontoMaximo <= 0m ? orden.Total : item.MontoMaximo;
+        item.MontoMinimo = item.MontoMinimo <= 0m ? item.MontoMaximo : item.MontoMinimo;
+        _fechaContrato = _fechaContrato.HasValue && _fechaContrato.Value.Date >= orden.FechaOrdenCompra.Date
+            ? _fechaContrato
+            : orden.FechaOrdenCompra;
+        _fechaRecepcion ??= _fechaContrato;
+    }
+
+    private async Task OnProcedimientoChanged(LookupItem? value)
+    {
+        _selectedProcedimiento = value;
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await ProcedimientoService.GetByIdAsync(value.Id);
+        if (response?.Data != null && string.IsNullOrWhiteSpace(item.FundamentoJuridico))
+        {
+            item.FundamentoJuridico = response.Data.FundamentoJuridico;
+        }
+    }
+
+    private Task OnArticuloChanged(LookupItem? value)
+    {
+        _selectedArticulo = value;
+        _selectedFraccion = null;
+        item.FkidFraccionOrco = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task<ComboLookupResult> LoadOrdenesCompraPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var additional = GetEmpresaFilter();
+        var response = await OrdenCompraService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroOrdenCompra", SortDirection.Descending, additional);
+        return ToComboResult(response?.Items?
+            .Where(x => x.Activo)
+            .Select(x => new LookupItem
+            {
+                Id = x.PkidOrdenCompra,
+                Text = BuildOrdenText(x.NumeroOrdenCompra, x.Descripcion, x.Total)
+            }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposContratoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoContratoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidTipoContrato, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadTiposDocumentoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoDocumentoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidTipoDocumento, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidArea, Text = BuildKeyText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadModalidadesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ModalidadService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidModalidad, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadProcedimientosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProcedimientoService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidProcedimientoContratacion, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadGarantiasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoGarantiaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidTipoGarantia, Text = x.Descripcion }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadArticulosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ArticuloService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidArticulo, Text = BuildKeyText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private async Task<ComboLookupResult> LoadFraccionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var additional = _selectedArticulo == null
+            ? null
+            : new Dictionary<string, object> { ["FkidArticuloOrco"] = _selectedArticulo.Id };
+        var response = await FraccionService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, additional);
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidFraccion, Text = BuildKeyText(x.Clave, x.Descripcion) }), response?.TotalCount);
+    }
+
+    private Dictionary<string, object>? GetEmpresaFilter()
+    {
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        return empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value }
+            : null;
+    }
+
+    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
+    {
+        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private static string BuildOrdenText(string? numero, string? descripcion, decimal total)
+    {
+        var prefix = string.IsNullOrWhiteSpace(numero) ? "OC" : numero;
+        return $"{prefix} - {descripcion} | {Money(total)}";
+    }
+
+    private static string BuildKeyText(string? clave, string? descripcion)
+    {
+        return string.IsNullOrWhiteSpace(clave)
+            ? descripcion ?? string.Empty
+            : $"{clave} - {descripcion}".Trim();
+    }
+
+    private static string TextOrId(string? text, int id) => string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private static string Money(decimal value) => $"${value.ToString("0.00", NumberCulture)}";
 }

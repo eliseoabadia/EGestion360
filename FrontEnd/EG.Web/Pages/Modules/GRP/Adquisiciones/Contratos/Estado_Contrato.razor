@@ -18,7 +18,8 @@
         <PageHeader Title="Estado de Contrato"
                     Subtitle="Seguimiento operativo de contratos presupuestales"
                     Icon="@Icons.Material.Filled.FactCheck"
-                    CanCreate="false"
+                    CanCreate="@CanCreate"
+                    OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
         <MudGrid Spacing="2" Class="mb-2">
@@ -77,13 +78,37 @@
                                            RegistroTitulo="@TextOrDash(item.NumeroContrato)"
                                            RegistroDescripcion="@($"{TextOrDash(item.ProveedorNombre)} | {TextOrDash(item.Descripcion)}")"
                                            CanManage="@(!IsLocked(item))" />
-                    <MudTooltip Text="Cambiar estado">
+                    <MudTooltip Text="Autorizar contrato">
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                       Visible="@CanAuthorize"
+                                       Disabled="@(!CanAuthorizeItem(item))"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       OnClick="@(() => Autorizar(item))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Liberar remanente y cerrar">
+                        <MudIconButton Icon="@Icons.Material.Filled.PriceCheck"
+                                       Visible="@CanAuthorize"
+                                       Disabled="@(!CanReleaseItem(item))"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => LiberarRemanente(item))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Editar borrador">
                         <MudIconButton Icon="@Icons.Material.Filled.Rule"
                                        Visible="@CanUpdate"
                                        Disabled="@IsLocked(item)"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        OnClick="@(() => EditItem(item.PkidContrato))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Visible="@CanDelete"
+                                       Disabled="@IsLocked(item)"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteItem(item.PkidContrato))" />
                     </MudTooltip>
                 </MudTd>
                 <MudTd>
@@ -108,7 +133,7 @@
 </AccessVerification>
 
 <style>
-    .contratos-dashboard { height: 100vh; overflow: hidden; padding: 12px; display: flex; flex-direction: column; }
+    .contratos-dashboard { min-height: 100%; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow: visible; }
     .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
     .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
     .metric-card strong { color: #111827; font-size: 1.15rem; line-height: 1.4; overflow-wrap: anywhere; }
@@ -135,8 +160,14 @@
         await SucursalStateService.InitializeAsync();
     }
 
-    protected override Task CreateItem() => Task.CompletedTask;
-    protected override Task DeleteItem(int id) => Task.CompletedTask;
+    protected override async Task CreateItem()
+    {
+        var parameters = new DialogParameters { ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0 };
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear Estado de Contrato", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await ReloadData();
+    }
 
     protected override async Task EditItem(int id)
     {
@@ -145,7 +176,27 @@
             return;
         }
 
-        await base.EditItem(id);
+        var parameters = new DialogParameters { ["Id"] = id, ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0 };
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar Estado de Contrato", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await ReloadData();
+    }
+
+    protected override async Task DeleteItem(int id)
+    {
+        if (await IsItemLockedAsync(id))
+        {
+            return;
+        }
+
+        await base.DeleteItem(id);
+    }
+
+    protected override Task<string> GetItemNameForDelete(int id)
+    {
+        var item = Elements.FirstOrDefault(x => x.PkidContrato == id);
+        return Task.FromResult(item?.NumeroContrato ?? "el contrato");
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<EstadoContratoResponse> items) => items.Select(x => new
@@ -187,6 +238,60 @@
         return true;
     }
 
+    private async Task Autorizar(EstadoContratoResponse item)
+    {
+        if (!CanAuthorizeItem(item))
+        {
+            Snackbar.Add("El contrato no esta listo para autorizar.", Severity.Warning);
+            return;
+        }
+
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar contrato",
+                $"Seguro que deseas autorizar el contrato {TextOrDash(item.NumeroContrato)}? Quedara bloqueado para altas, cambios y bajas.",
+                "Autorizar",
+                Severity.Success,
+                item.PkidContrato))
+        {
+            return;
+        }
+
+        var result = await Service.PostActionAsync($"{item.PkidContrato}/autorizar");
+        Snackbar.Add(result?.Message ?? (result?.Success == true ? "Contrato autorizado." : "No fue posible autorizar."), result?.Success == true ? Severity.Success : Severity.Error);
+        if (result?.Success == true)
+        {
+            await ReloadData();
+        }
+    }
+
+    private async Task LiberarRemanente(EstadoContratoResponse item)
+    {
+        if (!CanReleaseItem(item))
+        {
+            Snackbar.Add("Solo se puede liberar remanente de contratos vigentes.", Severity.Warning);
+            return;
+        }
+
+        if (!await ConfirmWorkflowAsync(
+                "Liberar remanente",
+                $"Seguro que deseas liberar el remanente y cerrar el contrato {TextOrDash(item.NumeroContrato)}? Se generara la poliza correspondiente.",
+                "Liberar",
+                Severity.Warning,
+                item.PkidContrato))
+        {
+            return;
+        }
+
+        var result = await Service.PostActionAsync($"{item.PkidContrato}/liberar-remanente");
+        Snackbar.Add(result?.Message ?? (result?.Success == true ? "Remanente liberado." : "No fue posible liberar el remanente."), result?.Success == true ? Severity.Success : Severity.Error);
+        if (result?.Success == true)
+        {
+            await ReloadData();
+        }
+    }
+
+    private bool CanAuthorizeItem(EstadoContratoResponse? item) => item != null && CanAuthorize && item.Estatus == 1;
+    private bool CanReleaseItem(EstadoContratoResponse? item) => item != null && CanAuthorize && item.Estatus == 2;
     private static bool IsLocked(EstadoContratoResponse? item) => item?.PuedeModificar == false;
     private static string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;

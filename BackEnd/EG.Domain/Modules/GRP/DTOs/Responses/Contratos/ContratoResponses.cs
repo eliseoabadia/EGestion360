@@ -61,41 +61,58 @@ namespace EG.Domain.DTOs.Responses.Contratos
 
     public class SaldosContratoResponse
     {
-        public int PkidContrato { get; set; }
-        public int FkidEmpresaSis { get; set; }
-        public int FkidAutorizacionSuficienciaPres { get; set; }
-        public int? FkidRequisicionOrco { get; set; }
-        public int? FkidPolizaConta { get; set; }
-        public int FkidProveedorSis { get; set; }
+        public int PkidEgresoAutorizado { get; set; }
+        public int? FkidEgresoProyectadoPres { get; set; }
         public int? FkidAnioSis { get; set; }
-        public int? FkidEgresoAutorizadoPres { get; set; }
-        public int? FkidProgramaPres { get; set; }
+        public int? AnioClave { get; set; }
+        public int FkidProgramaPres { get; set; }
+        public string? ProgramaClave { get; set; }
+        public string? ProgramaDescripcion { get; set; }
+        public string? ProgramaClaveNombre { get; set; }
+        public int FkidPartidaConta { get; set; }
+        public string? PartidaClave { get; set; }
+        public string? PartidaDescripcion { get; set; }
+        public string? PartidaClaveNombre { get; set; }
+        public int FkidAreaSis { get; set; }
+        public string? AreaClave { get; set; }
+        public string? AreaNombre { get; set; }
         public int? FkidFuenteFinanciamientoPres { get; set; }
-        public string NumeroContrato { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public DateOnly FechaContrato { get; set; } = DateOnly.FromDateTime(DateTime.Today);
-        public DateOnly? FechaInicioVigencia { get; set; }
-        public DateOnly? FechaFinVigencia { get; set; }
-        public decimal MontoTotal { get; set; }
-        public string? PlazoEjecucion { get; set; }
-        public string? Observaciones { get; set; }
-        public int Estatus { get; set; }
-        public decimal Ene { get; set; }
-        public decimal Feb { get; set; }
-        public decimal Mar { get; set; }
-        public decimal Abr { get; set; }
-        public decimal May { get; set; }
-        public decimal Jun { get; set; }
-        public decimal Jul { get; set; }
-        public decimal Ago { get; set; }
-        public decimal Sep { get; set; }
-        public decimal Oct { get; set; }
-        public decimal Nov { get; set; }
-        public decimal Dic { get; set; }
-        public decimal TotalContratado { get; set; }
-        public decimal TotalDevengado { get; set; }
-        public decimal Total { get; set; }
-        public string Message { get; set; } = string.Empty;
+        public string? FuenteFinanciamientoClave { get; set; }
+        public string? FuenteFinanciamientoDescripcion { get; set; }
+        public string? FuenteFinanciamientoClaveNombre { get; set; }
+        public int? FkidTipoGastoPres { get; set; }
+        public int? TipoGastoClave { get; set; }
+        public string? TipoGastoDescripcion { get; set; }
+        public string? TipoGastoClaveNombre { get; set; }
+        public int? FkidDigitoIdentificadorPres { get; set; }
+        public string? DigitoIdentificadorClave { get; set; }
+        public string? DigitoIdentificadorDescripcion { get; set; }
+        public string? DigitoIdentificadorClaveNombre { get; set; }
+        public int? FkidDestinoGastoPres { get; set; }
+        public string? DestinoGastoClave { get; set; }
+        public string? DestinoGastoDescripcion { get; set; }
+        public string? DestinoGastoClaveNombre { get; set; }
+        public int? FkidPyPres { get; set; }
+        public string? PyClave { get; set; }
+        public string? PyDescripcion { get; set; }
+        public string? PyClaveNombre { get; set; }
+        public string? Descripcion { get; set; }
+        public DateOnly Fecha { get; set; }
+        public decimal? Enero { get; set; }
+        public decimal? Febrero { get; set; }
+        public decimal? Marzo { get; set; }
+        public decimal? Abril { get; set; }
+        public decimal? Mayo { get; set; }
+        public decimal? Junio { get; set; }
+        public decimal? Julio { get; set; }
+        public decimal? Agosto { get; set; }
+        public decimal? Septiembre { get; set; }
+        public decimal? Octubre { get; set; }
+        public decimal? Noviembre { get; set; }
+        public decimal? Diciembre { get; set; }
+        public decimal? Total { get; set; }
+        public string? Message { get; set; }
+        public string? DescripcionRequisicion { get; set; }
     }
 
     public class EstadoContratoResponse

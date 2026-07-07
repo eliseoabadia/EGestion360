@@ -142,7 +142,8 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IRegistroCompromisoAppService, RegistroCompromisoAppService>();
             services.AddScoped<IAdquisicionCrudAppService<OrcoContratoResponse>>(sp => sp.GetRequiredService<IRegistroCompromisoAppService>());
             services.AddScoped<IAdquisicionCrudAppService<SaldosContratoResponse>, SaldosContratoAppService>();
-            services.AddScoped<IAdquisicionCrudAppService<EstadoContratoResponse>, EstadoContratoAppService>();
+            services.AddScoped<IEstadoContratoAppService, EstadoContratoAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<EstadoContratoResponse>>(sp => sp.GetRequiredService<IEstadoContratoAppService>());
 
             // Application services - Presupuesto comprometido
             services.AddScoped<IAdquisicionCrudAppService<AutorizacionSuficienciaResponse>, AutorizacionSuficienciaAppService>();
