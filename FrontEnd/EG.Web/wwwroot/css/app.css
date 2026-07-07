@@ -163,9 +163,13 @@ body,
 .mud-dialog {
     border-radius: 8px !important;
     overflow: hidden;
+    max-height: calc(100dvh - 24px) !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .mud-dialog .mud-dialog-title {
+    flex: 0 0 auto;
     min-height: 44px;
     padding: 10px 20px 8px !important;
     border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 18%, var(--mud-palette-lines-default));
@@ -197,10 +201,15 @@ body,
 }
 
 .mud-dialog .mud-dialog-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
     padding: 12px 20px 4px !important;
 }
 
 .mud-dialog .mud-dialog-actions {
+    flex: 0 0 auto;
     gap: 8px;
     padding: 10px 20px 14px !important;
     border-top: 1px solid var(--mud-palette-lines-default);
@@ -359,14 +368,17 @@ body,
 
 /* Shared operational page layout */
 .eg-operation-page {
-    height: 100vh;
-    overflow: hidden;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
 }
 
 .eg-table-shell {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
+    min-height: 360px;
+    overflow: visible;
 }
 
 .eg-summary-strip {

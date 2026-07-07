@@ -10,8 +10,11 @@
 @inject IGenericCrudService<PersonaResponse> personaService
 @inject IGenericCrudService<AreaResponse> areaCatalogService
 @inject IGenericCrudService<UsuarioAreaResponse> usuarioAreaService
+@inject IGenericCrudService<DepartamentoResponse> departamentoService
+@inject IGenericCrudService<UsuarioDepartamentoResponse> usuarioDepartamentoService
 @inject IGenericCrudService<SucursalResponse> sucursalService
 @inject IGenericCrudService<UsuarioSucursalResponse> usuarioSucursalService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="UsuarioResponse"
@@ -33,7 +36,8 @@
             <!-- Empresa -->
             <MudItem xs="12" md="6">
                 <MudSelect Label="Empresa"
-                           @bind-Value="usuario.IdEmpresa"
+                           Value="@usuario.IdEmpresa"
+                           ValueChanged="OnEmpresaChanged"
                            T="int"
                            Variant="Variant.Outlined"
                            Required="true"
@@ -180,6 +184,105 @@
                 </MudItem>
             }
 
+            <MudItem xs="12">
+                <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
+                    <div class="d-flex align-center justify-space-between mb-2">
+                        <MudText Typo="Typo.subtitle2">Departamentos asignados</MudText>
+                        <MudChip T="string"
+                                 Color="@(_departamentosUsuario.Count > 0 ? Color.Success : Color.Default)"
+                                 Variant="Variant.Outlined"
+                                 Size="Size.Small">
+                            @_departamentosUsuario.Count
+                        </MudChip>
+                    </div>
+                    <MudDivider Class="mb-3" />
+
+                    @if (!Id.HasValue)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                            Guarda el usuario para asignarle departamentos.
+                        </MudAlert>
+                    }
+                    else if (!TieneEmpresasParaDepartamento)
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                            Selecciona la empresa del usuario para cargar sus departamentos.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid Spacing="2" Class="mb-3">
+                            <MudItem xs="12" md="7">
+                                <PagedAutocomplete Value="@_selectedDepartamento"
+                                                   ValueChanged="@((LookupItem? item) => _selectedDepartamento = item)"
+                                                   Label="Seleccione un departamento de sus empresas"
+                                                   LoadPage="LoadDepartamentosPageAsync" />
+                            </MudItem>
+                            <MudItem xs="12" md="2" Class="d-flex align-center">
+                                <MudCheckBox @bind-Value="_departamentoEsJefe"
+                                             Color="Color.Primary"
+                                             Label="Es jefe" />
+                            </MudItem>
+                            <MudItem xs="12" md="3" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.AccountTree"
+                                           Disabled="@(_selectedDepartamento == null || _savingDepartamento)"
+                                           OnClick="AsignarDepartamentoUsuarioAsync">
+                                    Asignar departamento
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+
+                        @if (_loadingDepartamentosUsuario)
+                        {
+                            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                        }
+                        else if (!_departamentosUsuario.Any())
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                                Este usuario no tiene departamentos asignados.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <MudTable Items="@_departamentosUsuario" Dense="true" Hover="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Empresa</MudTh>
+                                    <MudTh>Departamento</MudTh>
+                                    <MudTh>Rol</MudTh>
+                                    <MudTh Style="width: 56px;"></MudTh>
+                                </HeaderContent>
+                                <RowTemplate Context="departamentoAsignado">
+                                    <MudTd DataLabel="Empresa">@departamentoAsignado.EmpresaNombre</MudTd>
+                                    <MudTd DataLabel="Departamento">@departamentoAsignado.DepartamentoNombre</MudTd>
+                                    <MudTd DataLabel="Rol">
+                                        @if (departamentoAsignado.EsJefe)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Jefe</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Miembro</MudChip>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Acciones" Class="text-right">
+                                        <MudTooltip Text="Retirar departamento">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                           Color="Color.Error"
+                                                           Size="Size.Small"
+                                                           Disabled="@_savingDepartamento"
+                                                           OnClick="@(() => EliminarDepartamentoUsuarioAsync(departamentoAsignado))" />
+                                        </MudTooltip>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+
             <!-- Estado del Usuario -->
             <MudItem xs="12">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
@@ -298,6 +401,11 @@
     private List<UsuarioAreaResponse> _areasPersona = new();
     private bool _loadingAreasPersona;
     private bool _savingArea;
+    private LookupItem? _selectedDepartamento;
+    private List<UsuarioDepartamentoResponse> _departamentosUsuario = new();
+    private bool _loadingDepartamentosUsuario;
+    private bool _savingDepartamento;
+    private bool _departamentoEsJefe;
 
     protected override async Task OnInitializedAsync()
     {
@@ -338,6 +446,14 @@
         }
     }
 
+    private Task OnEmpresaChanged(int empresaId)
+    {
+        usuario.IdEmpresa = empresaId;
+        usuario.PkidEmpresa = empresaId;
+        _selectedDepartamento = null;
+        return Task.CompletedTask;
+    }
+
     private async Task CargarUsuario()
     {
         try
@@ -346,6 +462,7 @@
             if (response?.Success == true && response.Data != null)
             {
                 usuario = response.Data;
+                NormalizarEmpresaUsuario();
                 if (usuario.IdPersona.HasValue)
                 {
                     _selectedPersona = new LookupItem
@@ -358,6 +475,8 @@
                     await CargarDatosPersona(usuario.IdPersona.Value);
                     await CargarAreasPersona(usuario.IdPersona.Value);
                 }
+
+                await CargarDepartamentosUsuario();
             }
             else
             {
@@ -552,6 +671,215 @@
             : $"{area.Clave} - {area.Descripcion}".Trim();
     }
 
+    private bool TieneEmpresasParaDepartamento => GetEmpresasDisponiblesParaDepartamento().Any();
+
+    private async Task<ComboLookupResult> LoadDepartamentosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var empresaIds = GetEmpresasDisponiblesParaDepartamento().ToList();
+        if (empresaIds.Count == 0)
+        {
+            return new ComboLookupResult
+            {
+                Items = Enumerable.Empty<LookupItem>(),
+                TotalCount = 0
+            };
+        }
+
+        var departamentos = new List<DepartamentoResponse>();
+
+        foreach (var empresaId in empresaIds)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var response = await departamentoService.GetActionAsync($"empresa/{empresaId}");
+            if (response?.Success == true && response.Items != null)
+            {
+                departamentos.AddRange(response.Items.Where(x =>
+                    x.DepartamentoActivo &&
+                    x.PkidEmpresa == empresaId));
+            }
+        }
+
+        var query = departamentos
+            .GroupBy(x => x.PkidDepartamento)
+            .Select(x => x.First())
+            .AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            query = query.Where(x =>
+                (x.DepartamentoNombre ?? string.Empty).Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                (x.EmpresaNombre ?? string.Empty).Contains(filter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var ordered = query
+            .OrderBy(x => x.EmpresaNombre)
+            .ThenBy(x => x.DepartamentoNombre)
+            .ToList();
+
+        return new ComboLookupResult
+        {
+            Items = ordered
+                .Skip(Math.Max(page - 1, 0) * pageSize)
+                .Take(pageSize)
+                .Select(departamento => new LookupItem
+                {
+                    Id = departamento.PkidDepartamento,
+                    Text = FormatDepartamentoText(departamento)
+                }),
+            TotalCount = ordered.Count
+        };
+    }
+
+    private async Task CargarDepartamentosUsuario()
+    {
+        if (!Id.HasValue)
+            return;
+
+        _loadingDepartamentosUsuario = true;
+        try
+        {
+            var response = await usuarioDepartamentoService.GetActionAsync($"usuario/{Id.Value}");
+            if (response?.Success == true)
+            {
+                _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
+            }
+            else
+            {
+                _departamentosUsuario.Clear();
+                Snackbar.Add(response?.Message ?? "No se pudieron cargar los departamentos del usuario", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            _departamentosUsuario.Clear();
+            Snackbar.Add($"Error al cargar departamentos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingDepartamentosUsuario = false;
+        }
+    }
+
+    private async Task AsignarDepartamentoUsuarioAsync()
+    {
+        if (!Id.HasValue)
+        {
+            Snackbar.Add("Guarda el usuario antes de asignarle departamentos", Severity.Warning);
+            return;
+        }
+
+        if (_selectedDepartamento == null)
+        {
+            Snackbar.Add("Selecciona un departamento", Severity.Warning);
+            return;
+        }
+
+        if (_departamentosUsuario.Any(x => x.DepartamentoId == _selectedDepartamento.Id))
+        {
+            Snackbar.Add("El departamento ya esta asignado al usuario", Severity.Info);
+            _selectedDepartamento = null;
+            _departamentoEsJefe = false;
+            return;
+        }
+
+        _savingDepartamento = true;
+        try
+        {
+            var request = new UsuarioDepartamentoAsignacionRequest
+            {
+                UsuarioId = Id.Value,
+                DepartamentoId = _selectedDepartamento.Id,
+                EsJefe = _departamentoEsJefe
+            };
+
+            var response = await usuarioDepartamentoService.PostActionAsync("usuario-departamento", request);
+            if (response?.Success == true)
+            {
+                _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
+                _selectedDepartamento = null;
+                _departamentoEsJefe = false;
+                Snackbar.Add(response.Message ?? "Departamento asignado correctamente", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo asignar el departamento", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al asignar departamento: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingDepartamento = false;
+        }
+    }
+
+    private async Task EliminarDepartamentoUsuarioAsync(UsuarioDepartamentoResponse departamento)
+    {
+        if (!Id.HasValue)
+            return;
+
+        _savingDepartamento = true;
+        try
+        {
+            var response = await usuarioDepartamentoService.DeleteActionAsync($"{Id.Value}/{departamento.DepartamentoId}");
+            if (response?.Success == true)
+            {
+                _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
+                Snackbar.Add(response.Message ?? "Departamento retirado correctamente", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudo retirar el departamento", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al retirar departamento: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingDepartamento = false;
+        }
+    }
+
+    private IEnumerable<int> GetEmpresasDisponiblesParaDepartamento()
+    {
+        var ids = new HashSet<int>();
+        var empresaPrincipal = GetEmpresaUsuarioId();
+
+        if (empresaPrincipal > 0)
+        {
+            ids.Add(empresaPrincipal);
+        }
+
+        foreach (var empresa in _empresasUsuario.Where(x => x.Asignada && x.IdEmpresa > 0))
+        {
+            ids.Add(empresa.IdEmpresa);
+        }
+
+        return ids;
+    }
+
+    private int GetEmpresaUsuarioId()
+    {
+        return usuario.IdEmpresa > 0
+            ? usuario.IdEmpresa
+            : usuario.PkidEmpresa;
+    }
+
+    private static string FormatDepartamentoText(DepartamentoResponse departamento)
+    {
+        var nombre = departamento.DepartamentoNombre ?? string.Empty;
+        var empresa = departamento.EmpresaNombre ?? string.Empty;
+
+        return string.IsNullOrWhiteSpace(empresa)
+            ? nombre
+            : $"{empresa} - {nombre}".Trim();
+    }
+
     private async Task CargarEmpresasUsuario()
     {
         if (!Id.HasValue)
@@ -629,6 +957,7 @@
             if (response?.Success == true)
             {
                 empresa.Asignada = asignar;
+                _selectedDepartamento = null;
                 Snackbar.Add(asignar
                     ? "Empresa asignada al usuario"
                     : "Empresa retirada del usuario",
@@ -652,18 +981,21 @@
 
     private async Task GuardarCambiosAsync(bool _)
     {
+        NormalizarEmpresaUsuario();
+
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Por favor, completa todos los campos requeridos correctamente.", Severity.Warning);
             return;
         }
 
-        if (usuario.IdEmpresa == null || usuario.IdEmpresa <= 0)
+        if (usuario.IdEmpresa <= 0)
         {
             Snackbar.Add("Debe seleccionar una empresa", Severity.Warning);
             return;
         }
 
+        usuario.PkidEmpresa = usuario.IdEmpresa;
         usuario.IdPersona = _selectedPersona?.Id;
 
         try
@@ -693,6 +1025,24 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void NormalizarEmpresaUsuario()
+    {
+        if (usuario.IdEmpresa <= 0 && usuario.PkidEmpresa > 0)
+        {
+            usuario.IdEmpresa = usuario.PkidEmpresa;
+        }
+
+        if (usuario.IdEmpresa <= 0 && SucursalStateService.EmpresaId.GetValueOrDefault() > 0)
+        {
+            usuario.IdEmpresa = SucursalStateService.EmpresaId.Value;
+        }
+
+        if (usuario.PkidEmpresa <= 0 && usuario.IdEmpresa > 0)
+        {
+            usuario.PkidEmpresa = usuario.IdEmpresa;
         }
     }
 

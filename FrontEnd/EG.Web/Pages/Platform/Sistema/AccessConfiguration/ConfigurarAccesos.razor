@@ -428,10 +428,10 @@
     .access-page {
         display: flex;
         flex-direction: column;
-        height: 100%;
-        min-height: 0;
+        height: auto;
+        min-height: 100%;
         padding: 12px;
-        overflow: hidden;
+        overflow: visible;
         background:
             linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-primary) 9%, transparent), transparent 38%),
             linear-gradient(45deg, color-mix(in srgb, var(--mud-palette-success) 7%, transparent), transparent 42%),
@@ -472,7 +472,7 @@
 
     .access-grid {
         align-items: stretch;
-        height: 100%;
+        height: auto;
         min-height: 0;
     }
 
@@ -482,10 +482,10 @@
         background: color-mix(in srgb, var(--mud-palette-surface) 98%, white);
         box-shadow: var(--mud-elevation-1);
         display: flex;
-        flex: 1 1 auto;
+        flex: 0 0 auto;
         flex-direction: column;
         min-height: 0;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .access-tabs > .mud-tabs-toolbar {
@@ -495,19 +495,19 @@
     .access-tabs > .mud-tabs-panels {
         flex: 1 1 auto;
         min-height: 0;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .access-tabs .mud-tabs-panel {
-        height: 100%;
+        height: auto;
         min-height: 0;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .tab-surface {
-        height: 100%;
+        height: auto;
         min-height: 0;
-        overflow: hidden;
+        overflow: visible;
         padding: 12px;
         background: color-mix(in srgb, var(--mud-palette-primary) 3%, var(--mud-palette-background));
     }
@@ -521,7 +521,7 @@
 
     .tab-grid.users-tab {
         grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-        height: 100%;
+        height: auto;
     }
 
     .access-panel {
@@ -531,7 +531,7 @@
     }
 
     .access-left-stack {
-        height: 100%;
+        height: auto;
         min-height: 0;
     }
 
@@ -603,14 +603,14 @@
 
     .user-command-panel,
     .role-picker-panel {
-        height: 100%;
+        height: auto;
         min-height: 0;
     }
 
     .role-picker-panel {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .user-profile-card {
@@ -690,12 +690,12 @@
 
     .users-panel,
     .claims-panel {
-        height: 100%;
+        height: auto;
         min-height: 0;
     }
 
     .claims-panel {
-        overflow: hidden;
+        overflow: visible;
     }
 
     .assigned-users-shell {
@@ -750,8 +750,8 @@
     }
 
     .claim-scroll {
-        height: calc(100vh - 252px);
-        min-height: 496px;
+        height: auto;
+        min-height: 360px;
         overflow-y: auto;
         padding-right: 4px;
     }

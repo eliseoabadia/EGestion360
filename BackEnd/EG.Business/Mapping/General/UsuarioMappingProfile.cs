@@ -68,7 +68,9 @@ namespace EG.Business.Mapping.General
             config.NewConfig<VwUsuarioEmpresa, UsuarioResponse>()
                 .Map(dest => dest.PkIdUsuario, src => src.PkIdUsuario)
                 .Map(dest => dest.AspNetUserId, src => src.AspNetUserId)
-                .Map(dest => dest.IdEmpresa, src => src.IdEmpresa ?? 0)
+                .Map(dest => dest.IdEmpresa, src => src.IdEmpresa.HasValue && src.IdEmpresa.Value > 0
+                        ? src.IdEmpresa.Value
+                        : src.PkidEmpresa)
                 .Map(dest => dest.Nombre, src => src.Nombre)
                 .Map(dest => dest.ApellidoPaterno, src => src.ApellidoPaterno)
                 .Map(dest => dest.ApellidoMaterno, src => src.ApellidoMaterno)
@@ -120,6 +122,19 @@ namespace EG.Business.Mapping.General
                 .Map(dest => dest.EmailPersona, src => src.EmailPersona)
                 .Map(dest => dest.TelefonoParticular, src => src.TelefonoParticular)
                 .Map(dest => dest.TelefonoMovil, src => src.TelefonoMovil);
+
+            // Mapeo del contrato que recibe el controlador al DTO real de persistencia.
+            config.NewConfig<UsuarioResponse, UsuarioDto>()
+                .Map(dest => dest.PkIdUsuario, src => src.PkIdUsuario)
+                .Map(dest => dest.FkidEmpresaSis, src => src.IdEmpresa > 0 ? src.IdEmpresa : src.PkidEmpresa)
+                .Map(dest => dest.FkidPersonaNom, src => src.IdPersona)
+                .Map(dest => dest.AspNetUserId, src => src.AspNetUserId)
+                .Map(dest => dest.PayrollId, src => src.PayrollId)
+                .Map(dest => dest.FkidIdiomaPreferidoSis, src => src.IdIdiomaPreferido)
+                .Map(dest => dest.FkidMonedaPreferidaSis, src => src.IdMonedaPreferida)
+                .Map(dest => dest.EsAdministrador, src => src.EsAdministrador)
+                .Map(dest => dest.Activo, src => src.UsuarioActivo)
+                .IgnoreNullValues(true);
 
             // Mapeo de UsuarioDto (Request) a Usuario (entidad)
             config.NewConfig<UsuarioDto, Usuario>()

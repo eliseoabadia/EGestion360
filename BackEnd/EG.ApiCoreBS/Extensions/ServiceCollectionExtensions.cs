@@ -95,6 +95,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INotificacionAppService, NotificacionAppService>();
             services.AddScoped<IUserProfileAppService, UserProfileAppService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
+            services.AddScoped<IUsuarioDepartamentoAppService, UsuarioDepartamentoAppService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();
             services.AddSingleton<IDocumentRagAppService, DocumentRagAppService>();
             services.AddSingleton<IFirmaCertificateProtector, AesFirmaCertificateProtector>();

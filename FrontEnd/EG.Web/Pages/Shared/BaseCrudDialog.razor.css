@@ -17,6 +17,23 @@
     color: var(--eg-primary, var(--mud-palette-primary));
 }
 
+::deep .mud-dialog.crud-dialog {
+    max-height: calc(100dvh - 24px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+::deep .mud-dialog.crud-dialog .mud-dialog-title {
+    flex: 0 0 auto;
+}
+
+::deep .mud-dialog.crud-dialog .mud-dialog-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+}
+
 ::deep .mud-dialog.crud-dialog > .mud-dialog-title > .mud-button-root:not(.crud-dialog-close) {
     display: none !important;
 }
@@ -28,6 +45,7 @@
 
 .crud-dialog-shell {
     margin: 0 0 8px;
+    max-height: none;
     padding: 14px 16px 12px;
     border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 24%, var(--mud-palette-lines-default));
     border-top: 3px solid var(--eg-primary, var(--mud-palette-primary));

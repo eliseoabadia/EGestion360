@@ -48,6 +48,7 @@ public static class ApiServiceExtensions
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<VwUsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<UsuarioAreaResponse>(services, "api/UsuarioArea");
+        RegisterCrud<UsuarioDepartamentoResponse>(services, "api/UsuarioDepartamento");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
 
         RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");

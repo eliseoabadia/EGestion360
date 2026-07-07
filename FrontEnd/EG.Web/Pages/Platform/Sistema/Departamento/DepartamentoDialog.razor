@@ -66,6 +66,7 @@
 
 @code {
     [Parameter] public int? Id { get; set; }
+    [Parameter] public int? EmpresaId { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -85,6 +86,10 @@
         if (Id.HasValue)
         {
             await CargarDepartamento();
+        }
+        else if (EmpresaId.HasValue && EmpresaId.Value > 0)
+        {
+            departamento.PkidEmpresa = EmpresaId.Value;
         }
         else if (SucursalStateService.EmpresaId.HasValue)
         {

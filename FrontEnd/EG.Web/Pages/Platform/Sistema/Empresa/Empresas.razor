@@ -46,6 +46,13 @@
                                        Size="Size.Small"
                                        OnClick="@(() => EditItem(empresa.PkidEmpresa))" />
                     </MudTooltip>
+                    <MudTooltip Text="Agregar departamento a esta empresa">
+                        <MudIconButton Icon="@Icons.Material.Filled.DomainAdd"
+                                       Visible="@CanCreate"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       OnClick="@(() => CrearDepartamentoEmpresa(empresa))" />
+                    </MudTooltip>
                     <MudTooltip Text="Eliminar empresa">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Visible="@CanDelete"
@@ -116,6 +123,31 @@
         else
         {
             Console.WriteLine("⚠️ table es null en ReloadData");
+        }
+    }
+
+    private async Task CrearDepartamentoEmpresa(EmpresaResponse empresa)
+    {
+        if (empresa.PkidEmpresa <= 0)
+        {
+            Snackbar.Add("No se pudo identificar la empresa para crear el departamento.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = empresa.PkidEmpresa
+        };
+
+        var dialog = await DialogService.ShowAsync<DepartamentoDialog>(
+            $"Nuevo departamento - {empresa.EmpresaNombre}",
+            parameters,
+            new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            Snackbar.Add($"Departamento agregado a {empresa.EmpresaNombre}", Severity.Success);
         }
     }
 }
