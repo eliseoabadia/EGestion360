@@ -164,7 +164,7 @@
 
     private async Task SelectFactura(FacturaResponse item) { SelectedFactura = item; detalleSearch = string.Empty; await InvokeAsync(StateHasChanged); }
     private async Task BackToTable() { SelectedFactura = null; if (table != null) await table.ReloadData(); }
-    private bool IsLocked(FacturaResponse item) => item.Estatus >= 3;
+    private bool IsLocked(FacturaResponse item) => item.Estatus >= 2;
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => value.ToString("$0.00", Culture);
     private static Color StatusColor(int estatus) => estatus switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Error, _ => Color.Warning };

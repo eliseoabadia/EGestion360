@@ -96,21 +96,52 @@ namespace EG.Application.Services.CuentasXPagar
         }
     }
 
-    public class FacturaAppService(
-        GenericService<Factura, FacturaDto, FacturaResponse> service,
-        GenericService<VwFactura, FacturaDto, FacturaResponse> serviceView,
-        EGestionContext context)
-        : StoredProcedureCrudAppService<Factura, VwFactura, FacturaDto, FacturaResponse>(
-            service,
-            serviceView,
-            context,
-            "PkidFactura",
-            "Factura",
-            (dto, id) => dto.PkidFactura = id,
-            "PRES.SP_MantenimientoFactura",
-            response => response.PkidFactura,
-            BuildParameters)
+    public class FacturaAppService : StoredProcedureCrudAppService<Factura, VwFactura, FacturaDto, FacturaResponse>
     {
+        private readonly EGestionContext _context;
+
+        public FacturaAppService(
+            GenericService<Factura, FacturaDto, FacturaResponse> service,
+            GenericService<VwFactura, FacturaDto, FacturaResponse> serviceView,
+            EGestionContext context)
+            : base(
+                service,
+                serviceView,
+                context,
+                "PkidFactura",
+                "Factura",
+                (dto, id) => dto.PkidFactura = id,
+                "PRES.SP_MantenimientoFactura",
+                response => response.PkidFactura,
+                BuildParameters)
+        {
+            _context = context;
+        }
+
+        public override async Task<PagedResult<FacturaResponse>> UpdateAsync(int id, FacturaResponse response, int usuarioActual)
+        {
+            var current = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo);
+            if (current == null)
+                return Failure<FacturaResponse>("Factura no encontrada.", "NOT_FOUND");
+
+            if (current.Estatus >= 2)
+                return Failure<FacturaResponse>("La factura ya avanzo a autorizacion y no puede modificarse.", "LOCKED");
+
+            return await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo);
+            if (current == null)
+                return Failure<bool>("Factura no encontrada.", "NOT_FOUND");
+
+            if (current.Estatus >= 2)
+                return Failure<bool>("La factura ya avanzo a autorizacion y no puede eliminarse.", "LOCKED");
+
+            return await base.DeleteAsync(id);
+        }
+
         private static SqlParameter[] BuildParameters(int action, int? id, FacturaResponse? response, int? usuarioActual)
         {
             return new[]
@@ -173,21 +204,52 @@ namespace EG.Application.Services.CuentasXPagar
         }
     }
 
-    public class CLCAppService(
-        GenericService<Clc, CLCDto, CLCResponse> service,
-        GenericService<VwClc, CLCDto, CLCResponse> serviceView,
-        EGestionContext context)
-        : StoredProcedureCrudAppService<Clc, VwClc, CLCDto, CLCResponse>(
-            service,
-            serviceView,
-            context,
-            "PkidClc",
-            "CLC",
-            (dto, id) => dto.PkidClc = id,
-            "PRES.SP_MantenimientoCLC",
-            response => response.PkidClc,
-            BuildParameters)
+    public class CLCAppService : StoredProcedureCrudAppService<Clc, VwClc, CLCDto, CLCResponse>
     {
+        private readonly EGestionContext _context;
+
+        public CLCAppService(
+            GenericService<Clc, CLCDto, CLCResponse> service,
+            GenericService<VwClc, CLCDto, CLCResponse> serviceView,
+            EGestionContext context)
+            : base(
+                service,
+                serviceView,
+                context,
+                "PkidClc",
+                "CLC",
+                (dto, id) => dto.PkidClc = id,
+                "PRES.SP_MantenimientoCLC",
+                response => response.PkidClc,
+                BuildParameters)
+        {
+            _context = context;
+        }
+
+        public override async Task<PagedResult<CLCResponse>> UpdateAsync(int id, CLCResponse response, int usuarioActual)
+        {
+            var current = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo);
+            if (current == null)
+                return Failure<CLCResponse>("CLC no encontrada.", "NOT_FOUND");
+
+            if (current.Estatus >= 3)
+                return Failure<CLCResponse>("La CLC ya genero provision de pago y no puede modificarse.", "LOCKED");
+
+            return await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo);
+            if (current == null)
+                return Failure<bool>("CLC no encontrada.", "NOT_FOUND");
+
+            if (current.Estatus >= 3)
+                return Failure<bool>("La CLC ya genero provision de pago y no puede eliminarse.", "LOCKED");
+
+            return await base.DeleteAsync(id);
+        }
+
         private static SqlParameter[] BuildParameters(int action, int? id, CLCResponse? response, int? usuarioActual)
         {
             return new[]
@@ -289,21 +351,77 @@ namespace EG.Application.Services.CuentasXPagar
         }
     }
 
-    public class ChequeAppService(
-        GenericService<Cheque, ChequeDto, ChequeResponse> service,
-        GenericService<VwCheque, ChequeDto, ChequeResponse> serviceView,
-        EGestionContext context)
-        : StoredProcedureCrudAppService<Cheque, VwCheque, ChequeDto, ChequeResponse>(
-            service,
-            serviceView,
-            context,
-            "PkidCheque",
-            "Cheque",
-            (dto, id) => dto.PkidCheque = id,
-            "PRES.SP_MantenimientoCheque",
-            response => response.PkidCheque,
-            BuildParameters)
+    public class ChequeAppService : StoredProcedureCrudAppService<Cheque, VwCheque, ChequeDto, ChequeResponse>
     {
+        private readonly EGestionContext _context;
+
+        public ChequeAppService(
+            GenericService<Cheque, ChequeDto, ChequeResponse> service,
+            GenericService<VwCheque, ChequeDto, ChequeResponse> serviceView,
+            EGestionContext context)
+            : base(
+                service,
+                serviceView,
+                context,
+                "PkidCheque",
+                "Cheque",
+                (dto, id) => dto.PkidCheque = id,
+                "PRES.SP_MantenimientoCheque",
+                response => response.PkidCheque,
+                BuildParameters)
+        {
+            _context = context;
+        }
+
+        public override async Task<PagedResult<ChequeResponse>> CreateAsync(ChequeResponse response, int usuarioActual)
+        {
+            var validation = await ValidateChequeAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<ChequeResponse>> UpdateAsync(int id, ChequeResponse response, int usuarioActual)
+        {
+            var current = await _context.Cheques.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo);
+            if (current == null)
+                return Failure<ChequeResponse>("Cheque o transferencia no encontrado.", "NOT_FOUND");
+
+            if (current.Estatus >= 2)
+                return Failure<ChequeResponse>("La provision de pago ya fue autorizada y no puede modificarse.", "LOCKED");
+
+            var validation = await ValidateChequeAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.Cheques.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo);
+            if (current == null)
+                return Failure<bool>("Cheque o transferencia no encontrado.", "NOT_FOUND");
+
+            if (current.Estatus >= 2)
+                return Failure<bool>("La provision de pago ya fue autorizada y no puede eliminarse.", "LOCKED");
+
+            return await base.DeleteAsync(id);
+        }
+
+        private async Task<PagedResult<ChequeResponse>?> ValidateChequeAsync(ChequeResponse response, int? currentId)
+        {
+            if (response.FkidClcPres <= 0)
+                return Failure<ChequeResponse>("Debe seleccionar una CLC para generar la provision de pago.", "VALIDATION");
+
+            var clcExists = await _context.Clcs.AsNoTracking().AnyAsync(x => x.PkidClc == response.FkidClcPres && x.Activo);
+            if (!clcExists)
+                return Failure<ChequeResponse>("La CLC seleccionada no existe o no esta activa.", "NOT_FOUND");
+
+            var alreadyExists = await _context.Cheques.AsNoTracking()
+                .AnyAsync(x => x.Activo && x.FkidClcPres == response.FkidClcPres && (!currentId.HasValue || x.PkidCheque != currentId.Value));
+
+            if (alreadyExists)
+                return Failure<ChequeResponse>("Ya existe una provision de pago activa para esa CLC.", "DUPLICATE");
+
+            return null;
+        }
+
         private static SqlParameter[] BuildParameters(int action, int? id, ChequeResponse? response, int? usuarioActual)
         {
             return new[]

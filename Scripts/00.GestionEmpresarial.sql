@@ -1429,16 +1429,16 @@ USING (VALUES
 	 -- Presupuesto -> Tesorerí­a   -> Cuentas por Pagar
     (190, N'Cuentas por Pagar', 1, 160, N'Cuentas por Pagar', N'/', N'FaDocument', 1, N'ESP', 2, 1, GETDATE()),
 	(191, N'PEF Unipartida TES', 1, 190, N'PEF Unipartida TES', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
-	(192, N'Recepción de Facturas y Comprobantes de Pago', 2, 191, N'Recepción de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Factura_Pago', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),   
-	(193, N'Provisión del Pago', 2, 191, N'Provisión del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
-    (194, N'Elaboración de Cheques o Transferencias', 2, 191, N'Elaboración de Cheques o Transferencias', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Cheque_Transferencia', N'FaSave', 1, N'ESP', 3, 1, GETDATE()), 
+	(192, N'Solicitud de reintegros', 2, 191, N'Solicitud de reintegros', N'/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),   
+	(193, N'Autorizar solicitud de reingresos', 2, 191, N'Autorizar solicitud de reingresos', N'/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
+    (194, N'Provision del Pago', 2, 191, N'Provision del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago', N'FaSave', 1, N'ESP', 3, 1, GETDATE()), 
 	
 	-- Presupuesto -> Tesorerí­a
 	(195, N'Planeación de gastos', 2, 160, N'Planeación de gastos', N'/Presupuesto/Tesoreria/Planeacion_Gastos', N'FaChartBar', 1, N'ESP', 3, 1, GETDATE()),
 	(196, N'Saldos Cuentas', 2, 160, N'Saldos Cuentas', N'/Presupuesto/Tesoreria/Saldos_Cuentas', N'FaChartBar', 1, N'ESP', 4, 1, GETDATE()),
-	(197, N'Solicitud de reintegros', 2, 160, N'Solicitud de reintegros', N'/Presupuesto/Tesoreria/Solicitud_Reintegros', N'FaChartBar', 1, N'ESP', 5, 1, GETDATE()),
-	(198, N'Autorizar solicitud de reingresos', 2, 160, N'Autorizar solicitud de reingresos', N'/Presupuesto/Tesoreria/Autorizar_Solicitud_Reingresos', N'FaChartBar', 1, N'ESP', 6, 1, GETDATE()),
-	(199, N'Provisión del Pago', 2, 160, N'Provisión del Pago', N'/Presupuesto/Tesoreria/Provision_Pago', N'FaChartBar', 1, N'ESP', 7, 1, GETDATE()),
+	(197, N'Solicitud de reintegros', 2, 160, N'Solicitud de reintegros', N'/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros', N'FaChartBar', 1, N'ESP', 5, 1, GETDATE()),
+	(198, N'Autorizar solicitud de reingresos', 2, 160, N'Autorizar solicitud de reingresos', N'/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos', N'FaChartBar', 1, N'ESP', 6, 1, GETDATE()),
+	(199, N'Provision del Pago', 2, 160, N'Provision del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago', N'FaChartBar', 1, N'ESP', 7, 1, GETDATE()),
 
 	(200, N'Inversiones', 1, 160, N'Inversiones', N'/', N'FaChartBar', 1, N'ESP', 8, 1, GETDATE()),
     (201, N'Banco', 2, 200, N'Banco', N'/Presupuesto/Tesoreria/Inversiones/Banco', N'FaHome', 1, N'ESP', 1, 1, GETDATE()),
