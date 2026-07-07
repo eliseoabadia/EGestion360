@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using EG.ApiCoreBS.Services;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EG.UnidTest.ApiCoreBS;
@@ -45,7 +47,7 @@ public sealed class UserContextServiceTests
                 User = new ClaimsPrincipal(new ClaimsIdentity())
             }
         };
-        var service = new UserContextService(accessor, NullLogger<UserContextService>.Instance);
+        var service = CreateService(accessor);
 
         Assert.Null(service.TryGetCurrentUserId());
         Assert.Throws<InvalidOperationException>(() => service.GetCurrentUserId());
@@ -61,6 +63,14 @@ public sealed class UserContextServiceTests
             }
         };
 
-        return new UserContextService(accessor, NullLogger<UserContextService>.Instance);
+        return CreateService(accessor);
+    }
+
+    private static UserContextService CreateService(IHttpContextAccessor accessor)
+    {
+        var options = new DbContextOptionsBuilder<EGestionContext>().Options;
+        var context = new EGestionContext(options);
+
+        return new UserContextService(accessor, NullLogger<UserContextService>.Instance, context);
     }
 }
