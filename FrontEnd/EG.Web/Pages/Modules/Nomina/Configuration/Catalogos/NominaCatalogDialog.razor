@@ -248,7 +248,8 @@
         {
             return lookup.PropertyName switch
             {
-                "FkidEmpresaSis" or "FkidEmpresaNominaNom" => ToLookupItem((await EmpresaNominaService.GetByIdAsync(id)).Data),
+                "FkidEmpresaSis" => ToLookupItem((await EmpresaService.GetByIdAsync(id)).Data),
+                "FkidEmpresaNominaNom" => ToLookupItem((await EmpresaNominaService.GetByIdAsync(id)).Data),
                 "FkidAreaSis" => ToLookupItem((await AreaService.GetByIdAsync(id)).Data),
                 "FkidPersonaNom" => ToLookupItem((await PersonaService.GetByIdAsync(id)).Data),
                 "FkidConceptoNom" => ToLookupItem((await ConceptoService.GetByIdAsync(id)).Data),
@@ -284,7 +285,8 @@
 
         return lookup.PropertyName switch
         {
-            "FkidEmpresaSis" or "FkidEmpresaNominaNom" => await LoadEmpresasNominaPageAsync(page, pageSize, filter),
+            "FkidEmpresaSis" => await LoadEmpresasPageAsync(page, pageSize, filter),
+            "FkidEmpresaNominaNom" => await LoadEmpresasNominaPageAsync(page, pageSize, filter),
             "FkidAreaSis" => await LoadAreasPageAsync(page, pageSize, filter),
             "FkidPersonaNom" => await LoadPersonasPageAsync(page, pageSize, filter),
             "FkidConceptoNom" => await LoadConceptosPageAsync(page, pageSize, filter),
@@ -774,6 +776,7 @@
         {
             "FkidFormaCalculoNom" => "Forma de cálculo",
             "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
+            "FkidEmpresaSis" => "Empresa",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
             "FkidPeriodoPagoSis" => "Periodo de pago",
             "FkidTipoPagoNom" => "Tipo de pago",
@@ -800,7 +803,7 @@
             "Pkid" => "ID",
             "PkidConcepto" => "ID",
             "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
-            "FkidEmpresaSis" => "Empresa de nómina",
+            "FkidEmpresaSis" => "Empresa",
             "FkidAreaSis" => "Área",
             "FkidEmpresaNominaNom" => "Empresa de nómina",
             "FkidPeriodoPagoSis" => "Periodo de pago",

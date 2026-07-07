@@ -12,6 +12,7 @@ public sealed class GenericReportProvider : IReportProvider
     private readonly ReportConnectionConfigurator _reportConnectionConfigurator;
     private readonly ReportContextParameterConfigurator _reportContextParameterConfigurator;
     private readonly ReportLogoConfigurator _reportLogoConfigurator;
+    private readonly ReportCompanyHeaderConfigurator _reportCompanyHeaderConfigurator;
 
     public GenericReportProvider(
         InMemoryReportStorageWebExtension reportStorage,
@@ -19,7 +20,8 @@ public sealed class GenericReportProvider : IReportProvider
         StoredProcedureReportFactory storedProcedureReportFactory,
         ReportConnectionConfigurator reportConnectionConfigurator,
         ReportContextParameterConfigurator reportContextParameterConfigurator,
-        ReportLogoConfigurator reportLogoConfigurator)
+        ReportLogoConfigurator reportLogoConfigurator,
+        ReportCompanyHeaderConfigurator reportCompanyHeaderConfigurator)
     {
         _reportStorage = reportStorage;
         _storedProcedureReports = storedProcedureReports;
@@ -27,6 +29,7 @@ public sealed class GenericReportProvider : IReportProvider
         _reportConnectionConfigurator = reportConnectionConfigurator;
         _reportContextParameterConfigurator = reportContextParameterConfigurator;
         _reportLogoConfigurator = reportLogoConfigurator;
+        _reportCompanyHeaderConfigurator = reportCompanyHeaderConfigurator;
     }
 
     XtraReport IReportProvider.GetReport(string id, ReportProviderContext context)
@@ -50,6 +53,7 @@ public sealed class GenericReportProvider : IReportProvider
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
         _reportLogoConfigurator.Apply(report, request);
+        _reportCompanyHeaderConfigurator.Apply(report, request);
         return report;
     }
 
@@ -66,6 +70,7 @@ public sealed class GenericReportProvider : IReportProvider
         _reportContextParameterConfigurator.Apply(report, request);
         ApplyParameters(report, request);
         _reportConnectionConfigurator.Apply(report);
+        _reportCompanyHeaderConfigurator.Apply(report, request);
         return report;
     }
 

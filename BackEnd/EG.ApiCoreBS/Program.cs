@@ -78,6 +78,7 @@ try
     builder.Services.AddSingleton<StoredProcedureReportRegistry>();
     builder.Services.AddSingleton<StoredProcedureReportFactory>();
     builder.Services.AddScoped<ReportLogoConfigurator>();
+    builder.Services.AddScoped<ReportCompanyHeaderConfigurator>();
     builder.Services.AddSingleton<InMemoryReportStorageWebExtension>();
     builder.Services.AddSingleton<ReportStorageWebExtension>(serviceProvider =>
         serviceProvider.GetRequiredService<InMemoryReportStorageWebExtension>());

@@ -389,34 +389,71 @@
                 ],
                 StandardDocuments(["Pedido", "Entrada", "Vale salida", "Evidencia"])),
 
+            ["tesoreria"] = new(
+                "Tesoreria",
+                "TES / flujo financiero",
+                Icons.Material.Filled.Payments,
+                "#0EA5E9",
+                "Caja y bancos",
+                "Cuentas por pagar, cuentas por cobrar, inversiones y saldos.",
+                "Ciclo financiero",
+                "Revisar pagos",
+                "Las facturas deben provisionarse antes de liberar cheque o transferencia.",
+                "info",
+                [
+                    new("Por pagar", "9", "Facturas en proceso", Icons.Material.Filled.ReceiptLong, "warning"),
+                    new("Pagos", "6", "Listos para salida", Icons.Material.Filled.Payments, "success"),
+                    new("Inversiones", "4", "Instrumentos activos", Icons.Material.Filled.AccountBalanceWallet, "info")
+                ],
+                [
+                    Stage("Factura", "Recepcion y validacion fiscal.", "Entrada", "Factura", Icons.Material.Filled.ReceiptLong, "warning", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["CuentasXPagar"], "RecepcionFactura_ComprobantePago"),
+                    Stage("Provision", "Reconocimiento de cuenta por pagar.", "Control", "Provision", Icons.Material.Filled.Rule, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago", ["CuentasXPagar", "Tesoreria"], "Provision_Pago"),
+                    Stage("Pago", "Cheque o transferencia con comprobante.", "Salida", "Pago", Icons.Material.Filled.Payments, "success", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["CuentasXPagar"], "ElaboracionCheque_Transferencia"),
+                    Stage("Saldos", "Cuentas e instrumentos de tesoreria.", "Consulta", "Saldo", Icons.Material.Filled.AccountBalanceWallet, "info", "/Presupuesto/Tesoreria/Saldos_Cuentas", ["Tesoreria"], "Saldos_Cuentas"),
+                    Stage("Ingresos", "Recaudacion y depositos CLC.", "Ingreso", "Deposito", Icons.Material.Filled.RequestQuote, "success", "/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC", ["CuentasXCobrar"], "Depositos_CLC")
+                ],
+                [
+                    new("Facturas sin provision", "Devengado pendiente", "5", "warning"),
+                    new("Pagos sin comprobante", "Expediente por cerrar", "2", "error"),
+                    new("Depositos aplicados", "Conciliados con CLC", "14", "success")
+                ],
+                StandardDocuments(["Factura", "Provision", "Pago", "Deposito"])),
+
             ["nomina"] = new(
                 "Nomina",
-                "NOM / personas",
+                "NOM / quincena",
                 Icons.Material.Filled.Payments,
                 "#9333EA",
-                "Periodo abierto",
-                "Empleados, incidencias, calculo, timbrado y pago.",
-                "Ciclo de nomina",
-                "Validar incidencias",
-                "La nomina no debe calcularse con incidencias abiertas.",
+                "Validacion previa",
+                "Periodo, incidencias, pre-calculo, calculo, recibos, timbrado y cierre.",
+                "Generacion de quincena",
+                "Validar periodo",
+                "Si no hay periodo quincenal abierto, inicia en Periodos; si hay incidencias sin justificar, no corras el calculo final.",
                 "warning",
                 [
-                    new("Empleados", "128", "Plantilla activa", Icons.Material.Filled.Groups, "success"),
-                    new("Incidencias", "11", "Por validar", Icons.Material.Filled.AssignmentTurnedIn, "warning"),
-                    new("Procesos", "3", "Listos", Icons.Material.Filled.Payments, "info")
+                    new("Periodo", "Base", "Quincenal activo", Icons.Material.Filled.EventAvailable, "warning"),
+                    new("Validacion", "3 puertas", "Incidencias, justificantes y netos", Icons.Material.Filled.FactCheck, "warning"),
+                    new("Salida", "Recibos", "Timbrado y cierre", Icons.Material.Filled.ReceiptLong, "success")
                 ],
                 [
-                    Stage("Empleados", "Ficha laboral y expediente.", "Base", "Empleado", Icons.Material.Filled.Groups, "success", "/nomina/empleados", ["Nomina", "Nomina_Recursos_Humanos", "Recursos_Humanos"], "Empleados"),
-                    Stage("Incidencias", "Movimientos del periodo.", "Control", "Incidencia", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/nomina/movimientos", ["Nomina"], "Movimientos"),
-                    Stage("Procesos", "Calculo, cierre y dispersion.", "Operacion", "Nomina", Icons.Material.Filled.Payments, "info", "/nomina/procesos", ["Nomina"], "Procesos"),
-                    Stage("Reportes", "Recibos y resumen del periodo.", "Salida", "Recibo", Icons.Material.Filled.ReceiptLong, "success", "/nom/resumennomina", ["Nomina"], "Resumen_Nomina")
+                    Stage("Periodo", "Crea o selecciona la quincena activa.", "Obligatorio", "Periodo", Icons.Material.Filled.EventAvailable, "warning", "/nomina/configuracion/periodos/quincenal", ["Periodos", "Nomina"], "Periodo_Quincenal"),
+                    Stage("Empleados", "Confirma plantilla, sueldo y expediente.", "Base", "Empleado", Icons.Material.Filled.Groups, "success", "/nomina/empleados", ["Nomina", "Nomina_Recursos_Humanos", "Recursos_Humanos"], "Empleados"),
+                    Stage("Incidencias", "Carga faltas, retardos, permisos y movimientos.", "Captura", "Incidencia", Icons.Material.Filled.EventBusy, "warning", "/rh/incidencia", ["Incidencias", "Nomina"], "Captura_Incidencias"),
+                    Stage("Justificantes", "Autoriza descuentos o justifica incidencias.", "Validacion", "Soporte", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/rh/justificacion", ["Incidencias", "Nomina"], "Justificacion_Incidencias"),
+                    Stage("Reporte previo", "Revisa incidencias antes de calcular.", "Control", "Reporte", Icons.Material.Filled.FactCheck, "info", "/rh/incidenciareport", ["Incidencias", "Nomina"], "Reporte_Incidencias"),
+                    Stage("Pre-calculo", "Valida ISR, IMSS, subsidios y acumulados.", "Pre-calculo", "Auxiliar", Icons.Material.Filled.Functions, "info", "/aux/auxcalcisrquincenal", ["Auxiliares", "Nomina"], "Calculo_ISR_2053"),
+                    Stage("Calculo", "Ejecuta el calculo de nomina del periodo.", "Operacion", "Nomina", Icons.Material.Filled.Calculate, "info", "/nom/calcnomina", ["Calculo", "Nomina"], "Calculo_2050"),
+                    Stage("Revision", "Consulta resumen, percepciones, deducciones y netos.", "Revision", "Resumen", Icons.Material.Filled.Summarize, "warning", "/nom/resumennomina", ["Productos", "Nomina"], "Resumen"),
+                    Stage("Recibos", "Genera recibos por corrida de nomina.", "Salida", "Recibo", Icons.Material.Filled.ReceiptLong, "success", "/nom/recibonomina", ["Productos", "Nomina"], "Recibos"),
+                    Stage("Timbrado", "Prepara CFDI/timbrado y dispersion.", "Fiscal", "Timbrado", Icons.Material.Filled.Verified, "info", "/nom/timbradopercepciones", ["Productos", "Nomina"], "Archivos_Timbrado"),
+                    Stage("Cierre", "Cierra el periodo y deja lista la siguiente quincena.", "Cierre", "Periodo", Icons.Material.Filled.LockClock, "success", "/nom/cierraperiodo", ["Cierre_Periodo", "Nomina"], "Cierre_Periodo")
                 ],
                 [
-                    new("Incidencias abiertas", "Antes del calculo", "11", "warning"),
-                    new("Expedientes incompletos", "Soporte pendiente", "4", "error"),
-                    new("Procesos listos", "Con periodo activo", "3", "success")
+                    new("Falta periodo quincenal", "Ir a Periodos antes de capturar", "1", "warning"),
+                    new("Incidencias sin justificar", "Bloquean el calculo final", "11", "error"),
+                    new("Recibos y timbrado", "Solo despues de revisar netos", "2", "info")
                 ],
-                StandardDocuments(["Contrato", "Incidencia", "Recibo", "Timbrado"])),
+                StandardDocuments(["Periodo", "Incidencia", "Justificante", "Pre-calculo", "Calculo", "Recibo", "Timbrado", "Cierre"])),
 
             ["reportescxc"] = new(
                 "Reportes CxC",

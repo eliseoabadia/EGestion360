@@ -1,1945 +1,684 @@
 @page "/"
+@using System.Globalization
+@using System.Text
+@using EG.Web.Contracts.Configuration
+@implements IDisposable
 @inject NavigationManager NavigationManager
-@inject AuthenticationProviderJWT AuthProvider
+@inject INavigateService NavigateService
+@inject AuthService AuthService
+@inject MenuStateService MenuStateService
+@inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
-<MudContainer Class="workflow-home" MaxWidth="MaxWidth.False">
-    <section class="workflow-shell">
-        <header class="workflow-header">
-            <div class="workflow-heading">
-                <div class="workflow-kicker">
-                    <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Small" />
-                    <span>Sala de control</span>
+@{
+    var visibleCards = FilteredCards;
+}
+
+<MudContainer Class="home-page" MaxWidth="MaxWidth.False">
+    <section class="home-shell">
+        <header class="home-header">
+            <div class="home-title">
+                <span class="home-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Home" Size="Size.Medium" />
+                </span>
+                <div>
+                    <span class="eyebrow">PCI</span>
+                    <h1>Inicio</h1>
                 </div>
-                <h1>Centro de mando</h1>
-                <p>Workflow ejecutivo del recurso: solicitud, compra, suficiencia, factura y pago.</p>
             </div>
 
-            <div class="header-actions">
-                <span class="workflow-mode">
-                    <span class="mode-dot"></span>
-                    <span>Sin cargas</span>
+            <div class="scope-strip" aria-label="Contexto activo">
+                <span class="scope-chip">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" />
+                    @EmpresaTexto
                 </span>
-                <button type="button" class="next-action" aria-label="@($"Siguiente accion: {SelectedWorkflow.NextAction}")" disabled="@(!HasVisibleWorkflows)" @onclick="OpenSelectedWorkflow">
-                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesomeMotion" Size="Size.Small" />
-                    <span>Siguiente accion</span>
-                    <strong>@SelectedWorkflow.NextAction</strong>
-                </button>
+                <span class="scope-chip">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
+                    @AnioTexto
+                </span>
+                <span class="scope-chip">
+                    <MudIcon Icon="@Icons.Material.Filled.Apps" Size="Size.Small" />
+                    @_moduleCards.Count modulo(s)
+                </span>
             </div>
         </header>
 
-        <section class="compliance-band" aria-label="Alineacion CONAC LGCG">
-            <div class="compliance-copy">
-                <span class="compliance-kicker">
-                    <MudIcon Icon="@Icons.Material.Filled.Gavel" Size="Size.Small" />
-                    CONAC / LGCG
-                </span>
-                <strong>Alineado a momentos contables: comprometido, devengado, ejercido, pagado</strong>
-                <p>Diseñado para conectar presupuesto, contabilidad y evidencia operativa con informacion ejecutiva en tiempo real.</p>
-            </div>
-            <a class="compliance-link" href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LGCG.pdf" target="_blank" rel="noopener noreferrer">
-                Ver LGCG
-            </a>
+        <section class="home-tools" aria-label="Herramientas de inicio">
+            <MudTextField T="string"
+                          @bind-Value="_searchText"
+                          Placeholder="Buscar modulo..."
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="module-search" />
+
+            <MudTooltip Text="Recargar menu">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               Color="Color.Primary"
+                               Variant="Variant.Outlined"
+                               Disabled="@_loading"
+                               OnClick="ReloadMenuAsync"
+                               aria-label="Recargar menu" />
+            </MudTooltip>
         </section>
 
-        @if (!permissionsReady)
+        @if (_loading)
         {
-            <section class="access-state" aria-label="Validando permisos">
-                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Medium" />
-                <div>
-                    <strong>Validando claims del usuario</strong>
-                    <span>El centro de mando solo mostrara workflows con permiso de vista o menu.</span>
-                </div>
+            <section class="home-state" role="status">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" />
+                <strong>Cargando menu</strong>
             </section>
         }
-        else if (!HasVisibleWorkflows)
+        else if (!string.IsNullOrWhiteSpace(_loadError))
         {
-            <section class="access-state" aria-label="Sin workflows disponibles">
-                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Medium" />
-                <div>
-                    <strong>Sin workflows principales disponibles</strong>
-                    <span>Este usuario no trae claims para Presupuesto, Adquisiciones o Cuentas por Pagar.</span>
-                </div>
+            <section class="home-state" role="alert">
+                <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Size="Size.Medium" Color="Color.Warning" />
+                <strong>@_loadError</strong>
+            </section>
+        }
+        else if (visibleCards.Count == 0)
+        {
+            <section class="home-state">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Medium" Color="Color.Info" />
+                <strong>Sin modulos disponibles</strong>
             </section>
         }
         else
         {
-        <section class="overview-panel" aria-label="Resumen ejecutivo">
-            <div class="executive-strip" aria-label="Indicadores ejecutivos">
-                @foreach (var metric in ExecutiveMetrics)
+            <section class="module-grid" aria-label="Modulos principales">
+                @foreach (var card in visibleCards)
                 {
-                    <article class="metric-card" style="@AccentStyle(metric.Accent)">
-                        <span class="metric-icon">
-                            <MudIcon Icon="@metric.Icon" Size="Size.Small" />
+                    <button type="button"
+                            class="module-tile"
+                            style="@AccentStyle(card.Accent)"
+                            title="@card.Route"
+                            @onclick="@(() => OpenModule(card))">
+                        <span class="module-icon">
+                            <MudIcon Icon="@card.Icon" Size="Size.Medium" />
                         </span>
-                        <div>
-                            <span>@metric.Label</span>
-                            <strong>@metric.Value</strong>
-                            <small>@metric.Detail</small>
-                        </div>
-                    </article>
-                }
-            </div>
-
-            <div class="bottleneck-summary" aria-label="Donde se esta atorando la operacion">
-                <div class="panel-title">
-                    <MudIcon Icon="@Icons.Material.Filled.Troubleshoot" Size="Size.Small" />
-                    <span>Cuellos de botella</span>
-                </div>
-                <div class="bottleneck-strip">
-                    @foreach (var item in BottleneckSnapshots)
-                    {
-                        <article class="snapshot-card" style="@ToneStyle(item.Tone)">
-                            <span class="status-dot"></span>
-                            <div>
-                                <strong>@item.Count</strong>
-                                <span>@item.Label</span>
-                            </div>
-                        </article>
-                    }
-                </div>
-            </div>
-        </section>
-
-        <div class="workflow-layout">
-            <aside class="workflow-selector" aria-label="Workflows disponibles">
-                <div class="selector-heading">
-                    <span>Workflows</span>
-                    <strong>@VisibleWorkflows.Count</strong>
-                </div>
-
-                @foreach (var workflow in VisibleWorkflows)
-                {
-                    <article class="@WorkflowCardClass(workflow)" style="@($"{AccentStyle(workflow.Accent)} {ToneStyle(workflow.HealthTone)}")">
-                        <button type="button"
-                                class="workflow-select"
-                                aria-pressed="@(workflow.Id == selectedWorkflowId)"
-                                @onclick="@(() => SelectWorkflow(workflow.Id))">
-                            <span class="workflow-icon">
-                                <MudIcon Icon="@workflow.Icon" Size="Size.Small" />
-                            </span>
-                            <span class="workflow-copy">
-                                <strong>@workflow.Title</strong>
-                                <small>@workflow.Subtitle</small>
-                                <span class="workflow-card-kpis">
-                                    <strong>@workflow.ActiveProcesses</strong> activos
-                                    <span aria-hidden="true">/</span>
-                                    <strong>@workflow.BlockedProcesses</strong> atorados
-                                    <span aria-hidden="true">/</span>
-                                    <strong>@workflow.AverageDays</strong> dias
-                                </span>
-                            </span>
-                            <span class="status-chip">
-                                <span></span>
-                                @workflow.Health
-                            </span>
-                        </button>
-                        <button type="button"
-                                class="workflow-open"
-                                title="@($"Abrir {workflow.Title}")"
-                                aria-label="@($"Abrir {workflow.Title}")"
-                                @onclick="@(() => OpenWorkflow(workflow))">
-                            <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
-                        </button>
-                    </article>
-                }
-
-                <section class="semaphore-card" aria-label="Semaforo por workflow">
-                    <div class="panel-title">
-                        <MudIcon Icon="@Icons.Material.Filled.Traffic" Size="Size.Small" />
-                        <span>Semaforo por workflow</span>
-                    </div>
-                    <div class="semaphore-list">
-                        <span class="semaphore-item" style="@ToneStyle("success")"><span class="status-dot"></span>Verde: normal</span>
-                        <span class="semaphore-item" style="@ToneStyle("warning")"><span class="status-dot"></span>Amarillo: requiere autorizacion</span>
-                        <span class="semaphore-item" style="@ToneStyle("error")"><span class="status-dot"></span>Rojo: detenido por soporte</span>
-                    </div>
-                </section>
-            </aside>
-
-            <section class="workflow-detail" style="@AccentStyle(SelectedWorkflow.Accent)">
-                <div class="detail-header">
-                    <div class="detail-title">
-                        <span class="detail-icon">
-                            <MudIcon Icon="@SelectedWorkflow.Icon" Size="Size.Medium" />
+                        <span class="module-copy">
+                            <strong>@card.Title</strong>
+                            <small>@card.Subtitle</small>
                         </span>
-                        <div>
-                            <span>@SelectedWorkflow.Owner</span>
-                            <h2>@SelectedWorkflow.Title</h2>
-                        </div>
-                    </div>
-
-                    <div class="detail-actions">
-                        <div class="detail-badges">
-                            <span>@SelectedWorkflow.Signal</span>
-                            <span>@SelectedWorkflow.Outcome</span>
-                            <span>@SelectedWorkflow.BudgetSignal</span>
-                        </div>
-                        <button type="button" class="module-link" @onclick="OpenSelectedWorkflow" title="@SelectedWorkflow.Route">
-                            <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
-                            Abrir modulo
-                        </button>
-                    </div>
-                </div>
-
-                <div class="detail-health" style="@ToneStyle(SelectedWorkflow.HealthTone)">
-                    <span class="status-dot"></span>
-                    <div>
-                        <strong>@SelectedWorkflow.Health</strong>
-                        <small>@SelectedWorkflow.HealthReason</small>
-                    </div>
-                </div>
-
-                <div class="workflow-insight">
-                    <div>
-                        <span class="insight-label">Entrada</span>
-                        <strong>@SelectedWorkflow.EntryPoint</strong>
-                    </div>
-                    <div>
-                        <span class="insight-label">Control</span>
-                        <strong>@SelectedWorkflow.ControlPoint</strong>
-                    </div>
-                    <div>
-                        <span class="insight-label">Salida</span>
-                        <strong>@SelectedWorkflow.ExitPoint</strong>
-                    </div>
-                </div>
-
-                <div class="action-row">
-                    <button type="button" class="primary-action" @onclick="OpenSelectedWorkflow">
-                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" />
-                        <span>Siguiente accion</span>
-                        <strong>@SelectedWorkflow.NextAction</strong>
+                        <span class="module-arrow" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                        </span>
                     </button>
-                    <div class="action-context">
-                        <span>Regla de avance</span>
-                        <strong>@SelectedWorkflow.AssistantRule</strong>
-                    </div>
-                </div>
-
-                <div class="flow-lane" aria-label="@($"Flujo {SelectedWorkflow.Title}")">
-                    @for (var i = 0; i < SelectedWorkflow.Steps.Count; i++)
-                    {
-                        var step = SelectedWorkflow.Steps[i];
-                        var stepNumber = i + 1;
-
-                        <article class="flow-node" style="@ToneStyle(step.Tone)">
-                            <div class="node-index">@stepNumber.ToString("00")</div>
-                            <div class="node-panel">
-                                <div class="node-status">
-                                    <span class="status-chip">
-                                        <span></span>
-                                        @step.Status
-                                    </span>
-                                </div>
-                                <div class="node-title">
-                                    <MudIcon Icon="@step.Icon" Size="Size.Small" />
-                                    <strong>@step.Title</strong>
-                                </div>
-                                <p>@step.Description</p>
-                                <div class="node-meta">
-                                    <div>
-                                        <span>Responsable</span>
-                                        <strong>@step.Owner</strong>
-                                    </div>
-                                    <div>
-                                        <span>Tiempo</span>
-                                        <strong>@step.Duration</strong>
-                                    </div>
-                                    <div>
-                                        <span>Documento</span>
-                                        <strong>@step.Document</strong>
-                                    </div>
-                                </div>
-                                <div class="expected-docs" aria-label="Documentos esperados">
-                                    @foreach (var expectedDocument in step.ExpectedDocuments)
-                                    {
-                                        <span>@expectedDocument</span>
-                                    }
-                                </div>
-                                <div class="node-footer">
-                                    <span>@step.Stage</span>
-                                    @if (CanViewRoute(step.FutureRoute))
-                                    {
-                                        <button type="button" class="node-link" title="@step.FutureRoute" @onclick="@(() => OpenStep(step))">
-                                            <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
-                                            Abrir
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                        </article>
-
-                        @if (i < SelectedWorkflow.Steps.Count - 1)
-                        {
-                            <div class="flow-connector" aria-hidden="true">
-                                <span></span>
-                                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
-                            </div>
-                        }
-                    }
-                </div>
-
-                <section class="operations-grid" aria-label="Control del workflow seleccionado">
-                    <article class="control-panel">
-                        <div class="panel-title">
-                            <MudIcon Icon="@Icons.Material.Filled.Troubleshoot" Size="Size.Small" />
-                            <span>Cuellos de botella</span>
-                        </div>
-                        <div class="bottleneck-list">
-                            @foreach (var item in SelectedWorkflow.Bottlenecks)
-                            {
-                                <div class="bottleneck-item" style="@ToneStyle(item.Tone)">
-                                    <span class="status-dot"></span>
-                                    <div>
-                                        <strong>@item.Title</strong>
-                                        <small>@item.Detail</small>
-                                    </div>
-                                    <em>@item.Count</em>
-                                </div>
-                            }
-                        </div>
-                    </article>
-
-                    <article class="control-panel">
-                        <div class="panel-title">
-                            <MudIcon Icon="@Icons.Material.Filled.FolderCopy" Size="Size.Small" />
-                            <span>Expediente digital</span>
-                        </div>
-                        <div class="document-list">
-                            @foreach (var document in SelectedWorkflow.Documents)
-                            {
-                                <div class="document-item" style="@ToneStyle(document.Tone)">
-                                    <MudIcon Icon="@document.Icon" Size="Size.Small" />
-                                    <div>
-                                        <strong>@document.Title</strong>
-                                        <small>@document.Detail</small>
-                                    </div>
-                                    <span>@document.Status</span>
-                                </div>
-                            }
-                        </div>
-                    </article>
-
-                    <article class="control-panel">
-                        <div class="panel-title">
-                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Small" />
-                            <span>Timeline de auditoria</span>
-                        </div>
-                        <div class="timeline">
-                            @foreach (var eventItem in SelectedWorkflow.Timeline)
-                            {
-                                <div class="timeline-item" style="@ToneStyle(eventItem.Tone)">
-                                    <span class="status-dot"></span>
-                                    <div>
-                                        <strong>@eventItem.Title</strong>
-                                        <small>@eventItem.Detail</small>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </article>
-
-                    <article class="control-panel feature-panel">
-                        <div class="panel-title">
-                            <MudIcon Icon="@Icons.Material.Filled.Storefront" Size="Size.Small" />
-                            <span>Portal proveedor</span>
-                        </div>
-                        <strong>Proveedor cotiza, sube factura y consulta estatus</strong>
-                        <p>Cierra la historia comercial: menos llamadas, mas evidencia y una ruta clara para compras y cuentas por pagar.</p>
-                        <div class="feature-tags">
-                            <span>Cotiza</span>
-                            <span>Factura</span>
-                            <span>Consulta estatus</span>
-                        </div>
-                    </article>
-
-                    <article class="control-panel assistant-panel" style="@ToneStyle(SelectedWorkflow.AssistantTone)">
-                        <div class="panel-title">
-                            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
-                            <span>Asistente de proceso</span>
-                        </div>
-                        <strong>@SelectedWorkflow.AssistantTitle</strong>
-                        <p>@SelectedWorkflow.AssistantMessage</p>
-                        <div class="assistant-rule">
-                            <span>Regla simple</span>
-                            <strong>@SelectedWorkflow.AssistantRule</strong>
-                        </div>
-                    </article>
-                </section>
+                }
             </section>
-        </div>
-
-        <section class="handoff-strip" aria-label="Puntos de union entre workflows">
-            <div class="handoff-title">
-                <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Small" />
-                <span>Puentes preparados</span>
-            </div>
-            <div class="handoff-items">
-                <span>Requisicion -> Cotizacion -> Suficiencia</span>
-                <span>Autorizacion -> Contrato -> Compromiso</span>
-                <span>Factura -> Provision -> Pago</span>
-                <span>Documentos -> Bitacora -> Auditoria</span>
-            </div>
-        </section>
         }
     </section>
 </MudContainer>
 
 @code {
-    private string selectedWorkflowId = "presupuesto";
-    private bool permissionsReady;
-    private IReadOnlyList<WorkflowDefinition> visibleWorkflows = [];
+    private List<HomeModuleCard> _moduleCards = new();
+    private string _searchText = string.Empty;
+    private string? _loadError;
+    private bool _loading;
 
-    private WorkflowDefinition SelectedWorkflow =>
-        visibleWorkflows.FirstOrDefault(workflow => workflow.Id == selectedWorkflowId)
-        ?? visibleWorkflows.FirstOrDefault()
-        ?? Workflows[0];
+    private string EmpresaTexto =>
+        FirstText(SucursalStateService.EmpresaNombreCorto, SucursalStateService.EmpresaNombre, "Sin empresa");
 
-    private IReadOnlyList<WorkflowDefinition> VisibleWorkflows => visibleWorkflows;
+    private string AnioTexto =>
+        string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
+            ? "Sin anio"
+            : AnioStateService.AnioTexto;
 
-    private bool HasVisibleWorkflows => visibleWorkflows.Count > 0;
+    private IReadOnlyList<HomeModuleCard> FilteredCards
+    {
+        get
+        {
+            var term = NormalizeText(_searchText);
+            var cards = string.IsNullOrWhiteSpace(term)
+                ? _moduleCards
+                : _moduleCards
+                    .Where(card => NormalizeText($"{card.Title} {card.Subtitle}").Contains(term, StringComparison.Ordinal))
+                    .ToList();
+
+            return cards
+                .OrderBy(card => card.Order)
+                .ThenBy(card => card.Title)
+                .ToList();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        await AuthProvider.GetAuthenticationStateAsync();
+        SucursalStateService.OnSucursalChanged += OnSucursalChanged;
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
 
-        visibleWorkflows = Workflows
-            .Where(CanViewWorkflow)
+        await LoadContextAsync();
+        await LoadMenuAsync();
+    }
+
+    private async Task LoadContextAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+    }
+
+    private async Task LoadMenuAsync()
+    {
+        _loading = true;
+        _loadError = null;
+
+        try
+        {
+            var userId = await AuthService.GetUserIdAsync();
+            if (userId <= 0)
+            {
+                _moduleCards = new();
+                _loadError = "Sesion no disponible.";
+                return;
+            }
+
+            if (!MenuStateService.TryGetItems(userId, out var menuItems))
+            {
+                var result = await NavigateService.GetMenuAsync(userId);
+                menuItems = NormalizeMenuItems(result?.Items);
+                MenuStateService.Initialize(userId, menuItems);
+            }
+
+            _moduleCards = BuildModuleCards(menuItems).ToList();
+        }
+        catch
+        {
+            _moduleCards = new();
+            _loadError = "No se pudo cargar el menu.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ReloadMenuAsync()
+    {
+        if (_loading)
+            return;
+
+        MenuStateService.Clear();
+        await LoadMenuAsync();
+    }
+
+    private void OpenModule(HomeModuleCard card)
+    {
+        if (!string.IsNullOrWhiteSpace(card.Route))
+        {
+            NavigationManager.NavigateTo(card.Route);
+        }
+    }
+
+    private IEnumerable<HomeModuleCard> BuildModuleCards(IEnumerable<MenuItem>? items)
+    {
+        foreach (var item in (items ?? Enumerable.Empty<MenuItem>())
+            .Where(item => item.Activo)
+            .OrderBy(item => item.Orden ?? int.MaxValue)
+            .ThenBy(item => item.Nombre))
+        {
+            var route = GetLandingRoute(item);
+            if (string.IsNullOrWhiteSpace(route))
+                continue;
+
+            var moduleKey = ResolveModuleKey(item);
+            var style = GetModuleStyle(moduleKey, item);
+            var optionCount = CountNavigableItems(item);
+
+            yield return new HomeModuleCard(
+                Title: item.Nombre,
+                Subtitle: FormatOptionCount(optionCount),
+                Route: route,
+                Icon: style.Icon,
+                Accent: style.Accent,
+                Order: item.Orden ?? int.MaxValue);
+        }
+    }
+
+    private static List<MenuItem> NormalizeMenuItems(IEnumerable<MenuItem>? items)
+    {
+        return (items ?? Enumerable.Empty<MenuItem>())
+            .Where(item => item.Activo)
+            .OrderBy(item => item.Orden ?? int.MaxValue)
+            .ThenBy(item => item.Nombre)
+            .Select(item =>
+            {
+                item.Children = NormalizeMenuItems(item.Children);
+                return item;
+            })
             .ToList();
+    }
 
-        if (visibleWorkflows.Count > 0 && !visibleWorkflows.Any(workflow => workflow.Id == selectedWorkflowId))
+    private static string? GetLandingRoute(MenuItem item)
+    {
+        var dashboardRoute = GetDashboardRoute(item);
+        if (!string.IsNullOrWhiteSpace(dashboardRoute))
+            return dashboardRoute;
+
+        if (IsNavigableRoute(item.Ruta))
+            return item.Ruta;
+
+        return FindFirstNavigableRoute(item.Children);
+    }
+
+    private static string? FindFirstNavigableRoute(IEnumerable<MenuItem>? items)
+    {
+        foreach (var item in (items ?? Enumerable.Empty<MenuItem>())
+            .Where(item => item.Activo)
+            .OrderBy(item => item.Orden ?? int.MaxValue)
+            .ThenBy(item => item.Nombre))
         {
-            selectedWorkflowId = visibleWorkflows[0].Id;
+            if (IsNavigableRoute(item.Ruta))
+                return item.Ruta;
+
+            var childRoute = FindFirstNavigableRoute(item.Children);
+            if (!string.IsNullOrWhiteSpace(childRoute))
+                return childRoute;
         }
 
-        permissionsReady = true;
+        return null;
     }
 
-    private void SelectWorkflow(string workflowId)
+    private static int CountNavigableItems(MenuItem item) =>
+        Flatten(item).Count(menuItem => IsNavigableRoute(menuItem.Ruta));
+
+    private static IEnumerable<MenuItem> Flatten(MenuItem item)
     {
-        selectedWorkflowId = workflowId;
-    }
+        yield return item;
 
-    private string WorkflowCardClass(WorkflowDefinition workflow) =>
-        workflow.Id == selectedWorkflowId ? "workflow-card active" : "workflow-card";
-
-    private void OpenSelectedWorkflow() => OpenRoute(SelectedWorkflow.Route);
-
-    private void OpenWorkflow(WorkflowDefinition workflow)
-    {
-        selectedWorkflowId = workflow.Id;
-        OpenRoute(workflow.Route);
-    }
-
-    private void OpenStep(WorkflowStep step) => OpenRoute(step.FutureRoute);
-
-    private void OpenRoute(string route)
-    {
-        if (!string.IsNullOrWhiteSpace(route) && CanViewRoute(route))
+        foreach (var child in item.Children ?? Enumerable.Empty<MenuItem>())
         {
-            NavigationManager.NavigateTo(route);
+            foreach (var nested in Flatten(child))
+            {
+                yield return nested;
+            }
         }
     }
 
-    private bool CanViewWorkflow(WorkflowDefinition workflow) =>
-        workflow.RequiredPermissions.Count == 0
-        || workflow.RequiredPermissions.Any(HasViewPermission);
-
-    private bool CanViewRoute(string route)
+    private static bool IsNavigableRoute(string? route)
     {
         if (string.IsNullOrWhiteSpace(route))
-        {
             return false;
-        }
 
-        return RoutePermissions.TryGetValue(NormalizeRoute(route), out var permission)
-            ? HasViewPermission(permission)
-            : CanViewWorkflow(SelectedWorkflow);
+        var value = route.Trim();
+        return value != "/" && value != "#" && !value.Equals("javascript:void(0)", StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool HasViewPermission(PermissionRequirement permission) =>
-        AuthProvider.HasPermission(permission.Module, permission.SubModule, "view")
-        || AuthProvider.HasPermission(permission.Module, permission.SubModule, "view-menu");
+    private static string? GetDashboardRoute(MenuItem item)
+    {
+        var key = NormalizeText($"{item.Nombre} {item.LegacyName} {item.Ruta}");
 
-    private static string NormalizeRoute(string route) =>
-        route.Trim().TrimEnd('/').ToLowerInvariant();
+        if (key.Contains("tesoreria", StringComparison.Ordinal))
+            return "/Tesoreria/Dashboard";
+
+        if (key.Contains("reportes cxc", StringComparison.Ordinal) ||
+            key.Contains("cuentasxcobrar", StringComparison.Ordinal) ||
+            key.Contains("cuentas por cobrar", StringComparison.Ordinal))
+            return "/ReportesCxC/Dashboard";
+
+        if (key.Contains("contabilidad", StringComparison.Ordinal))
+            return "/Contabilidad/Dashboard";
+
+        if (key.Contains("adquisicion", StringComparison.Ordinal))
+            return "/Adquisiciones/Dashboard";
+
+        if (key.Contains("patrimonio", StringComparison.Ordinal))
+            return "/Patrimonio/Dashboard";
+
+        if (key.Contains("almacen", StringComparison.Ordinal))
+            return "/Almacen/Dashboard";
+
+        if (key.Contains("presupuesto", StringComparison.Ordinal))
+            return "/Presupuesto/Dashboard";
+
+        if (key.Contains("nomina", StringComparison.Ordinal))
+            return "/Nomina/Dashboard";
+
+        if (key == "pbr" || key.Contains(" pbr", StringComparison.Ordinal))
+            return "/PBR/Dashboard";
+
+        if (key.Contains("configuracion", StringComparison.Ordinal))
+            return "/Configuracion/Dashboard";
+
+        return null;
+    }
+
+    private static string ResolveModuleKey(MenuItem item)
+    {
+        var key = NormalizeText($"{item.Nombre} {item.LegacyName} {item.Ruta}");
+
+        if (key.Contains("configuracion", StringComparison.Ordinal)) return "configuracion";
+        if (key.Contains("tesoreria", StringComparison.Ordinal)) return "tesoreria";
+        if (key.Contains("reportes cxc", StringComparison.Ordinal)) return "reportescxc";
+        if (key.Contains("cuentasxcobrar", StringComparison.Ordinal)) return "reportescxc";
+        if (key.Contains("cuentas por cobrar", StringComparison.Ordinal)) return "reportescxc";
+        if (key.Contains("presupuesto", StringComparison.Ordinal)) return "presupuesto";
+        if (key.Contains("contabilidad", StringComparison.Ordinal)) return "contabilidad";
+        if (key.Contains("adquisicion", StringComparison.Ordinal)) return "adquisiciones";
+        if (key.Contains("patrimonio", StringComparison.Ordinal)) return "patrimonio";
+        if (key.Contains("almacen", StringComparison.Ordinal)) return "almacen";
+        if (key.Contains("nomina", StringComparison.Ordinal)) return "nomina";
+        if (key == "pbr" || key.Contains(" pbr", StringComparison.Ordinal)) return "pbr";
+        if (key.Contains("ayuda", StringComparison.Ordinal)) return "ayuda";
+
+        return "default";
+    }
+
+    private static ModuleStyle GetModuleStyle(string moduleKey, MenuItem item)
+    {
+        if (ModuleStyles.TryGetValue(moduleKey, out var style))
+            return style;
+
+        return new ModuleStyle("#64748B", IconosDisponibles.GetMaterialIcon(item.ImageUrl));
+    }
+
+    private static string FormatOptionCount(int count) =>
+        count == 1 ? "1 opcion" : $"{count} opciones";
 
     private static string AccentStyle(string accent) =>
-        $"--workflow-accent: {accent};";
+        $"--module-accent:{accent};";
 
-    private static string ToneStyle(string tone) => tone switch
+    private static string FirstText(params string?[] values) =>
+        values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+
+    private static string NormalizeText(string? text)
     {
-        "success" => "--tone-color: var(--mud-palette-success);",
-        "warning" => "--tone-color: var(--mud-palette-warning);",
-        "error" => "--tone-color: var(--mud-palette-error);",
-        "info" => "--tone-color: var(--mud-palette-info);",
-        _ => "--tone-color: var(--mud-palette-primary);"
-    };
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
 
-    private static readonly IReadOnlyList<ExecutiveMetric> ExecutiveMetrics =
-    [
-        new("Presupuesto disponible", "$12.45 M", "Disponible para nuevas solicitudes", Icons.Material.Filled.Savings, "#2F80ED"),
-        new("Presupuesto comprometido", "$4.82 M", "Contratos y ordenes en curso", Icons.Material.Filled.AssignmentTurnedIn, "#0F766E"),
-        new("En proceso de compra", "14", "Requisiciones, cotizaciones y contratos", Icons.Material.Filled.ShoppingCartCheckout, "#7C3AED"),
-        new("Pendiente de pago", "$1.18 M", "Facturas listas para provision o pago", Icons.Material.Filled.ReceiptLong, "#A11A1F"),
-        new("Dias promedio por flujo", "12", "De requisicion a factura", Icons.Material.Filled.QueryStats, "#B7791F")
-    ];
+        var normalized = text.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
 
-    private static readonly IReadOnlyList<BottleneckSnapshot> BottleneckSnapshots =
-    [
-        new(8, "requisiciones sin cotizar", "warning"),
-        new(5, "solicitudes esperando suficiencia", "warning"),
-        new(3, "contratos pendientes", "error"),
-        new(6, "facturas sin provisionar", "info")
-    ];
-
-    private static readonly IReadOnlyList<WorkflowDefinition> Workflows =
-    [
-        new(
-            Id: "presupuesto",
-            Title: "Presupuesto",
-            Subtitle: "De la solicitud al ejercicio",
-            Icon: Icons.Material.Filled.AccountBalance,
-            Accent: "#2F80ED",
-            Health: "Amarillo",
-            HealthTone: "warning",
-            HealthReason: "Requiere autorizacion de suficiencia antes de comprometer recursos.",
-            ActiveProcesses: 18,
-            BlockedProcesses: 6,
-            AverageDays: 9,
-            Owner: "GRP / Presupuesto",
-            Signal: "Egreso",
-            Outcome: "Ejercido",
-            BudgetSignal: "Momentos contables",
-            EntryPoint: "Necesidad presupuestal",
-            ControlPoint: "Suficiencia autorizada",
-            ExitPoint: "Egreso ejercido",
-            NextAction: "Revisar solicitudes de suficiencia",
-            AssistantTitle: "Esta solicitud no debe avanzar sin suficiencia autorizada",
-            AssistantMessage: "El flujo detecta presupuesto disponible, pero falta la autorizacion que permite reservar el recurso y preparar el compromiso.",
-            AssistantRule: "Sin suficiencia autorizada, no se habilita compromiso.",
-            AssistantTone: "warning",
-            Steps:
-            [
-                new("Solicitado", "Origen", "Nace la necesidad y se identifica la partida presupuestal.", Icons.Material.Filled.Assignment, "Completo", "success", "Area solicitante", "1 dia", "Requisicion", "/Adquisiciones/Requisicion", ["Requisicion", "Partida", "Evidencia"]),
-                new("Autorizado", "Base", "Se reconoce el presupuesto aprobado contra el que se operara.", Icons.Material.Filled.Verified, "Completo", "success", "Presupuesto", "Mismo dia", "Presupuesto autorizado", "/Presupuesto/Egreso/Presupuesto_Autorizado", ["Presupuesto autorizado", "Techo presupuestal"]),
-                new("Modificado", "Ajuste", "Ampliaciones, reducciones o adecuaciones preparan disponibilidad real.", Icons.Material.Filled.Tune, "En curso", "info", "Planeacion", "2 dias", "Adecuacion", "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones", ["Adecuacion", "Justificacion"]),
-                new("Suficiencia", "Reserva", "La solicitud valida disponibilidad antes de comprometer recursos.", Icons.Material.Filled.RuleFolder, "Atorado", "warning", "Presupuesto", "3 dias", "Suficiencia", "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia", ["Solicitud suficiencia", "Autorizacion suficiencia"]),
-                new("Comprometido", "Obligacion", "Contrato u orden formaliza el compromiso presupuestal.", Icons.Material.Filled.AssignmentTurnedIn, "Pendiente", "info", "Adquisiciones", "2 dias", "Contrato/OC", "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido", ["Contrato", "Orden compra", "Poliza compromiso"]),
-                new("Devengado", "Documento", "La factura comprueba recepcion, monto y soporte.", Icons.Material.Filled.ReceiptLong, "Pendiente", "info", "Cuentas por pagar", "2 dias", "Factura", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["Factura", "Comprobante", "Evidencia recepcion"]),
-                new("Ejercido", "Pago", "Tesoreria provisiona y ejecuta el pago correspondiente.", Icons.Material.Filled.Payments, "Pendiente", "info", "Tesoreria", "1 dia", "CLC/Pago", "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago", ["Poliza", "CLC", "Comprobante pago"])
-            ],
-            Documents:
-            [
-                new("Requisicion", "Completo", "Solicitud y partidas identificadas", Icons.Material.Filled.Description, "success"),
-                new("Suficiencia", "Pendiente", "Esperando autorizacion presupuestal", Icons.Material.Filled.RuleFolder, "warning"),
-                new("Contrato u orden", "Esperado", "Se habilita al comprometer", Icons.Material.Filled.Article, "info"),
-                new("Factura", "Esperado", "Base del devengado", Icons.Material.Filled.Receipt, "info"),
-                new("Poliza / CLC", "Esperado", "Evidencia del ejercido", Icons.Material.Filled.AccountBalanceWallet, "info")
-            ],
-            Timeline:
-            [
-                new("Solicito: Area usuaria", "10:18 - Capturo requisicion y anexo evidencia.", "success"),
-                new("Cambio: Planeacion", "11:02 - Ajusto disponibilidad por adecuacion.", "info"),
-                new("Autoriza: Presupuesto", "Pendiente - Falta visto bueno de suficiencia.", "warning"),
-                new("Documento: Contrato/OC", "Preparado para compromiso cuando se libere la suficiencia.", "info")
-            ],
-            Bottlenecks:
-            [
-                new("Suficiencias pendientes", "Solicitudes listas para autorizar.", 8, "warning"),
-                new("Adecuaciones por cuadrar", "Movimientos que no deben avanzar sin balance.", 3, "error"),
-                new("Facturas sin provision", "Documentos recibidos sin generar pago.", 5, "warning")
-            ])
+        foreach (var c in normalized)
         {
-            Route = "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia",
-            RequiredPermissions =
-            [
-                new("Egreso", "Presupuesto_Autorizado"),
-                new("Presupuesto_Modificado", "Ampliaciones"),
-                new("Presupuesto_Comprometido", "Solicitud_Suficiencia"),
-                new("Presupuesto_Comprometido", "Registro_Comprometido")
-            ]
-        },
-        new(
-            Id: "orden-compra",
-            Title: "Orden de compra",
-            Subtitle: "De requisicion a factura",
-            Icon: Icons.Material.Filled.ShoppingCartCheckout,
-            Accent: "#0F766E",
-            Health: "Verde",
-            HealthTone: "success",
-            HealthReason: "Normal: el paquete de compra avanza con evidencia suficiente.",
-            ActiveProcesses: 14,
-            BlockedProcesses: 2,
-            AverageDays: 12,
-            Owner: "GRP / Adquisiciones",
-            Signal: "Compra",
-            Outcome: "Factura",
-            BudgetSignal: "Expediente completo",
-            EntryPoint: "Requisicion capturada",
-            ControlPoint: "Suficiencia autorizada",
-            ExitPoint: "Factura lista para pago",
-            NextAction: "Solicitar cotizaciones faltantes",
-            AssistantTitle: "Lo siguiente es cerrar cotizaciones",
-            AssistantMessage: "La requisicion ya trae partidas; el siguiente paso natural es completar comparativo y solicitar suficiencia con soporte.",
-            AssistantRule: "Cotizacion completa habilita solicitud de suficiencia.",
-            AssistantTone: "success",
-            Steps:
-            [
-                new("Requisicion", "Solicitud", "Area solicitante captura bienes, servicios, partidas y monto estimado.", Icons.Material.Filled.Assignment, "Completo", "success", "Area solicitante", "1 dia", "Requisicion", "/Adquisiciones/Requisicion", ["Requisicion", "Partidas", "Evidencia"]),
-                new("Cotizacion", "Mercado", "Proveedores responden precios, condiciones y vigencia.", Icons.Material.Filled.RequestQuote, "En curso", "info", "Adquisiciones", "3 dias", "Cotizaciones", "/Adquisiciones/Cotizacion", ["Cotizaciones", "Comparativo", "Vigencia"]),
-                new("Suficiencia", "Presupuesto", "Se solicita suficiencia con bienes cotizados y partida presupuestal.", Icons.Material.Filled.RuleFolder, "Atencion", "warning", "Presupuesto", "2 dias", "Solicitud suficiencia", "/Adquisiciones/Solicitud_Suficiencia", ["Solicitud suficiencia", "Cotizaciones", "Partida"]),
-                new("Autorizacion", "Control", "Presupuesto valida y autoriza la suficiencia para avanzar.", Icons.Material.Filled.HowToReg, "Pendiente", "info", "Presupuesto", "1 dia", "Autorizacion", "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia", ["Autorizacion suficiencia", "Bitacora"]),
-                new("Contrato", "Formalizacion", "Se genera el contrato o instrumento que amarra la obligacion.", Icons.Material.Filled.Article, "Pendiente", "info", "Juridico", "4 dias", "Contrato", "/Adquisiciones/Contratos/Registro_Compromiso", ["Contrato", "Proveedor", "Garantia"]),
-                new("Orden compra", "Operacion", "Se emite la orden con proveedor, partidas, detalles y total.", Icons.Material.Filled.ShoppingCart, "Pendiente", "info", "Adquisiciones", "1 dia", "Orden compra", "/Adquisiciones/Orden_Compra", ["Orden compra", "Contrato", "Compromiso"]),
-                new("Factura", "Comprobacion", "Se recibe factura y comprobante para cuentas por pagar.", Icons.Material.Filled.Receipt, "Pendiente", "info", "Proveedor/CXP", "2 dias", "Factura", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["Factura", "XML/PDF", "Evidencia recepcion"]),
-                new("Pago", "Cierre", "Provision, cheque o transferencia cierran el circuito financiero.", Icons.Material.Filled.AccountBalanceWallet, "Pendiente", "info", "Tesoreria", "1 dia", "Comprobante pago", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["Poliza", "Comprobante", "Pago"])
-            ],
-            Documents:
-            [
-                new("Requisicion", "Completo", "Bienes y partidas capturadas", Icons.Material.Filled.Description, "success"),
-                new("Cotizaciones", "En curso", "Comparativo de proveedores", Icons.Material.Filled.RequestQuote, "info"),
-                new("Suficiencia", "Pendiente", "Reserva presupuestal", Icons.Material.Filled.RuleFolder, "warning"),
-                new("Contrato / OC", "Esperado", "Formalizacion con proveedor", Icons.Material.Filled.Article, "info"),
-                new("Factura y pago", "Esperado", "Cierre documental", Icons.Material.Filled.ReceiptLong, "info")
-            ],
-            Timeline:
-            [
-                new("Solicito: Servicios Generales", "09:44 - Capturo requisicion y evidencia tecnica.", "success"),
-                new("Documento: Cotizacion", "10:30 - Proveedor A subio precio y vigencia.", "info"),
-                new("Autoriza: Presupuesto", "Pendiente - Falta enviar solicitud de suficiencia.", "warning"),
-                new("Cambio: Adquisiciones", "Ruta lista para contrato y orden de compra.", "info")
-            ],
-            Bottlenecks:
-            [
-                new("Cotizaciones faltantes", "Bienes sin precio de proveedor.", 4, "warning"),
-                new("Contratos sin firma", "Formalizacion detenida antes del compromiso.", 2, "error"),
-                new("Facturas por recibir", "Compras emitidas sin comprobacion.", 6, "info")
-            ])
-        {
-            Route = "/Adquisiciones/Orden_Compra",
-            RequiredPermissions =
-            [
-                new("Adquisiciones", "requisicion"),
-                new("Adquisiciones", "Cotizacion"),
-                new("Adquisiciones", "SolicitudSuficiencia"),
-                new("Adquisiciones", "OrdenCompra"),
-                new("Contratos", "Registro_Compromiso")
-            ]
-        },
-        new(
-            Id: "factura-pago",
-            Title: "Factura y pago",
-            Subtitle: "De soporte a comprobante",
-            Icon: Icons.Material.Filled.ReceiptLong,
-            Accent: "#A11A1F",
-            Health: "Rojo",
-            HealthTone: "error",
-            HealthReason: "Detenido por factura sin soporte y poliza pendiente.",
-            ActiveProcesses: 9,
-            BlockedProcesses: 6,
-            AverageDays: 7,
-            Owner: "Cuentas por pagar / Tesoreria",
-            Signal: "Devengado",
-            Outcome: "Pagado",
-            BudgetSignal: "Soporte requerido",
-            EntryPoint: "Factura recibida",
-            ControlPoint: "Soporte fiscal y evidencia",
-            ExitPoint: "Pago comprobado",
-            NextAction: "Adjuntar soporte de factura",
-            AssistantTitle: "Esta factura no puede avanzar porque falta soporte",
-            AssistantMessage: "El flujo identifica factura recibida, pero no hay evidencia suficiente para provisionar, generar poliza y liberar pago.",
-            AssistantRule: "Factura sin soporte detiene devengado y pago.",
-            AssistantTone: "error",
-            Steps:
-            [
-                new("Factura", "Recepcion", "Proveedor entrega factura y datos fiscales para iniciar cuentas por pagar.", Icons.Material.Filled.Receipt, "Atorada", "error", "Proveedor/CXP", "2 dias", "Factura", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["Factura", "XML/PDF", "Contrato"]),
-                new("Validacion", "Soporte", "CXP revisa contrato, evidencia de recepcion y comprobantes contra la orden.", Icons.Material.Filled.FactCheck, "Atorada", "error", "Cuentas por pagar", "1 dia", "Evidencia", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["Evidencia", "Comprobante", "Orden compra"]),
-                new("Provision", "Devengado", "Se reconoce la obligacion de pago cuando el soporte esta completo.", Icons.Material.Filled.Rule, "Pendiente", "info", "Cuentas por pagar", "1 dia", "Provision", "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago", ["Provision", "Cuenta por pagar"]),
-                new("Poliza", "Contabilidad", "Contabilidad genera la poliza y deja trazabilidad para auditoria.", Icons.Material.Filled.AccountTree, "Pendiente", "info", "Contabilidad", "Mismo dia", "Poliza", "/Contabilidad/Polizas", ["Poliza", "Asiento contable"]),
-                new("Pago", "Tesoreria", "Tesoreria emite cheque o transferencia con autorizacion correspondiente.", Icons.Material.Filled.Payments, "Pendiente", "info", "Tesoreria", "1 dia", "Pago", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["Pago", "CLC", "Autorizacion"]),
-                new("Comprobante", "Cierre", "Se anexa comprobante, se cierra expediente y se deja evidencia para consulta.", Icons.Material.Filled.TaskAlt, "Pendiente", "info", "Tesoreria", "Mismo dia", "Comprobante", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["Comprobante", "Poliza", "Evidencia"])
-            ],
-            Documents:
-            [
-                new("Factura", "Recibida", "XML/PDF pendiente de soporte completo", Icons.Material.Filled.Receipt, "warning"),
-                new("Evidencia", "Faltante", "Recepcion o comprobante no anexado", Icons.Material.Filled.FolderOff, "error"),
-                new("Provision", "Esperado", "Se habilita al validar soporte", Icons.Material.Filled.Rule, "info"),
-                new("Poliza", "Esperado", "Registro contable del devengado", Icons.Material.Filled.AccountTree, "info"),
-                new("Comprobante", "Esperado", "Cierre del pago", Icons.Material.Filled.TaskAlt, "info")
-            ],
-            Timeline:
-            [
-                new("Documento: Factura", "08:55 - Proveedor cargo XML/PDF en portal.", "warning"),
-                new("Cambio: CXP", "09:20 - Marco factura sin evidencia de recepcion.", "error"),
-                new("Autoriza: Tesoreria", "Bloqueado - No puede liberar pago sin provision.", "error"),
-                new("Pendiente: Contabilidad", "Poliza se generara al cerrar soporte fiscal.", "info")
-            ],
-            Bottlenecks:
-            [
-                new("Facturas sin soporte", "XML/PDF recibido sin evidencia documental.", 6, "error"),
-                new("Provisiones pendientes", "Facturas validadas sin devengado.", 5, "warning"),
-                new("Pagos sin comprobante", "Transferencias por cerrar expediente.", 2, "info")
-            ])
-        {
-            Route = "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago",
-            RequiredPermissions =
-            [
-                new("CuentasXPagar", "RecepcionFactura_ComprobantePago"),
-                new("CuentasXPagar", "Provision_Pago"),
-                new("CuentasXPagar", "ElaboracionCheque_Transferencia"),
-                new("Contabilidad", "Polizas")
-            ]
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(char.ToLowerInvariant(c));
+            }
         }
-    ];
 
-    private static readonly IReadOnlyDictionary<string, PermissionRequirement> RoutePermissions =
-        new Dictionary<string, PermissionRequirement>(StringComparer.OrdinalIgnoreCase)
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private void OnSucursalChanged(int sucursalId, string sucursalNombre) =>
+        _ = InvokeAsync(StateHasChanged);
+
+    private void OnEmpresaChanged(int empresaId) =>
+        _ = InvokeAsync(StateHasChanged);
+
+    private void OnAnioChanged(int? anioId) =>
+        _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        SucursalStateService.OnSucursalChanged -= OnSucursalChanged;
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+
+    private static readonly IReadOnlyDictionary<string, ModuleStyle> ModuleStyles =
+        new Dictionary<string, ModuleStyle>(StringComparer.OrdinalIgnoreCase)
         {
-            [NormalizeRoute("/Adquisiciones/Requisicion")] = new("Adquisiciones", "requisicion"),
-            [NormalizeRoute("/Adquisiciones/Cotizacion")] = new("Adquisiciones", "Cotizacion"),
-            [NormalizeRoute("/Adquisiciones/Solicitud_Suficiencia")] = new("Adquisiciones", "SolicitudSuficiencia"),
-            [NormalizeRoute("/Adquisiciones/Orden_Compra")] = new("Adquisiciones", "OrdenCompra"),
-            [NormalizeRoute("/Adquisiciones/Contratos/Registro_Compromiso")] = new("Contratos", "Registro_Compromiso"),
-            [NormalizeRoute("/Presupuesto/Egreso/Presupuesto_Autorizado")] = new("Egreso", "Presupuesto_Autorizado"),
-            [NormalizeRoute("/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones")] = new("Presupuesto_Modificado", "Ampliaciones"),
-            [NormalizeRoute("/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia")] = new("Presupuesto_Comprometido", "Solicitud_Suficiencia"),
-            [NormalizeRoute("/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia")] = new("Presupuesto_Comprometido", "Autorizacion_Suficiencia"),
-            [NormalizeRoute("/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido")] = new("Presupuesto_Comprometido", "Registro_Comprometido"),
-            [NormalizeRoute("/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago")] = new("CuentasXPagar", "RecepcionFactura_ComprobantePago"),
-            [NormalizeRoute("/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago")] = new("CuentasXPagar", "Provision_Pago"),
-            [NormalizeRoute("/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia")] = new("CuentasXPagar", "ElaboracionCheque_Transferencia"),
-            [NormalizeRoute("/Contabilidad/Polizas")] = new("Contabilidad", "Polizas")
+            ["configuracion"] = new("#64748B", Icons.Material.Filled.Settings),
+            ["presupuesto"] = new("#2563EB", Icons.Material.Filled.AccountBalance),
+            ["contabilidad"] = new("#0F766E", Icons.Material.Filled.ReceiptLong),
+            ["adquisiciones"] = new("#7C3AED", Icons.Material.Filled.ShoppingCartCheckout),
+            ["patrimonio"] = new("#B45309", Icons.Material.Filled.Inventory2),
+            ["almacen"] = new("#047857", Icons.Material.Filled.Warehouse),
+            ["tesoreria"] = new("#0EA5E9", Icons.Material.Filled.Payments),
+            ["nomina"] = new("#9333EA", Icons.Material.Filled.Groups),
+            ["reportescxc"] = new("#0284C7", Icons.Material.Filled.RequestQuote),
+            ["pbr"] = new("#4F46E5", Icons.Material.Filled.DashboardCustomize),
+            ["ayuda"] = new("#64748B", Icons.Material.Filled.Help)
         };
 
-    private sealed record ExecutiveMetric(
-        string Label,
-        string Value,
-        string Detail,
-        string Icon,
-        string Accent);
-
-    private sealed record BottleneckSnapshot(
-        int Count,
-        string Label,
-        string Tone);
-
-    private sealed record WorkflowDefinition(
-        string Id,
+    private sealed record HomeModuleCard(
         string Title,
         string Subtitle,
+        string Route,
         string Icon,
         string Accent,
-        string Health,
-        string HealthTone,
-        string HealthReason,
-        int ActiveProcesses,
-        int BlockedProcesses,
-        int AverageDays,
-        string Owner,
-        string Signal,
-        string Outcome,
-        string BudgetSignal,
-        string EntryPoint,
-        string ControlPoint,
-        string ExitPoint,
-        string NextAction,
-        string AssistantTitle,
-        string AssistantMessage,
-        string AssistantRule,
-        string AssistantTone,
-        IReadOnlyList<WorkflowStep> Steps,
-        IReadOnlyList<DocumentItem> Documents,
-        IReadOnlyList<TimelineItem> Timeline,
-        IReadOnlyList<BottleneckItem> Bottlenecks)
-    {
-        public string Route { get; init; } = "/";
-        public IReadOnlyList<PermissionRequirement> RequiredPermissions { get; init; } = [];
-    }
+        int Order);
 
-    private sealed record PermissionRequirement(
-        string Module,
-        string SubModule);
-
-    private sealed record WorkflowStep(
-        string Title,
-        string Stage,
-        string Description,
-        string Icon,
-        string Status,
-        string Tone,
-        string Owner,
-        string Duration,
-        string Document,
-        string FutureRoute,
-        IReadOnlyList<string>? ExpectedDocumentsSource = null)
-    {
-        public IReadOnlyList<string> ExpectedDocuments { get; } = ExpectedDocumentsSource ?? [Document];
-    }
-
-    private sealed record DocumentItem(
-        string Title,
-        string Status,
-        string Detail,
-        string Icon,
-        string Tone);
-
-    private sealed record TimelineItem(
-        string Title,
-        string Detail,
-        string Tone);
-
-    private sealed record BottleneckItem(
-        string Title,
-        string Detail,
-        int Count,
-        string Tone);
+    private sealed record ModuleStyle(string Accent, string Icon);
 }
 
 <style>
-    .workflow-home {
+    .home-page {
         height: 100%;
-        max-height: 100%;
+        min-height: 0;
         overflow: auto;
         padding: 14px 16px 18px !important;
         background: var(--mud-palette-background);
     }
 
-    .workflow-shell {
+    .home-shell {
         min-height: 100%;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        align-content: start;
         gap: 12px;
     }
 
-    .workflow-header,
-    .overview-panel,
-    .workflow-detail,
-    .handoff-strip,
-    .access-state,
-    .metric-card,
-    .control-panel,
-    .compliance-band,
-    .semaphore-card,
-    .snapshot-card,
-    .action-context,
-    .primary-action {
+    .home-header,
+    .home-tools,
+    .module-tile,
+    .home-state {
         border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
         background: var(--mud-palette-surface);
     }
 
-    .access-state {
-        min-height: 220px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 14px;
-        padding: 28px;
-        color: var(--mud-palette-text-secondary);
-    }
-
-    .access-state .mud-icon-root {
-        color: var(--mud-palette-primary);
-    }
-
-    .access-state div {
-        display: grid;
-        gap: 4px;
-    }
-
-    .access-state strong {
-        color: var(--mud-palette-text-primary);
-        font-size: 1rem;
-        font-weight: 850;
-    }
-
-    .workflow-header {
+    .home-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        padding: 14px 18px;
+        gap: 14px;
+        padding: 14px 16px;
     }
 
-    .workflow-heading {
+    .home-title {
         min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
-    .workflow-kicker,
-    .workflow-mode,
-    .handoff-title,
-    .panel-title,
-    .insight-label,
-    .compliance-kicker,
-    .action-context span,
-    .assistant-rule span {
+    .home-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 30%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        color: var(--mud-palette-primary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 9%, transparent);
+    }
+
+    .eyebrow {
+        display: block;
         color: var(--mud-palette-text-secondary);
-        font-size: .76rem;
-        font-weight: 800;
+        font-size: .74rem;
+        font-weight: 850;
+        line-height: 1;
         text-transform: uppercase;
     }
 
-    .workflow-heading h1 {
-        margin: 4px 0 2px;
+    .home-title h1 {
+        margin: 3px 0 0;
         color: var(--mud-palette-text-primary);
-        font-size: 1.65rem;
+        font-size: 1.55rem;
         font-weight: 850;
         line-height: 1.1;
         letter-spacing: 0;
     }
 
-    .workflow-heading p {
-        margin: 0;
-        color: var(--mud-palette-text-secondary);
-        font-size: .96rem;
-        line-height: 1.45;
-    }
-
-    .compliance-band {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 10px 14px;
-        border-left: 3px solid var(--mud-palette-info);
-        background: color-mix(in srgb, var(--mud-palette-info) 3%, var(--mud-palette-surface));
-    }
-
-    .compliance-copy {
-        min-width: 0;
-        display: grid;
-        gap: 3px;
-    }
-
-    .compliance-copy strong {
-        color: var(--mud-palette-text-primary);
-        font-size: 1rem;
-        line-height: 1.25;
-    }
-
-    .compliance-copy p {
-        margin: 0;
-        color: var(--mud-palette-text-secondary);
-        font-size: .84rem;
-        line-height: 1.35;
-    }
-
-    .compliance-link {
-        flex: 0 0 auto;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 34px;
-        padding: 8px 11px;
-        border: 1px solid color-mix(in srgb, var(--mud-palette-info) 36%, var(--mud-palette-lines-default));
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface));
-        color: var(--mud-palette-info);
-        font-size: .8rem;
-        font-weight: 850;
-        text-decoration: none;
-    }
-
-    .header-actions {
+    .scope-strip {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: 8px;
-        flex: 0 0 auto;
     }
 
-    .workflow-mode,
-    .next-action {
+    .scope-chip {
+        min-width: 0;
+        max-width: 260px;
+        min-height: 32px;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        font-size: .8rem;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-
-    .next-action {
-        font-family: inherit;
-        cursor: pointer;
-    }
-
-    .next-action:disabled,
-    .primary-action:disabled {
-        cursor: not-allowed;
-        opacity: .55;
-    }
-
-    .workflow-mode {
-        border: 1px solid color-mix(in srgb, var(--mud-palette-success) 45%, var(--mud-palette-lines-default));
-        background: color-mix(in srgb, var(--mud-palette-success) 9%, var(--mud-palette-surface));
-        color: var(--mud-palette-success);
-    }
-
-    .next-action {
-        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 34%, var(--mud-palette-lines-default));
-        background: color-mix(in srgb, var(--mud-palette-primary) 8%, var(--mud-palette-surface));
-        color: var(--mud-palette-text-primary);
-    }
-
-    .next-action span {
-        color: var(--mud-palette-text-secondary);
-        font-size: .7rem;
-        text-transform: uppercase;
-    }
-
-    .next-action strong {
-        color: var(--mud-palette-text-primary);
-        font-size: .82rem;
-    }
-
-    .mode-dot,
-    .status-dot,
-    .status-chip span {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: currentColor;
-        box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
-        flex: 0 0 auto;
-    }
-
-    .overview-panel {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-        gap: 12px;
-        padding: 12px;
-    }
-
-    .executive-strip {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 8px;
-    }
-
-    .bottleneck-strip {
-        display: grid;
-        gap: 6px;
-    }
-
-    .bottleneck-summary {
-        min-width: 0;
-        display: grid;
-        align-content: start;
-        gap: 8px;
-        padding-left: 12px;
-        border-left: 1px solid var(--mud-palette-lines-default);
-    }
-
-    .snapshot-card {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: 10px minmax(0, 1fr);
-        align-items: center;
-        gap: 8px;
-        padding: 7px 0;
-        border: 0;
-        background: transparent;
-    }
-
-    .snapshot-card div {
-        min-width: 0;
-        display: flex;
-        align-items: baseline;
-        gap: 7px;
-    }
-
-    .snapshot-card strong {
-        color: var(--tone-color);
-        font-size: .98rem;
-        font-weight: 900;
-        line-height: 1;
-    }
-
-    .snapshot-card span:last-child {
-        min-width: 0;
-        color: var(--mud-palette-text-secondary);
-        font-size: .8rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .metric-card {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: 32px minmax(0, 1fr);
-        gap: 9px;
-        align-items: center;
-        padding: 10px;
-        border: 0;
-        background: color-mix(in srgb, var(--mud-palette-background) 70%, var(--mud-palette-surface));
-    }
-
-    .metric-icon {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--workflow-accent) 14%, transparent);
-        color: var(--workflow-accent);
-    }
-
-    .metric-card div {
-        min-width: 0;
-        display: grid;
-        gap: 2px;
-    }
-
-    .metric-card span,
-    .metric-card small {
-        color: var(--mud-palette-text-secondary);
-        font-size: .72rem;
-    }
-
-    .metric-card strong {
-        min-width: 0;
-        color: var(--mud-palette-text-primary);
-        font-size: 1rem;
-        font-weight: 850;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .workflow-layout {
-        display: grid;
-        grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
-        gap: 12px;
-        flex: 1 1 auto;
-        min-height: 0;
-    }
-
-    .workflow-selector {
-        display: grid;
-        align-content: start;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .selector-heading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 0 2px 4px;
-        color: var(--mud-palette-text-secondary);
-        font-size: .76rem;
-        font-weight: 850;
-        text-transform: uppercase;
-    }
-
-    .selector-heading strong {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        padding: 6px 10px;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 24%, var(--mud-palette-lines-default));
         border-radius: 999px;
         color: var(--mud-palette-text-primary);
-        background: var(--mud-palette-surface);
-        border: 1px solid var(--mud-palette-lines-default);
-        font-size: .76rem;
-    }
-
-    .semaphore-card {
-        display: grid;
-        gap: 8px;
-        padding: 10px;
-        background: color-mix(in srgb, var(--mud-palette-background) 68%, var(--mud-palette-surface));
-    }
-
-    .semaphore-list {
-        display: grid;
-        gap: 7px;
-    }
-
-    .semaphore-item {
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--mud-palette-text-secondary);
+        background: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent);
         font-size: .78rem;
-        line-height: 1.25;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .workflow-card {
-        width: 100%;
+    .scope-chip .mud-icon-root {
+        color: var(--mud-palette-primary);
+        flex: 0 0 auto;
+    }
+
+    .home-tools {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .module-search .mud-input-control {
+        margin: 0;
+    }
+
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 10px;
+    }
+
+    .module-tile {
+        min-width: 0;
         min-height: 76px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 36px;
+        grid-template-columns: 42px minmax(0, 1fr) 30px;
         align-items: center;
-        gap: 0;
-        padding: 0;
-        border: 1px solid var(--mud-palette-lines-default);
-        border-left: 3px solid transparent;
-        border-radius: 8px;
-        background: var(--mud-palette-surface);
+        gap: 11px;
+        padding: 12px;
+        border-left: 4px solid var(--module-accent);
         color: var(--mud-palette-text-primary);
-        overflow: hidden;
-        transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
     }
 
-    .workflow-card:hover {
-        border-color: color-mix(in srgb, var(--workflow-accent) 34%, var(--mud-palette-lines-default));
-        background: color-mix(in srgb, var(--workflow-accent) 4%, var(--mud-palette-surface));
+    .module-tile:hover {
+        border-color: color-mix(in srgb, var(--module-accent) 52%, var(--mud-palette-lines-default));
+        border-left-color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 7%, var(--mud-palette-surface));
+        transform: translateY(-1px);
     }
 
-    .workflow-card.active {
-        border-color: color-mix(in srgb, var(--workflow-accent) 72%, var(--mud-palette-lines-default));
-        border-left-color: var(--workflow-accent);
-        background: color-mix(in srgb, var(--workflow-accent) 7%, var(--mud-palette-surface));
-    }
-
-    .workflow-card:focus-within {
-        outline: 2px solid var(--workflow-accent);
+    .module-tile:focus-visible {
+        outline: 2px solid var(--module-accent);
         outline-offset: 2px;
     }
 
-    .workflow-select {
-        min-width: 0;
-        min-height: 76px;
-        display: grid;
-        grid-template-columns: 34px minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 9px;
-        padding: 10px;
-        border: 0;
-        background: transparent;
-        color: inherit;
-        font-family: inherit;
-        text-align: left;
-        cursor: pointer;
-    }
-
-    .workflow-open {
-        width: 36px;
-        height: 100%;
+    .module-icon,
+    .module-arrow {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 0;
-        border-left: 1px solid var(--mud-palette-lines-default);
-        background: transparent;
-        color: var(--mud-palette-text-secondary);
-        cursor: pointer;
+        color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 10%, transparent);
     }
 
-    .workflow-open:hover {
-        color: var(--workflow-accent);
-        background: color-mix(in srgb, var(--workflow-accent) 8%, transparent);
-    }
-
-    .workflow-icon,
-    .detail-icon {
-        width: 34px;
-        height: 34px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    .module-icon {
+        width: 40px;
+        height: 40px;
         border-radius: 8px;
-        background: color-mix(in srgb, var(--workflow-accent) 14%, transparent);
-        color: var(--workflow-accent);
-        flex: 0 0 auto;
     }
 
-    .workflow-copy {
+    .module-arrow {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+    }
+
+    .module-copy {
         min-width: 0;
         display: grid;
         gap: 3px;
     }
 
-    .workflow-copy strong,
-    .detail-title h2,
-    .node-title strong,
-    .workflow-insight strong,
-    .action-context strong,
-    .feature-panel > strong,
-    .assistant-panel > strong,
-    .document-item strong,
-    .timeline-item strong,
-    .bottleneck-item strong {
+    .module-copy strong {
         min-width: 0;
+        color: var(--mud-palette-text-primary);
+        font-size: .98rem;
+        font-weight: 850;
+        line-height: 1.15;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .workflow-copy strong {
-        font-size: .94rem;
-        line-height: 1.15;
-    }
-
-    .workflow-copy small {
+    .module-copy small {
         color: var(--mud-palette-text-secondary);
-        font-size: .75rem;
-        line-height: 1.25;
-    }
-
-    .workflow-count {
-        width: 28px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--workflow-accent) 12%, transparent);
-        color: var(--workflow-accent);
-        font-weight: 850;
-        font-size: .8rem;
-    }
-
-    .workflow-card-kpis {
-        display: inline-flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 5px;
-        color: var(--mud-palette-text-secondary);
-        font-size: .7rem;
-        line-height: 1.2;
-    }
-
-    .workflow-card-kpis span {
-        color: color-mix(in srgb, var(--mud-palette-text-secondary) 62%, transparent);
-    }
-
-    .workflow-card-kpis strong {
-        color: var(--workflow-accent);
         font-size: .76rem;
-        line-height: 1;
-    }
-
-    .workflow-select > .status-chip {
-        justify-self: end;
-        padding: 6px 8px;
-        font-size: .7rem;
-    }
-
-    .workflow-detail {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 14px;
-        overflow: hidden;
-    }
-
-    .detail-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex: 0 0 auto;
-    }
-
-    .detail-health {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: 10px minmax(0, 1fr);
-        align-items: center;
-        gap: 9px;
-        padding: 10px 12px;
-        border: 1px solid color-mix(in srgb, var(--tone-color) 32%, var(--mud-palette-lines-default));
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--tone-color) 6%, var(--mud-palette-surface));
-    }
-
-    .detail-health div {
-        min-width: 0;
-        display: grid;
-        gap: 2px;
-    }
-
-    .detail-health strong {
-        color: var(--tone-color);
-        font-size: .92rem;
-        font-weight: 850;
-        line-height: 1.15;
-    }
-
-    .detail-health small {
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-        line-height: 1.25;
-    }
-
-    .detail-title {
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .detail-title span {
-        display: block;
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .detail-title h2 {
-        margin: 1px 0 0;
-        color: var(--mud-palette-text-primary);
-        font-size: 1.25rem;
-        font-weight: 850;
-        letter-spacing: 0;
-    }
-
-    .detail-badges,
-    .detail-actions,
-    .handoff-items {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 8px;
-        flex: 0 0 auto;
-    }
-
-    .detail-badges span,
-    .module-link,
-    .node-footer span,
-    .node-link,
-    .handoff-items span,
-    .status-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        border: 1px solid color-mix(in srgb, var(--tone-color, var(--workflow-accent)) 30%, var(--mud-palette-lines-default));
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--tone-color, var(--workflow-accent)) 8%, var(--mud-palette-surface));
-        color: var(--mud-palette-text-primary);
-        font-size: .74rem;
         font-weight: 750;
-        line-height: 1;
-        white-space: nowrap;
-    }
-
-    .detail-actions {
-        align-items: center;
-    }
-
-    .detail-badges span,
-    .module-link,
-    .handoff-items span {
-        padding: 8px 10px;
-    }
-
-    .module-link,
-    .node-link {
-        border-color: color-mix(in srgb, var(--workflow-accent) 34%, var(--mud-palette-lines-default));
-        color: var(--workflow-accent);
-        cursor: pointer;
-        font-family: inherit;
-    }
-
-    .module-link:hover,
-    .node-link:hover {
-        background: color-mix(in srgb, var(--workflow-accent) 12%, var(--mud-palette-surface));
-    }
-
-    .status-chip {
-        width: fit-content;
-        padding: 6px 8px;
-        color: var(--tone-color);
-    }
-
-    .workflow-insight {
-        flex: 0 0 auto;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-    }
-
-    .workflow-insight > div {
-        min-width: 0;
-        padding: 10px 12px;
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
-        background: var(--mud-palette-background);
-    }
-
-    .insight-label {
-        display: block;
-        margin-bottom: 3px;
-    }
-
-    .workflow-insight strong {
-        display: block;
-        color: var(--mud-palette-text-primary);
-        font-size: .92rem;
-    }
-
-    .action-row {
-        display: grid;
-        grid-template-columns: minmax(260px, .95fr) minmax(0, 1.05fr);
-        gap: 10px;
-    }
-
-    .primary-action {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: 28px minmax(0, 1fr);
-        align-items: center;
-        column-gap: 9px;
-        row-gap: 2px;
-        padding: 10px 12px;
-        border-color: color-mix(in srgb, var(--workflow-accent) 40%, var(--mud-palette-lines-default));
-        background: color-mix(in srgb, var(--workflow-accent) 10%, var(--mud-palette-surface));
-        color: var(--mud-palette-text-primary);
-        font-family: inherit;
-        text-align: left;
-        cursor: pointer;
-    }
-
-    .primary-action .mud-icon-root {
-        grid-row: 1 / span 2;
-        color: var(--workflow-accent);
-    }
-
-    .primary-action span {
-        color: var(--mud-palette-text-secondary);
-        font-size: .72rem;
-        font-weight: 850;
-        line-height: 1;
-        text-transform: uppercase;
-    }
-
-    .primary-action strong {
-        min-width: 0;
-        color: var(--mud-palette-text-primary);
-        font-size: .95rem;
-        line-height: 1.15;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .action-context {
-        min-width: 0;
-        display: grid;
-        gap: 4px;
-        padding: 10px 12px;
-        background: var(--mud-palette-background);
-    }
-
-    .action-context strong {
-        color: var(--mud-palette-text-primary);
-        font-size: .88rem;
-        line-height: 1.25;
-    }
-
-    .flow-lane {
-        min-height: 0;
-        display: flex;
-        align-items: stretch;
-        gap: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 2px 2px 8px;
-        scrollbar-width: thin;
-        scrollbar-color: var(--workflow-accent) transparent;
-    }
-
-    .flow-node {
-        width: 218px;
-        flex: 0 0 218px;
-        display: grid;
-        grid-template-rows: 28px 1fr;
-        gap: 7px;
-        min-height: 210px;
-    }
-
-    .node-index {
-        width: 34px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background: var(--workflow-accent);
-        color: #ffffff;
-        font-weight: 900;
-        font-size: .8rem;
-    }
-
-    .node-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-        min-height: 178px;
-        padding: 10px;
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
-        background: var(--mud-palette-surface);
-    }
-
-    .node-status {
-        min-height: 24px;
-    }
-
-    .node-title {
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--mud-palette-text-primary);
-    }
-
-    .node-title .mud-icon-root {
-        color: var(--workflow-accent);
-        flex: 0 0 auto;
-    }
-
-    .node-title strong {
-        font-size: .95rem;
         line-height: 1.2;
     }
 
-    .node-panel p {
-        flex: 1 1 auto;
-        margin: 0;
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-        line-height: 1.32;
-    }
-
-    .node-meta {
+    .home-state {
+        min-height: 220px;
         display: grid;
-        gap: 4px;
-    }
-
-    .node-meta div {
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 4px 0;
-        border-radius: 7px;
-        background: transparent;
-        border-top: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 70%, transparent);
-    }
-
-    .node-meta span {
-        color: var(--mud-palette-text-secondary);
-        font-size: .64rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .node-meta strong {
-        min-width: 0;
-        color: var(--mud-palette-text-primary);
-        font-size: .7rem;
-        text-align: right;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .expected-docs {
-        display: none;
-    }
-
-    .expected-docs span {
-        max-width: 100%;
-        padding: 5px 7px;
-        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
-        border-radius: 999px;
-        color: var(--mud-palette-text-secondary);
-        font-size: .68rem;
-        font-weight: 750;
-        line-height: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .node-footer {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .node-footer span,
-    .node-link {
-        padding: 5px 7px;
-        background: transparent;
-    }
-
-    .node-link {
-        color: var(--workflow-accent);
-    }
-
-    .flow-connector {
-        width: 34px;
-        flex: 0 0 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--workflow-accent);
-        padding-top: 36px;
-    }
-
-    .flow-connector span {
-        width: 18px;
-        height: 2px;
-        background: color-mix(in srgb, var(--workflow-accent) 62%, var(--mud-palette-lines-default));
-    }
-
-    .operations-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        place-items: center;
+        align-content: center;
         gap: 10px;
-    }
-
-    .assistant-panel {
-        grid-column: span 2;
-    }
-
-    .control-panel {
-        min-width: 0;
-        padding: 11px;
-        display: grid;
-        align-content: start;
-        gap: 10px;
-    }
-
-    .panel-title {
-        color: var(--mud-palette-text-primary);
-    }
-
-    .bottleneck-list,
-    .document-list,
-    .timeline {
-        display: grid;
-        gap: 8px;
-    }
-
-    .bottleneck-item,
-    .document-item,
-    .timeline-item {
-        min-width: 0;
-        display: grid;
-        gap: 8px;
-        align-items: center;
-        padding: 9px;
-        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--tone-color) 5%, transparent);
-    }
-
-    .bottleneck-item {
-        grid-template-columns: 10px minmax(0, 1fr) auto;
-    }
-
-    .document-item {
-        grid-template-columns: 24px minmax(0, 1fr) auto;
-    }
-
-    .timeline-item {
-        grid-template-columns: 10px minmax(0, 1fr);
-    }
-
-    .document-item .mud-icon-root {
-        color: var(--tone-color);
-    }
-
-    .bottleneck-item div,
-    .document-item div,
-    .timeline-item div {
-        min-width: 0;
-        display: grid;
-        gap: 2px;
-    }
-
-    .bottleneck-item strong,
-    .document-item strong,
-    .timeline-item strong {
-        color: var(--mud-palette-text-primary);
-        font-size: .86rem;
-        line-height: 1.2;
-    }
-
-    .bottleneck-item small,
-    .document-item small,
-    .timeline-item small {
+        padding: 24px;
         color: var(--mud-palette-text-secondary);
-        font-size: .75rem;
-        line-height: 1.3;
+        text-align: center;
     }
 
-    .bottleneck-item em,
-    .document-item span {
-        font-style: normal;
-        color: var(--tone-color);
-        font-size: .76rem;
+    .home-state strong {
+        color: var(--mud-palette-text-primary);
+        font-size: .98rem;
         font-weight: 850;
-        white-space: nowrap;
     }
 
-    .feature-panel,
-    .assistant-panel {
-        align-content: start;
-    }
-
-    .feature-panel > strong,
-    .assistant-panel > strong {
-        color: var(--mud-palette-text-primary);
-        font-size: .94rem;
-        line-height: 1.25;
-    }
-
-    .feature-panel p,
-    .assistant-panel p {
-        margin: 0;
-        color: var(--mud-palette-text-secondary);
-        font-size: .8rem;
-        line-height: 1.35;
-    }
-
-    .feature-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .feature-tags span {
-        padding: 6px 8px;
-        border: 1px solid color-mix(in srgb, var(--workflow-accent) 24%, var(--mud-palette-lines-default));
-        border-radius: 999px;
-        color: var(--mud-palette-text-primary);
-        font-size: .72rem;
-        font-weight: 750;
-        background: color-mix(in srgb, var(--workflow-accent) 5%, transparent);
-    }
-
-    .assistant-rule {
-        display: grid;
-        gap: 4px;
-        padding: 9px;
-        border: 1px solid color-mix(in srgb, var(--tone-color) 24%, var(--mud-palette-lines-default));
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--tone-color) 6%, transparent);
-    }
-
-    .assistant-rule strong {
-        color: var(--tone-color);
-        font-size: .82rem;
-        line-height: 1.25;
-    }
-
-    .handoff-strip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 14px;
-        --workflow-accent: var(--mud-palette-tertiary);
-    }
-
-    @@media (max-width: 1240px) {
-        .overview-panel {
-            grid-template-columns: 1fr;
-        }
-
-        .bottleneck-summary {
-            padding-left: 0;
-            padding-top: 10px;
-            border-left: 0;
-            border-top: 1px solid var(--mud-palette-lines-default);
-        }
-
-        .executive-strip,
-        .operations-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .bottleneck-strip {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-
-        .workflow-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .workflow-selector {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @@media (max-width: 760px) {
-        .workflow-home {
-            padding: 10px !important;
-        }
-
-        .workflow-header,
-        .detail-header,
-        .compliance-band,
-        .handoff-strip {
+    @@media (max-width: 880px) {
+        .home-header {
             align-items: stretch;
             flex-direction: column;
         }
 
-        .header-actions,
-        .detail-badges,
-        .handoff-items {
+        .scope-strip {
             justify-content: flex-start;
         }
+    }
 
-        .executive-strip,
-        .bottleneck-strip,
-        .overview-panel,
-        .workflow-selector,
-        .workflow-insight,
-        .action-row,
-        .operations-grid {
+    @@media (max-width: 620px) {
+        .home-page {
+            padding: 10px !important;
+        }
+
+        .home-tools,
+        .module-grid {
             grid-template-columns: 1fr;
         }
 
-        .assistant-panel {
-            grid-column: auto;
-        }
-
-        .snapshot-card div {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .flow-lane {
-            flex-direction: column;
-            overflow-x: hidden;
-            overflow-y: visible;
-            padding: 0;
-        }
-
-        .flow-node {
-            width: 100%;
-            min-height: 0;
-            flex-basis: auto;
-        }
-
-        .flow-connector {
-            width: 100%;
-            height: 26px;
-            flex-basis: 26px;
-            padding: 0;
-            transform: rotate(90deg);
+        .scope-chip {
+            max-width: 100%;
         }
     }
 </style>

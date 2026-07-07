@@ -514,7 +514,10 @@
                         return;
                     }
 
-                    savedEmpresa = empresa;
+                    if (empresa.PkidEmpresa > 0)
+                    {
+                        savedEmpresa = empresa;
+                    }
                 }
 
                 await SyncSelectedEmpresaStateAsync(savedEmpresa);

@@ -23,6 +23,14 @@ window.egReportingPdf = (() => {
         }
     }
 
+    function getSelectedEmpresaId() {
+        try {
+            return (window.localStorage?.getItem("empresa_seleccionada") || "").trim();
+        } catch {
+            return "";
+        }
+    }
+
     async function render(containerId, url, token) {
         const container = document.getElementById(containerId);
         if (!container) {
@@ -38,7 +46,15 @@ window.egReportingPdf = (() => {
             headers.Authorization = authHeader;
         }
 
-        const response = await fetch(url, { headers });
+        const empresaId = getSelectedEmpresaId();
+        if (empresaId) {
+            headers["X-Empresa-Id"] = empresaId;
+        }
+
+        const response = await fetch(url, {
+            headers,
+            cache: "no-store"
+        });
         if (!response.ok) {
             const text = await response.text();
             return {
