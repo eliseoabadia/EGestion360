@@ -1,8 +1,5 @@
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia"
-@page "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Cheque_Transferencia"
-@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago"
-@page "/Presupuesto/Tesorería/CuentasXPagar/Cheque_Transferencia"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -21,14 +18,14 @@
         @if (SelectedCheque == null)
         {
             <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
-                <PageHeader Title="Provision de pago"
+                <PageHeader Title="Elaboracion de Cheques o Transferencias"
                             Subtitle="Cheques y transferencias desde CLC autorizada"
                             Icon="@Icons.Material.Filled.Payments"
                             CanCreate="@CanCreate"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="ChequeResponse" @ref="table" Title="Provision de pago"
+                    <GenericTable TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
                                   SearchPlaceholder="Buscar cheque, CLC, contrato o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -41,7 +38,7 @@
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(item))" />
                                 <DocumentSupportButton Modulo="CuentasXPagar"
-                                                       SubModulo="Provision_Pago"
+                                                       SubModulo="@SubModuleName"
                                                        Controlador="Cheque"
                                                        EntidadId="@item.PkidCheque"
                                                        FkidEmpresaSis="@item.FkidEmpresaSis"
@@ -69,13 +66,6 @@
                     <div class="ml-2"><MudText Typo="Typo.h6" Style="font-weight:700">@SelectedCheque.NumeroCheque</MudText><MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedCheque.NumClc - @SelectedCheque.Concepto</MudText></div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedCheque.Estatus)">@TextOrDash(SelectedCheque.EstatusDescripcion)</MudChip>
-                    <DocumentSupportButton Modulo="CuentasXPagar"
-                                           SubModulo="Provision_Pago"
-                                           Controlador="Cheque"
-                                           EntidadId="@SelectedCheque.PkidCheque"
-                                           FkidEmpresaSis="@SelectedCheque.FkidEmpresaSis"
-                                           RegistroTitulo="@TextOrDash(SelectedCheque.NumeroCheque)"
-                                           RegistroDescripcion="@TextOrDash(SelectedCheque.Concepto)" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" Class="ml-2" />
                 </MudPaper>
                 <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
@@ -113,8 +103,11 @@
     private string partidaSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "Tesoreria";
-    protected override string SubModuleName => "Provision_Pago";
+    private string CurrentRoute => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0];
+    private bool IsPefRoute => CurrentRoute.Contains("PEF_Unipartida_TES", StringComparison.OrdinalIgnoreCase);
+
+    protected override string ModuleName => IsPefRoute ? "PEF_Unipartida_TES" : "Tesoreria";
+    protected override string SubModuleName => IsPefRoute ? "ElaboracionCheque_Transferencia" : "Provision_Pago";
     protected override Type CreateDialogType => typeof(ChequeDialog);
     protected override Type EditDialogType => typeof(ChequeDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<ChequeResponse>);

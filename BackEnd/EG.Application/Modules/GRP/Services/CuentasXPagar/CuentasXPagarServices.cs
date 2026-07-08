@@ -99,11 +99,13 @@ namespace EG.Application.Services.CuentasXPagar
     public class FacturaAppService : StoredProcedureCrudAppService<Factura, VwFactura, FacturaDto, FacturaResponse>
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public FacturaAppService(
             GenericService<Factura, FacturaDto, FacturaResponse> service,
             GenericService<VwFactura, FacturaDto, FacturaResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -116,11 +118,29 @@ namespace EG.Application.Services.CuentasXPagar
                 BuildParameters)
         {
             _context = context;
+            _userContext = userContext;
+        }
+
+        public override async Task<PagedResult<FacturaResponse>> CreateAsync(FacturaResponse response, int usuarioActual)
+        {
+            var contextFailure = ApplyEmpresaContext<FacturaResponse>(response);
+            if (contextFailure != null)
+                return contextFailure;
+
+            Normalize(response);
+            return await base.CreateAsync(response, usuarioActual);
         }
 
         public override async Task<PagedResult<FacturaResponse>> UpdateAsync(int id, FacturaResponse response, int usuarioActual)
         {
-            var current = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo);
+            var contextFailure = ApplyEmpresaContext<FacturaResponse>(response);
+            if (contextFailure != null)
+                return contextFailure;
+
+            Normalize(response);
+
+            var current = await _context.Facturas.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo && x.FkidEmpresaSis == response.FkidEmpresaSis);
             if (current == null)
                 return Failure<FacturaResponse>("Factura no encontrada.", "NOT_FOUND");
 
@@ -132,7 +152,12 @@ namespace EG.Application.Services.CuentasXPagar
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var current = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo);
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<bool>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            var current = await _context.Facturas.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidFactura == id && x.Activo && x.FkidEmpresaSis == empresaId.Value);
             if (current == null)
                 return Failure<bool>("Factura no encontrada.", "NOT_FOUND");
 
@@ -140,6 +165,28 @@ namespace EG.Application.Services.CuentasXPagar
                 return Failure<bool>("La factura ya avanzo a autorizacion y no puede eliminarse.", "LOCKED");
 
             return await base.DeleteAsync(id);
+        }
+
+        private PagedResult<T>? ApplyEmpresaContext<T>(FacturaResponse response)
+        {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<T>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            response.FkidEmpresaSis = empresaId.Value;
+            return null;
+        }
+
+        private static void Normalize(FacturaResponse response)
+        {
+            response.NumFactura = response.NumFactura?.Trim() ?? string.Empty;
+            response.SerieFactura = response.SerieFactura?.Trim();
+            response.Uuid = response.Uuid?.Trim();
+            response.FlDocto = response.FlDocto?.Trim();
+            response.Observaciones = response.Observaciones?.Trim();
+            response.Total = response.Total > 0
+                ? response.Total
+                : (response.Subtotal ?? 0m) + (response.Iva ?? 0m) - (response.Retencion ?? 0m);
         }
 
         private static SqlParameter[] BuildParameters(int action, int? id, FacturaResponse? response, int? usuarioActual)
@@ -207,11 +254,13 @@ namespace EG.Application.Services.CuentasXPagar
     public class CLCAppService : StoredProcedureCrudAppService<Clc, VwClc, CLCDto, CLCResponse>
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public CLCAppService(
             GenericService<Clc, CLCDto, CLCResponse> service,
             GenericService<VwClc, CLCDto, CLCResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -224,11 +273,29 @@ namespace EG.Application.Services.CuentasXPagar
                 BuildParameters)
         {
             _context = context;
+            _userContext = userContext;
+        }
+
+        public override async Task<PagedResult<CLCResponse>> CreateAsync(CLCResponse response, int usuarioActual)
+        {
+            var contextFailure = ApplyEmpresaContext<CLCResponse>(response);
+            if (contextFailure != null)
+                return contextFailure;
+
+            Normalize(response);
+            return await base.CreateAsync(response, usuarioActual);
         }
 
         public override async Task<PagedResult<CLCResponse>> UpdateAsync(int id, CLCResponse response, int usuarioActual)
         {
-            var current = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo);
+            var contextFailure = ApplyEmpresaContext<CLCResponse>(response);
+            if (contextFailure != null)
+                return contextFailure;
+
+            Normalize(response);
+
+            var current = await _context.Clcs.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo && x.FkidEmpresaSis == response.FkidEmpresaSis);
             if (current == null)
                 return Failure<CLCResponse>("CLC no encontrada.", "NOT_FOUND");
 
@@ -240,7 +307,12 @@ namespace EG.Application.Services.CuentasXPagar
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var current = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo);
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<bool>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            var current = await _context.Clcs.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidClc == id && x.Activo && x.FkidEmpresaSis == empresaId.Value);
             if (current == null)
                 return Failure<bool>("CLC no encontrada.", "NOT_FOUND");
 
@@ -248,6 +320,22 @@ namespace EG.Application.Services.CuentasXPagar
                 return Failure<bool>("La CLC ya genero provision de pago y no puede eliminarse.", "LOCKED");
 
             return await base.DeleteAsync(id);
+        }
+
+        private PagedResult<T>? ApplyEmpresaContext<T>(CLCResponse response)
+        {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<T>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            response.FkidEmpresaSis = empresaId.Value;
+            return null;
+        }
+
+        private static void Normalize(CLCResponse response)
+        {
+            response.NumClc = response.NumClc?.Trim() ?? string.Empty;
+            response.Observaciones = response.Observaciones?.Trim();
         }
 
         private static SqlParameter[] BuildParameters(int action, int? id, CLCResponse? response, int? usuarioActual)
@@ -354,11 +442,13 @@ namespace EG.Application.Services.CuentasXPagar
     public class ChequeAppService : StoredProcedureCrudAppService<Cheque, VwCheque, ChequeDto, ChequeResponse>
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public ChequeAppService(
             GenericService<Cheque, ChequeDto, ChequeResponse> service,
             GenericService<VwCheque, ChequeDto, ChequeResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -371,6 +461,7 @@ namespace EG.Application.Services.CuentasXPagar
                 BuildParameters)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<ChequeResponse>> CreateAsync(ChequeResponse response, int usuarioActual)
@@ -381,7 +472,12 @@ namespace EG.Application.Services.CuentasXPagar
 
         public override async Task<PagedResult<ChequeResponse>> UpdateAsync(int id, ChequeResponse response, int usuarioActual)
         {
-            var current = await _context.Cheques.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo);
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<ChequeResponse>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            var current = await _context.Cheques.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo && x.FkidEmpresaSis == empresaId.Value);
             if (current == null)
                 return Failure<ChequeResponse>("Cheque o transferencia no encontrado.", "NOT_FOUND");
 
@@ -394,7 +490,12 @@ namespace EG.Application.Services.CuentasXPagar
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var current = await _context.Cheques.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo);
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<bool>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
+            var current = await _context.Cheques.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidCheque == id && x.Activo && x.FkidEmpresaSis == empresaId.Value);
             if (current == null)
                 return Failure<bool>("Cheque o transferencia no encontrado.", "NOT_FOUND");
 
@@ -406,15 +507,28 @@ namespace EG.Application.Services.CuentasXPagar
 
         private async Task<PagedResult<ChequeResponse>?> ValidateChequeAsync(ChequeResponse response, int? currentId)
         {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<ChequeResponse>("No se encontro la empresa activa en la sesion.", "EMPRESA_REQUIRED");
+
             if (response.FkidClcPres <= 0)
                 return Failure<ChequeResponse>("Debe seleccionar una CLC para generar la provision de pago.", "VALIDATION");
 
-            var clcExists = await _context.Clcs.AsNoTracking().AnyAsync(x => x.PkidClc == response.FkidClcPres && x.Activo);
+            if (response.FkidCuentaBancariaTes <= 0)
+                return Failure<ChequeResponse>("Debe seleccionar una cuenta bancaria para la provision de pago.", "VALIDATION");
+
+            response.FkidEmpresaSis = empresaId.Value;
+            response.NumeroCheque = response.NumeroCheque?.Trim() ?? string.Empty;
+            response.Concepto = response.Concepto?.Trim() ?? string.Empty;
+            response.Observaciones = response.Observaciones?.Trim();
+
+            var clcExists = await _context.Clcs.AsNoTracking()
+                .AnyAsync(x => x.PkidClc == response.FkidClcPres && x.Activo && x.FkidEmpresaSis == empresaId.Value);
             if (!clcExists)
                 return Failure<ChequeResponse>("La CLC seleccionada no existe o no esta activa.", "NOT_FOUND");
 
             var alreadyExists = await _context.Cheques.AsNoTracking()
-                .AnyAsync(x => x.Activo && x.FkidClcPres == response.FkidClcPres && (!currentId.HasValue || x.PkidCheque != currentId.Value));
+                .AnyAsync(x => x.Activo && x.FkidEmpresaSis == empresaId.Value && x.FkidClcPres == response.FkidClcPres && (!currentId.HasValue || x.PkidCheque != currentId.Value));
 
             if (alreadyExists)
                 return Failure<ChequeResponse>("Ya existe una provision de pago activa para esa CLC.", "DUPLICATE");

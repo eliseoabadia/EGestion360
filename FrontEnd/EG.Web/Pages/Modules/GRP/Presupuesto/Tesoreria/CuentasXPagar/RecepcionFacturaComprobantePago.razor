@@ -1,8 +1,8 @@
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros"
+@page "/Presupuesto/Tesoreria/Solicitud_Reintegros"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Factura_Pago"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Solicitud_Reintegros"
-@page "/Presupuesto/Tesorería/CuentasXPagar/Factura_Pago"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -21,15 +21,15 @@
         @if (SelectedFactura == null)
         {
             <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
-                <PageHeader Title="Recepción de facturas y comprobantes de pago"
-                            Subtitle="Facturas recibidas por contrato, con captura parcial por partida"
+                <PageHeader Title="@HeaderTitle"
+                            Subtitle="@HeaderSubtitle"
                             Icon="@Icons.Material.Filled.ReceiptLong"
                             CanCreate="@CanCreate"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Solicitudes"
+                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Facturas recibidas"
                                   SearchPlaceholder="Buscar factura, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -84,13 +84,6 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
-                    <DocumentSupportButton Modulo="CuentasXPagar"
-                                           SubModulo="Solicitud_Reintegros"
-                                           Controlador="Factura"
-                                           EntidadId="@SelectedFactura.PkidFactura"
-                                           FkidEmpresaSis="@SelectedFactura.FkidEmpresaSis"
-                                           RegistroTitulo="@TextOrDash(SelectedFactura.NumFactura)"
-                                           RegistroDescripcion="@($"{TextOrDash(SelectedFactura.NumeroContrato)} | {TextOrDash(SelectedFactura.ProveedorNombre)}")" />
                     <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
                     <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
                 </MudPaper>
@@ -143,8 +136,14 @@
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "Tesoreria";
-    protected override string SubModuleName => "Solicitud_Reintegros";
+    private string CurrentRoute => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0];
+    private bool IsRecepcionRoute => CurrentRoute.Contains("PEF_Unipartida_TES", StringComparison.OrdinalIgnoreCase)
+        || CurrentRoute.EndsWith("Factura_Pago", StringComparison.OrdinalIgnoreCase);
+    private string HeaderTitle => IsRecepcionRoute ? "Recepcion de Facturas y Comprobantes de Pago" : "Solicitud de reintegros";
+    private string HeaderSubtitle => IsRecepcionRoute ? "Facturas recibidas por contrato y comprobante" : "Recepcion de facturas y comprobantes de pago";
+
+    protected override string ModuleName => IsRecepcionRoute ? "PEF_Unipartida_TES" : "Tesoreria";
+    protected override string SubModuleName => IsRecepcionRoute ? "RecepcionFactura_ComprobantePago" : "Solicitud_Reintegros";
     protected override Type CreateDialogType => typeof(FacturaDialog);
     protected override Type EditDialogType => typeof(FacturaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<FacturaResponse>);

@@ -1,6 +1,8 @@
 @page "/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos"
+@page "/Presupuesto/Tesoreria/Autorizar_Solicitud_Reingresos"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago"
 @page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Autorizar_Solicitud_Reingresos"
-@page "/Presupuesto/Tesorería/CuentasXPagar/Provision_Pago"
+@page "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -20,15 +22,15 @@
         @if (SelectedClc == null)
         {
             <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
-                <PageHeader Title="Provisión del pago"
+                <PageHeader Title="@HeaderTitle"
                             Subtitle="CLC, calendario presupuestal y facturas asociadas"
                             Icon="@Icons.Material.Filled.RequestQuote"
                             CanCreate="@CanCreate"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="CLCResponse" @ref="table" Title="Solicitudes por autorizar"
-                                  SearchPlaceholder="Buscar CLC, contrato, proveedor o póliza..."
+                    <GenericTable TItem="CLCResponse" @ref="table" Title="@TableTitle"
+                                  SearchPlaceholder="Buscar CLC, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
                                   ExportFunc="ExportToExcel"
@@ -48,7 +50,7 @@
                             <MudTd>
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(item))" />
                                 <DocumentSupportButton Modulo="CuentasXPagar"
-                                                       SubModulo="Autorizar_Solicitud_Reingresos"
+                                                       SubModulo="@SubModuleName"
                                                        Controlador="CLC"
                                                        EntidadId="@item.PkidClc"
                                                        FkidEmpresaSis="@item.FkidEmpresaSis"
@@ -80,13 +82,6 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
-                    <DocumentSupportButton Modulo="CuentasXPagar"
-                                           SubModulo="Autorizar_Solicitud_Reingresos"
-                                           Controlador="CLC"
-                                           EntidadId="@SelectedClc.PkidClc"
-                                           FkidEmpresaSis="@SelectedClc.FkidEmpresaSis"
-                                           RegistroTitulo="@TextOrDash(SelectedClc.NumClc)"
-                                           RegistroDescripcion="@($"{TextOrDash(SelectedClc.NumeroContrato)} | {TextOrDash(SelectedClc.ProveedorNombre)}")" />
                     <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />
@@ -146,8 +141,14 @@
     private string facturaSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
-    protected override string ModuleName => "Tesoreria";
-    protected override string SubModuleName => "Autorizar_Solicitud_Reingresos";
+    private string CurrentRoute => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0];
+    private bool IsPefRoute => CurrentRoute.Contains("PEF_Unipartida_TES", StringComparison.OrdinalIgnoreCase);
+    private bool IsProvisionRoute => CurrentRoute.EndsWith("Provision_Pago", StringComparison.OrdinalIgnoreCase);
+    private string HeaderTitle => IsProvisionRoute ? "Provision del Pago" : "Autorizar solicitud de reingresos";
+    private string TableTitle => IsProvisionRoute ? "CLC para provisionar" : "CLC por autorizar";
+
+    protected override string ModuleName => IsPefRoute ? "PEF_Unipartida_TES" : "Tesoreria";
+    protected override string SubModuleName => IsProvisionRoute ? "Provision_Pago" : "Autorizar_Solicitud_Reingresos";
     protected override Type CreateDialogType => typeof(CLCDialog);
     protected override Type EditDialogType => typeof(CLCDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<CLCResponse>);
@@ -255,7 +256,7 @@
             ["PrefillPartidas"] = partidas
         };
 
-        var dialog = await DialogService.ShowAsync<ChequeDialog>("Elaboracion de cheque o transferencia", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var dialog = await DialogService.ShowAsync<ChequeDialog>("Provision de pago", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if ((await dialog.Result) is { Canceled: false })
         {
             clc.Estatus = Math.Max(clc.Estatus, 3);

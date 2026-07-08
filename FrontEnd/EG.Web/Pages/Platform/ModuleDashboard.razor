@@ -261,7 +261,7 @@
                     Stage("Modificado", "Adecuaciones, ampliaciones y reducciones.", "Control", "Adecuacion", Icons.Material.Filled.Tune, "info", "/Presupuesto/Egreso/Presupesto_Modificado/Ampliaciones", ["Egreso", "Presupuesto"], "Ampliaciones"),
                     Stage("Suficiencia", "Solicitud y autorizacion antes del compromiso.", "Atencion", "Suficiencia", Icons.Material.Filled.AssignmentTurnedIn, "warning", "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia", ["Egreso", "Presupuesto"], "Solicitud_Suficiencia"),
                     Stage("Comprometido", "Registro del compromiso presupuestal.", "Normal", "Compromiso", Icons.Material.Filled.FactCheck, "success", "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido", ["Egreso", "Presupuesto"], "Registro_Comprometido"),
-                    Stage("Pago", "Provision, cheque o transferencia.", "Salida", "Comprobante", Icons.Material.Filled.Payments, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["CuentasXPagar", "Tesoreria"], "Cheque_Transferencia")
+                    Stage("Pago", "Cheque o transferencia.", "Salida", "Comprobante", Icons.Material.Filled.Payments, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["Tesoreria"], "Provision_Pago")
                 ],
                 [
                     new("Solicitudes esperando suficiencia", "Listas para autorizacion", "5", "warning"),
@@ -406,9 +406,10 @@
                     new("Inversiones", "4", "Instrumentos activos", Icons.Material.Filled.AccountBalanceWallet, "info")
                 ],
                 [
-                    Stage("Factura", "Recepcion y validacion fiscal.", "Entrada", "Factura", Icons.Material.Filled.ReceiptLong, "warning", "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago", ["CuentasXPagar"], "RecepcionFactura_ComprobantePago"),
-                    Stage("Provision", "Reconocimiento de cuenta por pagar.", "Control", "Provision", Icons.Material.Filled.Rule, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago", ["CuentasXPagar", "Tesoreria"], "Provision_Pago"),
-                    Stage("Pago", "Cheque o transferencia con comprobante.", "Salida", "Pago", Icons.Material.Filled.Payments, "success", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["CuentasXPagar"], "ElaboracionCheque_Transferencia"),
+                    Stage("Solicitud", "Recepcion de facturas y comprobantes.", "Entrada", "Factura", Icons.Material.Filled.ReceiptLong, "warning", "/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros", ["Tesoreria"], "Solicitud_Reintegros"),
+                    Stage("Autorizacion", "Validacion CLC y facturas asociadas.", "Control", "CLC", Icons.Material.Filled.Rule, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos", ["Tesoreria"], "Autorizar_Solicitud_Reingresos"),
+                    Stage("Provision", "CLC lista para provisionar el pago.", "Control", "Provision", Icons.Material.Filled.Rule, "info", "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago", ["Tesoreria"], "Provision_Pago"),
+                    Stage("Cheque", "Cheque o transferencia con comprobante.", "Salida", "Pago", Icons.Material.Filled.Payments, "success", "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia", ["Tesoreria"], "Provision_Pago"),
                     Stage("Saldos", "Cuentas e instrumentos de tesoreria.", "Consulta", "Saldo", Icons.Material.Filled.AccountBalanceWallet, "info", "/Presupuesto/Tesoreria/Saldos_Cuentas", ["Tesoreria"], "Saldos_Cuentas"),
                     Stage("Ingresos", "Recaudacion y depositos CLC.", "Ingreso", "Deposito", Icons.Material.Filled.RequestQuote, "success", "/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC", ["CuentasXCobrar"], "Depositos_CLC")
                 ],

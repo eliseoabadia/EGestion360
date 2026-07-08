@@ -1429,9 +1429,9 @@ USING (VALUES
 	 -- Presupuesto -> Tesorerí­a   -> Cuentas por Pagar
     (190, N'Cuentas por Pagar', 1, 160, N'Cuentas por Pagar', N'/', N'FaDocument', 1, N'ESP', 2, 1, GETDATE()),
 	(191, N'PEF Unipartida TES', 1, 190, N'PEF Unipartida TES', N'/', N'FaDocument', 1, N'ESP', 1, 1, GETDATE()),
-	(192, N'Solicitud de reintegros', 2, 191, N'Solicitud de reintegros', N'/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),   
-	(193, N'Autorizar solicitud de reingresos', 2, 191, N'Autorizar solicitud de reingresos', N'/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
-    (194, N'Provision del Pago', 2, 191, N'Provision del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago', N'FaSave', 1, N'ESP', 3, 1, GETDATE()), 
+	(192, N'Recepcion de Facturas y Comprobantes de Pago', 2, 191, N'Recepcion de Facturas y Comprobantes de Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Factura_Pago', N'FaFile', 1, N'ESP', 1, 1, GETDATE()),   
+	(193, N'Provision del Pago', 2, 191, N'Provision del Pago', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago', N'FaClock', 1, N'ESP', 2, 1, GETDATE()),
+    (194, N'Elaboracion de Cheques o Transferencias', 2, 191, N'Elaboracion de Cheques o Transferencias', N'/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Cheque_Transferencia', N'FaSave', 1, N'ESP', 3, 1, GETDATE()), 
 	
 	-- Presupuesto -> Tesorerí­a
 	(195, N'Planeación de gastos', 2, 160, N'Planeación de gastos', N'/Presupuesto/Tesoreria/Planeacion_Gastos', N'FaChartBar', 1, N'ESP', 3, 1, GETDATE()),
