@@ -14,9 +14,9 @@
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoMonedaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <PagedAutocomplete Value="@_selectedPais" ValueChanged="value => _selectedPais = value" Label="Pais" Required="true" LoadItems="LoadPaisesAsync" />
-        <MudTextField @bind-Value="item.CodigoIso4217" Label="Codigo ISO 4217" Variant="Variant.Outlined" FullWidth="true" Class="mt-3 mb-3" Required="true" For="@(() => item.CodigoIso4217)" />
-        <MudTextField @bind-Value="item.Simbolo" Label="Simbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Simbolo)" />
-        <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
+        <MudTextField @bind-Value="item.CodigoIso4217" Label="Código ISO 4217" Variant="Variant.Outlined" FullWidth="true" Class="mt-3 mb-3" Required="true" MaxLength="3" Counter="3" Immediate="true" HelperText="Ejemplo: MXN, USD, EUR" For="@(() => item.CodigoIso4217)" />
+        <MudTextField @bind-Value="item.Simbolo" Label="Símbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" MaxLength="10" Counter="10" For="@(() => item.Simbolo)" />
+        <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" MaxLength="100" Counter="100" For="@(() => item.Descripcion)" />
         <MudNumericField @bind-Value="item.Decimales" Label="Decimales" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Decimales)" />
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -65,7 +65,23 @@
             if (!await form.ValidateAsync()) return;
             if (_selectedPais == null)
             {
-                Snackbar.Add("Selecciona el pais de la moneda.", Severity.Warning);
+                Snackbar.Add("Selecciona el país de la moneda.", Severity.Warning);
+                return;
+            }
+
+            item.CodigoIso4217 = (item.CodigoIso4217 ?? string.Empty).Trim().ToUpperInvariant();
+            item.Simbolo = (item.Simbolo ?? string.Empty).Trim();
+            item.Descripcion = (item.Descripcion ?? string.Empty).Trim();
+
+            if (item.CodigoIso4217.Length != 3)
+            {
+                Snackbar.Add("El código ISO 4217 debe tener exactamente 3 caracteres, por ejemplo MXN.", Severity.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.Descripcion))
+            {
+                Snackbar.Add("La descripción de la moneda es obligatoria.", Severity.Warning);
                 return;
             }
 

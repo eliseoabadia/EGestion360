@@ -49,6 +49,7 @@ namespace EG.Application.Services.General
             {
                 "NombreEmpresa", "RfcEmpresa"
             });
+
         }
 
         private void ConfigureValidations()

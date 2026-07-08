@@ -24,19 +24,19 @@
     display: flex;
     align-items: center;
     border: 0;
-    border-radius: 7px;
+    border-radius: 8px;
     margin: 2px 0;
     padding: 8px 11px;
     overflow: hidden;
     background: transparent;
     color: var(--mud-palette-drawer-text);
     font-size: 0.875rem;
-    font-weight: 560;
+    font-weight: 650;
     line-height: 1.25;
     text-align: left;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .sidebar-group-header {
@@ -56,7 +56,7 @@
     align-items: center;
     justify-content: center;
     border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 22%, transparent);
-    border-radius: 7px;
+    border-radius: 8px;
     background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent);
     color: color-mix(in srgb, var(--mud-palette-primary) 88%, var(--mud-palette-drawer-text));
     cursor: pointer;
@@ -120,6 +120,7 @@
     color: var(--mud-palette-primary);
     outline: none;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 16%, transparent);
+    transform: translateX(1px);
 }
 
 .sidebar-link.active {
@@ -142,11 +143,13 @@
 
 .sidebar-link.current,
 .sidebar-group-header.current {
-    background: linear-gradient(90deg, var(--eg-primary-active) 0%, color-mix(in srgb, var(--mud-palette-primary) 22%, transparent) 100%);
+    background:
+        linear-gradient(90deg, var(--eg-primary-active) 0%, color-mix(in srgb, var(--mud-palette-primary) 22%, transparent) 100%);
     color: var(--mud-palette-primary);
     box-shadow:
         inset 3px 0 0 var(--mud-palette-primary),
-        inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 22%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 22%, transparent),
+        0 12px 26px rgba(2, 8, 23, .12);
 }
 
 .sidebar-group-header.expanded {
@@ -191,11 +194,12 @@
 }
 
 .sidebar-icon {
-    width: 20px;
-    flex: 0 0 20px;
+    width: 22px;
+    flex: 0 0 22px;
     font-size: 1rem;
     line-height: 1;
     text-align: center;
+    color: color-mix(in srgb, currentColor 82%, var(--mud-palette-primary));
 }
 
 .menu-label {
@@ -344,9 +348,9 @@
 
 .bootstrap-sidebar.morena .sidebar-group-header.level-1,
 .bootstrap-sidebar.morena .sidebar-group-header.level-2 {
-    background: color-mix(in srgb, var(--mud-palette-drawer-text) 10%, transparent);
+    background: color-mix(in srgb, var(--eg-primary) 12%, transparent);
     color: var(--mud-palette-drawer-text);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mud-palette-drawer-text) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--eg-primary) 26%, transparent);
 }
 
 .bootstrap-sidebar.morena .sidebar-group-header.level-1::after,
@@ -361,16 +365,16 @@
 }
 
 .bootstrap-sidebar.morena .dashboard-shortcut {
-    border-color: color-mix(in srgb, var(--eg-accent) 28%, transparent);
-    background: color-mix(in srgb, var(--eg-accent) 11%, transparent);
+    border-color: color-mix(in srgb, var(--eg-accent) 24%, transparent);
+    background: color-mix(in srgb, var(--eg-accent) 8%, transparent);
     color: var(--eg-accent);
 }
 
 .bootstrap-sidebar.morena .dashboard-shortcut:hover,
 .bootstrap-sidebar.morena .dashboard-shortcut:focus-visible,
 .bootstrap-sidebar.morena .dashboard-shortcut.active {
-    border-color: color-mix(in srgb, var(--eg-accent) 54%, transparent);
-    background: var(--eg-accent-soft);
+    border-color: color-mix(in srgb, var(--eg-accent) 42%, transparent);
+    background: color-mix(in srgb, var(--eg-accent) 14%, transparent);
     color: var(--eg-accent);
 }
 
@@ -378,28 +382,31 @@
 .bootstrap-sidebar.morena .sidebar-link:focus-visible,
 .bootstrap-sidebar.morena .sidebar-group-header:hover,
 .bootstrap-sidebar.morena .sidebar-group-header:focus-visible {
-    background: var(--eg-accent-soft);
-    color: var(--eg-accent);
+    background: var(--eg-primary-soft);
+    color: var(--mud-palette-drawer-text);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--eg-primary) 22%, transparent);
 }
 
 .bootstrap-sidebar.morena .sidebar-link.active {
-    background: color-mix(in srgb, var(--eg-accent) 24%, transparent);
-    color: var(--eg-accent);
+    background: color-mix(in srgb, var(--eg-primary) 20%, transparent);
+    color: var(--mud-palette-drawer-text);
 }
 
 .bootstrap-sidebar.morena .sidebar-link.active-branch,
 .bootstrap-sidebar.morena .sidebar-group-header.active-branch {
-    background: color-mix(in srgb, var(--eg-accent) 14%, transparent);
-    color: color-mix(in srgb, var(--eg-accent) 86%, var(--mud-palette-drawer-text));
+    background: color-mix(in srgb, var(--eg-primary) 13%, transparent);
+    color: color-mix(in srgb, var(--mud-palette-drawer-text) 92%, var(--eg-accent));
 }
 
 .bootstrap-sidebar.morena .sidebar-link.current,
 .bootstrap-sidebar.morena .sidebar-group-header.current {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 32%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 16%, transparent) 100%);
-    color: var(--eg-accent);
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 32%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 15%, transparent) 100%);
+    color: var(--mud-palette-drawer-text);
     box-shadow:
         inset 3px 0 0 var(--eg-accent),
-        inset 0 0 0 1px color-mix(in srgb, var(--eg-accent) 28%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--eg-primary) 32%, transparent),
+        0 12px 24px rgba(0, 0, 0, .18);
 }
 
 .bootstrap-sidebar.morena .selected-indicator {
@@ -408,21 +415,21 @@
 }
 
 .bootstrap-sidebar.morena .sidebar-group-header.expanded {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 30%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 14%, transparent) 58%, transparent 100%);
-    color: var(--eg-accent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 24%, transparent) 0%, color-mix(in srgb, var(--eg-primary) 10%, transparent) 58%, transparent 100%);
+    color: var(--mud-palette-drawer-text);
 }
 
 .bootstrap-sidebar.morena .sidebar-group-header.level-1.expanded,
 .bootstrap-sidebar.morena .sidebar-group-header.level-2.expanded {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-accent) 24%, transparent) 0%, color-mix(in srgb, var(--mud-palette-drawer-text) 10%, transparent) 100%);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 20%, transparent) 0%, color-mix(in srgb, var(--eg-accent) 8%, transparent) 100%);
     color: var(--mud-palette-drawer-text);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--eg-accent) 30%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--eg-primary) 30%, transparent);
 }
 
 .bootstrap-sidebar.morena .sidebar-group-header.level-1.expanded .chevron,
 .bootstrap-sidebar.morena .sidebar-group-header.level-2.expanded .chevron {
-    background: var(--eg-accent);
-    color: var(--eg-primary-dark);
+    background: color-mix(in srgb, var(--eg-accent) 20%, transparent);
+    color: var(--eg-accent);
 }
 
 .bootstrap-sidebar.morena .sidebar-link::before,

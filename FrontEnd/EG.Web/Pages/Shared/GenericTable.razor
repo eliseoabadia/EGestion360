@@ -1,4 +1,5 @@
 ﻿@typeparam TItem
+@using System.Globalization
 @using MudBlazor
 @inject IJSRuntime JSRuntime
 
@@ -22,10 +23,39 @@
         </div>
     }
 
+    @if (ShowContextAssistant)
+    {
+        <section class="eg-context-assistant @ContextAssistantToneClass" aria-label="Asistente contextual">
+            <span class="eg-context-assistant-icon">
+                <MudIcon Icon="@ContextAssistantIcon" Size="Size.Small" />
+            </span>
+            <div class="eg-context-assistant-copy">
+                <span>@ContextAssistantTitle</span>
+                <strong>@EffectiveContextAssistantMessage</strong>
+            </div>
+            <div class="eg-context-assistant-chips" aria-label="Contexto de tabla">
+                @if (!string.IsNullOrWhiteSpace(ContextAssistantScope))
+                {
+                    <em>@ContextAssistantScope</em>
+                }
+                <em>@EffectiveTotalCount.ToString("N0", CultureInfo.InvariantCulture) registro(s)</em>
+                <em>@(ReadOnly ? "Solo lectura" : "Edicion habilitada")</em>
+                @if (HasPendingSearch)
+                {
+                    <em>Busqueda sin aplicar</em>
+                }
+                else if (!string.IsNullOrWhiteSpace(AppliedSearchString))
+                {
+                    <em>Busqueda activa</em>
+                }
+            </div>
+        </section>
+    }
+
     <MudTable ServerData="LoadServerData"
               RowsPerPage="@PageSize"
               Page="@CurrentPage"
-              RowCount="@TotalCount"
+              RowCount="@EffectiveTotalCount"
               @ref="mudTableRef"
               FixedHeader="@FixedHeader"
               Height="@TableHeight"
@@ -44,7 +74,15 @@
               EditTrigger="TableEditTrigger.RowClick">
 
         <ToolBarContent>
-            <MudText Typo="Typo.h6">@Title</MudText>
+            <div class="eg-table-title">
+                <span class="eg-table-title-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.TableRows" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h6">@Title</MudText>
+                    <span>@EffectiveTotalCount.ToString("N0", CultureInfo.InvariantCulture) registro(s)</span>
+                </div>
+            </div>
             <MudSpacer />
 
             @if (ShowAutoColumnSelector)
@@ -120,15 +158,19 @@
                 @ToolbarActions
             }
 
-            <MudTextField @bind-Value="SearchString"
+            <MudTextField Value="@SearchString"
+                          ValueChanged="@((string? value) => OnSearchTextChanged(value))"
                           Placeholder="@SearchPlaceholder"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Clearable="true"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
                           Immediate="true"
                           @ref="searchField"
                           OnKeyUp="HandleKeyUp"
-                          Class="mt-0" />
+                          Class="eg-table-search mt-0" />
         </ToolBarContent>
 
         <HeaderContent>
@@ -147,7 +189,11 @@
         </ChildRowContent>
 
         <NoRecordsContent>
-            <MudText>No se encontraron registros</MudText>
+            <div class="eg-table-empty">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Medium" />
+                <strong>No se encontraron registros</strong>
+                <span>Ajusta la busqueda, filtros o recarga la informacion.</span>
+            </div>
         </NoRecordsContent>
 
         <LoadingContent>
@@ -182,6 +228,10 @@
     [Parameter] public bool ShowExportButton { get; set; } = true;
     [Parameter] public bool ShowAddButton { get; set; }
     [Parameter] public bool ShowBusyOverlay { get; set; } = true;
+    [Parameter] public bool ShowContextAssistant { get; set; } = true;
+    [Parameter] public string ContextAssistantTitle { get; set; } = "Asistente contextual";
+    [Parameter] public string? ContextAssistantMessage { get; set; }
+    [Parameter] public string? ContextAssistantScope { get; set; }
     [Parameter] public bool EnableAutoColumnSelector { get; set; } = true;
     [Parameter] public int AutoColumnSelectorThreshold { get; set; } = 0;
     [Parameter] public bool EnableColumnInteractions { get; set; } = true;
@@ -229,8 +279,24 @@
     private bool columnEnhancementsInitialized;
     private bool isLoading = false;
     private bool actionInProgress = false;
+    private int? loadedTotalCount;
+    private string appliedSearchString = string.Empty;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
+    private int EffectiveTotalCount => loadedTotalCount ?? TotalCount;
+    private string AppliedSearchString => appliedSearchString;
+    private bool HasPendingSearch => !SearchEquals(SearchString, appliedSearchString);
     private string CurrentBusyMessage => actionInProgress ? ActionLoadingMessage : LoadingMessage;
+    private string EffectiveContextAssistantMessage => string.IsNullOrWhiteSpace(ContextAssistantMessage)
+        ? BuildContextAssistantMessage()
+        : ContextAssistantMessage.Trim();
+    private string ContextAssistantTone => IsTableBusy || HasPendingSearch ? "info" : EffectiveTotalCount == 0 ? "warning" : "success";
+    private string ContextAssistantToneClass => $"tone-{ContextAssistantTone}";
+    private string ContextAssistantIcon => ContextAssistantTone switch
+    {
+        "success" => Icons.Material.Filled.CheckCircle,
+        "warning" => Icons.Material.Filled.Lightbulb,
+        _ => Icons.Material.Filled.AutoAwesome
+    };
     private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > Math.Max(0, AutoColumnSelectorThreshold);
     private int VisibleAutoColumnCount => autoColumnOptions.Count(column => IsAutoColumnVisible(column.Index));
     private IEnumerable<int> HiddenColumnIndexes => hiddenAutoColumnIndexes.Concat(hiddenControlColumnIndexes).Distinct();
@@ -289,14 +355,62 @@
         {
             if (ServerDataFunc != null)
             {
-                return await ServerDataFunc(state, cancellationToken);
+                var tableData = await ServerDataFunc(state, cancellationToken);
+                loadedTotalCount = tableData.TotalItems;
+                appliedSearchString = SearchString?.Trim() ?? string.Empty;
+                return tableData;
             }
+
+            loadedTotalCount = 0;
+            appliedSearchString = SearchString?.Trim() ?? string.Empty;
             return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
         }
         finally
         {
             isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private string BuildContextAssistantMessage()
+    {
+        if (IsTableBusy)
+        {
+            return "Estoy actualizando la informacion; espera a que termine antes de ejecutar otra accion.";
+        }
+
+        if (HasPendingSearch)
+        {
+            var typedSearch = SearchString?.Trim() ?? string.Empty;
+
+            return string.IsNullOrWhiteSpace(typedSearch)
+                ? "Limpiaste la busqueda. Presiona Enter para recargar la lista completa."
+                : $"Escribiste \"{typedSearch}\". Presiona Enter para aplicar la busqueda.";
+        }
+
+        if (EffectiveTotalCount == 0 && !string.IsNullOrWhiteSpace(AppliedSearchString))
+        {
+            return $"No hay coincidencias para \"{AppliedSearchString}\". Limpia la busqueda o revisa filtros activos.";
+        }
+
+        if (EffectiveTotalCount == 0)
+        {
+            return ShowAddButton
+                ? "No hay registros en este contexto. Crea uno nuevo o revisa empresa, ejercicio y filtros."
+                : "No hay registros para mostrar. Revisa empresa activa, ejercicio, permisos o filtros aplicados.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(AppliedSearchString))
+        {
+            return $"Busqueda aplicada con {EffectiveTotalCount.ToString("N0", CultureInfo.InvariantCulture)} resultado(s). Cambia el texto y presiona Enter para recargar.";
+        }
+
+        if (ReadOnly)
+        {
+            return "Vista lista para consulta. Puedes ordenar columnas, ajustar visibilidad, buscar o exportar si tienes permiso.";
+        }
+
+        return "Datos listos. Revisa los campos obligatorios antes de guardar y usa la busqueda para enfocar el trabajo.";
     }
 
     private async void HandleKeyUp(KeyboardEventArgs args)
@@ -318,6 +432,12 @@
                 await mudTableRef.ReloadServerData();
             }
         }
+    }
+
+    private async Task OnSearchTextChanged(string? value)
+    {
+        SearchString = value ?? string.Empty;
+        await SearchStringChanged.InvokeAsync(SearchString);
     }
 
     private async Task ExportToExcel()
@@ -502,6 +622,9 @@
 
         return builder.ToString();
     }
+
+    private static bool SearchEquals(string? left, string? right) =>
+        string.Equals(left?.Trim() ?? string.Empty, right?.Trim() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
 
     private sealed record AutoColumnOption(int Index, string Label);
 

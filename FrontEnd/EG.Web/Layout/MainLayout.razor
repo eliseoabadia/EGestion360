@@ -17,7 +17,7 @@
 <MudPopoverProvider />
 <MudSnackbarProvider />
 
-<div class="layout-root">
+<div class="layout-root @ShellThemeClass">
     <MudAppBar Elevation="0" Class="modern-app-bar">
         <div class="header-left">
             @if (!esPaginaLogin)
@@ -194,6 +194,9 @@
     private string BrandTitle => string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
         ? _headerCompanyName
         : SucursalStateService.EmpresaNombre;
+    private string ShellThemeClass => _selectedTheme == "morena"
+        ? "theme-morena"
+        : _isDarkMode ? "theme-oscuro" : "theme-claro";
 
     protected override async Task OnInitializedAsync()
     {
@@ -457,36 +460,36 @@
         {
             return new PaletteLight
             {
-                Primary = "#A11A1F",
-                PrimaryLighten = "#C43A3F",
-                PrimaryDarken = "#6F000B",
-                Secondary = "#D8A13A",
-                SecondaryLighten = "#F0C66A",
-                SecondaryDarken = "#A77418",
-                Tertiary = "#7B0010",
-                TertiaryLighten = "#9D1B2A",
-                TertiaryDarken = "#520008",
-                Background = "#F7F7F8",
-                Surface = "#FFFFFF",
-                AppbarBackground = "#76000D",
-                AppbarText = "#FFFFFF",
-                DrawerBackground = "#A11A1F",
-                DrawerText = "#FFFFFF",
-                DrawerIcon = "#FFC928",
-                TextDisabled = "#9CA3AF",
-                ActionDefault = "#A11A1F",
-                ActionDisabled = "#C7B9B9",
-                ActionDisabledBackground = "#F3EAEA",
-                Divider = "#E7D6D6",
-                LinesDefault = "#E7D6D6",
-                TableLines = "#E7D6D6",
-                Info = "#6F000B",
-                Success = "#198754",
-                Warning = "#D8A13A",
-                Error = "#D71920",
-                GrayLight = "#E7D6D6",
-                GrayLighter = "#F3EAEA",
-                OverlayLight = "#6F000B40",
+                Primary = "#8F2040",
+                PrimaryLighten = "#B24661",
+                PrimaryDarken = "#5B0F29",
+                Secondary = "#B58B46",
+                SecondaryLighten = "#D3B57A",
+                SecondaryDarken = "#7E5F28",
+                Tertiary = "#2F6F5E",
+                TertiaryLighten = "#4E8F7B",
+                TertiaryDarken = "#1F4D41",
+                Background = "#F7F3EF",
+                Surface = "#FFFCF8",
+                AppbarBackground = "#21161C",
+                AppbarText = "#F7F4EF",
+                DrawerBackground = "#21161C",
+                DrawerText = "#F4EEE7",
+                DrawerIcon = "#C9A66B",
+                TextDisabled = "#9B8F94",
+                ActionDefault = "#8F2040",
+                ActionDisabled = "#BFAEB4",
+                ActionDisabledBackground = "#F0E6E5",
+                Divider = "#E0D3CF",
+                LinesDefault = "#E0D3CF",
+                TableLines = "#E0D3CF",
+                Info = "#8F2040",
+                Success = "#4F9D69",
+                Warning = "#B58B46",
+                Error = "#C9434D",
+                GrayLight = "#E0D3CF",
+                GrayLighter = "#F4ECE9",
+                OverlayLight = "#21161C40",
                 Black = "#000000",
                 White = "#FFFFFF",
             };
@@ -535,34 +538,34 @@
         {
             return new PaletteDark
             {
-                Primary = "#B91C2B",
-                PrimaryLighten = "#DC3545",
-                PrimaryDarken = "#7B0010",
-                Secondary = "#D8A13A",
-                SecondaryLighten = "#F0C66A",
-                SecondaryDarken = "#A77418",
-                Tertiary = "#FFC928",
-                Background = "#1A0709",
-                Surface = "#2A0B0F",
-                AppbarBackground = "#65000A",
-                AppbarText = "#F8FAFC",
-                DrawerBackground = "#8F151C",
-                DrawerText = "#FFFFFF",
-                DrawerIcon = "#FFC928",
-                TextDisabled = "#C9A7AA",
-                ActionDefault = "#D8A13A",
-                ActionDisabled = "#704046",
-                ActionDisabledBackground = "#3A1015",
-                Divider = "#5A1A20",
-                LinesDefault = "#5A1A20",
-                TableLines = "#5A1A20",
-                Info = "#F0C66A",
-                Success = "#74C69D",
-                Warning = "#FFC928",
-                Error = "#FF6B6B",
-                GrayLight = "#5A1A20",
-                GrayLighter = "#3A1015",
-                OverlayLight = "#1A070980",
+                Primary = "#A12A4C",
+                PrimaryLighten = "#C94A66",
+                PrimaryDarken = "#62112A",
+                Secondary = "#C9A66B",
+                SecondaryLighten = "#E0C994",
+                SecondaryDarken = "#8A6A2C",
+                Tertiary = "#2F6F5E",
+                Background = "#100E12",
+                Surface = "#19151A",
+                AppbarBackground = "#151116",
+                AppbarText = "#F7F4EF",
+                DrawerBackground = "#151116",
+                DrawerText = "#F4EEE7",
+                DrawerIcon = "#C9A66B",
+                TextDisabled = "#8D8189",
+                ActionDefault = "#C9A66B",
+                ActionDisabled = "#56464F",
+                ActionDisabledBackground = "#211920",
+                Divider = "#31232A",
+                LinesDefault = "#36262D",
+                TableLines = "#36262D",
+                Info = "#C9A66B",
+                Success = "#4F9D69",
+                Warning = "#D6A84A",
+                Error = "#E45B63",
+                GrayLight = "#36262D",
+                GrayLighter = "#211920",
+                OverlayLight = "#100E1280",
                 Black = "#000000",
                 White = "#FFFFFF",
             };
@@ -738,6 +741,25 @@
         --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 24%, transparent);
         --eg-primary-active: color-mix(in srgb, var(--eg-primary) 34%, transparent);
         --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 18%, transparent);
+        --eg-support-accent: #22c55e;
+        --eg-warm-accent: #f59e0b;
+        --eg-status-success: #22c55e;
+        --eg-status-warning: #f59e0b;
+        --eg-status-info: #38bdf8;
+        --eg-shell-shadow: rgba(2, 8, 23, .18);
+    }
+
+    .layout-root.theme-morena {
+        --eg-support-accent: var(--eg-secondary);
+        --eg-warm-accent: var(--eg-primary-dark);
+        --eg-status-success: #4F9D69;
+        --eg-status-warning: var(--eg-secondary);
+        --eg-status-info: var(--eg-primary);
+        --eg-shell-shadow: rgba(8, 6, 10, .46);
+        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 13%, transparent);
+        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 20%, transparent);
+        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 26%, transparent);
+        --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 13%, transparent);
     }
 
     .layout-root {
@@ -752,11 +774,18 @@
         height: 100dvh;
         min-height: 0;
         overflow: hidden;
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 5%, transparent) 1px, transparent 1px),
+            linear-gradient(0deg, color-mix(in srgb, var(--eg-support-accent) 4%, transparent) 1px, transparent 1px),
+            var(--mud-palette-background);
+        background-size: 48px 48px;
     }
 
     .modern-app-bar {
-        background: var(--mud-palette-appbar-background) !important;
-        border-bottom: 1px solid var(--mud-palette-divider);
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 18%, var(--mud-palette-appbar-background)), var(--mud-palette-appbar-background) 48%, color-mix(in srgb, var(--eg-accent) 11%, var(--mud-palette-appbar-background))) !important;
+        border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-divider));
+        box-shadow: 0 16px 44px var(--eg-shell-shadow);
         height: var(--eg-appbar-height);
         min-height: var(--eg-appbar-height);
         max-height: var(--eg-appbar-height);
@@ -799,22 +828,23 @@
     }
 
     .brand-home-button {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         padding: 0;
-        border: 0;
-        border-radius: 6px;
-        background: transparent;
+        border: 1px solid color-mix(in srgb, var(--eg-accent) 32%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--eg-accent) 9%, transparent);
         color: inherit;
         cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.2s ease;
+        transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
     }
 
     .brand-home-button:hover {
-        background: var(--mud-palette-action-default-hover);
+        border-color: color-mix(in srgb, var(--eg-accent) 52%, transparent);
+        background: color-mix(in srgb, var(--eg-accent) 15%, transparent);
         transform: translateY(-1px);
     }
 
@@ -829,8 +859,9 @@
     }
 
     .app-title {
-        font-weight: 700;
+        font-weight: 900;
         color: var(--mud-palette-appbar-text);
+        letter-spacing: 0;
         min-width: 0;
         max-width: 100%;
         overflow: hidden;
@@ -900,7 +931,7 @@
     }
 
     .user-chip {
-        background: var(--eg-primary-soft);
+        background: color-mix(in srgb, var(--eg-primary) 12%, transparent);
         border: 1px solid color-mix(in srgb, var(--eg-accent) 70%, transparent);
         color: var(--mud-palette-appbar-text);
         max-width: 220px;
@@ -939,10 +970,11 @@
         width: var(--eg-sidebar-width);
         flex-shrink: 0;
         background: var(--mud-palette-drawer-background);
-        border-right: 1px solid var(--mud-palette-divider);
+        border-right: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-divider));
         overflow: hidden;
         transition: width 180ms ease, box-shadow 180ms ease;
         align-self: stretch;
+        box-shadow: 12px 0 34px var(--eg-shell-shadow);
     }
 
     .sidebar-container.collapsed {
@@ -1029,7 +1061,11 @@
         flex: 1;
         min-width: 0;
         overflow: hidden;
-        background: var(--mud-palette-background);
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 6%, transparent) 1px, transparent 1px),
+            linear-gradient(0deg, color-mix(in srgb, var(--eg-support-accent) 4%, transparent) 1px, transparent 1px),
+            var(--mud-palette-background);
+        background-size: 48px 48px;
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -1043,7 +1079,7 @@
         min-height: 0;
         overflow-x: hidden;
         overflow-y: auto;
-        padding: 8px 16px calc(var(--eg-footer-height) + 18px) 12px;
+        padding: 14px 18px calc(var(--eg-footer-height) + 22px) 14px;
         scrollbar-gutter: stable;
         overscroll-behavior: contain;
     }
@@ -1089,13 +1125,14 @@
 
     .version-footer {
         height: var(--eg-footer-height);
-        background-color: var(--mud-palette-surface);
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface)), var(--mud-palette-surface));
         color: var(--mud-palette-text-secondary);
         font-size: 0.75rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-top: 1px solid var(--mud-palette-lines-default);
+        border-top: 1px solid color-mix(in srgb, var(--eg-primary) 18%, var(--mud-palette-lines-default));
         padding: 0 16px;
         flex-shrink: 0;
     }

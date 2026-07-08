@@ -12,36 +12,115 @@
 
 @{
     var visibleCards = FilteredCards;
+    var primaryCard = visibleCards.FirstOrDefault();
+    var secondaryCards = visibleCards.Skip(1).Take(2).ToList();
 }
 
 <MudContainer Class="home-page" MaxWidth="MaxWidth.False">
     <section class="home-shell">
-        <header class="home-header">
-            <div class="home-title">
-                <span class="home-icon">
-                    <MudIcon Icon="@Icons.Material.Filled.Home" Size="Size.Medium" />
-                </span>
-                <div>
-                    <span class="eyebrow">PCI</span>
-                    <h1>Inicio</h1>
+        <header class="home-hero">
+            <div class="home-hero-main">
+                <div class="brand-panel">
+                    <img src="img/logo_egestion_empresarial_horizontal.png" alt="EGestion Empresarial" />
+                    <span>PCI</span>
+                </div>
+
+                <div class="home-title">
+                    <span class="home-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Medium" />
+                    </span>
+                    <div>
+                        <span class="eyebrow">Centro operativo</span>
+                        <h1>Inicio</h1>
+                        <p>@EmpresaTexto · @AnioTexto</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="scope-strip" aria-label="Contexto activo">
-                <span class="scope-chip">
-                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" />
-                    @EmpresaTexto
-                </span>
-                <span class="scope-chip">
-                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
-                    @AnioTexto
-                </span>
-                <span class="scope-chip">
-                    <MudIcon Icon="@Icons.Material.Filled.Apps" Size="Size.Small" />
-                    @_moduleCards.Count modulo(s)
-                </span>
+            <div class="command-panel" aria-label="Resumen operativo">
+                <div class="command-stat">
+                    <span>Empresa</span>
+                    <strong>@EmpresaTexto</strong>
+                </div>
+                <div class="command-stat">
+                    <span>Ejercicio</span>
+                    <strong>@AnioTexto</strong>
+                </div>
+                <div class="command-stat accent">
+                    <span>Modulos</span>
+                    <strong>@_moduleCards.Count.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                </div>
             </div>
         </header>
+
+        <section class="home-command-grid">
+            <article class="next-action-card">
+                <div class="panel-kicker">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                    <span>Siguiente accion</span>
+                </div>
+                @if (primaryCard is not null)
+                {
+                    <div class="next-action-body" style="@AccentStyle(primaryCard.Accent)">
+                        <span class="next-icon">
+                            <MudIcon Icon="@primaryCard.Icon" Size="Size.Medium" />
+                        </span>
+                        <div>
+                            <strong>@primaryCard.Title</strong>
+                            <small>@primaryCard.Subtitle</small>
+                        </div>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="@(() => OpenModule(primaryCard))">
+                            Abrir
+                        </MudButton>
+                    </div>
+                }
+                else
+                {
+                    <div class="next-action-empty">
+                        <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Medium" />
+                        <strong>Sin accesos disponibles</strong>
+                    </div>
+                }
+            </article>
+
+            <article class="signal-board">
+                <div class="signal-item success">
+                    <span>Contexto</span>
+                    <strong>Activo</strong>
+                    <small>@EmpresaTexto</small>
+                </div>
+                <div class="signal-item info">
+                    <span>Navegacion</span>
+                    <strong>@visibleCards.Count.ToString("N0", CultureInfo.InvariantCulture)</strong>
+                    <small>Accesos visibles</small>
+                </div>
+                <div class="signal-item warning">
+                    <span>Prioridad</span>
+                    <strong>Workflow</strong>
+                    <small>Modulo principal</small>
+                </div>
+            </article>
+
+            @if (secondaryCards.Count > 0)
+            {
+                <article class="quick-stack">
+                    @foreach (var card in secondaryCards)
+                    {
+                        <button type="button"
+                                class="quick-card"
+                                style="@AccentStyle(card.Accent)"
+                                @onclick="@(() => OpenModule(card))">
+                            <MudIcon Icon="@card.Icon" Size="Size.Small" />
+                            <span>@card.Title</span>
+                            <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                        </button>
+                    }
+                </article>
+            }
+        </section>
 
         <section class="home-tools" aria-label="Herramientas de inicio">
             <MudTextField T="string"
@@ -88,7 +167,7 @@
         }
         else
         {
-            <section class="module-grid" aria-label="Modulos principales">
+            <section class="home-module-grid" aria-label="Modulos principales">
                 @foreach (var card in visibleCards)
                 {
                     <button type="button"
@@ -96,6 +175,7 @@
                             style="@AccentStyle(card.Accent)"
                             title="@card.Route"
                             @onclick="@(() => OpenModule(card))">
+                        <span class="tile-spark" aria-hidden="true"></span>
                         <span class="module-icon">
                             <MudIcon Icon="@card.Icon" Size="Size.Medium" />
                         </span>
@@ -451,32 +531,84 @@
         height: 100%;
         min-height: 0;
         overflow: auto;
-        padding: 14px 16px 18px !important;
-        background: var(--mud-palette-background);
+        padding: 16px 18px 22px !important;
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 7%, transparent) 1px, transparent 1px),
+            linear-gradient(0deg, color-mix(in srgb, var(--mud-palette-success) 5%, transparent) 1px, transparent 1px),
+            var(--mud-palette-background);
+        background-size: 48px 48px;
     }
 
     .home-shell {
         min-height: 100%;
         display: grid;
         align-content: start;
-        gap: 12px;
+        gap: 14px;
     }
 
-    .home-header,
+    .home-hero,
+    .home-command-grid > article,
     .home-tools,
     .module-tile,
     .home-state {
         border: 1px solid var(--mud-palette-lines-default);
         border-radius: 8px;
         background: var(--mud-palette-surface);
+        box-shadow: 0 18px 46px var(--eg-shell-shadow, rgba(2, 8, 23, .18));
     }
 
-    .home-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    .home-hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
         gap: 14px;
-        padding: 14px 16px;
+        align-items: stretch;
+        overflow: hidden;
+        padding: 16px;
+        isolation: isolate;
+    }
+
+    .home-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+            linear-gradient(120deg, color-mix(in srgb, var(--eg-support-accent) 10%, transparent), transparent 32%),
+            linear-gradient(280deg, color-mix(in srgb, var(--eg-warm-accent) 10%, transparent), transparent 38%),
+            linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-primary) 12%, transparent), transparent 52%);
+        opacity: .92;
+    }
+
+    .home-hero-main {
+        min-width: 0;
+        display: grid;
+        gap: 16px;
+        align-content: space-between;
+    }
+
+    .brand-panel {
+        width: fit-content;
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 10px;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 26%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--mud-palette-surface) 72%, transparent);
+    }
+
+    .brand-panel img {
+        width: min(210px, 54vw);
+        max-height: 28px;
+        object-fit: contain;
+    }
+
+    .brand-panel span {
+        color: var(--mud-palette-primary);
+        font-size: .78rem;
+        font-weight: 900;
     }
 
     .home-title {
@@ -487,16 +619,18 @@
     }
 
     .home-icon {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 30%, var(--mud-palette-lines-default));
         border-radius: 8px;
         color: var(--mud-palette-primary);
-        background: color-mix(in srgb, var(--mud-palette-primary) 9%, transparent);
+        background:
+            linear-gradient(135deg, color-mix(in srgb, var(--mud-palette-primary) 18%, transparent), color-mix(in srgb, var(--eg-support-accent) 10%, transparent)),
+            var(--mud-palette-surface);
     }
 
     .eyebrow {
@@ -511,41 +645,228 @@
     .home-title h1 {
         margin: 3px 0 0;
         color: var(--mud-palette-text-primary);
-        font-size: 1.55rem;
-        font-weight: 850;
+        font-size: 2.15rem;
+        font-weight: 900;
         line-height: 1.1;
         letter-spacing: 0;
     }
 
-    .scope-strip {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
+    .home-title p {
+        margin: 4px 0 0;
+        color: var(--mud-palette-text-secondary);
+        font-size: .92rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .command-panel {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
     }
 
-    .scope-chip {
+    .command-stat {
         min-width: 0;
-        max-width: 260px;
-        min-height: 32px;
-        display: inline-flex;
+        min-height: 86px;
+        display: grid;
+        align-content: center;
+        gap: 5px;
+        padding: 12px;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        color: var(--mud-palette-text-primary);
+        background: color-mix(in srgb, var(--mud-palette-surface) 78%, transparent);
+    }
+
+    .command-stat.accent {
+        border-color: color-mix(in srgb, var(--eg-warm-accent) 28%, var(--mud-palette-lines-default));
+        background: color-mix(in srgb, var(--eg-warm-accent) 8%, var(--mud-palette-surface));
+    }
+
+    .command-stat span,
+    .signal-item span,
+    .panel-kicker span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        font-weight: 850;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+
+    .command-stat strong {
+        min-width: 0;
+        color: var(--mud-palette-text-primary);
+        font-size: .98rem;
+        font-weight: 900;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+
+    .home-command-grid {
+        display: grid;
+        grid-template-columns: minmax(360px, 1.2fr) minmax(300px, .9fr) minmax(220px, .55fr);
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .next-action-card,
+    .signal-board,
+    .quick-stack {
+        min-width: 0;
+        padding: 12px;
+    }
+
+    .next-action-card {
+        display: grid;
+        gap: 12px;
+    }
+
+    .panel-kicker {
+        display: flex;
         align-items: center;
         gap: 8px;
-        padding: 6px 10px;
-        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 24%, var(--mud-palette-lines-default));
-        border-radius: 999px;
+        color: var(--mud-palette-primary);
+    }
+
+    .next-action-body {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 50px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 30%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        background:
+            linear-gradient(120deg, color-mix(in srgb, var(--module-accent) 12%, transparent), transparent 62%),
+            var(--mud-palette-surface);
+    }
+
+    .next-icon {
+        width: 50px;
+        height: 50px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 13%, transparent);
+    }
+
+    .next-action-body strong {
+        display: block;
+        min-width: 0;
         color: var(--mud-palette-text-primary);
-        background: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent);
-        font-size: .78rem;
-        font-weight: 800;
+        font-size: 1.08rem;
+        font-weight: 900;
+        line-height: 1.2;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .scope-chip .mud-icon-root {
-        color: var(--mud-palette-primary);
-        flex: 0 0 auto;
+    .next-action-body small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+        font-weight: 800;
+    }
+
+    .next-action-empty {
+        min-height: 84px;
+        display: grid;
+        place-items: center;
+        gap: 8px;
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .signal-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .signal-item {
+        min-width: 0;
+        display: grid;
+        align-content: center;
+        gap: 5px;
+        padding: 11px;
+        border: 1px solid var(--signal-border);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--signal-color) 7%, var(--mud-palette-surface));
+    }
+
+    .signal-item.success {
+        --signal-color: var(--eg-status-success);
+        --signal-border: color-mix(in srgb, var(--eg-status-success) 30%, var(--mud-palette-lines-default));
+    }
+
+    .signal-item.info {
+        --signal-color: var(--eg-status-info);
+        --signal-border: color-mix(in srgb, var(--eg-status-info) 30%, var(--mud-palette-lines-default));
+    }
+
+    .signal-item.warning {
+        --signal-color: var(--eg-status-warning);
+        --signal-border: color-mix(in srgb, var(--eg-status-warning) 32%, var(--mud-palette-lines-default));
+    }
+
+    .signal-item strong {
+        min-width: 0;
+        color: var(--mud-palette-text-primary);
+        font-size: .98rem;
+        font-weight: 900;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .signal-item small {
+        min-width: 0;
+        color: var(--mud-palette-text-secondary);
+        font-size: .74rem;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .quick-stack {
+        display: grid;
+        gap: 8px;
+        align-content: stretch;
+    }
+
+    .quick-card {
+        min-width: 0;
+        min-height: 48px;
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) 24px;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 10px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 26%, var(--mud-palette-lines-default));
+        border-radius: 8px;
+        color: var(--mud-palette-text-primary);
+        background: color-mix(in srgb, var(--module-accent) 6%, var(--mud-palette-surface));
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 850;
+        text-align: left;
+    }
+
+    .quick-card span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .quick-card .mud-icon-root {
+        color: var(--module-accent);
     }
 
     .home-tools {
@@ -553,40 +874,52 @@
         grid-template-columns: minmax(220px, 1fr) auto;
         align-items: center;
         gap: 10px;
-        padding: 10px;
+        padding: 11px;
     }
 
     .module-search .mud-input-control {
         margin: 0;
     }
 
-    .module-grid {
+    .home-module-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 12px;
     }
 
     .module-tile {
+        position: relative;
         min-width: 0;
-        min-height: 76px;
+        min-height: 88px;
         display: grid;
         grid-template-columns: 42px minmax(0, 1fr) 30px;
         align-items: center;
         gap: 11px;
-        padding: 12px;
+        padding: 14px 12px;
+        overflow: hidden;
         border-left: 4px solid var(--module-accent);
         color: var(--mud-palette-text-primary);
         font-family: inherit;
         text-align: left;
         cursor: pointer;
-        transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+        transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .tile-spark {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background:
+            linear-gradient(90deg, var(--module-accent), color-mix(in srgb, var(--eg-support-accent) 65%, var(--module-accent)), color-mix(in srgb, var(--eg-warm-accent) 60%, var(--module-accent)));
+        opacity: .78;
     }
 
     .module-tile:hover {
         border-color: color-mix(in srgb, var(--module-accent) 52%, var(--mud-palette-lines-default));
         border-left-color: var(--module-accent);
         background: color-mix(in srgb, var(--module-accent) 7%, var(--mud-palette-surface));
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 24px 58px var(--eg-shell-shadow, rgba(2, 8, 23, .24));
     }
 
     .module-tile:focus-visible {
@@ -624,8 +957,8 @@
     .module-copy strong {
         min-width: 0;
         color: var(--mud-palette-text-primary);
-        font-size: .98rem;
-        font-weight: 850;
+        font-size: 1rem;
+        font-weight: 900;
         line-height: 1.15;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -656,14 +989,45 @@
         font-weight: 850;
     }
 
-    @@media (max-width: 880px) {
-        .home-header {
-            align-items: stretch;
-            flex-direction: column;
+    @@media (max-width: 1320px) {
+        .home-command-grid {
+            grid-template-columns: minmax(320px, 1fr) minmax(260px, .9fr);
         }
 
-        .scope-strip {
-            justify-content: flex-start;
+        .quick-stack {
+            grid-column: 1 / -1;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 1040px) {
+        .home-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .command-panel {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 880px) {
+        .home-command-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-stack,
+        .signal-board,
+        .command-panel {
+            grid-template-columns: 1fr;
+        }
+
+        .next-action-body {
+            grid-template-columns: 50px minmax(0, 1fr);
+        }
+
+        .next-action-body .mud-button-root {
+            grid-column: 1 / -1;
+            justify-self: start;
         }
     }
 
@@ -673,12 +1037,16 @@
         }
 
         .home-tools,
-        .module-grid {
+        .home-module-grid {
             grid-template-columns: 1fr;
         }
 
-        .scope-chip {
-            max-width: 100%;
+        .home-title h1 {
+            font-size: 1.7rem;
+        }
+
+        .brand-panel img {
+            width: min(180px, 64vw);
         }
     }
 </style>

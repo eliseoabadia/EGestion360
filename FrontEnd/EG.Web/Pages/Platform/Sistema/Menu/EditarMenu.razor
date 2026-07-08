@@ -11,7 +11,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Class="mr-2" />
-            Editar Men�
+            Editar Menú
         </MudText>
     </TitleContent>
 
@@ -25,7 +25,7 @@
             <MudGrid Spacing="3" Class="mt-2">
                 <MudItem xs="12">
                     <MudTextField @bind-Value="menu.Nombre"
-                                  Label="Nombre del Men� *"
+                                  Label="Nombre del Menú *"
                                   Variant="Variant.Outlined"
                                   For="@(() => menu.Nombre)"
                                   Required="true"
@@ -53,7 +53,7 @@
                                      Max="999"
                                      Required="true"
                                      RequiredError="El orden es requerido"
-                                     HelperText="N�mero de orden de visualizaci�n" />
+                                     HelperText="Número de orden de visualización" />
                 </MudItem>
 
                 <MudItem xs="12">
@@ -92,17 +92,17 @@
                     </MudAutocomplete>
 
                     <MudText Typo="Typo.caption" Color="Color.Tertiary" Class="mt-1">
-                        Selecciona un icono para el men�
+                        Selecciona un icono para el menú
                     </MudText>
                 </MudItem>
 
 
                 <MudItem xs="12">
                     <MudTextField @bind-Value="menu.ValidacionEstructura"
-                                  Label="Validaci�n"
+                                  Label="Validación"
                                   Variant="Variant.Outlined"
                                   MaxLength="500"
-                                  HelperText="Reglas de validaci�n (opcional)" />
+                                  HelperText="Reglas de validación (opcional)" />
                 </MudItem>
             </MudGrid>
         }
@@ -155,7 +155,7 @@
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al cargar el men�", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al cargar el menú", Severity.Error);
                 MudDialog.Cancel();
             }
         }
@@ -199,7 +199,7 @@
         {
             if (string.IsNullOrWhiteSpace(menu.Nombre))
             {
-                Snackbar.Add("El nombre del men� es requerido", Severity.Warning);
+                Snackbar.Add("El nombre del menú es requerido", Severity.Warning);
                 return;
             }
 
@@ -211,12 +211,12 @@
             var response = await _service.UpdateAsync(menu, MenuId);
             if (response != null && response.Success)
             {
-                Snackbar.Add("Men� actualizado exitosamente", Severity.Success);
+                Snackbar.Add("Menú actualizado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(response?.Message ?? "Error al actualizar el men�", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al actualizar el menú", Severity.Error);
             }
         }
         catch (Exception ex)

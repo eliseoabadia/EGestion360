@@ -172,6 +172,17 @@ namespace EG.Web.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    if (string.IsNullOrWhiteSpace(responseBody))
+                    {
+                        var successContract = CreateSuccessContract<T>("Operacion exitosa");
+                        if (successContract != null)
+                        {
+                            return successContract;
+                        }
+
+                        return default;
+                    }
+
                     if (typeof(T) == typeof(bool))
                     {
                         if (bool.TryParse(responseBody, out bool boolResult))
@@ -180,7 +191,8 @@ namespace EG.Web.Services
                         }
                     }
 
-                    return DeserializeResponse<T>(responseBody);
+                    var result = DeserializeResponse<T>(responseBody);
+                    return NormalizeSuccessfulResponse(responseBody, result);
                 }
 
                 var errorResult = DeserializeResponse<T>(responseBody);
@@ -277,6 +289,102 @@ namespace EG.Web.Services
             }
         }
 
+        private T? NormalizeSuccessfulResponse<T>(string responseBody, T? result)
+        {
+            var type = typeof(T);
+            if (!IsApiResponseType(type) || LooksLikeApiResponse(responseBody))
+            {
+                if (result != null && IsApiResponseType(type))
+                {
+                    SetSuccessfulContract(type, result, "Operacion exitosa", GetTotalCount(type, result));
+                }
+
+                return result;
+            }
+
+            try
+            {
+                var dataType = type.GetGenericArguments()[0];
+                var response = result ?? Activator.CreateInstance<T>();
+                if (response == null)
+                {
+                    return result;
+                }
+
+                using var document = JsonDocument.Parse(responseBody);
+                if (document.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    var listType = typeof(List<>).MakeGenericType(dataType);
+                    var items = JsonSerializer.Deserialize(responseBody, listType, _jsonOptions);
+                    var count = items is System.Collections.ICollection collection ? collection.Count : 0;
+                    SetSuccessfulContract(type, response, "Operacion exitosa", count);
+                    SetPropertyIfWritable(type, response, "Items", items);
+                    return response;
+                }
+
+                var data = JsonSerializer.Deserialize(responseBody, dataType, _jsonOptions);
+                if (data == null)
+                {
+                    return result;
+                }
+
+                SetSuccessfulContract(type, response, "Operacion exitosa", 1);
+                SetPropertyIfWritable(type, response, "Data", data);
+
+                var singleListType = typeof(List<>).MakeGenericType(dataType);
+                var list = (System.Collections.IList)Activator.CreateInstance(singleListType)!;
+                list.Add(data);
+                SetPropertyIfWritable(type, response, "Items", list);
+
+                return response;
+            }
+            catch
+            {
+                return result;
+            }
+        }
+
+        private static bool IsApiResponseType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition().Name == "ApiResponse`1";
+        }
+
+        private static bool LooksLikeApiResponse(string responseBody)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(responseBody);
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return false;
+                }
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    if (property.NameEquals("success") ||
+                        property.NameEquals("Success") ||
+                        property.NameEquals("data") ||
+                        property.NameEquals("Data") ||
+                        property.NameEquals("items") ||
+                        property.NameEquals("Items") ||
+                        property.NameEquals("totalCount") ||
+                        property.NameEquals("TotalCount") ||
+                        property.NameEquals("message") ||
+                        property.NameEquals("Message") ||
+                        property.NameEquals("code") ||
+                        property.NameEquals("Code"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
         private static string ExtractErrorMessage(string responseBody, HttpStatusCode statusCode)
         {
             if (string.IsNullOrWhiteSpace(responseBody))
@@ -334,6 +442,53 @@ namespace EG.Web.Services
             }
         }
 
+        private static T? CreateSuccessContract<T>(string message)
+        {
+            var type = typeof(T);
+            if (type.IsValueType || type == typeof(string))
+            {
+                return default;
+            }
+
+            try
+            {
+                var result = Activator.CreateInstance<T>();
+                SetSuccessfulContract(type, result, message, 0);
+                return result;
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        private static void SetSuccessfulContract<T>(Type type, T result, string message, int totalCount)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            SetProperty(type, result, "Success", true);
+
+            var messageProperty = type.GetProperty("Message");
+            if (messageProperty?.CanWrite == true && string.IsNullOrWhiteSpace(messageProperty.GetValue(result)?.ToString()))
+            {
+                messageProperty.SetValue(result, message);
+            }
+
+            var codeProperty = type.GetProperty("Code");
+            var currentCode = codeProperty?.GetValue(result)?.ToString();
+            if (codeProperty?.CanWrite == true &&
+                (string.IsNullOrWhiteSpace(currentCode) ||
+                 string.Equals(currentCode, ApiResponseCode.Error.ToCode(), StringComparison.OrdinalIgnoreCase)))
+            {
+                codeProperty.SetValue(result, ApiResponseCode.Success.ToCode());
+            }
+
+            SetProperty(type, result, "TotalCount", totalCount);
+        }
+
         private static void EnsureErrorContract<T>(T result, string message, ApiResponseCode code)
         {
             if (result == null)
@@ -357,6 +512,29 @@ namespace EG.Web.Services
             }
 
             SetProperty(type, result, "TotalCount", 0);
+        }
+
+        private static int GetTotalCount<T>(Type type, T result)
+        {
+            var totalCountProperty = type.GetProperty("TotalCount");
+            if (totalCountProperty != null && totalCountProperty.GetValue(result) is int count)
+            {
+                return count;
+            }
+
+            var itemsProperty = type.GetProperty("Items");
+            return itemsProperty?.GetValue(result) is System.Collections.ICollection items
+                ? items.Count
+                : 0;
+        }
+
+        private static void SetPropertyIfWritable<T>(Type type, T result, string propertyName, object? value)
+        {
+            var property = type.GetProperty(propertyName);
+            if (property?.CanWrite == true)
+            {
+                property.SetValue(result, value);
+            }
         }
 
         private static void SetProperty<T>(Type type, T result, string propertyName, object value)

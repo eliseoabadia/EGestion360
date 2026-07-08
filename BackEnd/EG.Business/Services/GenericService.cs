@@ -47,6 +47,7 @@ namespace EG.Business.Services
         // Propiedades para configurar includes din�micos
         protected List<Expression<Func<TEntity, object>>> _includes = new();
         protected Dictionary<string, List<string>> _relationFilters = new();
+        protected List<string> _searchFilterProperties = new();
 
         // ============ NUEVO: DICCIONARIOS PARA VALIDACIONES ============
         protected Dictionary<string, Func<TDto, Task<bool>>> _validationRules = new();
@@ -109,10 +110,30 @@ namespace EG.Business.Services
         }
 
         // Limpiar configuraci�n
+        public virtual GenericService<TEntity, TDto, TResponse> AddSearchFilter(params string[] propertyNames)
+        {
+            foreach (var propertyName in propertyNames)
+            {
+                if (string.IsNullOrWhiteSpace(propertyName))
+                {
+                    continue;
+                }
+
+                var cleanPropertyName = propertyName.Trim();
+                if (!_searchFilterProperties.Contains(cleanPropertyName, StringComparer.OrdinalIgnoreCase))
+                {
+                    _searchFilterProperties.Add(cleanPropertyName);
+                }
+            }
+
+            return this;
+        }
+
         public virtual void ClearConfiguration()
         {
             _includes.Clear();
             _relationFilters.Clear();
+            _searchFilterProperties.Clear();
             _validationRules.Clear();
             _validationRulesWithId.Clear();
         }
@@ -514,10 +535,11 @@ namespace EG.Business.Services
             {
                 NormalizePaging(_params);
                 var query = GetQueryWithIncludes();
+                var searchTerm = ResolveSearchTerm(_params);
 
-                if (!string.IsNullOrWhiteSpace(_params.Filtro))
+                if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    query = ApplyFilterWithRelations(query, _params.Filtro);
+                    query = ApplyFilterWithRelations(query, searchTerm);
                 }
 
                 // 2. Aplicar filtros adicionales del diccionario
@@ -640,10 +662,11 @@ namespace EG.Business.Services
         {
             NormalizePaging(_params);
             var query = GetQueryWithIncludes(whereCondition);
+            var searchTerm = ResolveSearchTerm(_params);
 
-            if (!string.IsNullOrWhiteSpace(_params.Filtro))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = ApplyFilterWithRelations(query, _params.Filtro);
+                query = ApplyFilterWithRelations(query, searchTerm);
             }
 
             query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
@@ -676,62 +699,76 @@ namespace EG.Business.Services
             request.PageSize = Math.Clamp(requestedPageSize, 1, MaxPageSize);
         }
 
+        private static string ResolveSearchTerm(PagedRequest request)
+        {
+            var searchTerm = string.IsNullOrWhiteSpace(request.Filtro)
+                ? request.SearchString
+                : request.Filtro;
+
+            return searchTerm?.Trim() ?? string.Empty;
+        }
+
         protected virtual IQueryable<TEntity> ApplyFilterWithRelations(IQueryable<TEntity> query, string filtro)
         {
             if (string.IsNullOrWhiteSpace(filtro))
                 return query;
 
-            var filtroLower = filtro.ToLower();
+            var cleanFilter = filtro.Trim();
             var parameter = Expression.Parameter(typeof(TEntity), "x");
             Expression? finalExpression = null;
 
-            var stringProperties = typeof(TEntity).GetProperties()
-                .Where(p => p.PropertyType == typeof(string))
-                .ToList();
+            var properties = _searchFilterProperties.Count > 0
+                ? _searchFilterProperties
+                    .Select(GetSearchProperty)
+                    .Where(p => p != null)
+                    .Cast<PropertyInfo>()
+                    .ToList()
+                : typeof(TEntity).GetProperties()
+                    .Where(IsDefaultSearchProperty)
+                    .ToList();
 
-            foreach (var prop in stringProperties)
+            foreach (var prop in properties)
             {
-                var property = Expression.Property(parameter, prop);
-                var constant = Expression.Constant(filtro);
-                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-
-                if (containsMethod != null)
+                var searchExpression = BuildSearchExpression(parameter, prop, cleanFilter);
+                if (searchExpression == null)
                 {
-                    var containsExpression = Expression.Call(property, containsMethod, constant);
-                    finalExpression = finalExpression == null
-                        ? containsExpression
-                        : Expression.OrElse(finalExpression, containsExpression);
+                    continue;
                 }
+
+                finalExpression = finalExpression == null
+                    ? searchExpression
+                    : Expression.OrElse(finalExpression, searchExpression);
             }
 
             foreach (var relation in _relationFilters)
             {
                 var relationProperty = typeof(TEntity).GetProperty(relation.Key);
-                if (relationProperty != null)
+                if (relationProperty == null)
                 {
-                    var relationAccess = Expression.Property(parameter, relationProperty);
+                    continue;
+                }
 
-                    foreach (var propName in relation.Value)
+                var relationAccess = Expression.Property(parameter, relationProperty);
+                var relationNotNull = Expression.NotEqual(relationAccess, Expression.Constant(null, relationProperty.PropertyType));
+
+                foreach (var propName in relation.Value)
+                {
+                    var relationProp = relationProperty.PropertyType.GetProperty(propName);
+                    if (relationProp == null)
                     {
-                        var relationProp = relationProperty.PropertyType.GetProperty(propName);
-                        if (relationProp != null && relationProp.PropertyType == typeof(string))
-                        {
-                            var nestedProperty = Expression.Property(relationAccess, relationProp);
-                            var constant = Expression.Constant(filtro);
-                            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-
-                            if (containsMethod != null)
-                            {
-                                var containsExpression = Expression.Call(nestedProperty, containsMethod, constant);
-                                var notNullCheck = Expression.NotEqual(relationAccess, Expression.Constant(null));
-                                var safeContains = Expression.AndAlso(notNullCheck, containsExpression);
-
-                                finalExpression = finalExpression == null
-                                    ? safeContains
-                                    : Expression.OrElse(finalExpression, safeContains);
-                            }
-                        }
+                        continue;
                     }
+
+                    var searchExpression = BuildSearchExpression(relationAccess, relationProp, cleanFilter);
+                    if (searchExpression == null)
+                    {
+                        continue;
+                    }
+
+                    var safeSearchExpression = Expression.AndAlso(relationNotNull, searchExpression);
+                    finalExpression = finalExpression == null
+                        ? safeSearchExpression
+                        : Expression.OrElse(finalExpression, safeSearchExpression);
                 }
             }
 
@@ -742,6 +779,150 @@ namespace EG.Business.Services
             }
 
             return query;
+        }
+
+        private static bool IsDefaultSearchProperty(PropertyInfo property)
+        {
+            var normalizedName = property.Name.ToLowerInvariant();
+            if (normalizedName.Contains("empresa", StringComparison.Ordinal)
+                || normalizedName.Contains("anio", StringComparison.Ordinal)
+                || normalizedName.Contains("año", StringComparison.Ordinal)
+                || normalizedName.Contains("sucursal", StringComparison.Ordinal)
+                || normalizedName.Contains("moneda", StringComparison.Ordinal)
+                || normalizedName.Contains("activo", StringComparison.Ordinal)
+                || normalizedName.Contains("estatusregistro", StringComparison.Ordinal)
+                || normalizedName.Contains("fechacreacion", StringComparison.Ordinal)
+                || normalizedName.Contains("fechamodificacion", StringComparison.Ordinal)
+                || normalizedName.Contains("usuariocreacion", StringComparison.Ordinal)
+                || normalizedName.Contains("usuariomodificacion", StringComparison.Ordinal)
+                || normalizedName.EndsWith("format", StringComparison.Ordinal)
+                || normalizedName.Contains("json", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (normalizedName.StartsWith("fk", StringComparison.Ordinal)
+                || normalizedName.StartsWith("idempresa", StringComparison.Ordinal)
+                || normalizedName.StartsWith("idsucursal", StringComparison.Ordinal)
+                || normalizedName.StartsWith("idanio", StringComparison.Ordinal)
+                || normalizedName.StartsWith("idmoneda", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+            if (targetType == typeof(string))
+            {
+                return true;
+            }
+
+            if (targetType == typeof(int)
+                || targetType == typeof(long)
+                || targetType == typeof(short)
+                || targetType == typeof(decimal)
+                || targetType == typeof(double)
+                || targetType == typeof(float)
+                || targetType == typeof(Guid))
+            {
+                return normalizedName.StartsWith("pk", StringComparison.Ordinal)
+                    || normalizedName.EndsWith("id", StringComparison.Ordinal)
+                    || normalizedName.Contains("clave", StringComparison.Ordinal)
+                    || normalizedName.Contains("codigo", StringComparison.Ordinal)
+                    || normalizedName.Contains("numero", StringComparison.Ordinal)
+                    || normalizedName.Contains("folio", StringComparison.Ordinal);
+            }
+
+            return false;
+        }
+
+        private static Expression? BuildSearchExpression(Expression instance, PropertyInfo property, string filter)
+        {
+            var propertyType = property.PropertyType;
+            var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            var propertyAccess = Expression.Property(instance, property);
+
+            if (targetType == typeof(string))
+            {
+                var notNullCheck = Expression.NotEqual(propertyAccess, Expression.Constant(null, propertyType));
+                var containsMethod = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) });
+                if (containsMethod == null)
+                {
+                    return null;
+                }
+
+                var containsExpression = Expression.Call(propertyAccess, containsMethod, Expression.Constant(filter));
+                return Expression.AndAlso(notNullCheck, containsExpression);
+            }
+
+            if (!TryConvertSearchValue(filter, targetType, out var convertedValue))
+            {
+                return null;
+            }
+
+            var constant = Expression.Constant(convertedValue, targetType);
+            if (Nullable.GetUnderlyingType(propertyType) != null)
+            {
+                var hasValue = Expression.Property(propertyAccess, nameof(Nullable<int>.HasValue));
+                var value = Expression.Property(propertyAccess, nameof(Nullable<int>.Value));
+                return Expression.AndAlso(hasValue, Expression.Equal(value, constant));
+            }
+
+            return Expression.Equal(propertyAccess, constant);
+        }
+
+        private static bool TryConvertSearchValue(string filter, Type targetType, out object? value)
+        {
+            value = null;
+            if (targetType == typeof(int) && int.TryParse(filter, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+            {
+                value = intValue;
+                return true;
+            }
+
+            if (targetType == typeof(long) && long.TryParse(filter, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+            {
+                value = longValue;
+                return true;
+            }
+
+            if (targetType == typeof(short) && short.TryParse(filter, NumberStyles.Integer, CultureInfo.InvariantCulture, out var shortValue))
+            {
+                value = shortValue;
+                return true;
+            }
+
+            if (targetType == typeof(decimal) && decimal.TryParse(filter, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
+            {
+                value = decimalValue;
+                return true;
+            }
+
+            if (targetType == typeof(double) && double.TryParse(filter, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
+            {
+                value = doubleValue;
+                return true;
+            }
+
+            if (targetType == typeof(float) && float.TryParse(filter, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
+            {
+                value = floatValue;
+                return true;
+            }
+
+            if (targetType == typeof(Guid) && Guid.TryParse(filter, out var guidValue))
+            {
+                value = guidValue;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static PropertyInfo? GetSearchProperty(string propertyName)
+        {
+            return typeof(TEntity).GetProperty(
+                propertyName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
         }
 
         protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query, string sortLabel, string sortDirection)

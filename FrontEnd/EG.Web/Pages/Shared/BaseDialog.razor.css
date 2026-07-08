@@ -1,3 +1,50 @@
 .base-dialog-loading {
     height: 100%;
+    min-height: 220px;
+    gap: 10px;
+    color: var(--mud-palette-text-primary);
+}
+
+::deep .mud-dialog.base-dialog {
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 24%, var(--mud-palette-lines-default));
+    border-radius: 8px !important;
+    box-shadow: 0 28px 70px rgba(2, 8, 23, .34) !important;
+    overflow: hidden;
+}
+
+::deep .mud-dialog.base-dialog .mud-dialog-title {
+    position: relative;
+    min-height: 56px;
+    padding: 13px 20px 11px !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 22%, var(--mud-palette-lines-default));
+    background:
+        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 14%, transparent), transparent 52%),
+        var(--mud-palette-surface);
+}
+
+::deep .mud-dialog.base-dialog .mud-dialog-title::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--eg-primary, var(--mud-palette-primary)), #22c55e, #f59e0b);
+}
+
+::deep .mud-dialog.base-dialog .mud-typography-h6 {
+    color: var(--mud-palette-text-primary);
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+::deep .mud-dialog.base-dialog .mud-dialog-content {
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 5%, transparent) 1px, transparent 1px),
+        linear-gradient(0deg, color-mix(in srgb, #22c55e 3%, transparent) 1px, transparent 1px),
+        var(--mud-palette-surface);
+    background-size: 44px 44px;
+}
+
+::deep .mud-dialog.base-dialog .mud-dialog-actions {
+    border-top: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 16%, var(--mud-palette-lines-default));
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 4%, var(--mud-palette-surface));
 }
