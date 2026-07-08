@@ -6,11 +6,11 @@
     gap: 14px;
     overflow: hidden;
     padding: 16px;
-    border: 1px solid var(--mud-palette-lines-default);
+    border: 1px solid var(--eg-border-soft, var(--mud-palette-lines-default));
     border-left: 4px solid var(--eg-primary);
     border-radius: 8px;
-    background: var(--mud-palette-surface);
-    box-shadow: 0 18px 46px var(--eg-shell-shadow, rgba(2, 8, 23, .18));
+    background: var(--eg-surface-raised, var(--mud-palette-surface));
+    box-shadow: 0 12px 30px var(--eg-shell-shadow, rgba(2, 8, 23, .12));
     isolation: isolate;
 }
 
@@ -20,9 +20,9 @@
     inset: 0;
     z-index: -1;
     background:
-        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary) 15%, transparent), transparent 42%),
-        linear-gradient(280deg, color-mix(in srgb, var(--eg-support-accent) 7%, transparent), transparent 48%),
-        linear-gradient(0deg, color-mix(in srgb, var(--eg-warm-accent) 6%, transparent), transparent 55%);
+        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary) 7%, transparent), transparent 44%),
+        linear-gradient(280deg, color-mix(in srgb, var(--eg-support-accent) 4%, transparent), transparent 50%),
+        linear-gradient(0deg, color-mix(in srgb, var(--eg-warm-accent) 3%, transparent), transparent 58%);
 }
 
 .eg-page-header-copy {
@@ -43,7 +43,7 @@
     border-radius: 8px;
     color: var(--eg-primary);
     background:
-        linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 17%, transparent), color-mix(in srgb, var(--eg-support-accent) 9%, transparent)),
+        linear-gradient(135deg, color-mix(in srgb, var(--eg-primary) 10%, transparent), color-mix(in srgb, var(--eg-support-accent) 6%, transparent)),
         var(--mud-palette-surface);
 }
 
@@ -82,7 +82,7 @@
     padding: 7px;
     border: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-lines-default));
     border-radius: 8px;
-    background: color-mix(in srgb, var(--mud-palette-surface) 78%, transparent);
+    background: color-mix(in srgb, var(--eg-surface-raised, var(--mud-palette-surface)) 86%, transparent);
 }
 
 @media (max-width: 760px) {

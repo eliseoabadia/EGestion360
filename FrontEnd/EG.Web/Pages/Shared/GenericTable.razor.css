@@ -1,11 +1,11 @@
 .themed-table {
-    border: 1px solid var(--mud-palette-lines-default);
+    border: 1px solid var(--eg-border-soft, var(--mud-palette-lines-default));
     border-top: 0;
     border-radius: 8px !important;
-    background: var(--mud-palette-surface);
+    background: var(--eg-surface-raised, var(--mud-palette-surface));
     color: var(--mud-palette-text-primary);
     overflow: hidden;
-    box-shadow: 0 18px 46px var(--eg-shell-shadow, rgba(2, 8, 23, .16));
+    box-shadow: 0 12px 30px var(--eg-shell-shadow, rgba(2, 8, 23, .12));
 }
 
 .eg-generic-table {
@@ -24,7 +24,8 @@
     inset: 0 0 auto;
     z-index: 2;
     height: 3px;
-    background: linear-gradient(90deg, var(--eg-primary), var(--eg-support-accent), var(--eg-warm-accent));
+    background: linear-gradient(90deg, var(--eg-primary), color-mix(in srgb, var(--eg-support-accent) 70%, var(--eg-primary)), color-mix(in srgb, var(--eg-warm-accent) 55%, var(--eg-primary)));
+    opacity: .7;
     pointer-events: none;
 }
 
@@ -66,7 +67,7 @@
     border: 1px solid color-mix(in srgb, var(--assistant-tone) 28%, var(--mud-palette-lines-default));
     border-radius: 8px;
     background:
-        linear-gradient(120deg, color-mix(in srgb, var(--assistant-tone) 9%, transparent), transparent 56%),
+        linear-gradient(120deg, color-mix(in srgb, var(--assistant-tone) 5%, transparent), transparent 56%),
         var(--mud-palette-surface);
 }
 
@@ -215,10 +216,10 @@
     min-height: 72px;
     gap: 10px;
     background:
-        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary) 13%, transparent), transparent 54%),
-        linear-gradient(280deg, color-mix(in srgb, var(--eg-support-accent) 5%, transparent), transparent 52%),
+        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary) 6%, transparent), transparent 54%),
+        linear-gradient(280deg, color-mix(in srgb, var(--eg-support-accent) 3%, transparent), transparent 52%),
         var(--mud-palette-surface);
-    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 24%, var(--mud-palette-lines-default));
+    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary) 14%, var(--mud-palette-lines-default));
     margin: -16px -16px 0;
     padding: 16px;
 }
@@ -283,7 +284,7 @@
 
 .themed-table ::deep .mud-table-head .mud-table-cell {
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary) 12%, var(--mud-palette-surface)), color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface)));
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary) 6%, var(--mud-palette-surface)), color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface)));
     color: var(--mud-palette-text-primary);
     border-bottom-color: color-mix(in srgb, var(--eg-primary) 42%, var(--mud-palette-lines-default));
     font-size: .78rem;
@@ -396,7 +397,7 @@
 }
 
 .themed-table ::deep .mud-table-body .mud-table-row:nth-child(even) {
-    background-color: color-mix(in srgb, var(--eg-primary) 3%, var(--mud-palette-surface));
+    background-color: color-mix(in srgb, var(--eg-primary) 2%, var(--mud-palette-surface));
 }
 
 .themed-table ::deep .mud-table-body .mud-table-cell {
@@ -409,7 +410,7 @@
 
 .themed-table ::deep .mud-table-pagination {
     border-top: 1px solid color-mix(in srgb, var(--eg-primary) 20%, var(--mud-palette-lines-default));
-    background: color-mix(in srgb, var(--eg-primary) 4%, var(--mud-palette-surface));
+    background: color-mix(in srgb, var(--eg-primary) 2.5%, var(--mud-palette-surface));
 }
 
 .themed-table ::deep .mud-input:focus-within .mud-input-underline::after,

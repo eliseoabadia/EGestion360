@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-primary) 11%, var(--mud-palette-drawer-background)), var(--mud-palette-drawer-background) 38%),
+        linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-drawer-background)), var(--mud-palette-drawer-background) 42%),
         var(--mud-palette-drawer-background);
     color: var(--mud-palette-drawer-text);
     overflow: hidden;
@@ -13,20 +13,20 @@
 
 .bootstrap-sidebar.morena {
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary) 16%, var(--mud-palette-drawer-background)) 0%, var(--mud-palette-drawer-background) 42%),
-        radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--eg-accent) 10%, transparent), transparent 30%),
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary) 6%, var(--mud-palette-drawer-background)) 0%, var(--mud-palette-drawer-background) 44%),
+        radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--eg-accent) 6%, transparent), transparent 32%),
         var(--mud-palette-drawer-background);
 }
 
 .sidebar-search-section {
     padding: 12px 10px 10px;
     border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-divider));
-    background: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent);
+    background: color-mix(in srgb, var(--mud-palette-primary) 3%, transparent);
 }
 
 .sidebar-search-box {
     border-radius: 8px;
-    box-shadow: 0 12px 28px rgba(2, 8, 23, .12);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--eg-shell-shadow, rgba(2, 8, 23, .12)) 70%, transparent);
     overflow: hidden;
 }
 
