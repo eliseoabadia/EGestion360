@@ -452,7 +452,7 @@
         if (ModuleStyles.TryGetValue(moduleKey, out var style))
             return style;
 
-        return new ModuleStyle("#64748B", IconosDisponibles.GetMaterialIcon(item.ImageUrl));
+        return new ModuleStyle("#667085", IconosDisponibles.GetMaterialIcon(item.ImageUrl));
     }
 
     private static string FormatOptionCount(int count) =>
@@ -502,17 +502,17 @@
     private static readonly IReadOnlyDictionary<string, ModuleStyle> ModuleStyles =
         new Dictionary<string, ModuleStyle>(StringComparer.OrdinalIgnoreCase)
         {
-            ["configuracion"] = new("#64748B", Icons.Material.Filled.Settings),
-            ["presupuesto"] = new("#2563EB", Icons.Material.Filled.AccountBalance),
-            ["contabilidad"] = new("#0F766E", Icons.Material.Filled.ReceiptLong),
-            ["adquisiciones"] = new("#7C3AED", Icons.Material.Filled.ShoppingCartCheckout),
-            ["patrimonio"] = new("#B45309", Icons.Material.Filled.Inventory2),
-            ["almacen"] = new("#047857", Icons.Material.Filled.Warehouse),
-            ["tesoreria"] = new("#0EA5E9", Icons.Material.Filled.Payments),
-            ["nomina"] = new("#9333EA", Icons.Material.Filled.Groups),
-            ["reportescxc"] = new("#0284C7", Icons.Material.Filled.RequestQuote),
-            ["pbr"] = new("#4F46E5", Icons.Material.Filled.DashboardCustomize),
-            ["ayuda"] = new("#64748B", Icons.Material.Filled.Help)
+            ["configuracion"] = new("#667085", Icons.Material.Filled.Settings),
+            ["presupuesto"] = new("#2F5F9F", Icons.Material.Filled.AccountBalance),
+            ["contabilidad"] = new("#2F7D68", Icons.Material.Filled.ReceiptLong),
+            ["adquisiciones"] = new("#6B5A9A", Icons.Material.Filled.ShoppingCartCheckout),
+            ["patrimonio"] = new("#9A6A2E", Icons.Material.Filled.Inventory2),
+            ["almacen"] = new("#34776B", Icons.Material.Filled.Warehouse),
+            ["tesoreria"] = new("#347C9F", Icons.Material.Filled.Payments),
+            ["nomina"] = new("#7A5A9E", Icons.Material.Filled.Groups),
+            ["reportescxc"] = new("#3A7999", Icons.Material.Filled.RequestQuote),
+            ["pbr"] = new("#5966A8", Icons.Material.Filled.DashboardCustomize),
+            ["ayuda"] = new("#667085", Icons.Material.Filled.Help)
         };
 
     private sealed record HomeModuleCard(
