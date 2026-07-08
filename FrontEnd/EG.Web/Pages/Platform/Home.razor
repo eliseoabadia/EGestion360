@@ -32,7 +32,7 @@
                     <div>
                         <span class="eyebrow">Centro operativo</span>
                         <h1>Inicio</h1>
-                        <p>@EmpresaTexto · @AnioTexto</p>
+                        <p>@EmpresaTexto - @AnioTexto</p>
                     </div>
                 </div>
             </div>
@@ -531,10 +531,10 @@
         height: 100%;
         min-height: 0;
         overflow: auto;
-        padding: 16px 18px 22px !important;
+        padding: 22px 26px 30px !important;
         background:
-            linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 7%, transparent) 1px, transparent 1px),
-            linear-gradient(0deg, color-mix(in srgb, var(--mud-palette-success) 5%, transparent) 1px, transparent 1px),
+            linear-gradient(90deg, color-mix(in srgb, var(--mud-palette-primary) 3%, transparent) 1px, transparent 1px),
+            linear-gradient(0deg, color-mix(in srgb, var(--eg-support-accent) 2%, transparent) 1px, transparent 1px),
             var(--mud-palette-background);
         background-size: 48px 48px;
     }
@@ -543,7 +543,7 @@
         min-height: 100%;
         display: grid;
         align-content: start;
-        gap: 14px;
+        gap: 16px;
     }
 
     .home-hero,
@@ -551,20 +551,21 @@
     .home-tools,
     .module-tile,
     .home-state {
-        border: 1px solid var(--mud-palette-lines-default);
+        border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, transparent);
         border-radius: 8px;
         background: var(--mud-palette-surface);
-        box-shadow: 0 18px 46px var(--eg-shell-shadow, rgba(2, 8, 23, .18));
+        box-shadow: 0 18px 44px color-mix(in srgb, var(--eg-shell-shadow, rgba(2, 8, 23, .14)) 72%, transparent);
     }
 
     .home-hero {
         position: relative;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
-        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
+        gap: 18px;
         align-items: stretch;
         overflow: hidden;
-        padding: 16px;
+        padding: 20px;
+        border-left: 4px solid var(--eg-primary);
         isolation: isolate;
     }
 
@@ -574,16 +575,16 @@
         inset: 0;
         z-index: -1;
         background:
-            linear-gradient(120deg, color-mix(in srgb, var(--eg-support-accent) 10%, transparent), transparent 32%),
-            linear-gradient(280deg, color-mix(in srgb, var(--eg-warm-accent) 10%, transparent), transparent 38%),
-            linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-primary) 12%, transparent), transparent 52%);
-        opacity: .92;
+            linear-gradient(120deg, color-mix(in srgb, var(--eg-primary) 8%, transparent), transparent 40%),
+            linear-gradient(285deg, color-mix(in srgb, var(--eg-support-accent) 5%, transparent), transparent 48%),
+            linear-gradient(180deg, color-mix(in srgb, var(--eg-warm-accent) 4%, transparent), transparent 58%);
+        opacity: 1;
     }
 
     .home-hero-main {
         min-width: 0;
         display: grid;
-        gap: 16px;
+        gap: 20px;
         align-content: space-between;
     }
 
@@ -593,10 +594,11 @@
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        padding: 7px 10px;
-        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 26%, var(--mud-palette-lines-default));
+        padding: 8px 11px;
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 22%, var(--mud-palette-lines-default));
         border-radius: 8px;
-        background: color-mix(in srgb, var(--mud-palette-surface) 72%, transparent);
+        background: color-mix(in srgb, var(--mud-palette-surface) 86%, transparent);
+        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--mud-palette-white) 72%, transparent);
     }
 
     .brand-panel img {
@@ -645,9 +647,9 @@
     .home-title h1 {
         margin: 3px 0 0;
         color: var(--mud-palette-text-primary);
-        font-size: 2.15rem;
+        font-size: clamp(2.05rem, 3vw, 3rem);
         font-weight: 900;
-        line-height: 1.1;
+        line-height: 1.02;
         letter-spacing: 0;
     }
 
@@ -663,25 +665,29 @@
         min-width: 0;
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
+        gap: 10px;
     }
 
     .command-stat {
         min-width: 0;
-        min-height: 86px;
+        min-height: 108px;
         display: grid;
         align-content: center;
-        gap: 5px;
-        padding: 12px;
-        border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+        gap: 8px;
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--eg-primary) 18%, var(--mud-palette-lines-default));
         border-radius: 8px;
         color: var(--mud-palette-text-primary);
-        background: color-mix(in srgb, var(--mud-palette-surface) 78%, transparent);
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--eg-primary) 4%, transparent), transparent),
+            color-mix(in srgb, var(--mud-palette-surface) 82%, transparent);
     }
 
     .command-stat.accent {
-        border-color: color-mix(in srgb, var(--eg-warm-accent) 28%, var(--mud-palette-lines-default));
-        background: color-mix(in srgb, var(--eg-warm-accent) 8%, var(--mud-palette-surface));
+        border-color: color-mix(in srgb, var(--eg-warm-accent) 24%, var(--mud-palette-lines-default));
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--eg-warm-accent) 7%, transparent), transparent),
+            color-mix(in srgb, var(--mud-palette-surface) 84%, transparent);
     }
 
     .command-stat span,
@@ -698,7 +704,7 @@
     .command-stat strong {
         min-width: 0;
         color: var(--mud-palette-text-primary);
-        font-size: .98rem;
+        font-size: 1.08rem;
         font-weight: 900;
         line-height: 1.2;
         overflow: hidden;
@@ -708,7 +714,7 @@
 
     .home-command-grid {
         display: grid;
-        grid-template-columns: minmax(360px, 1.2fr) minmax(300px, .9fr) minmax(220px, .55fr);
+        grid-template-columns: minmax(420px, 1.18fr) minmax(360px, .9fr) minmax(260px, .58fr);
         gap: 12px;
         align-items: stretch;
     }
@@ -717,7 +723,7 @@
     .signal-board,
     .quick-stack {
         min-width: 0;
-        padding: 12px;
+        padding: 13px;
     }
 
     .next-action-card {
@@ -735,26 +741,26 @@
     .next-action-body {
         min-width: 0;
         display: grid;
-        grid-template-columns: 50px minmax(0, 1fr) auto;
-        gap: 12px;
+        grid-template-columns: 56px minmax(0, 1fr) auto;
+        gap: 14px;
         align-items: center;
-        padding: 12px;
-        border: 1px solid color-mix(in srgb, var(--module-accent) 30%, var(--mud-palette-lines-default));
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 24%, var(--mud-palette-lines-default));
         border-radius: 8px;
         background:
-            linear-gradient(120deg, color-mix(in srgb, var(--module-accent) 12%, transparent), transparent 62%),
+            linear-gradient(120deg, color-mix(in srgb, var(--module-accent) 8%, transparent), transparent 62%),
             var(--mud-palette-surface);
     }
 
     .next-icon {
-        width: 50px;
-        height: 50px;
+        width: 56px;
+        height: 56px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border-radius: 8px;
         color: var(--module-accent);
-        background: color-mix(in srgb, var(--module-accent) 13%, transparent);
+        background: color-mix(in srgb, var(--module-accent) 10%, transparent);
     }
 
     .next-action-body strong {
@@ -794,10 +800,12 @@
         display: grid;
         align-content: center;
         gap: 5px;
-        padding: 11px;
+        padding: 12px;
         border: 1px solid var(--signal-border);
         border-radius: 8px;
-        background: color-mix(in srgb, var(--signal-color) 7%, var(--mud-palette-surface));
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--signal-color) 6%, transparent), transparent),
+            var(--mud-palette-surface);
     }
 
     .signal-item.success {
@@ -842,20 +850,21 @@
 
     .quick-card {
         min-width: 0;
-        min-height: 48px;
+        min-height: 52px;
         display: grid;
         grid-template-columns: 28px minmax(0, 1fr) 24px;
         align-items: center;
         gap: 8px;
-        padding: 9px 10px;
-        border: 1px solid color-mix(in srgb, var(--module-accent) 26%, var(--mud-palette-lines-default));
+        padding: 10px 11px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 20%, var(--mud-palette-lines-default));
         border-radius: 8px;
         color: var(--mud-palette-text-primary);
-        background: color-mix(in srgb, var(--module-accent) 6%, var(--mud-palette-surface));
+        background: color-mix(in srgb, var(--module-accent) 4%, var(--mud-palette-surface));
         cursor: pointer;
         font-family: inherit;
         font-weight: 850;
         text-align: left;
+        transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
     }
 
     .quick-card span {
@@ -869,12 +878,21 @@
         color: var(--module-accent);
     }
 
+    .quick-card:hover {
+        border-color: color-mix(in srgb, var(--module-accent) 34%, var(--mud-palette-lines-default));
+        background: color-mix(in srgb, var(--module-accent) 7%, var(--mud-palette-surface));
+        transform: translateY(-1px);
+    }
+
     .home-tools {
         display: grid;
         grid-template-columns: minmax(220px, 1fr) auto;
         align-items: center;
         gap: 10px;
-        padding: 11px;
+        padding: 12px;
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 3%, transparent), transparent 56%),
+            var(--mud-palette-surface);
     }
 
     .module-search .mud-input-control {
@@ -883,21 +901,21 @@
 
     .home-module-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(286px, 1fr));
+        gap: 14px;
     }
 
     .module-tile {
         position: relative;
         min-width: 0;
-        min-height: 88px;
+        min-height: 94px;
         display: grid;
-        grid-template-columns: 42px minmax(0, 1fr) 30px;
+        grid-template-columns: 46px minmax(0, 1fr) 32px;
         align-items: center;
-        gap: 11px;
-        padding: 14px 12px;
+        gap: 12px;
+        padding: 16px 14px;
         overflow: hidden;
-        border-left: 4px solid var(--module-accent);
+        border-left: 0;
         color: var(--mud-palette-text-primary);
         font-family: inherit;
         text-align: left;
@@ -910,16 +928,17 @@
         inset: 0 0 auto;
         height: 3px;
         background:
-            linear-gradient(90deg, var(--module-accent), color-mix(in srgb, var(--eg-support-accent) 65%, var(--module-accent)), color-mix(in srgb, var(--eg-warm-accent) 60%, var(--module-accent)));
-        opacity: .78;
+            linear-gradient(90deg, var(--module-accent), color-mix(in srgb, var(--eg-support-accent) 38%, var(--module-accent)), color-mix(in srgb, var(--eg-warm-accent) 30%, var(--module-accent)));
+        opacity: .68;
     }
 
     .module-tile:hover {
-        border-color: color-mix(in srgb, var(--module-accent) 52%, var(--mud-palette-lines-default));
-        border-left-color: var(--module-accent);
-        background: color-mix(in srgb, var(--module-accent) 7%, var(--mud-palette-surface));
+        border-color: color-mix(in srgb, var(--module-accent) 34%, var(--mud-palette-lines-default));
+        background:
+            linear-gradient(120deg, color-mix(in srgb, var(--module-accent) 7%, transparent), transparent 62%),
+            var(--mud-palette-surface);
         transform: translateY(-2px);
-        box-shadow: 0 24px 58px var(--eg-shell-shadow, rgba(2, 8, 23, .24));
+        box-shadow: 0 22px 48px color-mix(in srgb, var(--eg-shell-shadow, rgba(2, 8, 23, .18)) 84%, transparent);
     }
 
     .module-tile:focus-visible {
@@ -933,12 +952,12 @@
         align-items: center;
         justify-content: center;
         color: var(--module-accent);
-        background: color-mix(in srgb, var(--module-accent) 10%, transparent);
+        background: color-mix(in srgb, var(--module-accent) 8%, transparent);
     }
 
     .module-icon {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 8px;
     }
 
@@ -957,7 +976,7 @@
     .module-copy strong {
         min-width: 0;
         color: var(--mud-palette-text-primary);
-        font-size: 1rem;
+        font-size: 1.02rem;
         font-weight: 900;
         line-height: 1.15;
         overflow: hidden;
