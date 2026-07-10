@@ -471,7 +471,12 @@
             _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
             _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("ModificadoIngresoShell")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el ingreso modificado.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
+        }
     }
 
     public void Dispose()

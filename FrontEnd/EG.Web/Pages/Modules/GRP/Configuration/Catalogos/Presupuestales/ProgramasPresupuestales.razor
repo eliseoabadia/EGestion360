@@ -149,7 +149,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<ProgramaResponse>
             {
                 Items = new List<ProgramaResponse>(),
@@ -287,7 +287,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

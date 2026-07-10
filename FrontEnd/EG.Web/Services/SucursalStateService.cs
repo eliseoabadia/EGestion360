@@ -7,6 +7,7 @@ namespace EG.Web.Services
     {
         private readonly IJSRuntime _jsRuntime;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<SucursalStateService> _logger;
         private const string SUCURSAL_KEY = "sucursal_seleccionada";
         private const string EMPRESA_KEY = "empresa_seleccionada";
         private const string EMPRESA_HEADER = "X-Empresa-Id";
@@ -20,10 +21,14 @@ namespace EG.Web.Services
         public string? EmpresaNombre { get; private set; }
         public string? EmpresaNombreCorto { get; private set; }
 
-        public SucursalStateService(IJSRuntime jsRuntime, HttpClient httpClient)
+        public SucursalStateService(
+            IJSRuntime jsRuntime,
+            HttpClient httpClient,
+            ILogger<SucursalStateService> logger)
         {
             _jsRuntime = jsRuntime;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -45,9 +50,9 @@ namespace EG.Web.Services
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Si hay error, no hay sucursal seleccionada
+                _logger.LogWarning(ex, "No se pudo restaurar la sucursal seleccionada.");
             }
         }
 
@@ -151,7 +156,10 @@ namespace EG.Web.Services
                     return empresaId;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo leer la empresa seleccionada.");
+            }
             return null;
         }
 

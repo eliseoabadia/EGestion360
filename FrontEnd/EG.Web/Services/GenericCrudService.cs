@@ -2,6 +2,7 @@ using EG.Common.GenericModel;
 using EG.Common.Helper;
 using EG.Web.Contracts;
 using EG.Web.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using MudBlazor;
 
@@ -17,9 +18,10 @@ namespace EG.Web.Services
             HttpClient httpClient,
             IJSRuntime jsRuntime,
             ApplicationInstance application,
+            ILogger<GenericCrudService<TResponse>> logger,
             string endpoint,
             string? paginatedAction = null)
-            : base(httpClient, jsRuntime, application, configuration)
+            : base(httpClient, jsRuntime, application, configuration, logger)
         {
             _endpoint = endpoint;
             _paginatedAction = paginatedAction;
@@ -29,36 +31,38 @@ namespace EG.Web.Services
         {
             if (!IsClientSide())
             {
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
             }
 
             var response = await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/{id}");
-            return response ?? new ApiResponse<TResponse>();
+            return response ?? NoResponse("consultar el registro");
         }
 
         public async Task<ApiResponse<TResponse>> GetAllByEmpresaAsync(int empresaId)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
-            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/empresaId/{empresaId}");
+            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/empresaId/{empresaId}")
+                ?? NoResponse("consultar los registros de la empresa");
         }
 
         public async Task<ApiResponse<TResponse>> GetAllBySucursalAsync(int sucursalId)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
-            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/sucursalId/{sucursalId}");
+            return await GetAsync<ApiResponse<TResponse>>($"{_endpoint}/sucursalId/{sucursalId}")
+                ?? NoResponse("consultar los registros de la sucursal");
         }
 
         public async Task<ApiResponse<TResponse>> GetAllAsync()
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var response = await GetAsync<ApiResponse<TResponse>>(_endpoint, useBaseUrl: false);
-            return response ?? new ApiResponse<TResponse>();
+            return response ?? NoResponse("consultar los registros");
         }
 
         public async Task<ApiResponse<TResponse>> GetAllPaginadoAsync(
@@ -70,7 +74,7 @@ namespace EG.Web.Services
             Dictionary<string, object>? additionalFilters = null)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             string sortDir = sortDirection == SortDirection.Descending ? "Descending" : "Ascending";
 
@@ -95,27 +99,27 @@ namespace EG.Web.Services
                 pagedRequest,
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>();
+            return response ?? NoResponse("consultar la pagina solicitada");
         }
 
         public async Task<ApiResponse<TResponse>> CreateAsync(TResponse entity)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var response = await PostAsync<ApiResponse<TResponse>>(
                 _endpoint,
                 entity,
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>();
+            return response ?? NoResponse("crear el registro");
         }
 
         public async Task<ApiResponse<TResponse>> UpdateAsync(TResponse entity, int id)
         {
             if (!IsClientSide())
             {
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
             }
 
             if (id <= 0)
@@ -133,18 +137,13 @@ namespace EG.Web.Services
                 entity,
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
-            {
-                Success = false,
-                Message = "Error al actualizar",
-                Code = "ERROR"
-            };
+            return response ?? NoResponse("actualizar el registro");
         }
 
         public async Task<ApiResponse<TResponse>> DeleteAsync(int id)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var response = await DeleteAsync<DeleteResponseContract>(
                 $"{_endpoint}/{id}",
@@ -180,7 +179,7 @@ namespace EG.Web.Services
         public async Task<ApiResponse<TResponse>> GetActionAsync(string action)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var cleanAction = (action ?? string.Empty).Trim('/');
             if (string.IsNullOrWhiteSpace(cleanAction))
@@ -188,7 +187,7 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
-                    Message = "Accion no valida",
+                    Message = "La accion solicitada no es valida.",
                     Code = "INVALID_ACTION"
                 };
             }
@@ -197,18 +196,13 @@ namespace EG.Web.Services
                 $"{_endpoint}/{cleanAction}",
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
-            {
-                Success = false,
-                Message = "Error al ejecutar accion",
-                Code = "ERROR"
-            };
+            return response ?? NoResponse("ejecutar la accion");
         }
 
         public async Task<ApiResponse<TResponse>> DeleteActionAsync(string action)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var cleanAction = (action ?? string.Empty).Trim('/');
             if (string.IsNullOrWhiteSpace(cleanAction))
@@ -216,7 +210,7 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
-                    Message = "Accion no valida",
+                    Message = "La accion solicitada no es valida.",
                     Code = "INVALID_ACTION"
                 };
             }
@@ -225,12 +219,7 @@ namespace EG.Web.Services
                 $"{_endpoint}/{cleanAction}",
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
-            {
-                Success = false,
-                Message = "Error al ejecutar accion",
-                Code = "ERROR"
-            };
+            return response ?? NoResponse("ejecutar la accion");
         }
 
         private static string GetDeleteFallbackMessage(string? code)
@@ -256,7 +245,7 @@ namespace EG.Web.Services
         public async Task<ApiResponse<TResponse>> PostActionAsync(string action, object? body = null)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var cleanAction = (action ?? string.Empty).Trim('/');
             if (string.IsNullOrWhiteSpace(cleanAction))
@@ -264,7 +253,7 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
-                    Message = "Accion no valida",
+                    Message = "La accion solicitada no es valida.",
                     Code = "INVALID_ACTION"
                 };
             }
@@ -274,30 +263,41 @@ namespace EG.Web.Services
                 body ?? new { },
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
-            {
-                Success = false,
-                Message = "Error al ejecutar accion",
-                Code = "ERROR"
-            };
+            return response ?? NoResponse("ejecutar la accion");
         }
 
         public async Task<ApiResponse<TResponse>> IniciarConteoAsync(int periodoId)
         {
             if (!IsClientSide())
-                return new ApiResponse<TResponse>();
+                return ClientUnavailableResponse();
 
             var response = await PostAsync<ApiResponse<TResponse>>(
                 $"{_endpoint}/IniciarConteo/{periodoId}",
                 new { },
                 useBaseUrl: false);
 
-            return response ?? new ApiResponse<TResponse>
-            {
-                Success = false,
-                Message = "Error al iniciar conteo",
-                Code = "ERROR"
-            };
+            return response ?? NoResponse("iniciar el conteo");
         }
+
+        private ApiResponse<TResponse> ClientUnavailableResponse()
+        {
+            _logger.LogWarning("Se intento usar {ServiceType} fuera del contexto interactivo del cliente.", GetType().Name);
+            return Failure("Esta operacion no esta disponible en este momento. Recarga la pagina e intenta nuevamente.", "CLIENT_UNAVAILABLE");
+        }
+
+        private ApiResponse<TResponse> NoResponse(string operation)
+        {
+            _logger.LogError("El servicio {Endpoint} no devolvio un contrato al intentar {Operation}.", _endpoint, operation);
+            return Failure($"No fue posible {operation}. Intenta nuevamente; si el problema continua, comunicate con TI.");
+        }
+
+        private static ApiResponse<TResponse> Failure(string message, string code = "ERROR") => new()
+        {
+            Success = false,
+            Message = message,
+            Code = code,
+            Items = new List<TResponse>(),
+            TotalCount = 0
+        };
     }
 }

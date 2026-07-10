@@ -517,7 +517,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<NomCatalogoSimpleResponse>();
         }
         finally

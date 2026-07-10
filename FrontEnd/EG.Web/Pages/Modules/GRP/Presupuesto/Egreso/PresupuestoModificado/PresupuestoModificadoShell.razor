@@ -508,7 +508,12 @@
                 _currencySymbol = string.IsNullOrWhiteSpace(user?.Data?.SimboloMonedaBase) ? "$" : user.Data.SimboloMonedaBase;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("PresupuestoModificadoShell")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el presupuesto modificado.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
+        }
     }
 
     public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;

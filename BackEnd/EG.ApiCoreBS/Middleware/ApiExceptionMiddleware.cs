@@ -53,9 +53,13 @@ public sealed class ApiExceptionMiddleware
             var response = new
             {
                 success = false,
-                message = isBusinessRule || isInvalidRequest
-                    ? ex.Message
-                    : UserFacingMessages.UnexpectedError,
+                message = isInvalidRequest
+                    ? "La informacion enviada no es valida. Revisa los datos e intenta nuevamente."
+                    : isBusinessRule
+                        ? UserFacingMessageSanitizer.SafeOrFallback(
+                            ex.Message,
+                            "La operacion no puede completarse por el estado actual de la informacion.")
+                        : UserFacingMessages.UnexpectedError,
                 code = isInvalidRequest
                     ? ApiResponseCode.InvalidData.ToCode()
                     : isBusinessRule

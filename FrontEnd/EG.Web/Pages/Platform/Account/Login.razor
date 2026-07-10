@@ -19,6 +19,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILoginService LoginService
 @inject IDialogService DialogService
+@inject ILogger<Login> Logger
 
 <div class="login-root">
     <div class="login-shell">
@@ -31,6 +32,7 @@
                                        Size="Size.Small"
                                        Color="@(ThemeStateService.SelectedOption == option ? Color.Primary : Color.Default)"
                                        Class="@GetLoginThemeButtonClass(option)"
+                                       aria-label="@GetThemeLabel(option)"
                                        Disabled="@isLoading"
                                        OnClick="@(() => SelectThemeAsync(option))" />
                     </MudTooltip>
@@ -161,6 +163,8 @@
 
 <style>
     .login-root {
+        position: relative;
+        isolation: isolate;
         min-height: 100%;
         width: 100%;
         display: flex;
@@ -174,16 +178,41 @@
         font-family: var(--mud-typography-default-font-family);
     }
 
+    .login-root::before,
+    .login-root::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        width: min(32vw, 360px);
+        aspect-ratio: 1;
+        border-radius: 999px;
+        filter: blur(24px);
+        opacity: .32;
+        pointer-events: none;
+    }
+
+    .login-root::before {
+        top: 8%;
+        left: 7%;
+        background: color-mix(in srgb, var(--mud-palette-primary) 46%, transparent);
+    }
+
+    .login-root::after {
+        right: 8%;
+        bottom: 7%;
+        background: color-mix(in srgb, var(--mud-palette-secondary) 34%, transparent);
+    }
+
     .login-shell {
         display: grid;
         grid-template-columns: minmax(340px, .86fr) minmax(360px, 1fr);
         width: min(1120px, 100%);
         min-height: 620px;
         border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
+        border-radius: 16px;
         overflow: hidden;
         background: var(--mud-palette-surface);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, .18);
+        box-shadow: 0 28px 68px color-mix(in srgb, var(--mud-palette-black) 24%, transparent);
     }
 
     .login-brand-panel {
@@ -482,7 +511,7 @@
     {
         AppThemeOption.Claro => Icons.Material.Outlined.LightMode,
         AppThemeOption.Oscuro => Icons.Material.Outlined.DarkMode,
-        AppThemeOption.Morena => Icons.Material.Filled.Park,
+        AppThemeOption.Morena => Icons.Material.Filled.LocalFireDepartment,
         _ => Icons.Material.Outlined.DarkMode
     };
 
@@ -603,12 +632,13 @@
             }
             else
             {
-                Snackbar.Add("Correo o contrasena incorrectos.", Severity.Error);
+                Snackbar.Add(result?.Message ?? "El usuario o la contrasena no son correctos.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al iniciar sesion: {ex.Message}", Severity.Error);
+            Logger.LogError(ex, "Fallo el flujo de inicio de sesion en la interfaz.");
+            Snackbar.Add(EG.Common.UserFacingMessages.OperationFailed("iniciar sesion"), Severity.Error);
         }
         finally
         {
@@ -640,8 +670,9 @@
             login.Usuario = credentials.Usuario?.Trim() ?? string.Empty;
             login.Password = credentials.Password ?? string.Empty;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogDebug(ex, "No fue posible sincronizar las credenciales administradas por el navegador.");
             login.Usuario ??= string.Empty;
             login.Password ??= string.Empty;
         }
@@ -721,10 +752,11 @@
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "No fue posible cargar las sucursales del usuario {UsuarioId} durante el acceso.", usuarioId);
             return new ApiResponse<UsuarioSucursalResponse>
             {
                 Success = false,
-                Message = $"Error al cargar sucursales: {ex.Message}"
+                Message = EG.Common.UserFacingMessages.OperationFailed("cargar las sucursales disponibles")
             };
         }
     }

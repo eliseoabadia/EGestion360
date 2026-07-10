@@ -168,7 +168,7 @@
         }
         catch (Exception ex)
         {
-            MudSnackbar.Add($"Error: {ex.Message}", Severity.Error);
+            MudSnackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -305,7 +305,7 @@
         }
         catch (Exception ex)
         {
-            MudSnackbar.Add($"Error: {ex.Message}", Severity.Error);
+            MudSnackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

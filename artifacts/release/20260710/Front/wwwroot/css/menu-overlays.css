@@ -1,0 +1,183 @@
+/* Modern overlay submenu styles — compatible con MudBlazor themes */
+.overlay-menu-container,
+.mud-nav-menu-items {
+    width: 100%;
+    padding: 8px 0;
+    margin: 0;
+}
+
+/* cada item que puede tener hijos debe ser relativo para posicionar el overlay */
+.nav-item-with-children {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+/* boton del padre (limpio, alineado con Mud) */
+.nav-parent-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--mud-palette-text-primary);
+    transition: background-color 0.2s ease;
+}
+
+    .nav-parent-btn:hover {
+        background-color: var(--mud-palette-action-default-hover, rgba(0,0,0,0.04));
+    }
+
+/* contenido interno del botón */
+.nav-parent-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.nav-parent-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-parent-icon {
+    color: var(--mud-palette-primary);
+}
+
+.nav-parent-text {
+    flex: 1;
+    text-align: left;
+}
+
+.nav-parent-chevron {
+    transition: transform 0.2s;
+}
+
+    .nav-parent-chevron.open {
+        transform: rotate(90deg);
+    }
+
+/* enlaces sin hijos */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--mud-palette-text-primary);
+    transition: background-color 0.2s;
+}
+
+    .nav-link:hover {
+        background-color: var(--mud-palette-action-default-hover, rgba(0,0,0,0.04));
+    }
+
+.nav-link-text {
+    flex: 1;
+}
+
+/* overlay del submenu: encima del contenido principal */
+.submenu-overlay {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 240px;
+    max-width: 340px;
+    background: var(--mud-palette-surface);
+    border-radius: 8px;
+    box-shadow: var(--mud-elevation-8, 0 10px 30px rgba(0,0,0,0.14));
+    z-index: 2200;
+    padding: 8px 0;
+    overflow: auto;
+    animation: menu-fade-in 0.2s ease;
+}
+
+    /* enlaces dentro del overlay */
+    .overlay-nav-link,
+    .submenu-overlay .mud-nav-link-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        text-decoration: none;
+        color: var(--mud-palette-text-primary);
+        transition: background-color 0.2s;
+        border-radius: 6px;
+    }
+
+        .overlay-nav-link:hover,
+        .submenu-overlay .mud-nav-link-item:hover {
+            background-color: var(--mud-palette-action-default-hover, rgba(0,0,0,0.04));
+        }
+
+.overlay-nav-text {
+    flex: 1;
+}
+
+/* elementos Mud dentro del overlay */
+.submenu-overlay .mud-list-item {
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+/* animaciones */
+@keyframes menu-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ajustes responsive */
+@media (max-width: 900px) {
+    .submenu-overlay {
+        left: calc(100% - 8px);
+    }
+}
+
+@media (max-width: 600px) {
+    .submenu-overlay {
+        position: static;
+        left: 0;
+        box-shadow: none;
+        margin-left: 24px;
+        animation: none;
+        max-width: none;
+        min-width: auto;
+        background: transparent;
+    }
+
+        .overlay-nav-link,
+        .submenu-overlay .mud-nav-link-item {
+            padding-left: 24px;
+        }
+}
+
+/* soporte para tema oscuro */
+.mud-theme-dark .nav-parent-btn:hover,
+.mud-theme-dark .nav-link:hover,
+.mud-theme-dark .overlay-nav-link:hover {
+    background-color: var(--mud-palette-action-default-hover, rgba(255,255,255,0.08));
+}

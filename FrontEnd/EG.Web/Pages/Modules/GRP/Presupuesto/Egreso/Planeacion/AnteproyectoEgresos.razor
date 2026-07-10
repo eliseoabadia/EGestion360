@@ -284,7 +284,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<EgresoProyectadoResponse> { Items = new List<EgresoProyectadoResponse>(), TotalItems = 0 };
         }
         finally
@@ -487,7 +487,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -533,7 +533,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         }, "Operacion en proceso...");
     }
@@ -693,8 +693,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("AnteproyectoEgresos")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el anteproyecto.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

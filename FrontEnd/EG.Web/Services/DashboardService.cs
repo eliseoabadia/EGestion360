@@ -10,15 +10,17 @@ namespace EG.Web.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
+        private readonly ILogger<DashboardService> _logger;
         private readonly JsonSerializerOptions _jsonOptions;
         private const string TOKENKEY = "authToken";
         private const string EMPRESA_KEY = "empresa_seleccionada";
         private const string EMPRESA_HEADER = "X-Empresa-Id";
 
-        public DashboardService(HttpClient httpClient, IJSRuntime jsRuntime)
+        public DashboardService(HttpClient httpClient, IJSRuntime jsRuntime, ILogger<DashboardService> logger)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
+            _logger = logger;
             _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
@@ -42,9 +44,14 @@ namespace EG.Web.Services
                     var result = JsonSerializer.Deserialize<ApiResponse<DashboardResumenResponse>>(json, _jsonOptions);
                     return result?.Data ?? result?.Items?.FirstOrDefault();
                 }
+
+                _logger.LogWarning(
+                    "No se pudo cargar el resumen del tablero. Status={StatusCode}",
+                    (int)response.StatusCode);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "No se pudo cargar el resumen del tablero.");
             }
             return null;
         }
@@ -68,7 +75,11 @@ namespace EG.Web.Services
                     ? rawToken.Substring("Bearer ".Length)
                     : rawToken;
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "No se pudo leer la empresa seleccionada para el tablero.");
+                return null;
+            }
         }
 
         private async Task<int?> GetSelectedEmpresaIdAsync()
@@ -80,7 +91,11 @@ namespace EG.Web.Services
                     ? empresaId
                     : null;
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "No se pudo leer el token local para el tablero.");
+                return null;
+            }
         }
     }
 }

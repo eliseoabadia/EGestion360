@@ -9,9 +9,12 @@
 @using MudBlazor
 @using MudBlazor.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Logging
 @using System.Text.Json
 @using System.Security.Claims
 @using EG.Web
+@using EG.Common
+@using EG.Web.Helpers
 @using EG.Web.Layout
 @using EG.Web.Extensions
 
@@ -38,9 +41,9 @@
 @using EG.Web.Pages.Modules.GRP.Almacen
 @using EG.Web.Pages.Modules.GRP.Contabilidad
 @using EG.Web.Pages.Modules.GRP.Patrimonio
-@using EG.Web.Pages.Modules.GRP.Patrimonio.MisPeriodos
+@using EG.Web.Pages.Modules.GRP.Almacen.MisPeriodos
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Egreso
-@using EG.Web.Pages.Modules.GRP.Presupuesto.Egreso.Inversiones
+@using EG.Web.Pages.Modules.GRP.Presupuesto.Tesoreria.Inversiones
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Egreso.Planeacion
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Egreso.PresupuestoComprometido
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Egreso.PresupuestoModificado
@@ -54,3 +57,5 @@
 @using EG.Web.Pages.Modules.GRP.Configuration.Catalogos.Presupuestales
 @using EG.Web.Pages.Modules.GRP.Configuration.Catalogos.Tesoreria
 @using MiniExcelLibs
+@inject ILoggerFactory AppLoggerFactory
+@inject ISnackbar AppSnackbar

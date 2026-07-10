@@ -461,7 +461,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresas: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -504,7 +504,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error cargando usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error cargando usuario: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -523,7 +523,12 @@
                 _personaRfc = p.Rfc ?? string.Empty;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("UsuarioDialog")
+                .LogWarning(ex, "No se pudieron restaurar los datos de la persona vinculada al usuario.");
+            AppSnackbar.Add("No se pudieron recuperar todos los datos de la persona. Revisa el formulario antes de guardar.", Severity.Warning);
+        }
     }
 
     private async Task OnPersonaChanged(LookupItem? item)
@@ -594,7 +599,7 @@
         catch (Exception ex)
         {
             _areasPersona.Clear();
-            Snackbar.Add($"Error al cargar areas: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar areas: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -643,7 +648,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al asignar area: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al asignar area: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -675,7 +680,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al retirar area: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al retirar area: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -772,7 +777,7 @@
         catch (Exception ex)
         {
             _departamentosUsuario.Clear();
-            Snackbar.Add($"Error al cargar departamentos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar departamentos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -827,7 +832,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al asignar departamento: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al asignar departamento: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -856,7 +861,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al retirar departamento: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al retirar departamento: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -950,7 +955,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar empresas del usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresas del usuario: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1023,7 +1028,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al actualizar asignacion: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al actualizar asignacion: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1083,7 +1088,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

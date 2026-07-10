@@ -1,4 +1,5 @@
 ﻿using EG.Common.Helper;
+using EG.Common;
 using EG.Domain.DTOs.Responses.General;
 using EG.Web.Contracts;
 using EG.Web.Models;
@@ -15,18 +16,24 @@ namespace EG.Web.Services
         private readonly ApplicationInstance _application;
         private readonly IJSRuntime _jsRuntime;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<LoginService> _logger;
         public bool IsAuthenticated { get; private set; } = false;
 
-        public LoginService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime, ApplicationInstance application)
+        public LoginService(
+            IHttpClientFactory httpClientFactory,
+            IJSRuntime jsRuntime,
+            ApplicationInstance application,
+            ILogger<LoginService> logger)
         {
             _httpClientFactory = httpClientFactory;
             _jsRuntime = jsRuntime;
             _application = application;
+            _logger = logger;
         }
 
         public async Task<UserResult> LoginAsync(string usuario, string password)
         {
-            UserResult resultado = new UserResult();
+            UserResult resultado = FailedLogin("No fue posible iniciar sesion. Intenta nuevamente.");
 
             try
             {
@@ -52,12 +59,19 @@ namespace EG.Web.Services
                 }
                 else
                 {
-                    resultado.PayrollId = "0";
+                    _logger.LogWarning(
+                        "Inicio de sesion rechazado. Status={StatusCode}; Usuario={Usuario}",
+                        (int)response.StatusCode,
+                        usuario);
+                    resultado = FailedLogin(response.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                        ? "El usuario o la contrasena no son correctos."
+                        : UserFacingMessages.OperationFailed("iniciar sesion"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                resultado.PayrollId = "0";
+                _logger.LogError(ex, "No fue posible completar el inicio de sesion para {Usuario}.", usuario);
+                resultado = FailedLogin(UserFacingMessages.OperationFailed("iniciar sesion"));
             }
 
             return resultado;
@@ -71,6 +85,7 @@ namespace EG.Web.Services
                 var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
                 if (string.IsNullOrEmpty(token))
                 {
+                    _logger.LogWarning("No se cargaron sucursales porque no existe una sesion local.");
                     return new List<SucursalResponse>();
                 }
 
@@ -107,11 +122,13 @@ namespace EG.Web.Services
                     }
                 }
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
+                _logger.LogWarning(ex, "No fue posible consultar las sucursales del usuario {UsuarioId}.", usuarioId);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado al cargar sucursales del usuario {UsuarioId}.", usuarioId);
             }
 
             return new List<SucursalResponse>();
@@ -125,5 +142,12 @@ namespace EG.Web.Services
             _application.RemoveVariable(Const.KEY_TOKEN);
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
         }
+
+        private static UserResult FailedLogin(string message) => new()
+        {
+            PayrollId = "0",
+            Message = message,
+            IsAuthenticated = false
+        };
     }
 }

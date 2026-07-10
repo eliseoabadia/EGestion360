@@ -131,7 +131,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -156,8 +156,11 @@
                 _selectedUnidad = detalle.UnidadMedida;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("CotizacionDetalleDialog")
+                .LogWarning(ex, "No se pudo restaurar el detalle seleccionado de la cotizacion.");
+            AppSnackbar.Add("No se pudo recuperar el detalle seleccionado. Revisa los valores antes de guardar.", Severity.Warning);
         }
 
         RecalculateImporte();
@@ -222,7 +225,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

@@ -2,6 +2,7 @@ using EG.Common.GenericModel;
 using EG.Web.Contracts.Configuration;
 using EG.Web.Helpers;
 using EG.Web.Models.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -15,20 +16,26 @@ namespace EG.Web.Services
         //private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(NavigateService));
         private readonly IJSRuntime _jsRuntime;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<NavigateService> _logger;
 
         public static readonly string TOKENKEY = "authToken";
 
         public bool IsAuthenticated { get; private set; } = false;
 
-        public NavigateService(HttpClient httpClient, IJSRuntime jsRuntime)
+        public NavigateService(HttpClient httpClient, IJSRuntime jsRuntime, ILogger<NavigateService> logger)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
+            _logger = logger;
         }
 
         public async Task<MenuResponse> GetMenuAsync(int _userId)
         {
-            MenuResponse resultado = new MenuResponse();
+            var resultado = new MenuResponse
+            {
+                Success = false,
+                Message = "No fue posible cargar el menu. Intenta recargar la pagina."
+            };
 
             try
             {
@@ -38,14 +45,17 @@ namespace EG.Web.Services
                 {
                     rawToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKENKEY);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogDebug(ex, "No fue posible leer el token con la API directa de localStorage.");
                     // fallback a extensión si existiera
                     rawToken = await _jsRuntime.GetFromLocalStorage(TOKENKEY);
                 }
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
+                    resultado.Message = "Tu sesion ya no esta disponible. Inicia sesion nuevamente.";
+                    _logger.LogWarning("No se cargo el menu porque no existe un token para el usuario {UserId}.", _userId);
                     return resultado;
                 }
 
@@ -77,16 +87,28 @@ namespace EG.Web.Services
                     });
 
                     resultado.Items = BuildMenuTreeV2(items ?? new List<MenuItem>()) ?? new List<MenuItem>();
+                    resultado.Success = true;
+                    resultado.Message = resultado.Items.Count == 0
+                        ? "No tienes opciones de menu asignadas. Solicita acceso al administrador."
+                        : "Menu cargado correctamente.";
 
                     return resultado;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
+                    resultado.Message = "Tu sesion ya no esta disponible. Inicia sesion nuevamente.";
+                    _logger.LogWarning("La API rechazo la carga del menu para el usuario {UserId} por sesion no valida.", _userId);
+                    return resultado;
                     // Si recibimos 401, limpiar estado cliente y devolver vacío para forzar re-login desde UI
                 }
+                _logger.LogError(
+                    "La API no pudo cargar el menu. UserId={UserId}; StatusCode={StatusCode}",
+                    _userId,
+                    (int)response.StatusCode);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado al cargar el menu del usuario {UserId}.", _userId);
             }
 
             return resultado;
@@ -167,13 +189,15 @@ namespace EG.Web.Services
                 {
                     rawToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKENKEY);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogDebug(ex, "No fue posible leer el token para consultar permisos con la API directa de localStorage.");
                     rawToken = await _jsRuntime.GetFromLocalStorage(TOKENKEY);
                 }
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
+                    _logger.LogWarning("No se consultaron los permisos porque no existe un token para el usuario {UserId}.", userId);
                     return new List<ClaimItemModel>();
                 }
 
@@ -200,9 +224,14 @@ namespace EG.Web.Services
                     return claims ?? new List<ClaimItemModel>();
                 }
 
+                _logger.LogWarning(
+                    "La API no devolvio los permisos del usuario {UserId}. StatusCode={StatusCode}",
+                    userId,
+                    (int)response.StatusCode);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado al consultar los permisos del usuario {UserId}.", userId);
             }
 
             return new List<ClaimItemModel>();

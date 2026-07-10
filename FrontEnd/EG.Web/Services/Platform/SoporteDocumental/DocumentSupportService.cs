@@ -1,9 +1,11 @@
 using EG.Common.Helper;
+using EG.Common;
 using EG.Web.Contracts.Platform.SoporteDocumental;
 using EG.Web.Models;
 using EG.Web.Models.Platform.SoporteDocumental;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Platform.SoporteDocumental
@@ -12,8 +14,9 @@ namespace EG.Web.Services.Platform.SoporteDocumental
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IDocumentSupportService
+        ApplicationInstance application,
+        ILogger<DocumentSupportService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IDocumentSupportService
     {
         private const long MaxClientFileSize = 50 * 1024 * 1024;
         private const string Endpoint = "api/SoporteDocumental";
@@ -43,11 +46,11 @@ namespace EG.Web.Services.Platform.SoporteDocumental
                 MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                return await MultipartApiHelper.SendAsync<DocumentoResponse>(_httpClient, httpRequest, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<DocumentoResponse>(_httpClient, httpRequest, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<DocumentoResponse>(ex);
+                return MultipartApiHelper.Failure<DocumentoResponse>(ex, _logger);
             }
         }
 
@@ -58,7 +61,23 @@ namespace EG.Web.Services.Platform.SoporteDocumental
                 var request = await CreateAuthenticatedRequestAsync(HttpMethod.Get, $"{_baseUrl}{Endpoint}/{documentId}/download");
                 var response = await _httpClient.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
-                    return new DocumentoDownloadResult { Success = false, Message = await response.Content.ReadAsStringAsync() };
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning(
+                        "Descarga documental rechazada. DocumentId={DocumentId}; Status={StatusCode}; Response={Response}",
+                        documentId,
+                        (int)response.StatusCode,
+                        responseBody.Length <= 2000 ? responseBody : $"{responseBody[..2000]}...");
+                    return new DocumentoDownloadResult
+                    {
+                        Success = false,
+                        Message = (int)response.StatusCode >= 500
+                            ? UserFacingMessages.UnexpectedError
+                            : UserFacingMessageSanitizer.SafeOrFallback(
+                                responseBody,
+                                "No fue posible descargar el documento. Verifica que exista y que tengas permiso.")
+                    };
+                }
 
                 var content = await response.Content.ReadAsByteArrayAsync();
                 var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
@@ -75,7 +94,12 @@ namespace EG.Web.Services.Platform.SoporteDocumental
             }
             catch (Exception ex)
             {
-                return new DocumentoDownloadResult { Success = false, Message = ex.Message };
+                _logger.LogError(ex, "No se pudo descargar el documento {DocumentId}.", documentId);
+                return new DocumentoDownloadResult
+                {
+                    Success = false,
+                    Message = UserFacingMessages.OperationFailed("descargar el documento")
+                };
             }
         }
 

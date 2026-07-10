@@ -3,6 +3,8 @@
 @using MudBlazor
 @implements IDisposable
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject ILogger<GenericTable<TItem>> Logger
 
 <MudPaper id="@tableElementId" Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
     @if (HiddenColumnIndexes.Any())
@@ -60,7 +62,7 @@
               @ref="mudTableRef"
               FixedHeader="@FixedHeader"
               Height="@TableHeight"
-              Dense="@Dense"
+              Dense="@EffectiveDense"
               Hover="@Hover"
               Striped="@Striped"
               Loading="@IsTableBusy"
@@ -86,33 +88,86 @@
             </div>
             <MudSpacer />
 
-            @if (ShowAutoColumnSelector)
+            @if (ShowRefreshButton)
             {
-                <MudTooltip Text="Mostrar u ocultar columnas">
-                    <MudMenu Icon="@Icons.Material.Filled.ViewColumn"
+                <MudTooltip Text="@RefreshButtonTooltip">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Disabled="@IsTableBusy"
+                                   OnClick="ReloadDataWithFeedbackAsync"
+                                   Class="eg-table-tool-button" />
+                </MudTooltip>
+            }
+
+            @if (ShowTableOptionsMenu)
+            {
+                <MudTooltip Text="Personalizar tabla">
+                    <MudMenu Icon="@Icons.Material.Filled.Tune"
                              Color="Color.Primary"
                              AnchorOrigin="Origin.BottomRight"
                              TransformOrigin="Origin.TopRight"
-                             Class="mr-2"
+                             Class="eg-table-options-trigger"
                              Disabled="@IsTableBusy">
                         <div class="eg-column-menu" @onclick:stopPropagation="true">
-                            <MudText Typo="Typo.subtitle2" Class="eg-column-menu-title">Columnas visibles</MudText>
-                            @foreach (var column in autoColumnOptions)
+                            <div class="eg-column-menu-heading">
+                                <span>
+                                    <MudIcon Icon="@Icons.Material.Filled.TableView" Size="Size.Small" />
+                                </span>
+                                <div>
+                                    <MudText Typo="Typo.subtitle2" Class="eg-column-menu-title">Personalizar tabla</MudText>
+                                    <small>Ajusta la vista sin modificar los datos.</small>
+                                </div>
+                            </div>
+
+                            @if (ShowDensitySelector)
                             {
-                                <MudCheckBox T="bool"
-                                             Dense="true"
-                                             Label="@column.Label"
-                                             Value="@IsAutoColumnVisible(column.Index)"
-                                             ValueChanged="@((bool visible) => SetAutoColumnVisibility(column.Index, visible))"
-                                             Disabled="@IsAutoColumnToggleDisabled(column)" />
+                                <MudText Typo="Typo.caption" Class="eg-column-menu-section-title">Densidad</MudText>
+                                <div class="eg-density-selector" role="group" aria-label="Densidad de filas">
+                                    <MudButton Variant="@(EffectiveDense ? Variant.Filled : Variant.Text)"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.DensitySmall"
+                                               OnClick="@(() => SetDensityAsync(true))">
+                                        Compacta
+                                    </MudButton>
+                                    <MudButton Variant="@(!EffectiveDense ? Variant.Filled : Variant.Text)"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.DensityMedium"
+                                               OnClick="@(() => SetDensityAsync(false))">
+                                        Comoda
+                                    </MudButton>
+                                </div>
                             }
-                            <MudDivider Class="my-1" />
+
+                            @if (ShowAutoColumnSelector)
+                            {
+                                <MudDivider Class="my-2" />
+                                <MudText Typo="Typo.caption" Class="eg-column-menu-section-title">
+                                    Columnas · @VisibleAutoColumnCount de @autoColumnOptions.Count visibles
+                                </MudText>
+                                <div class="eg-column-options-list">
+                                    @foreach (var column in autoColumnOptions)
+                                    {
+                                        <MudCheckBox T="bool"
+                                                     Dense="true"
+                                                     Label="@column.Label"
+                                                     Value="@IsAutoColumnVisible(column.Index)"
+                                                     ValueChanged="@((bool visible) => SetAutoColumnVisibilityAsync(column.Index, visible))"
+                                                     Disabled="@IsAutoColumnToggleDisabled(column)" />
+                                    }
+                                </div>
+                            }
+
+                            <MudDivider Class="my-2" />
                             <MudButton Variant="Variant.Text"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        StartIcon="@Icons.Material.Filled.Restore"
-                                       OnClick="ResetAutoColumnVisibility">
-                                Restablecer
+                                       FullWidth="true"
+                                       OnClick="ResetTableViewAsync">
+                                Restablecer vista
                             </MudButton>
                         </div>
                     </MudMenu>
@@ -127,7 +182,7 @@
                                StartIcon="@Icons.Material.Filled.FileDownload"
                                OnClick="ExportToExcel"
                                Size="Size.Small"
-                               Class="mr-2"
+                               Class="eg-export-button"
                                Disabled="@IsTableBusy">
                         @if (actionInProgress)
                         {
@@ -169,6 +224,7 @@
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
                           Immediate="true"
+                          Disabled="@IsTableBusy"
                           @ref="searchField"
                           OnKeyUp="HandleKeyUp"
                           Class="eg-table-search mt-0" />
@@ -190,11 +246,39 @@
         </ChildRowContent>
 
         <NoRecordsContent>
-            <div class="eg-table-empty">
-                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Medium" />
-                <strong>No se encontraron registros</strong>
-                <span>Ajusta la busqueda, filtros o recarga la informacion.</span>
-            </div>
+            @if (!string.IsNullOrWhiteSpace(lastLoadError))
+            {
+                <div class="eg-table-empty eg-table-empty-error" role="alert">
+                    <MudIcon Icon="@Icons.Material.Filled.CloudOff" Size="Size.Medium" />
+                    <strong>No pudimos cargar la informacion</strong>
+                    <span>@lastLoadError</span>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="ReloadDataWithFeedbackAsync">
+                        Intentar nuevamente
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div class="eg-table-empty">
+                    <MudIcon Icon="@EmptyStateIcon" Size="Size.Medium" />
+                    <strong>@EmptyStateTitle</strong>
+                    <span>@EmptyStateMessage</span>
+                    @if (!string.IsNullOrWhiteSpace(AppliedSearchString) || !string.IsNullOrWhiteSpace(SearchString))
+                    {
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.FilterAltOff"
+                                   OnClick="ClearSearchAsync">
+                            Limpiar busqueda
+                        </MudButton>
+                    }
+                </div>
+            }
         </NoRecordsContent>
 
         <LoadingContent>
@@ -228,6 +312,8 @@
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
     [Parameter] public bool ShowExportButton { get; set; } = true;
     [Parameter] public bool ShowAddButton { get; set; }
+    [Parameter] public bool ShowRefreshButton { get; set; } = true;
+    [Parameter] public bool ShowDensitySelector { get; set; } = true;
     [Parameter] public bool ShowBusyOverlay { get; set; } = true;
     [Parameter] public bool ShowContextAssistant { get; set; } = true;
     [Parameter] public string ContextAssistantTitle { get; set; } = "Asistente contextual";
@@ -236,7 +322,10 @@
     [Parameter] public bool EnableAutoColumnSelector { get; set; } = true;
     [Parameter] public int AutoColumnSelectorThreshold { get; set; } = 0;
     [Parameter] public bool EnableColumnInteractions { get; set; } = true;
+    [Parameter] public bool PersistViewPreferences { get; set; } = true;
+    [Parameter] public string? PreferenceKey { get; set; }
     [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
+    [Parameter] public string RefreshButtonTooltip { get; set; } = "Actualizar informacion";
     [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
     [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
     [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
@@ -286,7 +375,11 @@
     private string submittedSearchString = string.Empty;
     private int searchDebounceVersion;
     private bool disposed;
+    private bool viewPreferencesRestored;
+    private bool? densityOverride;
+    private string? lastLoadError;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
+    private bool EffectiveDense => densityOverride ?? Dense;
     private int EffectiveTotalCount => loadedTotalCount ?? TotalCount;
     private string AppliedSearchString => appliedSearchString;
     private bool HasPendingSearch => !SearchEquals(SearchString, submittedSearchString);
@@ -303,8 +396,20 @@
         _ => Icons.Material.Filled.AutoAwesome
     };
     private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > Math.Max(0, AutoColumnSelectorThreshold);
+    private bool ShowTableOptionsMenu => ShowDensitySelector || ShowAutoColumnSelector;
     private int VisibleAutoColumnCount => autoColumnOptions.Count(column => IsAutoColumnVisible(column.Index));
     private IEnumerable<int> HiddenColumnIndexes => hiddenAutoColumnIndexes.Concat(hiddenControlColumnIndexes).Distinct();
+    private string EmptyStateIcon => string.IsNullOrWhiteSpace(AppliedSearchString)
+        ? Icons.Material.Filled.Inbox
+        : Icons.Material.Filled.SearchOff;
+    private string EmptyStateTitle => string.IsNullOrWhiteSpace(AppliedSearchString)
+        ? "Aun no hay registros"
+        : "No encontramos coincidencias";
+    private string EmptyStateMessage => string.IsNullOrWhiteSpace(AppliedSearchString)
+        ? "Revisa el contexto activo o crea un nuevo registro si tienes permiso."
+        : $"No hay resultados para \"{AppliedSearchString}\". Cambia o limpia la busqueda.";
+    private string ViewPreferenceStorageKey =>
+        $"egestion360:generic-table:view:{Uri.EscapeDataString(PreferenceKey ?? $"{typeof(TItem).FullName}:{Title}")}";
 
     protected override void OnParametersSet()
     {
@@ -336,14 +441,17 @@
             await SyncAutoColumnOptionsAsync();
         }
 
+        await RestoreTableViewPreferencesAsync();
+
         if (EnableColumnInteractions)
         {
             try
             {
                 await JSRuntime.InvokeVoidAsync("egestionTableColumns.setupInteractions", tableElementId);
             }
-            catch (JSException)
+            catch (JSException ex)
             {
+                Logger.LogDebug(ex, "No fue posible habilitar las interacciones opcionales de columnas en {TableId}.", tableElementId);
                 // Optional browser enhancement; the table remains usable without it.
             }
         }
@@ -357,8 +465,9 @@
         {
             await JSRuntime.InvokeVoidAsync("egestionTableColumns.setupActionColumns", tableElementId);
         }
-        catch (JSException)
+        catch (JSException ex)
         {
+            Logger.LogDebug(ex, "No fue posible identificar la columna de acciones en {TableId}.", tableElementId);
             // Optional browser enhancement; the table remains usable without it.
         }
     }
@@ -374,11 +483,28 @@
                 var tableData = await ServerDataFunc(state, cancellationToken);
                 loadedTotalCount = tableData.TotalItems;
                 appliedSearchString = submittedSearchString;
+                lastLoadError = null;
                 return tableData;
             }
 
             loadedTotalCount = 0;
             appliedSearchString = submittedSearchString;
+            lastLoadError = "La tabla no tiene configurada una fuente de datos.";
+            Logger.LogError("GenericTable {TableId} no tiene ServerDataFunc. Title={Title}", tableElementId, Title);
+            Snackbar.Add(lastLoadError, Severity.Error);
+            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            Logger.LogDebug("Se cancelo una carga anterior de la tabla {TableId}.", tableElementId);
+            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+        }
+        catch (Exception ex)
+        {
+            lastLoadError = "No fue posible cargar la informacion. Revisa tu conexion e intenta nuevamente.";
+            loadedTotalCount = 0;
+            Logger.LogError(ex, "Error al cargar GenericTable {TableId}. Title={Title}", tableElementId, Title);
+            Snackbar.Add(lastLoadError, Severity.Error);
             return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
         }
         finally
@@ -472,8 +598,9 @@
                 await ApplySearchAsync();
             });
         }
-        catch (ObjectDisposedException)
+        catch (ObjectDisposedException ex)
         {
+            Logger.LogDebug(ex, "Se cancelo la busqueda porque la tabla ya fue liberada.");
         }
     }
 
@@ -481,6 +608,7 @@
     {
         if (IsTableBusy)
         {
+            Snackbar.Add("La tabla esta procesando otra solicitud. Espera un momento.", Severity.Info);
             return;
         }
 
@@ -506,7 +634,11 @@
             if (ExportFunc != null)
             {
                 await ExportFunc();
+                return;
             }
+
+            Logger.LogWarning("Se solicito exportar {TableId}, pero no existe ExportFunc.", tableElementId);
+            Snackbar.Add("La exportacion no esta disponible para esta tabla.", Severity.Warning);
         });
     }
 
@@ -514,26 +646,97 @@
     {
         if (IsTableBusy)
         {
+            Snackbar.Add("La tabla esta procesando otra solicitud. Espera un momento.", Severity.Info);
             return;
         }
 
-        await OnAdd.InvokeAsync();
+        if (!OnAdd.HasDelegate)
+        {
+            Logger.LogWarning("Se solicito agregar en {TableId}, pero no existe OnAdd.", tableElementId);
+            Snackbar.Add("No hay un formulario de alta configurado para esta tabla.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await OnAdd.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al abrir el formulario desde {TableId}.", tableElementId);
+            Snackbar.Add("No fue posible abrir el formulario. Intenta nuevamente.", Severity.Error);
+        }
     }
 
     public async Task ReloadData()
     {
-        if (isLoading || mudTableRef is null)
+        if (isLoading)
         {
+            Snackbar.Add("La informacion ya se esta actualizando.", Severity.Info);
             return;
         }
 
-        await mudTableRef.ReloadServerData();
+        if (mudTableRef is null)
+        {
+            Logger.LogWarning("Se intento recargar {TableId} antes de que la tabla estuviera lista.", tableElementId);
+            Snackbar.Add("La tabla aun no esta lista. Espera un momento e intenta nuevamente.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await mudTableRef.ReloadServerData();
+        }
+        catch (Exception ex)
+        {
+            lastLoadError = "No fue posible actualizar la informacion. Intenta nuevamente.";
+            Logger.LogError(ex, "Error al recargar {TableId}.", tableElementId);
+            Snackbar.Add(lastLoadError, Severity.Error);
+        }
+    }
+
+    private async Task ReloadDataWithFeedbackAsync()
+    {
+        await ReloadData();
+        if (string.IsNullOrWhiteSpace(lastLoadError))
+        {
+            Snackbar.Add("Informacion actualizada.", Severity.Success);
+        }
+    }
+
+    private async Task ClearSearchAsync()
+    {
+        try
+        {
+            SearchString = string.Empty;
+            submittedSearchString = string.Empty;
+            appliedSearchString = string.Empty;
+            searchDebounceVersion++;
+            await SearchStringChanged.InvokeAsync(SearchString);
+
+            if (OnSearch.HasDelegate)
+            {
+                await OnSearch.InvokeAsync();
+            }
+            else
+            {
+                await ReloadData();
+            }
+
+            Snackbar.Add("Busqueda limpiada.", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "No se pudo limpiar la busqueda de {TableId}.", tableElementId);
+            Snackbar.Add("No fue posible limpiar la busqueda. Intenta nuevamente.", Severity.Error);
+        }
     }
 
     private async Task RunTableActionAsync(Func<Task> action)
     {
         if (IsTableBusy)
         {
+            Snackbar.Add("La tabla esta procesando otra solicitud. Espera un momento.", Severity.Info);
             return;
         }
 
@@ -543,6 +746,11 @@
         try
         {
             await action();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al ejecutar una accion en {TableId}. Title={Title}", tableElementId, Title);
+            Snackbar.Add("No fue posible completar la accion. El detalle tecnico quedo registrado.", Severity.Error);
         }
         finally
         {
@@ -588,8 +796,9 @@
             hiddenAutoColumnIndexes.RemoveWhere(index => autoColumnOptions.All(column => column.Index != index));
             await InvokeAsync(StateHasChanged);
         }
-        catch (JSException)
+        catch (JSException ex)
         {
+            Logger.LogDebug(ex, "No fue posible sincronizar las columnas visibles de {TableId}.", tableElementId);
             autoColumnOptions.Clear();
             hiddenAutoColumnIndexes.Clear();
             hiddenControlColumnIndexes.Clear();
@@ -603,21 +812,117 @@
     private bool IsAutoColumnToggleDisabled(AutoColumnOption column)
         => IsAutoColumnVisible(column.Index) && VisibleAutoColumnCount <= 1;
 
-    private void SetAutoColumnVisibility(int columnIndex, bool visible)
+    private async Task SetAutoColumnVisibilityAsync(int columnIndex, bool visible)
     {
         if (visible)
         {
             hiddenAutoColumnIndexes.Remove(columnIndex);
-            return;
         }
-
-        if (VisibleAutoColumnCount > 1)
+        else if (VisibleAutoColumnCount > 1)
         {
             hiddenAutoColumnIndexes.Add(columnIndex);
         }
+
+        await SaveTableViewPreferencesAsync();
     }
 
     private void ResetAutoColumnVisibility() => hiddenAutoColumnIndexes.Clear();
+
+    private async Task SetDensityAsync(bool dense)
+    {
+        densityOverride = dense;
+        await SaveTableViewPreferencesAsync();
+    }
+
+    private async Task ResetTableViewAsync()
+    {
+        ResetAutoColumnVisibility();
+        densityOverride = null;
+
+        if (PersistViewPreferences)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", ViewPreferenceStorageKey);
+            }
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+            {
+                Logger.LogDebug(ex, "No se pudieron borrar las preferencias de {TableId}.", tableElementId);
+            }
+        }
+
+        Snackbar.Add("Vista de tabla restablecida.", Severity.Info);
+    }
+
+    private async Task RestoreTableViewPreferencesAsync()
+    {
+        if (viewPreferencesRestored || !PersistViewPreferences)
+        {
+            return;
+        }
+
+        viewPreferencesRestored = true;
+
+        try
+        {
+            var json = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", ViewPreferenceStorageKey);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
+            var preferences = JsonSerializer.Deserialize<TableViewPreferences>(json);
+            if (preferences is null)
+            {
+                return;
+            }
+
+            densityOverride = preferences.Dense;
+            hiddenAutoColumnIndexes.Clear();
+
+            foreach (var label in preferences.HiddenColumns)
+            {
+                var column = autoColumnOptions.FirstOrDefault(option =>
+                    string.Equals(option.Label, label, StringComparison.OrdinalIgnoreCase));
+                if (column is not null)
+                {
+                    hiddenAutoColumnIndexes.Add(column.Index);
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or JsonException)
+        {
+            Logger.LogDebug(ex, "No se pudieron restaurar las preferencias de {TableId}.", tableElementId);
+        }
+    }
+
+    private async Task SaveTableViewPreferencesAsync()
+    {
+        if (!PersistViewPreferences || !viewPreferencesRestored)
+        {
+            return;
+        }
+
+        var hiddenColumns = autoColumnOptions
+            .Where(column => hiddenAutoColumnIndexes.Contains(column.Index))
+            .Select(column => column.Label)
+            .ToList();
+        var preferences = new TableViewPreferences(densityOverride, hiddenColumns);
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync(
+                "localStorage.setItem",
+                ViewPreferenceStorageKey,
+                JsonSerializer.Serialize(preferences));
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        {
+            Logger.LogDebug(ex, "No se pudieron guardar las preferencias de {TableId}.", tableElementId);
+        }
+    }
 
     private string BuildAutoColumnVisibilityCss()
     {
@@ -692,6 +997,7 @@
     }
 
     private sealed record AutoColumnOption(int Index, string Label);
+    private sealed record TableViewPreferences(bool? Dense, List<string> HiddenColumns);
 
     private sealed class DetectedTableColumn
     {

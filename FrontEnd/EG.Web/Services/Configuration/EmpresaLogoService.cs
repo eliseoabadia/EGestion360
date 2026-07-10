@@ -4,6 +4,7 @@ using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Configuration
@@ -12,8 +13,9 @@ namespace EG.Web.Services.Configuration
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IEmpresaLogoService
+        ApplicationInstance application,
+        ILogger<EmpresaLogoService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IEmpresaLogoService
     {
         private const long MaxLogoSize = 5 * 1024 * 1024;
         private const string Endpoint = "api/Empresa";
@@ -27,11 +29,11 @@ namespace EG.Web.Services.Configuration
                 MultipartApiHelper.AddFile(form, "File", file, MaxLogoSize);
                 request.Content = form;
 
-                return await MultipartApiHelper.SendAsync<EmpresaResponse>(_httpClient, request, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<EmpresaResponse>(_httpClient, request, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<EmpresaResponse>(ex);
+                return MultipartApiHelper.Failure<EmpresaResponse>(ex, _logger);
             }
         }
     }

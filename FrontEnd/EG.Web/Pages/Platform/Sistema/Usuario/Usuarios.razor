@@ -147,7 +147,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Ocurrió un error: " + ex.Message, Severity.Error);
+            Snackbar.Add("Ocurrió un error: " + UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex), Severity.Error);
         }
         finally
         {
@@ -164,7 +164,10 @@
         }
         catch (Exception ex)
         {
-            _pageError = $"Error de inicialización: {ex.Message}";
+            _pageError = UserFacingExceptionMessages.ForDisplay(
+                AppLoggerFactory,
+                ex,
+                "No fue posible inicializar la pantalla de usuarios. Recarga la pagina e intenta nuevamente.");
             Snackbar.Add(_pageError, Severity.Error);
         }
     }
@@ -177,7 +180,10 @@
         }
         catch (Exception ex)
         {
-            _pageError = $"Error de renderizado: {ex.Message}";
+            _pageError = UserFacingExceptionMessages.ForDisplay(
+                AppLoggerFactory,
+                ex,
+                "No fue posible completar la pantalla de usuarios. Recarga la pagina e intenta nuevamente.");
             Snackbar.Add(_pageError, Severity.Error);
         }
     }

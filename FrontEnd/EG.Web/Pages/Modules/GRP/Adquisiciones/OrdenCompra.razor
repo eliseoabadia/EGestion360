@@ -478,7 +478,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar ordenes de compra: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar ordenes de compra: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<OrdenCompraResponse> { Items = new List<OrdenCompraResponse>(), TotalItems = 0 };
         }
         finally
@@ -631,7 +631,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1028,8 +1028,11 @@
                 ? "Peso Mexicano"
                 : response.Data.MonedaBaseEmpresa;
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("OrdenCompra")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para ordenes de compra.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

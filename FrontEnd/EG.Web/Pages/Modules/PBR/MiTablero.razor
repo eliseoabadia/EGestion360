@@ -259,7 +259,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"No fue posible cargar Mi Tablero PBR: {ex.Message}", Severity.Error);
+            Snackbar.Add($"No fue posible cargar Mi Tablero PBR: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

@@ -558,7 +558,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -600,7 +600,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al preparar firma: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al preparar firma: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -682,8 +682,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("Polizas")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para polizas.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 }

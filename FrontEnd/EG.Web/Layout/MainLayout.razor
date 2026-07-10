@@ -104,10 +104,15 @@
                          Class="theme-menu">
                     @foreach (var option in Enum.GetValues<AppThemeOption>())
                     {
-                        <MudMenuItem OnClick="@(() => SelectThemeOption(option))">
+                        <MudMenuItem OnClick="@(() => SelectThemeOption(option))" Class="theme-menu-item">
                             <div class="theme-option">
-                                <MudIcon Icon="@GetThemeIcon(option)" />
-                                <span>@GetThemeLabel(option)</span>
+                                <span class="theme-swatch @GetThemeSwatchClass(option)" aria-hidden="true">
+                                    <MudIcon Icon="@GetThemeIcon(option)" Size="Size.Small" />
+                                </span>
+                                <span class="theme-copy">
+                                    <span>@GetThemeLabel(option)</span>
+                                    <small>@GetThemeDescription(option)</small>
+                                </span>
                                 @if (option == _selectedThemeOption)
                                 {
                                     <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Class="theme-check" />
@@ -365,7 +370,11 @@
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("MainLayout")
+                .LogDebug(ex, "No se pudo recuperar el nombre del usuario desde el almacenamiento local.");
+        }
     }
 
     private async Task Logout()
@@ -408,12 +417,28 @@
     {
         AppThemeOption.Claro => Icons.Material.Outlined.LightMode,
         AppThemeOption.Oscuro => Icons.Material.Outlined.DarkMode,
-        AppThemeOption.Morena => Icons.Material.Filled.Park,
+        AppThemeOption.Morena => Icons.Material.Filled.LocalFireDepartment,
         _ => Icons.Material.Outlined.DarkMode
     };
 
     private static string GetThemeLabel(AppThemeOption option) =>
         EG.Web.Services.ThemeStateService.GetThemeName(option);
+
+    private static string GetThemeDescription(AppThemeOption option) => option switch
+    {
+        AppThemeOption.Claro => "Azul institucional, limpio y diurno",
+        AppThemeOption.Oscuro => "Azul profundo para jornadas largas",
+        AppThemeOption.Morena => "Carbon, terracota y cobre nocturno",
+        _ => string.Empty
+    };
+
+    private static string GetThemeSwatchClass(AppThemeOption option) => option switch
+    {
+        AppThemeOption.Claro => "theme-swatch-claro",
+        AppThemeOption.Oscuro => "theme-swatch-oscuro",
+        AppThemeOption.Morena => "theme-swatch-morena",
+        _ => "theme-swatch-oscuro"
+    };
 
     private void LoadTheme()
     {
@@ -423,13 +448,13 @@
             PaletteDark = GetDarkPalette(),
             LayoutProperties = new LayoutProperties
             {
-                DefaultBorderRadius = "10px"
+                DefaultBorderRadius = "12px"
             },
             Typography = new Typography
             {
                 Default = new DefaultTypography
                 {
-                    FontFamily = new[] { "Segoe UI", "Roboto", "Arial", "sans-serif" },
+                    FontFamily = new[] { "Segoe UI Variable", "Segoe UI", "Roboto", "Arial", "sans-serif" },
                     FontSize = "0.95rem"
                 },
                 H5 = new H5Typography
@@ -458,12 +483,15 @@
             return new PaletteLight
             {
                 Primary = "#7A1631",
+                PrimaryContrastText = "#FFFFFF",
                 PrimaryLighten = "#A83A55",
                 PrimaryDarken = "#4E0D20",
                 Secondary = "#9B7A3A",
+                SecondaryContrastText = "#FFFFFF",
                 SecondaryLighten = "#C2A45E",
                 SecondaryDarken = "#6F5422",
                 Tertiary = "#2E6F62",
+                TertiaryContrastText = "#FFFFFF",
                 TertiaryLighten = "#4C9282",
                 TertiaryDarken = "#1E4C43",
                 Background = "#F7F4EF",
@@ -473,6 +501,8 @@
                 DrawerBackground = "#F1E8DF",
                 DrawerText = "#2A1820",
                 DrawerIcon = "#7A1631",
+                TextPrimary = "#2A1820",
+                TextSecondary = "#6D5A60",
                 TextDisabled = "#9A8D87",
                 ActionDefault = "#7A1631",
                 ActionDisabled = "#C8B8B4",
@@ -494,35 +524,40 @@
 
         return new PaletteLight
         {
-            Primary = "#235A8F",
-            PrimaryLighten = "#3D78AF",
-            PrimaryDarken = "#173F68",
-            Secondary = "#59667A",
-            SecondaryLighten = "#728198",
-            SecondaryDarken = "#3F4A5B",
-            Tertiary = "#2C7468",
-            TertiaryLighten = "#469287",
-            TertiaryDarken = "#1E554C",
-            Background = "#F6F8FB",
+            Primary = "#0B5CAD",
+            PrimaryContrastText = "#FFFFFF",
+            PrimaryLighten = "#2E7BC4",
+            PrimaryDarken = "#08467F",
+            Secondary = "#475569",
+            SecondaryContrastText = "#FFFFFF",
+            SecondaryLighten = "#64748B",
+            SecondaryDarken = "#334155",
+            Tertiary = "#0F766E",
+            TertiaryContrastText = "#FFFFFF",
+            TertiaryLighten = "#15958A",
+            TertiaryDarken = "#0A554F",
+            Background = "#F7F9FC",
             Surface = "#FFFFFF",
-            AppbarBackground = "#FFFFFF",
-            AppbarText = "#162033",
-            DrawerBackground = "#F0F4F8",
-            DrawerText = "#1E293B",
-            DrawerIcon = "#235A8F",
+            AppbarBackground = "#FCFDFE",
+            AppbarText = "#18212F",
+            DrawerBackground = "#F1F6FB",
+            DrawerText = "#18212F",
+            DrawerIcon = "#0B5CAD",
+            TextPrimary = "#18212F",
+            TextSecondary = "#5B687A",
             TextDisabled = "#8794A8",
-            ActionDefault = "#235A8F",
+            ActionDefault = "#0B5CAD",
             ActionDisabled = "#CBD5E1",
-            ActionDisabledBackground = "#EEF2F6",
-            Divider = "#D8E1EA",
-            LinesDefault = "#D8E1EA",
-            TableLines = "#D8E1EA",
-            Info = "#2E75A3",
-            Success = "#2C7468",
-            Warning = "#9A6A22",
-            Error = "#B63A3A",
-            GrayLight = "#D8E1EA",
-            GrayLighter = "#EEF2F6",
+            ActionDisabledBackground = "#EEF3F8",
+            Divider = "#DCE5EF",
+            LinesDefault = "#DCE5EF",
+            TableLines = "#DCE5EF",
+            Info = "#2563EB",
+            Success = "#0F766E",
+            Warning = "#B54708",
+            Error = "#B42318",
+            GrayLight = "#DCE5EF",
+            GrayLighter = "#EEF3F8",
             OverlayLight = "#00000040",
             Black = "#000000",
             White = "#FFFFFF",
@@ -535,34 +570,41 @@
         {
             return new PaletteDark
             {
-                Primary = "#A12A4C",
-                PrimaryLighten = "#C94A66",
-                PrimaryDarken = "#62112A",
-                Secondary = "#C9A66B",
-                SecondaryLighten = "#E0C994",
-                SecondaryDarken = "#8A6A2C",
-                Tertiary = "#2F6F5E",
-                Background = "#100E12",
-                Surface = "#19151A",
-                AppbarBackground = "#151116",
-                AppbarText = "#F7F4EF",
-                DrawerBackground = "#151116",
-                DrawerText = "#F4EEE7",
-                DrawerIcon = "#C9A66B",
-                TextDisabled = "#8D8189",
-                ActionDefault = "#C9A66B",
-                ActionDisabled = "#56464F",
-                ActionDisabledBackground = "#211920",
-                Divider = "#31232A",
-                LinesDefault = "#36262D",
-                TableLines = "#36262D",
-                Info = "#C9A66B",
-                Success = "#4F9D69",
-                Warning = "#D6A84A",
-                Error = "#E45B63",
-                GrayLight = "#36262D",
-                GrayLighter = "#211920",
-                OverlayLight = "#100E1280",
+                Primary = "#B94726",
+                PrimaryContrastText = "#FFF8F5",
+                PrimaryLighten = "#D9825E",
+                PrimaryDarken = "#7F2F1B",
+                Secondary = "#C18B32",
+                SecondaryContrastText = "#211A17",
+                SecondaryLighten = "#D8AE62",
+                SecondaryDarken = "#8E621F",
+                Tertiary = "#2F7D6D",
+                TertiaryContrastText = "#F7F3EF",
+                TertiaryLighten = "#58A893",
+                TertiaryDarken = "#1B5A4E",
+                Background = "#171311",
+                Surface = "#211A17",
+                AppbarBackground = "#1C1513",
+                AppbarText = "#F7F3EF",
+                DrawerBackground = "#1B1512",
+                DrawerText = "#F7F3EF",
+                DrawerIcon = "#D8AE62",
+                TextPrimary = "#F7F3EF",
+                TextSecondary = "#C4B7AE",
+                TextDisabled = "#82756F",
+                ActionDefault = "#D8AE62",
+                ActionDisabled = "#5A4840",
+                ActionDisabledBackground = "#2B211D",
+                Divider = "#42332C",
+                LinesDefault = "#4A3931",
+                TableLines = "#4A3931",
+                Info = "#77BDF0",
+                Success = "#65B59D",
+                Warning = "#E1B45C",
+                Error = "#F08A78",
+                GrayLight = "#4A3931",
+                GrayLighter = "#2B211D",
+                OverlayLight = "#171311A6",
                 Black = "#000000",
                 White = "#FFFFFF",
             };
@@ -571,12 +613,15 @@
         return new PaletteDark
         {
             Primary = "#3B82F6",
+            PrimaryContrastText = "#EFF6FF",
             PrimaryLighten = "#60A5FA",
             PrimaryDarken = "#2563EB",
             Secondary = "#8B5CF6",
+            SecondaryContrastText = "#F5F3FF",
             SecondaryLighten = "#A78BFA",
             SecondaryDarken = "#7C3AED",
             Tertiary = "#10B981",
+            TertiaryContrastText = "#ECFDF5",
             TertiaryLighten = "#34D399",
             TertiaryDarken = "#059669",
             Background = "#0F172A",
@@ -586,6 +631,8 @@
             DrawerBackground = "#0F172A",
             DrawerText = "#F8FAFC",
             DrawerIcon = "#3B82F6",
+            TextPrimary = "#F8FAFC",
+            TextSecondary = "#CBD5E1",
             TextDisabled = "#64748B",
             ActionDefault = "#3B82F6",
             ActionDisabled = "#475569",
@@ -751,40 +798,54 @@
         --eg-grid-support-alpha: 4%;
     }
 
+    .layout-root.theme-oscuro {
+        --eg-support-accent: #34D399;
+        --eg-warm-accent: #FBBF24;
+        --eg-status-success: #34D399;
+        --eg-status-warning: #FBBF24;
+        --eg-status-info: #38BDF8;
+        --eg-surface-raised: #1E293B;
+        --eg-surface-muted: #182437;
+        --eg-border-soft: #334155;
+        --eg-shell-shadow: rgba(0, 0, 0, .34);
+        --eg-grid-primary-alpha: 3.5%;
+        --eg-grid-support-alpha: 2.4%;
+    }
+
     .layout-root.theme-claro {
-        --eg-support-accent: #2C7468;
-        --eg-warm-accent: #9A6A22;
-        --eg-status-success: #2C7468;
-        --eg-status-warning: #9A6A22;
-        --eg-status-info: #2E75A3;
+        --eg-support-accent: #0F766E;
+        --eg-warm-accent: #B54708;
+        --eg-status-success: #0F766E;
+        --eg-status-warning: #B54708;
+        --eg-status-info: #2563EB;
         --eg-surface-raised: #FFFFFF;
-        --eg-surface-muted: #F2F6FA;
-        --eg-border-soft: #D8E1EA;
-        --eg-shell-shadow: rgba(15, 23, 42, .075);
-        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 7%, transparent);
-        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 11%, transparent);
-        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 16%, transparent);
+        --eg-surface-muted: #F1F6FB;
+        --eg-border-soft: #DCE5EF;
+        --eg-shell-shadow: rgba(15, 23, 42, .07);
+        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 6%, transparent);
+        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 10%, transparent);
+        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 15%, transparent);
         --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 8%, transparent);
-        --eg-grid-primary-alpha: 2%;
-        --eg-grid-support-alpha: 1.5%;
+        --eg-grid-primary-alpha: 1.6%;
+        --eg-grid-support-alpha: 1.1%;
     }
 
     .layout-root.theme-morena {
-        --eg-support-accent: var(--eg-secondary);
-        --eg-warm-accent: #9B7A3A;
-        --eg-status-success: #2E7D62;
-        --eg-status-warning: var(--eg-secondary);
-        --eg-status-info: var(--eg-primary);
-        --eg-surface-raised: #FFFDF8;
-        --eg-surface-muted: #F4ECE5;
-        --eg-border-soft: #DED2C9;
-        --eg-shell-shadow: rgba(42, 24, 32, .105);
-        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 8%, transparent);
-        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 12%, transparent);
-        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 17%, transparent);
-        --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 9%, transparent);
-        --eg-grid-primary-alpha: 2%;
-        --eg-grid-support-alpha: 1.5%;
+        --eg-support-accent: #D8AE62;
+        --eg-warm-accent: #D9825E;
+        --eg-status-success: #65B59D;
+        --eg-status-warning: #E1B45C;
+        --eg-status-info: #77BDF0;
+        --eg-surface-raised: #211A17;
+        --eg-surface-muted: #2B211D;
+        --eg-border-soft: #4A3931;
+        --eg-shell-shadow: rgba(0, 0, 0, .42);
+        --eg-primary-soft: color-mix(in srgb, var(--eg-primary) 18%, transparent);
+        --eg-primary-hover: color-mix(in srgb, var(--eg-primary) 25%, transparent);
+        --eg-primary-active: color-mix(in srgb, var(--eg-primary) 34%, transparent);
+        --eg-accent-soft: color-mix(in srgb, var(--eg-accent) 17%, transparent);
+        --eg-grid-primary-alpha: 4%;
+        --eg-grid-support-alpha: 2.5%;
     }
 
     .layout-root {
@@ -804,6 +865,7 @@
             linear-gradient(0deg, color-mix(in srgb, var(--eg-support-accent) var(--eg-grid-support-alpha), transparent) 1px, transparent 1px),
             var(--mud-palette-background);
         background-size: 48px 48px;
+        transition: background-color 180ms ease, color 180ms ease;
     }
 
     .modern-app-bar {
@@ -850,6 +912,17 @@
     .layout-root.theme-claro .user-chip {
         background: color-mix(in srgb, var(--eg-primary) 6%, var(--mud-palette-surface));
         border-color: color-mix(in srgb, var(--eg-primary) 28%, var(--mud-palette-divider));
+    }
+
+    .layout-root.theme-morena .modern-app-bar {
+        background:
+            linear-gradient(90deg, color-mix(in srgb, var(--eg-primary) 22%, var(--mud-palette-appbar-background)), var(--mud-palette-appbar-background) 56%, color-mix(in srgb, var(--eg-accent) 10%, var(--mud-palette-appbar-background))) !important;
+        border-bottom-color: color-mix(in srgb, var(--eg-accent) 28%, var(--mud-palette-divider));
+        box-shadow: 0 12px 34px rgba(0, 0, 0, .34);
+    }
+
+    .layout-root.theme-morena .sidebar-container {
+        box-shadow: 8px 0 28px rgba(0, 0, 0, .28);
     }
 
     .header-left {
@@ -990,8 +1063,61 @@
     .theme-option {
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-width: 132px;
+        gap: 10px;
+        min-width: 228px;
+        padding: 2px 0;
+    }
+
+    .theme-menu-item {
+        margin: 2px 4px;
+        border-radius: 10px;
+    }
+
+    .theme-swatch {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-white) 45%, transparent);
+        border-radius: 9px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22);
+    }
+
+    .theme-swatch-claro {
+        color: #FFFFFF;
+        background: linear-gradient(135deg, #0B5CAD, #0F766E);
+    }
+
+    .theme-swatch-oscuro {
+        color: #EAF2FF;
+        background: linear-gradient(135deg, #172033, #3B82F6);
+    }
+
+    .theme-swatch-morena {
+        color: #FFF4EC;
+        background: linear-gradient(135deg, #211A17, #B94726 68%, #D8AE62);
+    }
+
+    .theme-copy {
+        min-width: 0;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 2px;
+        color: var(--mud-palette-text-primary);
+        font-weight: 750;
+        line-height: 1.15;
+    }
+
+    .theme-copy small {
+        overflow: hidden;
+        color: var(--mud-palette-text-secondary);
+        font-size: .69rem;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .theme-check {

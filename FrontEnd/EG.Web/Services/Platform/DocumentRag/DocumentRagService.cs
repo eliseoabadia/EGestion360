@@ -4,6 +4,7 @@ using EG.Web.Models;
 using EG.Web.Models.Platform.DocumentRag;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Platform.DocumentRag
@@ -12,8 +13,9 @@ namespace EG.Web.Services.Platform.DocumentRag
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IDocumentRagService
+        ApplicationInstance application,
+        ILogger<DocumentRagService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IDocumentRagService
     {
         private const long MaxClientFileSize = 50 * 1024 * 1024;
         private const string Endpoint = "api/DocumentRag";
@@ -47,11 +49,11 @@ namespace EG.Web.Services.Platform.DocumentRag
                 MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                return await MultipartApiHelper.SendAsync<DocumentRagDocumentResponse>(_httpClient, httpRequest, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<DocumentRagDocumentResponse>(_httpClient, httpRequest, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<DocumentRagDocumentResponse>(ex);
+                return MultipartApiHelper.Failure<DocumentRagDocumentResponse>(ex, _logger);
             }
         }
 

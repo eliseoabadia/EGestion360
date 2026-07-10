@@ -140,7 +140,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al crear: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 }

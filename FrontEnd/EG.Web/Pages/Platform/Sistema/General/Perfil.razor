@@ -491,7 +491,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al verificar permisos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             _isInitialized = true;
             StateHasChanged();
             NavigationManager.NavigateTo("/", replace: true);
@@ -560,7 +560,7 @@
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             }
             finally
             {
@@ -607,7 +607,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresas: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             empresas = new List<EmpresaResponse>();
         }
     }
@@ -642,7 +642,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar el perfil: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar el perfil: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -691,7 +691,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -748,7 +748,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al subir archivo: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al subir archivo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -773,7 +773,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"No se pudieron consultar certificados PFX: {ex.Message}", Severity.Warning);
+            Snackbar.Add($"No se pudieron consultar certificados PFX: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Warning);
             _firmaCertificates = new List<FirmaCertificadoUsuarioResponse>();
         }
         finally
@@ -825,7 +825,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al subir certificado PFX: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al subir certificado PFX: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -882,7 +882,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cambiar contraseña: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cambiar contraseña: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

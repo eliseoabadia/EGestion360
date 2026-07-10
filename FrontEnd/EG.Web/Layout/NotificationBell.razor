@@ -57,8 +57,10 @@
                 await LoadSummaryAsync();
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            AppLoggerFactory.CreateLogger("NotificationBell")
+                .LogDebug(ex, "Se detuvo la actualizacion periodica de notificaciones.");
         }
     }
 

@@ -113,7 +113,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al consultar la poliza: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al consultar la poliza: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

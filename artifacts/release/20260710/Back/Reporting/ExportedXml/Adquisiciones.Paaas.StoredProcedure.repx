@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="24.1.5.0" Ref="1" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v24.1, Version=24.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="AdquisicionesPaaasStoredProcedure" DisplayName="Reporte PAAAS por Stored Procedure" Landscape="true" Margins="40, 40, 100, 100" PageWidth="1100" PageHeight="850" Version="24.1" RequestParameters="false" DataSource="#Ref-0">
+  <Parameters>
+    <Item1 Ref="3" Visible="false" ValueInfo="0" Name="PKIdPAAAS" Type="#Ref-2" />
+  </Parameters>
+  <Bands>
+    <Item1 Ref="4" ControlType="TopMarginBand" />
+    <Item2 Ref="5" ControlType="ReportHeaderBand" HeightF="86">
+      <Controls>
+        <Item1 Ref="6" ControlType="XRLabel" Text="Reporte PAAAS por Stored Procedure" TextAlignment="MiddleLeft" SizeF="980,30" LocationFloat="0,8" Font="Arial, 18pt, style=Bold" ForeColor="255,22,91,170" />
+        <Item2 Ref="7" ControlType="XRLabel" Text="Origen: [ORCO].[SP_ReportePAAAS]" TextAlignment="MiddleLeft" SizeF="980,22" LocationFloat="0,44" Font="Arial, 9pt" ForeColor="255,90,90,90" />
+      </Controls>
+    </Item2>
+    <Item3 Ref="8" ControlType="PageHeaderBand" HeightF="30">
+      <Controls>
+        <Item1 Ref="9" ControlType="XRTable" SizeF="980,26" LocationFloat="0,0" BorderColor="255,202,210,220" Borders="All">
+          <Rows>
+            <Item1 Ref="10" ControlType="XRTableRow" Weight="7.666666666666667">
+              <Cells>
+                <Item1 Ref="11" ControlType="XRTableCell" Weight="0.9166666666666666" Text="PAAAS" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item2 Ref="12" ControlType="XRTableCell" Weight="1" Text="Anio" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item3 Ref="13" ControlType="XRTableCell" Weight="2.25" Text="Area" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item4 Ref="14" ControlType="XRTableCell" Weight="3.1666666666666665" Text="Descripcion" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item5 Ref="15" ControlType="XRTableCell" Weight="1.1666666666666667" Text="Partida" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item6 Ref="16" ControlType="XRTableCell" Weight="2.6666666666666665" Text="Partida descripcion" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item7 Ref="17" ControlType="XRTableCell" Weight="3" Text="Bien" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+                <Item8 Ref="18" ControlType="XRTableCell" Weight="1.1666666666666667" Text="Cantidad" TextAlignment="MiddleLeft" Font="Arial, 8pt, style=Bold" BackColor="255,232,238,246" Padding="4,4,0,0,96" />
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item3>
+    <Item4 Ref="19" ControlType="DetailBand" HeightF="26">
+      <Controls>
+        <Item1 Ref="20" ControlType="XRTable" SizeF="980,26" LocationFloat="0,0" BorderColor="255,202,210,220" Borders="All">
+          <Rows>
+            <Item1 Ref="21" ControlType="XRTableRow" Weight="7.666666666666667">
+              <Cells>
+                <Item1 Ref="22" ControlType="XRTableCell" Weight="0.9166666666666666" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="23" EventName="BeforePrint" PropertyName="Text" Expression="[PKIdPAAAS]" />
+                  </ExpressionBindings>
+                </Item1>
+                <Item2 Ref="24" ControlType="XRTableCell" Weight="1" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="25" EventName="BeforePrint" PropertyName="Text" Expression="[AnioClave]" />
+                  </ExpressionBindings>
+                </Item2>
+                <Item3 Ref="26" ControlType="XRTableCell" Weight="2.25" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="27" EventName="BeforePrint" PropertyName="Text" Expression="[AreaNombre]" />
+                  </ExpressionBindings>
+                </Item3>
+                <Item4 Ref="28" ControlType="XRTableCell" Weight="3.1666666666666665" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="29" EventName="BeforePrint" PropertyName="Text" Expression="[Descripcion]" />
+                  </ExpressionBindings>
+                </Item4>
+                <Item5 Ref="30" ControlType="XRTableCell" Weight="1.1666666666666667" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="31" EventName="BeforePrint" PropertyName="Text" Expression="[PartidaClave]" />
+                  </ExpressionBindings>
+                </Item5>
+                <Item6 Ref="32" ControlType="XRTableCell" Weight="2.6666666666666665" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="33" EventName="BeforePrint" PropertyName="Text" Expression="[PartidaDescripcion]" />
+                  </ExpressionBindings>
+                </Item6>
+                <Item7 Ref="34" ControlType="XRTableCell" Weight="3" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="35" EventName="BeforePrint" PropertyName="Text" Expression="[TipoBienDescripcion]" />
+                  </ExpressionBindings>
+                </Item7>
+                <Item8 Ref="36" ControlType="XRTableCell" Weight="1.1666666666666667" TextAlignment="MiddleLeft" Font="Arial, 8pt" Padding="4,4,0,0,96">
+                  <ExpressionBindings>
+                    <Item1 Ref="37" EventName="BeforePrint" PropertyName="Text" Expression="[Cantidad]" />
+                  </ExpressionBindings>
+                </Item8>
+              </Cells>
+            </Item1>
+          </Rows>
+        </Item1>
+      </Controls>
+    </Item4>
+    <Item5 Ref="38" ControlType="PageFooterBand" HeightF="30">
+      <Controls>
+        <Item1 Ref="39" ControlType="XRPageInfo" TextAlignment="MiddleRight" SizeF="980,24" LocationFloat="0,0" Font="Arial, 8pt" />
+      </Controls>
+    </Item5>
+    <Item6 Ref="40" ControlType="BottomMarginBand" />
+  </Bands>
+  <ComponentStorage>
+    <Item1 Ref="0" ObjectType="DevExpress.DataAccess.Sql.SqlDataSource,DevExpress.DataAccess.v24.1" Name="AdquisicionesPaaasStoredProcedureDataSource" Base64="PFNxbERhdGFTb3VyY2UgTmFtZT0iQWRxdWlzaWNpb25lc1BhYWFzU3RvcmVkUHJvY2VkdXJlRGF0YVNvdXJjZSI+PENvbm5lY3Rpb24gTmFtZT0iQkRfTWF0cml4RW50aXRpZXMiIEZyb21BcHBDb25maWc9InRydWUiIC8+PFF1ZXJ5IFR5cGU9IlN0b3JlZFByb2NRdWVyeSIgTmFtZT0iUmVzdWx0Ij48UGFyYW1ldGVyIE5hbWU9IkBQS0lkUEFBQVMiIFR5cGU9IkRldkV4cHJlc3MuRGF0YUFjY2Vzcy5FeHByZXNzaW9uIj4oU3lzdGVtLkludDMyKSg/UEtJZFBBQUFTKTwvUGFyYW1ldGVyPjxQcm9jTmFtZT5bT1JDT10uW1NQX1JlcG9ydGVQQUFBU108L1Byb2NOYW1lPjwvUXVlcnk+PENvbm5lY3Rpb25PcHRpb25zIENsb3NlQ29ubmVjdGlvbj0idHJ1ZSIgLz48L1NxbERhdGFTb3VyY2U+" />
+  </ComponentStorage>
+  <ObjectStorage>
+    <Item1 ObjectType="DevExpress.XtraReports.Serialization.ObjectStorageInfo, DevExpress.XtraReports.v24.1" Ref="2" Content="System.Int32" Type="System.Type" />
+  </ObjectStorage>
+</XtraReportsLayoutSerializer>

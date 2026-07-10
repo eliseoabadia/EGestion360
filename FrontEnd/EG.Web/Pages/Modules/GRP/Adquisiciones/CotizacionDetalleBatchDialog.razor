@@ -447,7 +447,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar bienes requisitados: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar bienes requisitados: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -602,7 +602,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar bienes cotizados: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar bienes cotizados: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

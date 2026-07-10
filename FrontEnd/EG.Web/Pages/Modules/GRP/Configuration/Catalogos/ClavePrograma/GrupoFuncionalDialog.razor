@@ -71,7 +71,7 @@ private async Task CargarDatos()
     }
     catch (Exception ex)
     {
-        Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
     }
 }
 
@@ -103,7 +103,7 @@ private async Task GuardarCambiosAsync()
     }
     catch (Exception ex)
     {
-        Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
     }
 }
 }

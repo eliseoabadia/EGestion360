@@ -4,6 +4,7 @@ using EG.Web.Models;
 using EG.Web.Models.Platform.FirmaDocumental;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Platform.FirmaDocumental
@@ -12,8 +13,9 @@ namespace EG.Web.Services.Platform.FirmaDocumental
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IFirmaDocumentalService
+        ApplicationInstance application,
+        ILogger<FirmaDocumentalService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IFirmaDocumentalService
     {
         private const long MaxCertificateFileSize = 5 * 1024 * 1024;
         private const string Endpoint = "api/FirmaDocumental";
@@ -41,11 +43,11 @@ namespace EG.Web.Services.Platform.FirmaDocumental
                 MultipartApiHelper.AddFile(form, "File", file, MaxCertificateFileSize);
                 request.Content = form;
 
-                return await MultipartApiHelper.SendAsync<FirmaCertificadoUsuarioResponse>(_httpClient, request, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<FirmaCertificadoUsuarioResponse>(_httpClient, request, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<FirmaCertificadoUsuarioResponse>(ex);
+                return MultipartApiHelper.Failure<FirmaCertificadoUsuarioResponse>(ex, _logger);
             }
         }
     }

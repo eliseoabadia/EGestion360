@@ -1,7 +1,9 @@
 ﻿using EG.Web.Auth;
+using EG.Common;
 using EG.Web.Contracts;
 using EG.Web.Extensions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using MiniExcelLibs;
 using MudBlazor;
@@ -16,6 +18,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     [Inject] protected ISnackbar Snackbar { get; set; } = null!;
     [Inject] protected IJSRuntime JsRuntime { get; set; } = null!;
     [Inject] protected IDialogService DialogService { get; set; } = null!;
+    [Inject] protected ILogger<BaseCrudPage<TItem, TResponse>> Logger { get; set; } = null!;
     [Inject] private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
     [Inject] protected IGenericCrudService<TResponse> Service { get; set; } = null!;
 
@@ -50,6 +53,19 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     protected abstract Type DeleteDialogType { get; }
     protected virtual int ExportPageSize => 1000;
     protected virtual int MaxExportRows => 50000;
+    protected virtual string BusyMessage => "Hay una operacion en curso. Espera a que termine.";
+
+    protected void NotifyUnexpectedError(Exception exception, string operation, string? userMessage = null)
+    {
+        Logger.LogError(
+            exception,
+            "Error en {Operation}. Modulo={Module}; SubModulo={SubModule}",
+            operation,
+            ModuleName,
+            SubModuleName);
+
+        Snackbar.Add(userMessage ?? UserFacingMessages.OperationFailed(operation), Severity.Error);
+    }
 
     protected Task<bool> ConfirmWorkflowAsync(
         string title,
@@ -73,11 +89,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     {
         if (OperationInProgress)
         {
-            if (!string.IsNullOrWhiteSpace(busyMessage))
-            {
-                Snackbar.Add(busyMessage, Severity.Info);
-            }
-
+            Snackbar.Add(string.IsNullOrWhiteSpace(busyMessage) ? BusyMessage : busyMessage, Severity.Info);
             return false;
         }
 
@@ -88,6 +100,11 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
             await operation();
             return true;
+        }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "ejecutar la operacion");
+            return false;
         }
         finally
         {
@@ -103,11 +120,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     {
         if (OperationInProgress)
         {
-            if (!string.IsNullOrWhiteSpace(busyMessage))
-            {
-                Snackbar.Add(busyMessage, Severity.Info);
-            }
-
+            Snackbar.Add(string.IsNullOrWhiteSpace(busyMessage) ? BusyMessage : busyMessage, Severity.Info);
             return busyResult;
         }
 
@@ -117,6 +130,11 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         try
         {
             return await operation();
+        }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "ejecutar la operacion");
+            return busyResult;
         }
         finally
         {
@@ -144,6 +162,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             if (!CanView)
             {
                 HasAccess = false;
+                Logger.LogWarning("Acceso denegado. Modulo={Module}; SubModulo={SubModule}", ModuleName, SubModuleName);
+                Snackbar.Add("No tienes permisos para consultar esta opcion. Regresaremos al inicio.", Severity.Warning);
                 StateHasChanged();
                 await Task.Delay(2000);
                 NavigationManager.NavigateTo("/", replace: true);
@@ -160,7 +180,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+            NotifyUnexpectedError(ex, "verificar tus permisos", "No fue posible validar tus permisos. Regresaremos al inicio para proteger tu sesion.");
             await Task.Delay(1000);
             NavigationManager.NavigateTo("/", replace: true);
         }
@@ -203,10 +223,17 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             {
                 Elements.Clear();
                 TotalCount = 0;
-                if (!string.IsNullOrEmpty(response?.Message))
-                {
-                    Snackbar.Add(response.Message, Severity.Error);
-                }
+                var message = string.IsNullOrWhiteSpace(response?.Message)
+                    ? "No fue posible cargar la informacion. Intenta recargar la pagina."
+                    : response.Message;
+
+                Logger.LogWarning(
+                    "La carga devolvio un resultado no exitoso. Modulo={Module}; SubModulo={SubModule}; Code={Code}; Message={Message}",
+                    ModuleName,
+                    SubModuleName,
+                    response?.Code,
+                    response?.Message);
+                Snackbar.Add(message, Severity.Error);
             }
 
             return new TableData<TResponse>
@@ -217,7 +244,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            NotifyUnexpectedError(ex, "cargar la informacion", "No fue posible cargar la informacion. Intenta recargar la pagina.");
             return new TableData<TResponse>
             {
                 Items = new List<TResponse>(),
@@ -245,7 +272,10 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 await ReloadData();
             }
         }
-        catch (TaskCanceledException) { }
+        catch (TaskCanceledException ex)
+        {
+            Logger.LogDebug(ex, "Se cancelo la busqueda de {SubModule} por una solicitud mas reciente.", SubModuleName);
+        }
     }
 
     // ==================== Mï¿½TODOS CRUD MEJORADOS ====================
@@ -276,6 +306,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         
         if (result == null)
         {
+            Logger.LogWarning("El dialogo de creacion no devolvio resultado. Modulo={Module}; SubModulo={SubModule}", ModuleName, SubModuleName);
+            Snackbar.Add("El formulario se cerro sin devolver una respuesta. Intenta nuevamente.", Severity.Warning);
             return;
         }
         
@@ -284,6 +316,10 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
             await ReloadData();
         }
+        }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "abrir o completar el formulario de creacion");
         }
         finally
         {
@@ -319,6 +355,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         
         if (result == null)
         {
+            Logger.LogWarning("El dialogo de edicion no devolvio resultado. Modulo={Module}; SubModulo={SubModule}; Id={Id}", ModuleName, SubModuleName, id);
+            Snackbar.Add("El formulario se cerro sin devolver una respuesta. Intenta nuevamente.", Severity.Warning);
             return;
         }
         
@@ -327,6 +365,10 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
             await ReloadData();
         }
+        }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "abrir o completar el formulario de edicion");
         }
         finally
         {
@@ -378,6 +420,10 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
         await dialog.Result;
         }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "eliminar el registro");
+        }
         finally
         {
             OperationInProgress = false;
@@ -407,13 +453,24 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             }
             else
             {
-                await InvokeAsync(() => Snackbar.Add(response?.Message ?? "Error al eliminar", Severity.Error));
+                var message = string.IsNullOrWhiteSpace(response?.Message)
+                    ? "No fue posible eliminar el registro. Verifica que no tenga informacion relacionada."
+                    : response.Message;
+                Logger.LogWarning(
+                    "La eliminacion no fue exitosa. Modulo={Module}; SubModulo={SubModule}; Id={Id}; Code={Code}; Message={Message}",
+                    ModuleName,
+                    SubModuleName,
+                    id,
+                    response?.Code,
+                    response?.Message);
+                await InvokeAsync(() => Snackbar.Add(message, Severity.Error));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            await InvokeAsync(() => Snackbar.Add($"Error: {ex.Message}", Severity.Error));
+            Logger.LogError(ex, "Error al eliminar. Modulo={Module}; SubModulo={SubModule}; Id={Id}", ModuleName, SubModuleName, id);
+            await InvokeAsync(() => Snackbar.Add("No fue posible eliminar el registro. El detalle tecnico quedo registrado.", Severity.Error));
             return false;
         }
         finally
@@ -513,7 +570,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            NotifyUnexpectedError(ex, "exportar la informacion", "No fue posible generar el archivo. Ajusta los filtros e intenta nuevamente.");
         }
         finally
         {

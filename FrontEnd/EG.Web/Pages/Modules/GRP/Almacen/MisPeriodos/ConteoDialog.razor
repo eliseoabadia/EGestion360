@@ -1,0 +1,248 @@
+@using System.Globalization
+@using EG.Web.Contracts
+@using EG.Domain.DTOs.Responses.ConteoCiclico
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using MudBlazor
+
+@inject IGenericCrudService<ConteoResponse> _service
+@inject IGenericCrudService<TipoBienResponse> _tipoBienService
+@inject IGenericCrudService<PeriodoConteoResponse> _periodoService
+@inject ISnackbar Snackbar
+
+<BaseCrudDialog TItem="ConteoResponse"
+                Title="@dialogTitle"
+                MaxWidth="MaxWidth.Medium"
+                ActionText="@actionText"
+                ProcessingText="@processingText"
+                LoadingMessage="Cargando datos del conteo..."
+                OnConfirm="GuardarCambiosAsync"
+                OnCancel="HandleCancel">
+
+    <BaseEntityForm TEntity="ConteoResponse"
+                    @ref="form"
+                    ShowHeader="true"
+                    HeaderTitle="@dialogTitle">
+
+        <MudGrid GutterSize="2">
+
+            <!-- Descripción -->
+            <MudItem xs="12">
+                <MudTextField @bind-Value="conteo.Descripcion"
+                              Label="Descripción del Conteo"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="La descripción es requerida"
+                              MaxLength="500"
+                              Lines="2" />
+            </MudItem>
+
+            <!-- Tipo de Bien -->
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" @bind-Value="conteo.IdTipoBien"
+                           Label="Tipo de Bien"
+                           Variant="Variant.Outlined"
+                           Required="true">
+                    @foreach (var item in tiposBien)
+                    {
+                        <MudSelectItem T="int?" Value="item.PkidTipoBien">
+                            @($"{item.TipoBienDescripcion}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Período de Conteo -->
+            <MudItem xs="12" md="6">
+                <MudSelect T="int?" @bind-Value="conteo.IdPeriodoConteo"
+                           Label="Período de Conteo"
+                           Variant="Variant.Outlined">
+                    <MudSelectItem T="int?" Value="null">— Sin período —</MudSelectItem>
+                    @foreach (var item in periodos)
+                    {
+                        <MudSelectItem T="int?" Value="item.PkidPeriodoConteo">
+                            @($"{item.CodigoPeriodo} - {item.Nombre}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Cantidad Inventario -->
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="conteo.CantidadInventario"
+                                 Label="Cantidad de Inventario"
+                                 Variant="Variant.Outlined"
+                                 Min="0.01m"
+                                 Max="999999999999.99m"
+                                 Format="0.00"
+                                 Culture="@NumberCulture"
+                                 Required="true"
+                                 RequiredError="La cantidad de inventario es requerida" />
+            </MudItem>
+
+            <!-- Fecha Inicio -->
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaInicio"
+                               Label="Fecha de Inicio"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               DateFormat="dd/MM/yyyy" />
+            </MudItem>
+
+            <!-- Fecha Fin -->
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="fechaFin"
+                               Label="Fecha de Fin (opcional)"
+                               Variant="Variant.Outlined"
+                               DateFormat="dd/MM/yyyy" />
+            </MudItem>
+
+
+        </MudGrid>
+    </BaseEntityForm>
+</BaseCrudDialog>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private BaseEntityForm<ConteoResponse> form = null!;
+    private ConteoResponse conteo = new() { Activo = true, CantidadInventario = 0 };
+
+    private DateTime? fechaInicio = DateTime.Today;
+    private DateTime? fechaFin;
+
+    private List<TipoBienResponse> tiposBien = new();
+    private List<PeriodoConteoResponse> periodos = new();
+
+    private string dialogTitle => Id.HasValue ? "Editar Conteo" : "Nuevo Conteo";
+    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTiposBien();
+        await CargarPeriodos();
+
+        if (Id.HasValue)
+        {
+            await CargarConteo();
+        }
+    }
+
+    private async Task CargarTiposBien()
+    {
+        try
+        {
+            var response = await _tipoBienService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "TipoBienDescripcion", SortDirection.Ascending);
+            if (response?.Success == true && response.Items != null)
+            {
+                tiposBien = response.Items.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar tipos de bien: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Warning);
+        }
+    }
+
+    private async Task CargarPeriodos()
+    {
+        try
+        {
+            var response = await _periodoService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Nombre", SortDirection.Ascending);
+            if (response?.Success == true && response.Items != null)
+            {
+                periodos = response.Items.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar períodos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Warning);
+        }
+    }
+
+    private async Task CargarConteo()
+    {
+        try
+        {
+            var response = await _service.GetByIdAsync(Id!.Value);
+            if (response?.Success == true && response.Data != null)
+            {
+                conteo = response.Data;
+                fechaInicio = conteo.FechaInicio;
+                fechaFin = conteo.FechaFin;
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al cargar conteo", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar conteo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+    }
+
+    private void HandleCancel() => MudDialog.Close(DialogResult.Cancel());
+
+    private async Task GuardarCambiosAsync(bool _)
+    {
+        if (!await form.ValidateAsync())
+        {
+            Snackbar.Add("Complete los campos requeridos", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(conteo.Descripcion))
+        {
+            Snackbar.Add("La descripción es requerida", Severity.Warning);
+            return;
+        }
+
+        if (!conteo.IdTipoBien.HasValue || conteo.IdTipoBien <= 0)
+        {
+            Snackbar.Add("Seleccione un tipo de bien", Severity.Warning);
+            return;
+        }
+
+        if (conteo.CantidadInventario <= 0)
+        {
+            Snackbar.Add("La cantidad de inventario debe ser mayor a 0", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            conteo.FechaInicio = fechaInicio ?? DateTime.Today;
+            conteo.FechaFin = fechaFin;
+
+            ApiResponse<ConteoResponse> response;
+
+            if (Id.HasValue)
+            {
+                response = await _service.UpdateAsync(conteo, Id.Value);
+            }
+            else
+            {
+                response = await _service.CreateAsync(conteo);
+            }
+
+            if (response?.Success == true)
+            {
+                Snackbar.Add(response.Message ?? "Guardado exitosamente", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Error al guardar", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+    }
+
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+}

@@ -18,7 +18,7 @@ namespace EG.Web.Services
         public event Action<AppThemeOption>? OnThemeChanged;
 
         public AppThemeOption SelectedOption { get; private set; } = AppThemeOption.Oscuro;
-        public bool IsDarkMode => SelectedOption is AppThemeOption.Oscuro;
+        public bool IsDarkMode => SelectedOption is AppThemeOption.Oscuro or AppThemeOption.Morena;
         public string ThemeKey => SelectedOption == AppThemeOption.Morena ? "morena" : "default";
         public string ThemeName => GetThemeName(SelectedOption);
 

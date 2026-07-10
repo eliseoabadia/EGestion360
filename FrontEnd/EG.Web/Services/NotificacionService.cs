@@ -2,6 +2,7 @@ using EG.Common.Helper;
 using EG.Web.Contracts;
 using EG.Web.Models;
 using EG.Web.Models.Notificaciones;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services;
@@ -14,8 +15,9 @@ public class NotificacionService : BaseService, INotificacionService
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : base(httpClient, jsRuntime, application, configuration)
+        ApplicationInstance application,
+        ILogger<NotificacionService> logger)
+        : base(httpClient, jsRuntime, application, configuration, logger)
     {
     }
 

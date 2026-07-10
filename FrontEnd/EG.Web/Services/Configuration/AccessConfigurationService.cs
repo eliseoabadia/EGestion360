@@ -3,6 +3,7 @@ using EG.Domain.Platform.DTOs.Requests.AccessConfiguration;
 using EG.Domain.Platform.DTOs.Responses.AccessConfiguration;
 using EG.Web.Contracts.Configuration;
 using EG.Web.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Configuration;
@@ -11,7 +12,8 @@ public sealed class AccessConfigurationService(
     IConfiguration configuration,
     HttpClient httpClient,
     IJSRuntime jsRuntime,
-    ApplicationInstance application) : BaseService(httpClient, jsRuntime, application, configuration), IAccessConfigurationService
+    ApplicationInstance application,
+    ILogger<AccessConfigurationService> logger) : BaseService(httpClient, jsRuntime, application, configuration, logger), IAccessConfigurationService
 {
     private const string Endpoint = "api/AccessConfiguration";
 

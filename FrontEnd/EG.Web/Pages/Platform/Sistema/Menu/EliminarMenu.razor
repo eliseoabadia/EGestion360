@@ -131,7 +131,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             MudDialog.Cancel();
         }
         finally
@@ -152,7 +152,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al verificar submenús: {ex.Message}", Severity.Warning);
+            Snackbar.Add($"Error al verificar submenús: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Warning);
         }
     }
 
@@ -178,7 +178,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al eliminar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al eliminar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

@@ -120,7 +120,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar partida: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar partida: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -160,7 +160,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

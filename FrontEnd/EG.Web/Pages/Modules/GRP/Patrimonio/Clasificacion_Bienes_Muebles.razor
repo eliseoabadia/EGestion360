@@ -421,7 +421,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar clasificacion de bienes: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar clasificacion de bienes: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<ClasificacionBienesMueblesResponse>
             {
                 Items = new List<ClasificacionBienesMueblesResponse>(),
@@ -540,7 +540,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

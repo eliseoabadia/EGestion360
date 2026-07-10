@@ -1,5 +1,6 @@
 using EG.ApiCoreBS.Extensions;
 using EG.ApiCoreBS.Auth;
+using EG.ApiCoreBS.Filters;
 using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
 using EG.Business.Mapping.General;
@@ -83,7 +84,11 @@ try
     builder.Services.AddSingleton<ReportStorageWebExtension>(serviceProvider =>
         serviceProvider.GetRequiredService<InMemoryReportStorageWebExtension>());
 
-    builder.Services.AddControllers()
+    builder.Services.AddScoped<ApiResultSanitizationFilter>();
+    builder.Services.AddControllers(options =>
+        {
+            options.Filters.AddService<ApiResultSanitizationFilter>();
+        })
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.PropertyNamingPolicy = null;

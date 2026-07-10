@@ -1,28 +1,46 @@
-<CascadingAuthenticationState>
-    <SessionGuard>
-        <Router AppAssembly="@typeof(App).Assembly">
-            <Found Context="routeData">
-                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                    <Authorizing>
-                        <SessionStatus Title="Validando permisos"
-                                       Message="Estamos preparando tu acceso en segundo plano." />
-                    </Authorizing>
-                    <NotAuthorized>
-                        <SessionStatus Title="Acceso no autorizado"
-                                       Message="Tu usuario no tiene permiso para abrir esta seccion."
-                                       ShowSpinner="false" />
-                    </NotAuthorized>
-                </AuthorizeRouteView>
-                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-            </Found>
-            <NotFound>
-                <PageTitle>Pagina no encontrada</PageTitle>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <SessionStatus Title="Pagina no encontrada"
-                                   Message="La direccion solicitada no existe o ya no esta disponible."
-                                   ShowSpinner="false" />
-                </LayoutView>
-            </NotFound>
-        </Router>
-    </SessionGuard>
-</CascadingAuthenticationState>
+<ErrorBoundary>
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <SessionGuard>
+                <Router AppAssembly="@typeof(App).Assembly">
+                    <Found Context="routeData">
+                        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                            <Authorizing>
+                                <SessionStatus Title="Validando permisos"
+                                               Message="Estamos preparando tu acceso en segundo plano." />
+                            </Authorizing>
+                            <NotAuthorized>
+                                <SessionStatus Title="Acceso no autorizado"
+                                               Message="Tu usuario no tiene permiso para abrir esta seccion."
+                                               ShowSpinner="false" />
+                            </NotAuthorized>
+                        </AuthorizeRouteView>
+                        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                    </Found>
+                    <NotFound>
+                        <PageTitle>Pagina no encontrada</PageTitle>
+                        <LayoutView Layout="@typeof(MainLayout)">
+                            <SessionStatus Title="Pagina no encontrada"
+                                           Message="La direccion solicitada no existe o ya no esta disponible."
+                                           ShowSpinner="false" />
+                        </LayoutView>
+                    </NotFound>
+                </Router>
+            </SessionGuard>
+        </CascadingAuthenticationState>
+    </ChildContent>
+    <ErrorContent>
+        <PageTitle>No fue posible mostrar la pagina</PageTitle>
+        <SessionStatus Title="No fue posible mostrar esta pagina"
+                       Message="El detalle se registro para revision. Recarga la aplicacion para continuar."
+                       ShowSpinner="false"
+                       ActionText="Recargar aplicacion"
+                       OnAction="ReloadApplication" />
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+
+    private void ReloadApplication() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+}

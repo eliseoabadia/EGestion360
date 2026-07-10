@@ -477,7 +477,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar bienes: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar bienes: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<BienResponse> { Items = new List<BienResponse>(), TotalItems = 0 };
         }
         finally
@@ -607,7 +607,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

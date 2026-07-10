@@ -1018,7 +1018,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar accesos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar accesos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1066,7 +1066,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar roles del usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar roles del usuario: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -1456,7 +1456,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar roles del usuario: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar roles del usuario: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1510,7 +1510,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

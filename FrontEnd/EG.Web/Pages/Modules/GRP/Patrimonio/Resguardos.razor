@@ -377,7 +377,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar resguardos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar resguardos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<ResguardoResponse> { Items = new List<ResguardoResponse>(), TotalItems = 0 };
         }
         finally
@@ -502,7 +502,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

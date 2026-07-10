@@ -199,7 +199,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"No fue posible cargar anteproyectos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"No fue posible cargar anteproyectos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

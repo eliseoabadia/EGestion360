@@ -289,7 +289,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar cotizaciones: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar cotizaciones: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -346,7 +346,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar cotizaciones: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar cotizaciones: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

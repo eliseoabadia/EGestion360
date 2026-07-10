@@ -164,7 +164,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -227,7 +227,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -253,8 +253,11 @@
             await SucursalStateService.InitializeAsync();
             EmpresaId = SucursalStateService.EmpresaId ?? 0;
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("InvestigacionMercadoDialog")
+                .LogWarning(ex, "No se pudo identificar la empresa al abrir la investigacion de mercado.");
+            AppSnackbar.Add("No se pudo identificar la empresa. Verifica el contexto antes de guardar.", Severity.Warning);
         }
     }
 

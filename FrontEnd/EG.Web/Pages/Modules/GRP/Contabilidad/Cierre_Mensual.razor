@@ -546,8 +546,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("CierreMensual")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el cierre mensual.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

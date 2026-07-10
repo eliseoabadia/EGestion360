@@ -4,6 +4,7 @@ using EG.Web.Contracts.Modules.GRP.Contabilidad;
 using EG.Web.Models;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Modules.GRP.Contabilidad
@@ -12,8 +13,9 @@ namespace EG.Web.Services.Modules.GRP.Contabilidad
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IPolizaAiImportService
+        ApplicationInstance application,
+        ILogger<PolizaAiImportService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IPolizaAiImportService
     {
         private const long MaxClientFileSize = 50 * 1024 * 1024;
         private const string Endpoint = "api/Poliza";
@@ -40,11 +42,11 @@ namespace EG.Web.Services.Modules.GRP.Contabilidad
                 MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                return await MultipartApiHelper.SendAsync<PolizaAiImportPreviewResponse>(_httpClient, httpRequest, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<PolizaAiImportPreviewResponse>(_httpClient, httpRequest, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<PolizaAiImportPreviewResponse>(ex);
+                return MultipartApiHelper.Failure<PolizaAiImportPreviewResponse>(ex, _logger);
             }
         }
 

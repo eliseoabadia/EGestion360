@@ -350,7 +350,7 @@
                }
                catch (Exception ex)
                {
-                   Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
+                   Snackbar.Add($"Error al verificar permisos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
                    Task.Delay(1000);
                    NavigationManager.NavigateTo("/", replace: true);
                }
@@ -359,7 +359,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos iniciales: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos iniciales: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -371,7 +371,7 @@
     //     }
     //     catch (Exception ex)
     //     {
-    //         Snackbar.Add($"Error al cargar menús padre: {ex.Message}", Severity.Error);
+    //         Snackbar.Add($"Error al cargar menús padre: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
     //         listadoMenusPadre = new();
     //     }
     //     finally
@@ -431,7 +431,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar menús: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar menús: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<MenuItemsResponse>
             {
                 Items = new List<MenuItemsResponse>(),
@@ -533,7 +533,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear menú: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al crear menú: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -564,7 +564,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear menú: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al crear menú: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -598,7 +598,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al editar menú: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al editar menú: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -635,7 +635,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al eliminar menú: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al eliminar menú: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -729,7 +729,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

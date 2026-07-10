@@ -245,7 +245,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar el ingreso: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar el ingreso: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -304,7 +304,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -332,7 +332,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al autorizar el ingreso: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al autorizar el ingreso: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

@@ -296,7 +296,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<EgresoAutorizadoResponse> { Items = new List<EgresoAutorizadoResponse>(), TotalItems = 0 };
         }
         finally
@@ -485,7 +485,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -535,7 +535,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -576,8 +576,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("PresupuestoAutorizado")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el presupuesto autorizado.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

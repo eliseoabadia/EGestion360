@@ -14,6 +14,7 @@ namespace EG.Web.Auth
     {
         private readonly IJSRuntime _js;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<AuthenticationProviderJWT> _logger;
         private static readonly string TOKEN_KEY = "authToken";
         private static readonly string DB_CLAIMS_KEY = "dbPermissionClaims";
         private static readonly string USER_ID_KEY = "userId";
@@ -26,10 +27,14 @@ namespace EG.Web.Auth
         private string? _activeToken;
         private AuthenticationState? _activeAuthenticationState;
 
-        public AuthenticationProviderJWT(IJSRuntime js, HttpClient httpClient)
+        public AuthenticationProviderJWT(
+            IJSRuntime js,
+            HttpClient httpClient,
+            ILogger<AuthenticationProviderJWT> logger)
         {
             _js = js;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -93,9 +98,9 @@ namespace EG.Web.Auth
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", normalized);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignorar fallos al establecer el header para no romper el flujo de login
+                _logger.LogWarning(ex, "No se pudo establecer el encabezado de autorizacion al iniciar sesion.");
             }
 
             NotifyAuthenticationStateChanged(Task.FromResult(authState));
@@ -210,7 +215,7 @@ namespace EG.Web.Auth
                 : trimmed;
         }
 
-        private static List<Claim> ParseClaimsFromJwt(string jwt)
+        private List<Claim> ParseClaimsFromJwt(string jwt)
         {
             try
             {
@@ -256,8 +261,9 @@ namespace EG.Web.Auth
 
                 return claims;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No se pudo interpretar el token de autenticacion recibido.");
                 return new List<Claim>();
             }
         }
@@ -359,8 +365,9 @@ namespace EG.Web.Auth
                 foreach (var item in dbClaims)
                     AddPermissionEntry(item.Group, item.SubGroup, item.Values);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No se pudieron restaurar los permisos almacenados del usuario.");
             }
         }
 
@@ -395,8 +402,9 @@ namespace EG.Web.Auth
                     AddPermissionEntry(item.Group, item.SubGroup, item.Values);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No se pudieron actualizar los permisos del usuario desde la API.");
             }
         }
 

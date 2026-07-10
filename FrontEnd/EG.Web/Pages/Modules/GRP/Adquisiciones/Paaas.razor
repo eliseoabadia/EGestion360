@@ -539,7 +539,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<PaaaResponse>
             {
                 Items = new List<PaaaResponse>(),
@@ -593,8 +593,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("Paaas")
+                .LogWarning(ex, "No se pudo recuperar la empresa seleccionada para PAAAS.");
+            AppSnackbar.Add("No se pudo identificar la empresa seleccionada. Verifica el contexto antes de continuar.", Severity.Warning);
         }
     }
 
@@ -658,7 +661,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -774,7 +777,12 @@
             if (response?.Success == true && response.Data != null)
                 SelectedPaaa = response.Data;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("Paaas")
+                .LogWarning(ex, "No se pudo actualizar el registro PAAAS seleccionado.");
+            AppSnackbar.Add("La lista se actualizara, pero no fue posible refrescar el registro seleccionado.", Severity.Warning);
+        }
         await ReloadPartidas();
         await ReloadBienes();
         StateHasChanged();
@@ -1036,7 +1044,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -1108,7 +1116,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

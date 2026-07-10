@@ -278,7 +278,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<EgresoDisponibleResponse> { Items = [], TotalItems = 0 };
         }
         finally
@@ -331,7 +331,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al exportar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -466,8 +466,11 @@
             _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
             _currencyName = string.IsNullOrWhiteSpace(response.Data.MonedaBaseEmpresa) ? "Peso Mexicano" : response.Data.MonedaBaseEmpresa;
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("PresupuestoDisponible")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para el presupuesto disponible.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

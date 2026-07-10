@@ -340,7 +340,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar estados: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar estados: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -373,7 +373,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar empresa: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresa: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -533,7 +533,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -582,7 +582,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar catálogos de nómina: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar catálogos de nómina: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

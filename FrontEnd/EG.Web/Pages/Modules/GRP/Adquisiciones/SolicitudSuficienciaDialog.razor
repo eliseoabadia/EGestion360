@@ -341,7 +341,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -439,7 +439,9 @@
         catch (Exception ex)
         {
             _previewOk = false;
-            _previewMessage = $"Error al calcular la vista previa: {ex.Message}";
+            _previewMessage = "No fue posible calcular la vista previa. Revisa los datos e intenta nuevamente.";
+            AppLoggerFactory.CreateLogger("SolicitudSuficienciaDialog")
+                .LogError(ex, "No se pudo calcular la vista previa de suficiencia.");
         }
         finally
         {
@@ -537,7 +539,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 

@@ -32,6 +32,8 @@ namespace EG.Web.Models.Configuration
 
     public class MenuResponse
     {
-        public List<MenuItem> Items { get; set; }
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public List<MenuItem> Items { get; set; } = new();
     }
 }

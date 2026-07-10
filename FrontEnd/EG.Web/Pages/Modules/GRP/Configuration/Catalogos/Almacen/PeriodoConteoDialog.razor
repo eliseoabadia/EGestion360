@@ -169,7 +169,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar sucursales: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar sucursales: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -186,7 +186,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar tipos de conteo: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar tipos de conteo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -208,7 +208,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar período: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar período: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -274,7 +274,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 }

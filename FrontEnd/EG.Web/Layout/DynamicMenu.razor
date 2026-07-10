@@ -12,6 +12,8 @@
 @inject AuthService AuthService
 @inject IJSRuntime JsRuntime
 @inject MenuStateService MenuStateService
+@inject ISnackbar Snackbar
+@inject ILogger<DynamicMenu> Logger
 
 <AuthorizeView>
     <Authorized>
@@ -185,6 +187,8 @@
             {
                 Items = new();
                 RebuildMenuIndexes();
+                _loadError = "Tu sesion ya no esta disponible. Inicia sesion nuevamente.";
+                Logger.LogWarning("No se cargo el menu porque el navegador no tiene un token de sesion.");
                 return;
             }
 
@@ -194,6 +198,8 @@
             {
                 Items = new();
                 RebuildMenuIndexes();
+                _loadError = "No pudimos identificar tu usuario. Cierra sesion e ingresa nuevamente.";
+                Logger.LogWarning("No se cargo el menu porque no fue posible resolver el identificador del usuario.");
                 return;
             }
 
@@ -206,16 +212,30 @@
             }
 
             var result = await NavigateService.GetMenuAsync(_userId);
+            if (result is null || !result.Success)
+            {
+                Items = new();
+                RebuildMenuIndexes();
+                _loadError = string.IsNullOrWhiteSpace(result?.Message)
+                    ? "No pudimos cargar el menu. Intenta recargar o avisa a TI."
+                    : result.Message;
+                Logger.LogWarning("La carga del menu no fue exitosa. UserId={UserId}; Message={Message}", _userId, result?.Message);
+                Snackbar.Add(_loadError, Severity.Warning);
+                return;
+            }
+
             Items = NormalizeMenuItems(result?.Items);
             MenuStateService.Initialize(_userId, Items);
             RebuildMenuIndexes();
             SyncExpandedStateWithCurrentRoute();
         }
-        catch
+        catch (Exception ex)
         {
             Items = new();
             RebuildMenuIndexes();
             _loadError = "No pudimos cargar el menu. Intenta recargar o avisa a TI.";
+            Logger.LogError(ex, "Error inesperado al construir el menu del usuario {UserId}.", _userId);
+            Snackbar.Add(_loadError, Severity.Error);
         }
         finally
         {
@@ -458,7 +478,11 @@
     private async Task NavigateToSearchResultAsync(SearchResultItem result)
     {
         if (string.IsNullOrWhiteSpace(result.Route))
+        {
+            Logger.LogWarning("El resultado de menu {MenuName} no tiene una ruta configurada.", result.Name);
+            Snackbar.Add("Esta opcion no tiene una ruta configurada. Avisa al administrador.", Severity.Warning);
             return;
+        }
 
         ClearSearch();
         await NavigateToRouteAsync(result.Route);
@@ -478,7 +502,10 @@
     private async Task NavigateToRouteAsync(string route)
     {
         if (_navigationLocked)
+        {
+            Snackbar.Add("Ya estamos abriendo una opcion. Espera un momento.", Severity.Info);
             return;
+        }
 
         _navigationLocked = true;
         _currentPath = NormalizeRoute(route);
@@ -499,6 +526,11 @@
         {
             NavigationManager.NavigateTo(route);
             await Task.Delay(180);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "No fue posible navegar a la ruta {Route}.", route);
+            Snackbar.Add("No fue posible abrir la opcion seleccionada. Intenta nuevamente.", Severity.Error);
         }
         finally
         {
@@ -529,13 +561,14 @@
             var completed = await Task.WhenAny(task, Task.Delay(timeoutMs));
             return completed == task ? await task : null;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogDebug(ex, "No fue posible leer {StorageKey} desde localStorage.", key);
             return null;
         }
     }
 
-    private static int? ParseUserIdFromToken(string jwt)
+    private int? ParseUserIdFromToken(string jwt)
     {
         try
         {
@@ -568,8 +601,9 @@
                     return numericFromText;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogWarning(ex, "No fue posible interpretar el identificador del usuario desde el token.");
             return null;
         }
 

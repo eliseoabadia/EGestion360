@@ -1449,8 +1449,10 @@
         {
             await ReleaseRagSessionAsync(showSnackbar: false);
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("AnteproyectoEgresosAiImportDialog")
+                .LogWarning(ex, "No se pudo liberar la sesion RAG al cerrar el asistente de anteproyecto.");
         }
     }
 }

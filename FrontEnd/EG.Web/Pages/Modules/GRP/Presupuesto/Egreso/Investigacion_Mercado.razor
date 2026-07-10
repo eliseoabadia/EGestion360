@@ -486,7 +486,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar estudios: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar estudios: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<EstudioMercadoResponse>
             {
                 Items = new List<EstudioMercadoResponse>(),
@@ -791,7 +791,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -831,7 +831,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al enviar correo: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al enviar correo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -857,7 +857,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return false;
         }
     }
@@ -908,8 +908,11 @@
                 _empresaId = empresaId;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("InvestigacionMercado")
+                .LogWarning(ex, "No se pudo recuperar la empresa seleccionada.");
+            AppSnackbar.Add("No se pudo identificar la empresa seleccionada. Verifica el contexto antes de continuar.", Severity.Warning);
         }
     }
 
@@ -927,8 +930,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("InvestigacionMercado")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

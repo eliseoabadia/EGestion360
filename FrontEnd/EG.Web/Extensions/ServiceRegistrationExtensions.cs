@@ -270,6 +270,7 @@ public static class ApiServiceExtensions
                 sp.GetRequiredService<HttpClient>(),
                 sp.GetRequiredService<IJSRuntime>(),
                 sp.GetRequiredService<ApplicationInstance>(),
+                sp.GetRequiredService<ILogger<GenericCrudService<TResponse>>>(),
                 endpoint
             ));
     }

@@ -1,6 +1,9 @@
+using EG.Common;
 using EG.Common.Enums;
 using EG.Common.Helper;
 using EG.Web.Helpers;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using System.Net;
 using System.Net.Http.Headers;
@@ -16,6 +19,7 @@ namespace EG.Web.Services
         protected readonly HttpClient _httpClient;
         protected readonly string _baseUrl;
         protected readonly IConfiguration _configuration;
+        protected readonly ILogger _logger;
 
         public static readonly string TOKENKEY = "authToken";
         private const string EMPRESA_KEY = "empresa_seleccionada";
@@ -27,12 +31,18 @@ namespace EG.Web.Services
 
         public bool IsAuthenticated { get; protected set; } = false;
 
-        protected BaseService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application, IConfiguration configuration)
+        protected BaseService(
+            HttpClient httpClient,
+            IJSRuntime jsRuntime,
+            ApplicationInstance application,
+            IConfiguration configuration,
+            ILogger? logger = null)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
             _application = application;
             _configuration = configuration;
+            _logger = logger ?? NullLogger.Instance;
             _baseUrl = httpClient.BaseAddress?.ToString()
               ?? _configuration["ApiSetting:baseUrl"]
               ?? string.Empty;
@@ -70,8 +80,9 @@ namespace EG.Web.Services
             {
                 rawToken = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKENKEY);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "No fue posible leer el token con la API directa de localStorage; se usara el mecanismo alterno.");
                 rawToken = await _jsRuntime.GetFromLocalStorage(TOKENKEY);
             }
 
@@ -144,8 +155,9 @@ namespace EG.Web.Services
                     ? empresaId
                     : null;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "No fue posible obtener la empresa seleccionada desde localStorage.");
                 return null;
             }
         }
@@ -195,20 +207,37 @@ namespace EG.Web.Services
                     return NormalizeSuccessfulResponse(responseBody, result);
                 }
 
+                var userMessage = ExtractErrorMessage(responseBody, response.StatusCode);
+                LogHttpFailure(method, endpoint, response.StatusCode, responseBody);
+
                 var errorResult = DeserializeResponse<T>(responseBody);
                 if (errorResult != null)
                 {
-                    EnsureErrorContract(errorResult, ExtractErrorMessage(responseBody, response.StatusCode), ApiResponseCode.Error);
+                    EnsureErrorContract(errorResult, userMessage, ApiResponseCode.Error);
                     return errorResult;
                 }
 
-                Console.Error.WriteLine($"Error: {response.StatusCode} - {TruncateForLog(responseBody)}");
-                return CreateErrorContract<T>(ExtractErrorMessage(responseBody, response.StatusCode), ApiResponseCode.Error);
+                return CreateErrorContract<T>(userMessage, ApiResponseCode.Error);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} no tiene una sesion valida.", method, endpoint);
+                return CreateErrorContract<T>("Tu sesion ya no esta disponible. Inicia sesion nuevamente.", ApiResponseCode.Unauthorized);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} fue cancelada o excedio el tiempo de espera.", method, endpoint);
+                return CreateErrorContract<T>("La solicitud tardo demasiado. Intenta nuevamente.", ApiResponseCode.Error);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "No fue posible comunicar con la API en {Method} {Endpoint}.", method, endpoint);
+                return CreateErrorContract<T>("No fue posible comunicar con el servidor. Revisa tu conexion e intenta nuevamente.", ApiResponseCode.Error);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error en {method} {endpoint}: {ex.Message}");
-                return CreateErrorContract<T>(ex.Message, ApiResponseCode.Error);
+                _logger.LogError(ex, "Error inesperado en la solicitud {Method} {Endpoint}.", method, endpoint);
+                return CreateErrorContract<T>(UserFacingMessages.UnexpectedError, ApiResponseCode.Error);
             }
         }
 
@@ -251,9 +280,20 @@ namespace EG.Web.Services
 
                 return (default, false, ExtractErrorMessage(responseBody, response.StatusCode));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} no tiene una sesion valida.", method, endpoint);
+                return (default, false, "Tu sesion ya no esta disponible. Inicia sesion nuevamente.");
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} fue cancelada o excedio el tiempo de espera.", method, endpoint);
+                return (default, false, "La solicitud tardo demasiado. Intenta nuevamente.");
+            }
             catch (Exception ex)
             {
-                return (default, false, $"Excepcion: {ex.Message}");
+                _logger.LogError(ex, "Error inesperado en la solicitud {Method} {Endpoint}.", method, endpoint);
+                return (default, false, UserFacingMessages.UnexpectedError);
             }
         }
 
@@ -283,8 +323,9 @@ namespace EG.Web.Services
             {
                 return JsonSerializer.Deserialize<T>(responseBody, _jsonOptions);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No fue posible interpretar una respuesta de tipo {ResponseType}.", typeof(T).FullName);
                 return default;
             }
         }
@@ -338,8 +379,9 @@ namespace EG.Web.Services
 
                 return response;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No fue posible normalizar una respuesta exitosa de tipo {ResponseType}.", typeof(T).FullName);
                 return result;
             }
         }
@@ -349,7 +391,7 @@ namespace EG.Web.Services
             return type.IsGenericType && type.GetGenericTypeDefinition().Name == "ApiResponse`1";
         }
 
-        private static bool LooksLikeApiResponse(string responseBody)
+        private bool LooksLikeApiResponse(string responseBody)
         {
             try
             {
@@ -378,8 +420,9 @@ namespace EG.Web.Services
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "La respuesta no tiene el formato de un contrato API.");
             }
 
             return false;
@@ -387,29 +430,64 @@ namespace EG.Web.Services
 
         private static string ExtractErrorMessage(string responseBody, HttpStatusCode statusCode)
         {
-            if (string.IsNullOrWhiteSpace(responseBody))
+            if ((int)statusCode >= 500)
             {
-                return $"Error {(int)statusCode}: {statusCode}";
+                return UserFacingMessages.UnexpectedError;
             }
 
-            try
+            if (!string.IsNullOrWhiteSpace(responseBody))
             {
-                using var document = JsonDocument.Parse(responseBody);
-                if (document.RootElement.TryGetProperty("message", out var message) ||
-                    document.RootElement.TryGetProperty("Message", out message))
+                try
                 {
-                    var value = message.GetString();
-                    if (!string.IsNullOrWhiteSpace(value))
+                    using var document = JsonDocument.Parse(responseBody);
+                    if (document.RootElement.TryGetProperty("message", out var message) ||
+                        document.RootElement.TryGetProperty("Message", out message))
                     {
-                        return value;
+                        var value = message.GetString();
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            return value;
+                        }
                     }
                 }
-            }
-            catch
-            {
+                catch (JsonException)
+                {
+                    // Las respuestas no estructuradas nunca se muestran directamente al usuario.
+                }
             }
 
-            return responseBody;
+            return statusCode switch
+            {
+                HttpStatusCode.BadRequest => "La informacion enviada no es valida. Revisa los datos e intenta nuevamente.",
+                HttpStatusCode.Unauthorized => "Tu sesion ya no esta disponible. Inicia sesion nuevamente.",
+                HttpStatusCode.Forbidden => "No tienes permisos para realizar esta operacion.",
+                HttpStatusCode.NotFound => "La informacion solicitada ya no existe o no esta disponible.",
+                HttpStatusCode.Conflict => "La operacion no puede completarse por el estado actual de la informacion.",
+                HttpStatusCode.RequestTimeout => "La solicitud tardo demasiado. Intenta nuevamente.",
+                HttpStatusCode.TooManyRequests => "Hay demasiadas solicitudes en curso. Espera un momento e intenta nuevamente.",
+                _ => UserFacingMessages.OperationFailed("completar la solicitud")
+            };
+        }
+
+        private void LogHttpFailure(HttpMethod method, string endpoint, HttpStatusCode statusCode, string responseBody)
+        {
+            if ((int)statusCode >= 500)
+            {
+                _logger.LogError(
+                    "La API respondio {StatusCode} en {Method} {Endpoint}. Respuesta={ResponseBody}",
+                    (int)statusCode,
+                    method,
+                    endpoint,
+                    TruncateForLog(responseBody));
+                return;
+            }
+
+            _logger.LogWarning(
+                "La API respondio {StatusCode} en {Method} {Endpoint}. Respuesta={ResponseBody}",
+                (int)statusCode,
+                method,
+                endpoint,
+                TruncateForLog(responseBody));
         }
 
         private static string TruncateForLog(string value, int maxLength = 600)
@@ -422,7 +500,7 @@ namespace EG.Web.Services
             return $"{value[..maxLength]}...";
         }
 
-        private static T? CreateErrorContract<T>(string message, ApiResponseCode code)
+        private T? CreateErrorContract<T>(string message, ApiResponseCode code)
         {
             var type = typeof(T);
             if (type.IsValueType || type == typeof(string))
@@ -436,13 +514,14 @@ namespace EG.Web.Services
                 EnsureErrorContract(result, message, code);
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No fue posible crear el contrato de error {ResponseType}.", typeof(T).FullName);
                 return default;
             }
         }
 
-        private static T? CreateSuccessContract<T>(string message)
+        private T? CreateSuccessContract<T>(string message)
         {
             var type = typeof(T);
             if (type.IsValueType || type == typeof(string))
@@ -456,8 +535,9 @@ namespace EG.Web.Services
                 SetSuccessfulContract(type, result, message, 0);
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "No fue posible interpretar una respuesta de tipo {ResponseType}.", typeof(T).FullName);
                 return default;
             }
         }
@@ -558,7 +638,8 @@ namespace EG.Web.Services
             }
             catch (Exception ex)
             {
-                return (false, $"Error: {ex.Message}");
+                _logger.LogError(ex, "Error inesperado al ejecutar una operacion del cliente.");
+                return (false, UserFacingMessages.UnexpectedError);
             }
         }
     }

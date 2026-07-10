@@ -258,7 +258,10 @@
         }
         catch (Exception ex)
         {
-            _message = $"{ErrorPrefix}: {ex.Message}";
+            _message = UserFacingExceptionMessages.ForDisplay(
+                AppLoggerFactory,
+                ex,
+                $"{ErrorPrefix}. Revisa la informacion e intenta nuevamente.");
             _messageSeverity = Severity.Error;
         }
         finally

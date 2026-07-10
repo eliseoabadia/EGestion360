@@ -457,7 +457,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar cotizaciones: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar cotizaciones: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<CotizacionResponse> { Items = new List<CotizacionResponse>(), TotalItems = 0 };
         }
         finally
@@ -671,7 +671,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al enviar correo: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al enviar correo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -764,7 +764,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -811,8 +811,11 @@
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("Cotizaciones")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para cotizaciones.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 

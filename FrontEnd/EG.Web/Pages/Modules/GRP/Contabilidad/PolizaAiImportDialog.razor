@@ -1256,8 +1256,10 @@
         {
             await ReleaseRagSessionAsync(showSnackbar: false);
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("PolizaAiImportDialog")
+                .LogWarning(ex, "No se pudo liberar la sesion RAG al cerrar el asistente de polizas.");
         }
     }
 

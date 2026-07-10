@@ -1,0 +1,1100 @@
+@page "/Presupuesto/Tesoreria/Inversiones/Listado_Inversiones"
+@page "/Presupuesto/Tesorería/Inversiones/Listado_Inversiones"
+@using System.Globalization
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Tesoreria
+@using EG.Dommain.DTOs.Responses
+@using EG.Web.Contracts
+@using EG.Web.Pages.Shared
+@using EG.Web.Pages.Shared.SoporteDocumental
+@using EG.Web.Shared
+@inherits BaseCrudPage<InversionResponse, InversionResponse>
+
+@inject IGenericCrudService<InteresResponse> InteresService
+@inject IGenericCrudService<RetiroResponse> RetiroService
+@inject IGenericCrudService<PolizaDetalleResponse> PolizaDetalleService
+@inject IGenericCrudService<PolizaResponse> PolizaService
+@inject IGenericCrudService<UsuarioResponse> UsuarioService
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="px-3 d-flex flex-column investment-page-container" MaxWidth="MaxWidth.False">
+        @if (SelectedInversion == null)
+        {
+            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+                <PageHeader Title="Listado de Inversiones"
+                            Subtitle="Control integral de inversiones y su detalle contable (debe / haber)"
+                            Icon="@Icons.Material.Filled.AssuredWorkload"
+                            CanCreate="@CanCreate"
+                            OnCreate="CreateItem"
+                            OnRefresh="() => table.ReloadData()" />
+
+                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
+                    <GenericTable TItem="InversionResponse"
+                                  @ref="table"
+                                  Title="Inversiones"
+                                  SearchPlaceholder="Buscar por cuenta, instrumento o monto..."
+                                  ShowExportButton="@CanExport"
+                                  ServerDataFunc="LoadServerData"
+                                  ExportFunc="ExportToExcel"
+                                  SearchString="@SearchString"
+                                  SearchStringChanged="(s) => SearchString = s"
+                                  OnSearch="OnSearch">
+                        <Header>
+                            <MudTh>Acciones</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="PkidInversion" T="InversionResponse">ID</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="CuentaBan" T="InversionResponse">Cuenta bancaria</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Instrumento" T="InversionResponse">Instrumento</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Monto" T="InversionResponse">Monto</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Intereses" T="InversionResponse">Intereses</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Retiros" T="InversionResponse">Retiros</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="Saldo" T="InversionResponse">Saldo</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="FechaInversion" T="InversionResponse">Fecha inversion</MudTableSortLabel></MudTh>
+                            <MudTh>Estado</MudTh>
+                        </Header>
+                        <Row Context="item">
+                            <MudTd>
+                                <MudTooltip Text="Ver detalle">
+                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectInversion(item))" />
+                                </MudTooltip>
+                                <DocumentSupportButton Modulo="Inversiones"
+                                                       SubModulo="Listado_Inversiones"
+                                                       Controlador="Inversion"
+                                                       EntidadId="@item.PkidInversion"
+                                                       RegistroTitulo="@TextOrDash(item.Instrumento)"
+                                                       RegistroDescripcion="@TextOrDash(item.CuentaBan)" />
+                                <MudTooltip Text="Editar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Visible="@CanUpdate"
+                                                   Disabled="@IsLocked(item.PkidInversion)"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => EditItem(item.PkidInversion))" />
+                                </MudTooltip>
+                                <MudTooltip Text="Eliminar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Visible="@CanDelete"
+                                                   Disabled="@IsLocked(item.PkidInversion)"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteItem(item.PkidInversion))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd>@item.PkidInversion</MudTd>
+                            <MudTd>@TextOrDash(item.CuentaBan)</MudTd>
+                            <MudTd>@TextOrDash(item.Instrumento)</MudTd>
+                            <MudTd>@Money(item.Monto)</MudTd>
+                            <MudTd>@Money(item.Intereses)</MudTd>
+                            <MudTd>@Money(item.Retiros)</MudTd>
+                            <MudTd>@Money(item.Saldo ?? item.Monto)</MudTd>
+                            <MudTd>@item.FechaInversion.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>
+                                @if (IsLocked(item.PkidInversion))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Autorizada</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">En captura</MudChip>
+                                }
+                            </MudTd>
+                        </Row>
+                    </GenericTable>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="investment-detail-shell">
+                <MudPaper Elevation="0" Class="investment-hero">
+                    <div class="investment-hero__main">
+                        <MudTooltip Text="Volver al listado">
+                            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                                           OnClick="BackToTable"
+                                           Class="investment-hero__back" />
+                        </MudTooltip>
+
+                        <div class="investment-hero__identity">
+                            <div class="investment-hero__eyebrow">
+                                <MudIcon Icon="@Icons.Material.Filled.AssuredWorkload" Size="Size.Small" />
+                                Portafolio de inversion
+                            </div>
+                            <MudText Typo="Typo.h5" Class="investment-hero__title">@TextOrDash(SelectedInversion.Instrumento)</MudText>
+                            <MudText Typo="Typo.body2" Class="investment-hero__subtitle">@TextOrDash(SelectedInversion.CuentaBan)</MudText>
+                        </div>
+                    </div>
+
+                    <div class="investment-hero__actions">
+                        <MudChip T="string" Size="Size.Small" Class="investment-status-chip" Color="@(SelectedLocked ? Color.Success : Color.Warning)">
+                            @(SelectedLocked ? "Autorizada" : "Pendiente de autorizacion")
+                        </MudChip>
+                        <DocumentSupportButton Modulo="Inversiones"
+                                               SubModulo="Listado_Inversiones"
+                                               Controlador="Inversion"
+                                               EntidadId="@SelectedInversion.PkidInversion"
+                                               RegistroTitulo="@TextOrDash(SelectedInversion.Instrumento)"
+                                               RegistroDescripcion="@TextOrDash(SelectedInversion.CuentaBan)" />
+
+                        @if (CanCreate)
+                        {
+                            <MudTooltip Text="Agregar retiro">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Warning"
+                                           StartIcon="@Icons.Material.Filled.RemoveCircleOutline"
+                                           Disabled="@SelectedLocked"
+                                           OnClick="AddRetiro"
+                                           Size="Size.Small"
+                                           Class="investment-action">
+                                    Retiro
+                                </MudButton>
+                            </MudTooltip>
+                        }
+                        <MudTooltip Text="Actualizar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                           OnClick="RefreshSelectedAndChildren"
+                                           Class="investment-refresh" />
+                        </MudTooltip>
+                    </div>
+                </MudPaper>
+
+                <MudGrid Spacing="2" Class="investment-kpi-grid">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Elevation="0" Class="investment-kpi investment-kpi--primary">
+                            <div class="investment-kpi__label">Monto inicial</div>
+                            <div class="investment-kpi__value">@Money(SelectedInversion.Monto)</div>
+                            <div class="investment-kpi__meta">Base de inversion</div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Elevation="0" Class="investment-kpi">
+                            <div class="investment-kpi__label">Intereses</div>
+                            <div class="investment-kpi__value investment-kpi__value--positive">@Money(InteresesBoardTotal)</div>
+                            <div class="investment-kpi__meta">Rendimiento acumulado</div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Elevation="0" Class="investment-kpi">
+                            <div class="investment-kpi__label">Retiros</div>
+                            <div class="investment-kpi__value investment-kpi__value--warning">@Money(RetirosBoardTotal)</div>
+                            <div class="investment-kpi__meta">Salidas registradas</div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Elevation="0" Class="investment-kpi investment-kpi--primary">
+                            <div class="investment-kpi__label">Total menos retiros</div>
+                            <div class="investment-kpi__value">@Money(TotalMenosRetiros)</div>
+                            <div class="investment-kpi__meta">Monto + intereses - retiros</div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                <MudPaper Elevation="0" Class="investment-workspace investment-command-board">
+                    <div class="board-toolbar">
+                        <div>
+                            <div class="board-eyebrow">Vista financiera</div>
+                            <div class="board-title">Intereses y retiros de la inversion</div>
+                        </div>
+                        <div class="board-totals">
+                            <span>Total <strong>@Money(TotalConIntereses)</strong></span>
+                            <span>Retiros <strong>@Money(RetirosBoardTotal)</strong></span>
+                            <span>Total menos retiros <strong>@Money(TotalMenosRetiros)</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="board-grid">
+                        <section class="board-panel board-panel--intereses">
+                            <div class="board-panel__header">
+                                <div>
+                                    <span class="board-panel__label">Intereses</span>
+                                    <strong>@Money(InteresesBoardTotal)</strong>
+                                </div>
+                                <MudTooltip Text="Los intereses se calculan al guardar el encabezado">
+                                    <MudIcon Icon="@Icons.Material.Filled.AutoGraph"
+                                             Size="Size.Small"
+                                             Class="board-info-icon board-info-icon--success" />
+                                </MudTooltip>
+                            </div>
+                            <div class="board-table-scroll">
+                                <table class="board-table board-table--compact">
+                                    <thead><tr><th>Fecha</th><th>Monto</th></tr></thead>
+                                    <tbody>
+                                        @if (_interesesBoard.Count == 0)
+                                        {
+                                            <tr><td colspan="2" class="board-empty">Sin intereses calculados</td></tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var item in _interesesBoard)
+                                            {
+                                                <tr>
+                                                    <td>@item.FechaGeneracion.ToString("dd/MM/yyyy")</td>
+                                                    <td class="money-cell money-cell--positive">@Money(item.Monto)</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="board-panel board-panel--retiros">
+                            <div class="board-panel__header">
+                                <div>
+                                    <span class="board-panel__label">Retiros</span>
+                                    <strong>@Money(RetirosBoardTotal)</strong>
+                                </div>
+                                <MudTooltip Text="Agregar retiro">
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline"
+                                                   Disabled="@(SelectedLocked || !CanCreate)"
+                                                   OnClick="AddRetiro"
+                                                   Size="Size.Small"
+                                                   Class="board-icon-action board-icon-action--warning" />
+                                </MudTooltip>
+                            </div>
+                            <div class="board-table-scroll">
+                                <table class="board-table board-table--compact">
+                                    <thead><tr><th>Acciones</th><th>Tipo</th><th>Fecha</th><th>Monto</th></tr></thead>
+                                    <tbody>
+                                        @if (_retirosBoard.Count == 0)
+                                        {
+                                            <tr><td colspan="4" class="board-empty">Sin retiros</td></tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var item in _retirosBoard)
+                                            {
+                                                <tr>
+                                                    <td class="board-actions-cell">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditRetiro(item.PkidRetiro))" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteRetiro(item.PkidRetiro))" />
+                                                    </td>
+                                                    <td>@(string.IsNullOrWhiteSpace(item.TipoRetiroDescripcion) ? "-" : item.TipoRetiroDescripcion)</td>
+                                                    <td>@item.FechaRetiro.ToString("dd/MM/yyyy")</td>
+                                                    <td class="money-cell money-cell--warning">@Money(item.Monto)</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </MudPaper>
+            </div>
+        }
+    </MudContainer>
+</AccessVerification>
+
+<style>
+    .investment-detail-shell {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: 14px;
+        min-height: 0;
+        overflow: hidden;
+        padding: 2px 0 0;
+    }
+
+    .investment-page-container {
+        height: calc(100vh - 146px);
+        max-height: calc(100vh - 146px);
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .investment-hero {
+        align-items: stretch;
+        background:
+            linear-gradient(135deg, rgba(35, 116, 255, .20) 0%, rgba(12, 26, 48, .96) 42%, rgba(14, 23, 39, .98) 100%);
+        border: 1px solid rgba(91, 157, 255, .32);
+        border-radius: 8px;
+        box-shadow: 0 18px 45px rgba(3, 9, 22, .28);
+        color: #f8fbff;
+        display: flex;
+        flex-shrink: 0;
+        gap: 18px;
+        justify-content: space-between;
+        overflow: hidden;
+        padding: 18px;
+        position: relative;
+    }
+
+    .investment-hero::before {
+        background: linear-gradient(90deg, #38d6ae, #2f7cff, #8b5cf6);
+        content: "";
+        height: 3px;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    .investment-hero__main,
+    .investment-hero__actions {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .investment-hero__actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .investment-hero__back,
+    .investment-refresh {
+        background: rgba(255, 255, 255, .09);
+        border: 1px solid rgba(255, 255, 255, .18);
+        color: #dce9ff;
+    }
+
+    .investment-hero__identity {
+        min-width: 0;
+    }
+
+    .investment-hero__eyebrow {
+        align-items: center;
+        color: #74e4c8;
+        display: flex;
+        font-size: .72rem;
+        font-weight: 800;
+        gap: 7px;
+        letter-spacing: 0;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .investment-hero__title {
+        color: #ffffff;
+        font-weight: 800;
+        line-height: 1.1;
+        max-width: 780px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .investment-hero__subtitle {
+        color: rgba(232, 240, 255, .78);
+        margin-top: 3px;
+    }
+
+    .investment-status-chip {
+        border: 1px solid rgba(255, 255, 255, .18);
+        font-weight: 800;
+    }
+
+    .investment-action {
+        border-radius: 6px;
+        font-weight: 800;
+        min-width: 96px;
+    }
+
+    .investment-kpi-grid {
+        flex-shrink: 0;
+    }
+
+    .investment-kpi {
+        background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .025));
+        border: 1px solid rgba(91, 157, 255, .22);
+        border-radius: 8px;
+        color: #eef5ff;
+        min-height: 88px;
+        padding: 12px 16px;
+    }
+
+    .investment-kpi--primary {
+        background: linear-gradient(135deg, rgba(30, 123, 255, .32), rgba(30, 41, 59, .96));
+        border-color: rgba(91, 157, 255, .45);
+    }
+
+    .investment-kpi__label {
+        color: rgba(226, 236, 255, .70);
+        font-size: .75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .investment-kpi__value {
+        color: #ffffff;
+        font-size: 1.16rem;
+        font-weight: 850;
+        line-height: 1.25;
+        margin-top: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .investment-kpi__value--positive {
+        color: #65e4bd;
+    }
+
+    .investment-kpi__value--warning {
+        color: #ffc861;
+    }
+
+    .investment-kpi__meta {
+        color: rgba(226, 236, 255, .56);
+        font-size: .76rem;
+        margin-top: 6px;
+    }
+
+    .investment-workspace {
+        background:
+            linear-gradient(135deg, rgba(56, 214, 174, .08), transparent 34%),
+            rgba(15, 27, 45, .78);
+        border: 1px solid rgba(91, 157, 255, .22);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .board-toolbar {
+        align-items: center;
+        display: flex;
+        flex-shrink: 0;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 54px;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(91, 157, 255, .22);
+        background: rgba(8, 17, 31, .72);
+    }
+
+    .board-eyebrow {
+        color: #74e4c8;
+        font-size: .68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .board-title {
+        color: #ffffff;
+        font-size: .95rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .board-totals {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .board-totals span {
+        background: rgba(255, 255, 255, .055);
+        border: 1px solid rgba(148, 163, 184, .18);
+        border-radius: 6px;
+        color: rgba(226, 236, 255, .74);
+        font-size: .78rem;
+        padding: 6px 10px;
+    }
+
+    .board-totals strong {
+        color: #ffffff;
+        margin-left: 6px;
+    }
+
+    .board-grid {
+        display: grid;
+        flex: 1 1 auto;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(320px, 1fr));
+        grid-template-rows: minmax(0, 1fr);
+        min-height: 0;
+        overflow: hidden;
+        padding: 10px;
+    }
+
+    .board-panel {
+        background: rgba(13, 25, 43, .82);
+        border: 1px solid rgba(91, 157, 255, .20);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .board-panel--intereses {
+        border-color: rgba(101, 228, 189, .28);
+    }
+
+    .board-panel--retiros {
+        border-color: rgba(251, 191, 36, .34);
+    }
+
+    .board-panel__header {
+        align-items: center;
+        background: rgba(8, 17, 31, .68);
+        border-bottom: 1px solid rgba(91, 157, 255, .18);
+        display: flex;
+        flex-shrink: 0;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 46px;
+        padding: 9px 12px;
+    }
+
+    .board-panel__header > div {
+        display: grid;
+        gap: 1px;
+        min-width: 0;
+    }
+
+    .board-panel__label {
+        color: rgba(226, 236, 255, .62);
+        font-size: .68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .board-panel__header strong {
+        color: #ffffff;
+        font-size: .96rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .board-icon-action {
+        background: rgba(47, 124, 255, .15);
+        border: 1px solid rgba(99, 179, 237, .32);
+        color: #b9d6ff;
+    }
+
+    .board-icon-action--success {
+        background: rgba(52, 211, 153, .14);
+        border-color: rgba(52, 211, 153, .34);
+        color: #83f0c8;
+    }
+
+    .board-icon-action--warning {
+        background: rgba(251, 191, 36, .12);
+        border-color: rgba(251, 191, 36, .36);
+        color: #ffd47a;
+    }
+
+    .board-info-icon {
+        align-items: center;
+        background: rgba(47, 124, 255, .12);
+        border: 1px solid rgba(99, 179, 237, .28);
+        border-radius: 999px;
+        color: #b9d6ff;
+        display: inline-flex;
+        height: 30px;
+        justify-content: center;
+        width: 30px;
+    }
+
+    .board-info-icon--success {
+        background: rgba(52, 211, 153, .12);
+        border-color: rgba(52, 211, 153, .3);
+        color: #83f0c8;
+    }
+
+    .board-table-scroll,
+    .board-card-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    .board-table {
+        border-collapse: collapse;
+        color: #dbe8ff;
+        font-size: .78rem;
+        width: 100%;
+    }
+
+    .board-table thead th {
+        background: rgba(47, 124, 255, .10);
+        border-bottom: 1px solid rgba(91, 157, 255, .28);
+        color: #4b8cff;
+        font-weight: 850;
+        padding: 9px 10px;
+        position: sticky;
+        text-align: left;
+        top: 0;
+        z-index: 1;
+    }
+
+    .board-table td {
+        border-bottom: 1px solid rgba(148, 163, 184, .12);
+        padding: 7px 10px;
+        vertical-align: middle;
+    }
+
+    .board-table tbody tr:hover {
+        background: rgba(59, 130, 246, .10);
+    }
+
+    .board-table--compact td,
+    .board-table--compact th {
+        padding: 6px 8px;
+    }
+
+    .board-actions-cell {
+        white-space: nowrap;
+        width: 104px;
+    }
+
+    .money-cell {
+        font-weight: 850;
+        white-space: nowrap;
+    }
+
+    .money-cell--debe,
+    .money-cell--positive {
+        color: #65e4bd;
+    }
+
+    .money-cell--haber {
+        color: #93c5fd;
+    }
+
+    .money-cell--warning {
+        color: #ffc861;
+    }
+
+    .board-status {
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: .68rem;
+        font-weight: 850;
+        padding: 3px 8px;
+    }
+
+    .board-status--ok {
+        background: rgba(52, 211, 153, .14);
+        color: #83f0c8;
+    }
+
+    .board-status--pending {
+        background: rgba(251, 191, 36, .14);
+        color: #ffd47a;
+    }
+
+    .flow-card {
+        align-items: center;
+        border-bottom: 1px solid rgba(148, 163, 184, .12);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 10px 12px;
+    }
+
+    .flow-card:hover {
+        background: rgba(52, 211, 153, .08);
+    }
+
+    .flow-card--haber:hover {
+        background: rgba(96, 165, 250, .08);
+    }
+
+    .flow-card div {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    .flow-card strong,
+    .flow-card span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .flow-card strong {
+        color: #ffffff;
+        font-size: .8rem;
+    }
+
+    .flow-card span {
+        color: rgba(226, 236, 255, .62);
+        font-size: .73rem;
+    }
+
+    .flow-card b {
+        color: #65e4bd;
+        font-size: .9rem;
+        white-space: nowrap;
+    }
+
+    .flow-card--haber b {
+        color: #93c5fd;
+    }
+
+    .board-empty {
+        color: rgba(226, 236, 255, .48);
+        font-weight: 700;
+        padding: 18px 12px !important;
+        text-align: center;
+    }
+
+    @@media (max-width: 960px) {
+        .investment-page-container {
+            height: calc(100vh - 132px);
+            max-height: calc(100vh - 132px);
+        }
+
+        .investment-hero {
+            flex-direction: column;
+        }
+
+        .investment-hero__actions {
+            justify-content: flex-start;
+        }
+
+        .investment-hero__title {
+            white-space: normal;
+        }
+
+        .board-toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .board-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(2, minmax(220px, 1fr));
+            overflow: auto;
+        }
+
+        .board-panel,
+        .board-panel--intereses,
+        .board-panel--retiros {
+            grid-column: auto;
+            grid-row: auto;
+            margin: 0;
+        }
+    }
+</style>
+
+@code {
+    private GenericTable<InversionResponse> table = null!;
+    private GenericTable<RetiroResponse> retiroTable = null!;
+    private GenericTable<PolizaDetalleResponse> contaTable = null!;
+    private InversionResponse? SelectedInversion;
+
+    private string interesSearch = string.Empty;
+    private string retiroSearch = string.Empty;
+    private string contaSearch = string.Empty;
+    private string _currencySymbol = "$";
+    private bool SelectedLocked;
+    private List<InteresResponse> _interesesBoard = new();
+    private List<RetiroResponse> _retirosBoard = new();
+    private List<PolizaDetalleResponse> _contaBoard = new();
+    private readonly Dictionary<int, bool> _lockByInversionId = new();
+    private readonly Dictionary<int, bool> _autorizacionPoliza = new();
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private decimal BoardDebeTotal => _contaBoard.Sum(x => x.ImporteDebe ?? 0m);
+    private decimal BoardHaberTotal => _contaBoard.Sum(x => x.ImporteHaber ?? 0m);
+    private decimal InteresesBoardTotal => _interesesBoard.Sum(x => x.Monto);
+    private decimal RetirosBoardTotal => _retirosBoard.Sum(x => x.Monto);
+    private decimal MontoInicialSeleccionado => SelectedInversion?.Monto ?? 0m;
+    private decimal TotalConIntereses => MontoInicialSeleccionado + InteresesBoardTotal;
+    private decimal TotalMenosRetiros => TotalConIntereses - RetirosBoardTotal;
+
+    protected override string ModuleName => "Inversiones";
+    protected override string SubModuleName => "Listado_Inversiones";
+    protected override Type CreateDialogType => typeof(InversionDialog);
+    protected override Type EditDialogType => typeof(InversionDialog);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<InversionResponse>);
+    protected override string GetDefaultSortLabel() => "FechaInversion";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadCurrencyAsync();
+    }
+
+    protected override async Task<TableData<InversionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var data = await base.LoadServerData(state, cancellationToken);
+        await BuildLockStatusAsync(data.Items ?? []);
+        return data;
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<InversionResponse> items) =>
+        items.Select(x => new
+        {
+            x.PkidInversion,
+            x.CuentaBan,
+            x.Instrumento,
+            Monto = x.Monto.ToString("0.00", NumberCulture),
+            Intereses = x.Intereses.ToString("0.00", NumberCulture),
+            Retiros = x.Retiros.ToString("0.00", NumberCulture),
+            Saldo = (x.Saldo ?? x.Monto).ToString("0.00", NumberCulture),
+            FechaInversion = x.FechaInversion.ToString("dd/MM/yyyy")
+        });
+
+    protected override async Task ReloadData()
+    {
+        if (table != null) await table.ReloadData();
+    }
+
+    private async Task SelectInversion(InversionResponse item)
+    {
+        SelectedInversion = item;
+        interesSearch = string.Empty;
+        retiroSearch = string.Empty;
+        contaSearch = string.Empty;
+        await RefreshSelectedAndChildren();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task BackToTable()
+    {
+        SelectedInversion = null;
+        if (table != null) await table.ReloadData();
+    }
+
+    private async Task RefreshSelectedAndChildren()
+    {
+        if (SelectedInversion == null) return;
+        await RefreshSelectedInversion();
+        await LoadBoardDataAsync();
+        await EvaluateSelectedLockAsync();
+    }
+
+    private async Task RefreshSelectedInversion()
+    {
+        if (SelectedInversion == null) return;
+        var response = await Service.GetByIdAsync(SelectedInversion.PkidInversion);
+        if (response?.Success == true && response.Data != null)
+        {
+            SelectedInversion = response.Data;
+        }
+    }
+
+    private async Task<TableData<RetiroResponse>> LoadRetirosData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedInversion == null) return new TableData<RetiroResponse> { Items = [], TotalItems = 0 };
+        var response = await RetiroService.GetAllPaginadoAsync(Math.Max(1, state.Page + 1), state.PageSize, retiroSearch, state.SortLabel ?? "FechaRetiro", state.SortDirection, new() { ["FkidInversion"] = SelectedInversion.PkidInversion });
+        return new TableData<RetiroResponse> { Items = response?.Items ?? [], TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task<TableData<PolizaDetalleResponse>> LoadContaData(TableState state, CancellationToken cancellationToken)
+    {
+        if (SelectedInversion == null) return new TableData<PolizaDetalleResponse> { Items = [], TotalItems = 0 };
+
+        var response = await PolizaDetalleService.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            contaSearch,
+            state.SortLabel ?? "PkidPolizaDetalle",
+            state.SortDirection,
+            new() { ["FkidReferencia"] = SelectedInversion.PkidInversion });
+
+        var items = response?.Items?.ToList() ?? new List<PolizaDetalleResponse>();
+        await LoadPolizasStateAsync(items);
+        return new TableData<PolizaDetalleResponse> { Items = items, TotalItems = response?.TotalCount ?? 0 };
+    }
+
+    private async Task LoadBoardDataAsync()
+    {
+        if (SelectedInversion == null)
+        {
+            _interesesBoard = new();
+            _retirosBoard = new();
+            _contaBoard = new();
+            return;
+        }
+
+        var inversionId = SelectedInversion.PkidInversion;
+        var intereses = await InteresService.GetAllPaginadoAsync(
+            1,
+            200,
+            interesSearch,
+            "FechaGeneracion",
+            SortDirection.Descending,
+            new() { ["FkidInversion"] = inversionId });
+
+        var retiros = await RetiroService.GetAllPaginadoAsync(
+            1,
+            200,
+            retiroSearch,
+            "FechaRetiro",
+            SortDirection.Descending,
+            new() { ["FkidInversion"] = inversionId });
+
+        var contabilidad = await PolizaDetalleService.GetAllPaginadoAsync(
+            1,
+            300,
+            contaSearch,
+            "PkidPolizaDetalle",
+            SortDirection.Descending,
+            new() { ["FkidReferencia"] = inversionId });
+
+        _interesesBoard = intereses?.Items?.ToList() ?? new();
+        _retirosBoard = retiros?.Items?.ToList() ?? new();
+        _contaBoard = contabilidad?.Items?.ToList() ?? new();
+        await LoadPolizasStateAsync(_contaBoard);
+    }
+
+    private async Task LoadPolizasStateAsync(IEnumerable<PolizaDetalleResponse> details)
+    {
+        var polizaIds = details.Select(x => x.FkidPolizaConta).Distinct().ToList();
+        foreach (var polizaId in polizaIds)
+        {
+            if (_autorizacionPoliza.ContainsKey(polizaId)) continue;
+            var polizaResponse = await PolizaService.GetByIdAsync(polizaId);
+            _autorizacionPoliza[polizaId] = polizaResponse?.Success == true && polizaResponse.Data?.Autorizado == true;
+        }
+    }
+
+    private async Task BuildLockStatusAsync(IEnumerable<InversionResponse> inversiones)
+    {
+        foreach (var inversion in inversiones)
+        {
+            if (_lockByInversionId.ContainsKey(inversion.PkidInversion)) continue;
+            var locked = await IsInversionLockedAsync(inversion.PkidInversion);
+            _lockByInversionId[inversion.PkidInversion] = locked;
+        }
+    }
+
+    private async Task EvaluateSelectedLockAsync()
+    {
+        if (SelectedInversion == null)
+        {
+            SelectedLocked = false;
+            return;
+        }
+
+        SelectedLocked = await IsInversionLockedAsync(SelectedInversion.PkidInversion);
+        _lockByInversionId[SelectedInversion.PkidInversion] = SelectedLocked;
+        StateHasChanged();
+    }
+
+    private async Task<bool> IsInversionLockedAsync(int inversionId)
+    {
+        var conta = await PolizaDetalleService.GetAllPaginadoAsync(1, 200, string.Empty, "PkidPolizaDetalle", SortDirection.Descending, new() { ["FkidReferencia"] = inversionId });
+        var detalles = conta?.Items?.ToList() ?? new List<PolizaDetalleResponse>();
+        if (detalles.Count == 0) return false;
+
+        await LoadPolizasStateAsync(detalles);
+        return detalles.Any(d => IsPolizaAutorizada(d.FkidPolizaConta));
+    }
+
+    private bool IsPolizaAutorizada(int polizaId) =>
+        _autorizacionPoliza.TryGetValue(polizaId, out var autorizado) && autorizado;
+
+    private bool IsLocked(int inversionId) =>
+        _lockByInversionId.TryGetValue(inversionId, out var locked) && locked;
+
+    private async Task ReloadRetiros() { if (retiroTable != null) await retiroTable.ReloadData(); }
+    private async Task ReloadConta() { if (contaTable != null) await contaTable.ReloadData(); }
+
+    private async Task AddRetiro() => await OpenRetiroDialog(null);
+    private async Task EditRetiro(int id) => await OpenRetiroDialog(id);
+    private async Task AddContabilidad() => await OpenContabilidadDialog(null);
+    private async Task EditContabilidad(int id) => await OpenContabilidadDialog(id);
+
+    private async Task OpenRetiroDialog(int? id)
+    {
+        if (SelectedInversion == null || SelectedLocked) return;
+        var parameters = new DialogParameters { ["Id"] = id, ["InversionId"] = SelectedInversion.PkidInversion };
+        var dialog = await DialogService.ShowAsync<InversionRetiroDialog>(id.HasValue ? "Editar retiro" : "Nuevo retiro", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await RefreshSelectedAndChildren();
+    }
+
+    private async Task OpenContabilidadDialog(int? id)
+    {
+        if (SelectedInversion == null || SelectedLocked) return;
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["InversionId"] = SelectedInversion.PkidInversion,
+            ["CurrencySymbol"] = _currencySymbol
+        };
+        var dialog = await DialogService.ShowAsync<InversionContabilidadDialog>(id.HasValue ? "Editar movimiento contable" : "Nuevo movimiento contable", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if ((await dialog.Result) is { Canceled: false }) await RefreshSelectedAndChildren();
+    }
+
+    private async Task DeleteRetiro(int id)
+    {
+        if (SelectedLocked) return;
+        await RetiroService.DeleteAsync(id);
+        await RefreshSelectedAndChildren();
+    }
+
+    private async Task DeleteContabilidad(int id)
+    {
+        if (SelectedLocked) return;
+        await PolizaDetalleService.DeleteAsync(id);
+        await RefreshSelectedAndChildren();
+    }
+
+    private async Task AutorizarPoliza(int polizaId)
+    {
+        if (SelectedLocked) return;
+        var polizaResponse = await PolizaService.GetByIdAsync(polizaId);
+        if (polizaResponse?.Success != true || polizaResponse.Data == null)
+        {
+            Snackbar.Add("No se pudo cargar la poliza.", Severity.Error);
+            return;
+        }
+
+        var poliza = polizaResponse.Data;
+        if (poliza.Autorizado == true)
+        {
+            await EvaluateSelectedLockAsync();
+            return;
+        }
+
+        if (!await ConfirmWorkflowAsync(
+                "Autorizar poliza",
+                $"¿Seguro que deseas autorizar la poliza {polizaId}? La inversion quedara bloqueada para edicion.",
+                "Autorizar",
+                Severity.Success,
+                polizaId))
+        {
+            return;
+        }
+
+        poliza.Autorizado = true;
+        poliza.PermitirModificar = false;
+        poliza.FechaAutorizacion = DateTime.Now;
+        var update = await PolizaService.UpdateAsync(poliza, polizaId);
+        if (update?.Success == true)
+        {
+            _autorizacionPoliza[polizaId] = true;
+            Snackbar.Add("Poliza autorizada. La inversion queda bloqueada para edicion.", Severity.Success);
+            await RefreshSelectedAndChildren();
+            return;
+        }
+
+        Snackbar.Add(update?.Message ?? "No se pudo autorizar la poliza.", Severity.Error);
+    }
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
+
+    private async Task LoadCurrencyAsync()
+    {
+        try
+        {
+            var userIdString = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (int.TryParse(userIdString, out var userId) && userId > 0)
+            {
+                var response = await UsuarioService.GetByIdAsync(userId);
+                if (response?.Success == true && response.Data != null)
+                {
+                    _currencySymbol = string.IsNullOrWhiteSpace(response.Data.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("ListadoInversiones")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para inversiones.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
+        }
+    }
+}

@@ -1,6 +1,7 @@
 using EG.Common.Helper;
 using EG.Domain.DTOs.Responses.PBR;
 using EG.Web.Contracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services
@@ -11,8 +12,9 @@ namespace EG.Web.Services
             HttpClient httpClient,
             IJSRuntime jsRuntime,
             ApplicationInstance application,
-            IConfiguration configuration)
-            : base(httpClient, jsRuntime, application, configuration)
+            IConfiguration configuration,
+            ILogger<PbrDashboardService> logger)
+            : base(httpClient, jsRuntime, application, configuration, logger)
         {
         }
 

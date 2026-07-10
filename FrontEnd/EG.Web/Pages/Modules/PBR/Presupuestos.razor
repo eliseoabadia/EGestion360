@@ -267,8 +267,11 @@
                 currencySymbol = string.IsNullOrWhiteSpace(response?.Data?.SimboloMonedaBase) ? "$" : response.Data.SimboloMonedaBase;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("PbrPresupuestos")
+                .LogWarning(ex, "No se pudo cargar la moneda configurada para presupuestos PBR.");
+            AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
 }

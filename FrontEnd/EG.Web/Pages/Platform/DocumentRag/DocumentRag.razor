@@ -449,8 +449,10 @@
         {
             await RagService.ReleaseSessionAsync(_session.SessionId);
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("DocumentRag")
+                .LogWarning(ex, "No se pudo liberar la sesion del asistente documental.");
         }
     }
 }

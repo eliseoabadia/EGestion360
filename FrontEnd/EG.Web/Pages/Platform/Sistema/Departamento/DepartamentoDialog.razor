@@ -116,7 +116,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar empresas: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar empresas: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -138,7 +138,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar departamento: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar departamento: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -203,7 +203,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 }

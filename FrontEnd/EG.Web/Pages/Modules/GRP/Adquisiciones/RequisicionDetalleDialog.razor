@@ -187,7 +187,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -286,7 +286,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -393,8 +393,11 @@
                 };
             }
         }
-        catch
+        catch (Exception ex)
         {
+            AppLoggerFactory.CreateLogger("RequisicionDetalleDialog")
+                .LogWarning(ex, "No se pudo restaurar el tipo de bien de la requisicion.");
+            AppSnackbar.Add("No se pudo recuperar el tipo de bien guardado. Revisa la seleccion antes de continuar.", Severity.Warning);
         }
     }
 

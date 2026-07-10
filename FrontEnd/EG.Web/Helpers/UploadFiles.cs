@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 
+using EG.Common;
+using Microsoft.Extensions.Logging;
+
 namespace EG.Web.Helpers
 {
     public class UploadFiles
     {
-        public static async Task<string> UploadImagesAsync(IBrowserFile file)
+        public static async Task<string> UploadImagesAsync(IBrowserFile file, ILogger logger)
         {
             try
             {
@@ -16,7 +19,8 @@ namespace EG.Web.Helpers
             }
             catch (Exception ex)
             {
-                return $"Error al cargar el archivo: {ex.Message}";
+                logger.LogError(ex, "No se pudo convertir el archivo {FileName} a una imagen local.", file.Name);
+                return UserFacingMessages.OperationFailed("cargar el archivo");
             }
         }
     }

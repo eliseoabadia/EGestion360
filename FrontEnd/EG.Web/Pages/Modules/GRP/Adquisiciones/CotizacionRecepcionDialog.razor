@@ -241,7 +241,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar montos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar montos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -288,7 +288,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al guardar montos: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al guardar montos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

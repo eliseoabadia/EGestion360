@@ -485,7 +485,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar bienes PAAAS: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cargar bienes PAAAS: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -675,7 +675,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al generar solicitudes: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al generar solicitudes: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {

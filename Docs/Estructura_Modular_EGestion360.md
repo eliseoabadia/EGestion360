@@ -2,6 +2,8 @@
 
 Esta guia deja la convencion base para que nuevas vistas, servicios, contratos, controladores y flujos RAG crezcan en carpetas previsibles.
 
+Las reglas operativas de alineacion con el menu, respuesta al usuario, Logger y `GenericTable` se detallan en [Reglas_Estructura_Respuesta_Logger_GenericTable.md](Reglas_Estructura_Respuesta_Logger_GenericTable.md).
+
 ## Principio
 
 Separar por pertenencia funcional antes que por tipo tecnico aislado:

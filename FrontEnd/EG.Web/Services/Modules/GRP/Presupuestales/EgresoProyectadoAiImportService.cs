@@ -4,6 +4,7 @@ using EG.Web.Contracts.Modules.GRP.Presupuestales;
 using EG.Web.Models;
 using EG.Web.Services.Shared;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace EG.Web.Services.Modules.GRP.Presupuestales
@@ -12,8 +13,9 @@ namespace EG.Web.Services.Modules.GRP.Presupuestales
         IConfiguration configuration,
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        ApplicationInstance application)
-        : BaseService(httpClient, jsRuntime, application, configuration), IEgresoProyectadoAiImportService
+        ApplicationInstance application,
+        ILogger<EgresoProyectadoAiImportService> logger)
+        : BaseService(httpClient, jsRuntime, application, configuration, logger), IEgresoProyectadoAiImportService
     {
         private const long MaxClientFileSize = 50 * 1024 * 1024;
         private const string Endpoint = "api/EgresoProyectado";
@@ -33,11 +35,11 @@ namespace EG.Web.Services.Modules.GRP.Presupuestales
                 MultipartApiHelper.AddFile(form, "File", file, MaxClientFileSize);
                 httpRequest.Content = form;
 
-                return await MultipartApiHelper.SendAsync<EgresoProyectadoAiImportPreviewResponse>(_httpClient, httpRequest, _jsonOptions);
+                return await MultipartApiHelper.SendAsync<EgresoProyectadoAiImportPreviewResponse>(_httpClient, httpRequest, _jsonOptions, _logger);
             }
             catch (Exception ex)
             {
-                return MultipartApiHelper.Failure<EgresoProyectadoAiImportPreviewResponse>(ex);
+                return MultipartApiHelper.Failure<EgresoProyectadoAiImportPreviewResponse>(ex, _logger);
             }
         }
 
