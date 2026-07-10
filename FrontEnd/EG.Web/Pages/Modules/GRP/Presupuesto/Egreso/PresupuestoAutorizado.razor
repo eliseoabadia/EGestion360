@@ -370,7 +370,7 @@
         };
 
         var dialog = await DialogService.ShowAsync(EditDialogType, "Editar presupuesto autorizado", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })
@@ -389,7 +389,7 @@
         };
 
         var dialog = await DialogService.ShowAsync(EditDialogType, "Ver presupuesto autorizado", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
 
         await dialog.Result;
     }

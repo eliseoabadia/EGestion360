@@ -593,9 +593,8 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error loading empresaId: {ex.Message}");
         }
     }
 
@@ -876,9 +875,8 @@
         {
             return new List<PaaaspartidumResponse>();
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error loading partidas: {ex.Message}");
             return new List<PaaaspartidumResponse>();
         }
     }
@@ -904,9 +902,8 @@
         {
             return new List<PaaasdetalleResponse>();
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error loading bienes: {ex.Message}");
             return new List<PaaasdetalleResponse>();
         }
     }

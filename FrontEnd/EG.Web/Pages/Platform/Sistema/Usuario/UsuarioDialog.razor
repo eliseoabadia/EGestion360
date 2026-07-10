@@ -84,7 +84,7 @@
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaEmail</MudText>
                             </MudItem>
                             <MudItem xs="12" md="4">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Teléfono</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Telefono</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaTelefono</MudText>
                             </MudItem>
                             <MudItem xs="12" md="4">
@@ -423,12 +423,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(CargarSucursales());
+        await SucursalStateService.InitializeAsync();
+        await CargarSucursales();
 
         if (Id.HasValue)
         {
             await CargarUsuario();
             await CargarEmpresasUsuario();
+        }
+        else
+        {
+            NormalizarEmpresaUsuario();
         }
     }
 
@@ -650,7 +655,7 @@
     {
         if (!area.PkidPersonaArea.HasValue)
         {
-            Snackbar.Add("No se encontro la asignacion del area", Severity.Warning);
+            Snackbar.Add("No se encontró la asignacion del area", Severity.Warning);
             return;
         }
 
@@ -935,9 +940,9 @@
                         IdEmpresa = empresa.PkidEmpresa,
                         NombreEmpresa = empresa.EmpresaNombre ?? empresa.RazonSocial ?? $"Empresa {empresa.PkidEmpresa}",
                         IdSucursal = asignacionEmpresa?.IdSucursal ?? sucursal?.PkidSucursal ?? 0,
-                        NombreSucursal = asignacionEmpresa?.NombreSucursal ?? sucursal?.Nombre ?? "Sin sucursal activa",
+                        NombreSucursal = asignacionEmpresa?.NombreSucursal ?? sucursal?.Nombre ?? "Se creará matriz al activar",
                         Asignada = asignacionEmpresa != null,
-                        PuedeAsignarse = asignacionEmpresa != null || sucursal != null
+                        PuedeAsignarse = true
                     };
                 })
                 .OrderBy(x => x.NombreEmpresa)
@@ -955,9 +960,15 @@
 
     private async Task ToggleEmpresaAsync(EmpresaUsuarioAsignacion empresa, bool asignar)
     {
-        if (!Id.HasValue || empresa.IdSucursal <= 0)
+        if (!Id.HasValue)
         {
-            Snackbar.Add("La empresa no tiene una sucursal activa para asignar", Severity.Warning);
+            Snackbar.Add("Guarda el usuario antes de asignar empresas", Severity.Warning);
+            return;
+        }
+
+        if (!asignar && empresa.IdSucursal <= 0)
+        {
+            Snackbar.Add("No se encontró una sucursal activa para retirar", Severity.Warning);
             return;
         }
 
@@ -970,6 +981,8 @@
                 response = await usuarioSucursalService.CreateAsync(new UsuarioSucursalResponse
                 {
                     PkIdUsuario = Id.Value,
+                    IdEmpresa = empresa.IdEmpresa,
+                    PkidEmpresa = empresa.IdEmpresa,
                     IdSucursal = empresa.IdSucursal,
                     PuedeAcceder = true,
                     PuedeOperar = true,
@@ -984,6 +997,19 @@
             if (response?.Success == true)
             {
                 empresa.Asignada = asignar;
+                if (asignar)
+                {
+                    var asignacion = response.Data ?? response.Items?.FirstOrDefault();
+                    if (asignacion != null)
+                    {
+                        empresa.IdSucursal = asignacion.IdSucursal;
+                        empresa.NombreSucursal = string.IsNullOrWhiteSpace(asignacion.NombreSucursal)
+                            ? empresa.NombreSucursal
+                            : asignacion.NombreSucursal;
+                    }
+
+                    await CargarEmpresasUsuario();
+                }
                 _selectedDepartamento = null;
                 Snackbar.Add(asignar
                     ? "Empresa asignada al usuario"
@@ -1089,6 +1115,8 @@
         var response = await usuarioSucursalService.CreateAsync(new UsuarioSucursalResponse
         {
             PkIdUsuario = usuarioId,
+            IdEmpresa = empresaId,
+            PkidEmpresa = empresaId,
             IdSucursal = sucursal.PkidSucursal,
             PuedeAcceder = true,
             PuedeOperar = true,

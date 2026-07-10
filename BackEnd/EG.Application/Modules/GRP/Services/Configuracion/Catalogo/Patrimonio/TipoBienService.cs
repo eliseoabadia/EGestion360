@@ -123,6 +123,18 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
             {
                 var dto = request.Adapt<TipoBienDto>();
                 var userId = _userContext.GetCurrentUserId();
+                Normalize(dto);
+
+                if (!await _service.CanAddAsync(dto))
+                {
+                    return new PagedResult<TipoBienResponse>
+                    {
+                        Success = false,
+                        Message = "Ya existe un tipo de bien con ese codigo o clave",
+                        Code = "DUPLICATE",
+                        TotalCount = 0
+                    };
+                }
 
                 await _context.Procedures.SP_MantenimientoTipoBienAsync(
                     action: 1,
@@ -182,8 +194,18 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
                 var dto = request.Adapt<TipoBienDto>();
                 var userId = _userContext.GetCurrentUserId();
+                Normalize(dto);
 
-                await _service.CanUpdateAsync(id, dto);
+                if (!await _service.CanUpdateAsync(id, dto))
+                {
+                    return new PagedResult<TipoBienResponse>
+                    {
+                        Success = false,
+                        Message = "Ya existe otro tipo de bien con ese codigo o clave",
+                        Code = "DUPLICATE",
+                        TotalCount = 0
+                    };
+                }
 
                 await _context.Procedures.SP_MantenimientoTipoBienAsync(
                     action: 2,
@@ -372,5 +394,39 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
 
             return int.TryParse(raw.ToString(), out value);
         }
+
+        private static void Normalize(TipoBienDto dto)
+        {
+            dto.CodigoClave = (dto.CodigoClave ?? string.Empty).Trim();
+            dto.Descripcion = (dto.Descripcion ?? string.Empty).Trim();
+            dto.Cabms = (dto.Cabms ?? string.Empty).Trim();
+            dto.Identificador = (dto.Identificador ?? string.Empty).Trim();
+            dto.CucopPlus = (dto.CucopPlus ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(dto.CodigoClave))
+            {
+                throw new ArgumentException("El codigo o clave es requerido.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Descripcion))
+            {
+                throw new ArgumentException("La descripcion es requerida.");
+            }
+
+            if (!dto.FkidGrupoBienAlma.HasValue || dto.FkidGrupoBienAlma <= 0)
+            {
+                throw new ArgumentException("Selecciona una clave CUCOP valida.");
+            }
+
+            dto.FkidNivelAlma = NormalizeNullableId(dto.FkidNivelAlma);
+            dto.FkidPartidaConta = NormalizeNullableId(dto.FkidPartidaConta);
+            dto.FkidCuentaContableConta = NormalizeNullableId(dto.FkidCuentaContableConta);
+            dto.FkidUnidadesAlma = NormalizeNullableId(dto.FkidUnidadesAlma);
+            dto.FkidLocalizacionAlma = NormalizeNullableId(dto.FkidLocalizacionAlma);
+            dto.FkidUnidadesEquivalente = NormalizeNullableId(dto.FkidUnidadesEquivalente);
+        }
+
+        private static int? NormalizeNullableId(int? value) =>
+            value.HasValue && value.Value > 0 ? value : null;
     }
 }

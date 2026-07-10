@@ -151,6 +151,7 @@ public static class ApiServiceExtensions
         RegisterCrud<EstatusInventarioResponse>(services, "api/EstatusInventario");
 
         RegisterCrud<MatrizConversionResponse>(services, "api/MatrizConversion");
+        RegisterCrud<UrResponse>(services, "api/Ur");
         RegisterCrud<UnidadResponsableResponse>(services, "api/UnidadResponsable");
         RegisterCrud<SubFuncionResponse>(services, "api/SubFuncion");
         RegisterCrud<ActividadInstitucionalResponse>(services, "api/ActividadInstitucional");

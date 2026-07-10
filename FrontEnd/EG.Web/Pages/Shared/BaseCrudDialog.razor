@@ -1,7 +1,7 @@
 @using MudBlazor
 @typeparam TItem
 
-<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="crud-dialog">
+<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
     <TitleContent>
         <div class="crud-dialog-title">
             <MudText Typo="Typo.h6" Class="crud-dialog-title-text">@Title</MudText>
@@ -30,7 +30,7 @@
                     <div class="crud-dialog-actions">
                         <MudButton Variant="Variant.Text"
                                    Color="Color.Secondary"
-                                   OnClick="@(() => { Console.WriteLine("🔔 Click en Cancelar"); Cancelar(); })"
+                                   OnClick="Cancelar"
                                    Disabled="@isProcessing">
                             @CancelText
                         </MudButton>
@@ -64,6 +64,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Medium;
+    [Parameter] public string? DialogClass { get; set; }
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
     [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;
     [Parameter] public string ActionText { get; set; } = "Guardar";
@@ -82,13 +83,15 @@
     private bool isProcessing = false;
     private bool _closed = false;
     private Dictionary<string, object> _registeredComponents = new();
+    private string DialogCssClass => string.IsNullOrWhiteSpace(DialogClass)
+        ? "crud-dialog"
+        : $"crud-dialog {DialogClass}";
 
     protected override async Task OnInitializedAsync()
     {
         // No ejecutar LoadDataAsync aquí para evitar ejecución doble
         // El loading se maneja en OnAfterRender o manualmente
         loading = false;
-        Console.WriteLine("✅ BaseCrudDialog: Listo para mostrar");
     }
 
     // Parametro de cierre: hijos pueden notificar éxito o fallo
@@ -99,29 +102,19 @@
             return;
         }
 
-        Console.WriteLine($"🔔 SignalClose llamado con success={success}, MudDialog null? {MudDialog == null}");
         if (MudDialog == null)
         {
-            Console.WriteLine("⚠️ SignalClose: MudDialog es null");
             return;
         }
         _closed = true;
         if (success)
         {
-            Console.WriteLine("✅ Cerrando diálogo con Ok");
             MudDialog.Close(DialogResult.Ok(true));
         }
         else
         {
-            Console.WriteLine("✅ Cerrando diálogo con Cancel");
             MudDialog.Close(DialogResult.Cancel());
         }
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Console.WriteLine($"📌 BaseCrudDialog renderizado, loading={loading}");
-        base.OnAfterRender(firstRender);
     }
 
     protected virtual Task LoadDataAsync() => Task.CompletedTask;
@@ -136,7 +129,6 @@
         // Verificar que OnConfirm tiene un handler
         if (!OnConfirm.HasDelegate)
         {
-            Console.WriteLine("⚠️ OnConfirm no tiene un handler asignado");
             Close(true);
             return;
         }
@@ -148,9 +140,9 @@
         {
             await OnConfirm.InvokeAsync(true);
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"❌ Error en OnConfirm: {ex.Message}");
+            // Mantener el dialogo abierto para que la pantalla hija pueda mostrar su validacion.
         }
         finally
         {
@@ -170,7 +162,6 @@
             return;
         }
 
-        Console.WriteLine("🔔 Cancelar llamado - cerrando diálogo");
         _closed = true;
         MudDialog.Close(DialogResult.Cancel());
     }

@@ -30,8 +30,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            if (result == null)
+            {
+                return NotFound(Error("Tipo de cambio no encontrado", "NOT_FOUND"));
+            }
+
+            return Ok(Success("Tipo de cambio encontrado", result));
         }
 
         [HttpPost]
@@ -40,7 +44,8 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.CreateAsync(dto, GetCurrentUserId());
-            return CreatedAtAction(nameof(GetById), new { id = response.PkidTipoCambio }, response);
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidTipoCambio },
+                Success("Tipo de cambio creado correctamente", response));
         }
 
         [HttpPut("{id}")]
@@ -49,8 +54,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.UpdateAsync(id, dto, GetCurrentUserId());
-            if (response == null) return NotFound();
-            return Ok(response);
+            if (response == null)
+            {
+                return NotFound(Error("Tipo de cambio no encontrado", "NOT_FOUND"));
+            }
+
+            return Ok(Success("Tipo de cambio actualizado correctamente", response));
         }
 
         [HttpDelete("{id}")]
@@ -60,16 +69,42 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Tesoreria
             try
             {
                 await _service.DeleteAsync(id);
-                return NoContent();
+                return Ok(new PagedResult<TipoCambioResponse>
+                {
+                    Success = true,
+                    Message = "Tipo de cambio eliminado correctamente",
+                    Code = "SUCCESS",
+                    TotalCount = 0
+                });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound();
+                return NotFound(Error("Tipo de cambio no encontrado", "NOT_FOUND"));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { Success = false, Message = ex.Message, Code = "BUSINESS_RULE" });
+                return Conflict(Error(ex.Message, "BUSINESS_RULE"));
             }
         }
+
+        private static PagedResult<TipoCambioResponse> Success(string message, TipoCambioResponse data) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Data = data,
+                Items = new List<TipoCambioResponse> { data },
+                TotalCount = 1
+            };
+
+        private static PagedResult<TipoCambioResponse> Error(string message, string code = "ERROR") =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
     }
 }

@@ -11,6 +11,7 @@
 @using EG.Web.Services
 @using EG.Web.Shared
 @inherits BaseCrudPage<DepositoResponse, DepositoResponse>
+@implements IDisposable
 
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
@@ -171,6 +172,7 @@
     {
         await base.OnInitializedAsync();
         await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
     }
 
@@ -203,6 +205,11 @@
         if (!CanCreate)
         {
             Snackbar.Add("Verifica tus permisos para crear depositos.", Severity.Warning);
+            return;
+        }
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
             return;
         }
 
@@ -314,6 +321,17 @@
         => Task.FromResult(Elements.FirstOrDefault(x => x.PkidDeposito == id)?.NumeroReferencia ?? "el deposito");
 
     protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+    private async void OnAnioChanged(int? anioId)
+    {
+        await InvokeAsync(async () =>
+        {
+            await ReloadData();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;
+
     private string Money(decimal value) => $"{_currencySymbol}{value.ToString("0.00", NumberCulture)}";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static int GetMonthHeight(decimal amount, decimal total) => amount <= 0 || total <= 0 ? 10 : Math.Clamp((int)Math.Round(amount / total * 300m), 12, 100);

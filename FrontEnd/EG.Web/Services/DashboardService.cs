@@ -43,9 +43,8 @@ namespace EG.Web.Services
                     return result?.Data ?? result?.Items?.FirstOrDefault();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error al obtener resumen del dashboard: {ex.Message}");
             }
             return null;
         }

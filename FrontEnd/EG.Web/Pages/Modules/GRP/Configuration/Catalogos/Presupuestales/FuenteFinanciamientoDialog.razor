@@ -2,10 +2,8 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Presupuestales
-@using EG.Web.Services
 @inject IGenericCrudService<FuenteFinanciamientoResponse> Service
 @inject ISnackbar Snackbar
-@inject AnioPresupuestalStateService AnioStateService
 
 <BaseCrudDialog TItem="FuenteFinanciamientoResponse"
                  Title="@dialogTitle"
@@ -54,8 +52,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await AnioStateService.InitializeAsync();
-
         if (Id.HasValue)
         {
             await CargarDatos();
@@ -82,14 +78,6 @@
     {
         try
         {
-            if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
-            {
-                Snackbar.Add("Debe seleccionar un anio presupuestal en el encabezado.", Severity.Warning);
-                return;
-            }
-
-            item.FkidAnioSis = AnioStateService.AnioId.Value;
-
             var response = Id.HasValue
                 ? await Service.UpdateAsync(item, Id.Value)
                 : await Service.CreateAsync(item);

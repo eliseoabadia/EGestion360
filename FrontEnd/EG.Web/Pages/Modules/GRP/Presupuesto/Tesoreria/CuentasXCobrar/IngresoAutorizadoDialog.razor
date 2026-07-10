@@ -28,10 +28,6 @@
             <MudItem xs="12">
                 <div class="income-ribbon">
                     <div>
-                        <span>Anio presupuestal</span>
-                        <strong>@BudgetYear</strong>
-                    </div>
-                    <div>
                         <span>Total @CurrencyName</span>
                         <strong>@Money(TotalMeses)</strong>
                     </div>
@@ -177,7 +173,7 @@
 </BaseCrudDialog>
 
 <style>
-    .ingreso-dialog .income-ribbon { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .ingreso-dialog .income-ribbon { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .ingreso-dialog .income-ribbon > div { border: 1px solid color-mix(in srgb, var(--eg-primary) 36%, var(--mud-palette-lines-default)); border-radius: 8px; padding: 8px 10px; background: color-mix(in srgb, var(--eg-primary) 7%, var(--mud-palette-surface)); }
     .ingreso-dialog .income-ribbon span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
     .ingreso-dialog .income-ribbon strong { font-size: 1.04rem; }
@@ -217,7 +213,7 @@
     private string ActionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
     private string ActionText => IsAuthorizationFlow ? "Autorizar ingreso" : Id.HasValue ? "Actualizar" : "Crear ingreso";
     private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
-    private string BudgetYear => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
+    private int SelectedAnioId => AnioId > 0 ? AnioId : AnioStateService.AnioId.GetValueOrDefault();
     private string PolicyStatus => item.FkidPolizaConta.HasValue ? $"#{item.FkidPolizaConta}" : "Se genera al guardar";
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
 
@@ -277,6 +273,11 @@
             Snackbar.Add("El total mensual debe ser mayor que cero.", Severity.Warning);
             return;
         }
+        if (SelectedAnioId <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
+            return;
+        }
 
         item.FkidProgramaPres = _programa.Id;
         item.FkidOrigenPres = _origen.Id;
@@ -284,7 +285,7 @@
         item.FkidTipoGastoPres = _tipoGasto?.Id;
         item.FkidDigitoIdentificadorPres = _digito?.Id;
         item.FkidDestinoGastoPres = _destino?.Id;
-        item.FkidAnioSis = AnioId > 0 ? AnioId : AnioStateService.AnioId;
+        item.FkidAnioSis = SelectedAnioId;
         item.Fecha = DateOnly.FromDateTime(_fecha.Value);
         item.Total = TotalMeses;
 
@@ -336,7 +337,7 @@
     }
 
     private Task<ComboLookupResult> LoadProgramasAsync(int page, int size, string filter, CancellationToken ct)
-        => LoadLookupAsync("GetProgramaLookupPaginado", page, size, filter, ct, $"&idAnio={AnioId}");
+        => LoadLookupAsync("GetProgramaLookupPaginado", page, size, filter, ct, SelectedAnioId > 0 ? $"&idAnio={SelectedAnioId}" : string.Empty);
     private Task<ComboLookupResult> LoadOrigenesAsync(int page, int size, string filter, CancellationToken ct)
         => LoadLookupAsync("GetOrigenLookupPaginado", page, size, filter, ct);
     private Task<ComboLookupResult> LoadFuentesAsync(int page, int size, string filter, CancellationToken ct)

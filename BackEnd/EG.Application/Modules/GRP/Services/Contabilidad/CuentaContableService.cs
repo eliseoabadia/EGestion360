@@ -14,11 +14,14 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     public class CuentaContableService : ICuentaContableService
     {
         private readonly GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> _service;
+        private readonly EGestionContext _context;
 
         public CuentaContableService(
-            GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> service)
+            GenericService<CuentaContable, CuentaContableDto, CuentaContableResponse> service,
+            EGestionContext context)
         {
             _service = service;
+            _context = context;
             ConfigureService();
             ConfigureValidations();
         }
@@ -64,6 +67,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.Now;
             dto.Activo = true;
+            await NormalizeAsync(dto);
 
             if (!await _service.CanAddAsync(dto))
                 throw new InvalidOperationException("Ya existe una cuenta contable con esa cuenta");
@@ -78,6 +82,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.PkidCuentaContable = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.Now;
+            await NormalizeAsync(dto);
 
             if (!await _service.CanUpdateAsync(id, dto))
                 throw new InvalidOperationException("Ya existe otra cuenta contable con esa cuenta");
@@ -128,6 +133,89 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 Items = items,
                 TotalCount = totalCount
             };
+        }
+
+        private async Task NormalizeAsync(CuentaContableDto dto)
+        {
+            dto.Cuenta = FitSegment(dto.Cuenta);
+            dto.Descripcion = (dto.Descripcion ?? string.Empty).Trim();
+            dto.SubCuenta = FitSegment(FirstFilled(dto.SubCuenta, GetCuentaPart(dto.Cuenta, 1)));
+            dto.SubSubCuenta = FitSegment(FirstFilled(dto.SubSubCuenta, GetCuentaPart(dto.Cuenta, 2)));
+            dto.SubSubSubCuenta = FitSegment(FirstFilled(dto.SubSubSubCuenta, GetCuentaPart(dto.Cuenta, 3)));
+            dto.SubSubSubSubCuenta = FitSegment(dto.SubSubSubSubCuenta);
+            dto.S5 = FitSegment(dto.S5);
+            dto.S6 = FitSegment(dto.S6);
+            dto.S7 = FitSegment(dto.S7);
+            dto.S8 = FitSegment(dto.S8);
+            dto.S9 = FitSegment(dto.S9);
+            dto.S10 = FitSegment(dto.S10);
+            dto.ClaveOrd = string.IsNullOrWhiteSpace(dto.ClaveOrd) ? dto.Cuenta : dto.ClaveOrd.Trim();
+            dto.Padre = FitLength(dto.Padre, 10);
+            dto.Hijo = FitLength(dto.Hijo, 20);
+            dto.CtaCoi = FitLength(dto.CtaCoi, 20);
+            dto.DescCoi = FitLength(dto.DescCoi, 160);
+            dto.TipoCuenta = string.IsNullOrWhiteSpace(dto.TipoCuenta) ? "D" : dto.TipoCuenta.Trim()[0].ToString();
+            dto.NivelCuenta ??= CountFilledSegments(dto);
+
+            if (dto.FkidTipoCuentaConta <= 0)
+            {
+                dto.FkidTipoCuentaConta = await GetDefaultTipoCuentaIdAsync();
+            }
+        }
+
+        private async Task<int> GetDefaultTipoCuentaIdAsync()
+        {
+            var tipoCuentaId = await _context.TipoCuenta
+                .Where(t => t.Activo)
+                .OrderBy(t => t.PkidTipoCuenta)
+                .Select(t => t.PkidTipoCuenta)
+                .FirstOrDefaultAsync();
+
+            if (tipoCuentaId <= 0)
+            {
+                throw new InvalidOperationException("No hay tipos de cuenta activos para crear la cuenta contable.");
+            }
+
+            return tipoCuentaId;
+        }
+
+        private static string GetCuentaPart(string cuenta, int index)
+        {
+            var parts = (cuenta ?? string.Empty)
+                .Split(new[] { '.', '-', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            return parts.Length > index ? parts[index] : string.Empty;
+        }
+
+        private static string FirstFilled(string? current, string fallback) =>
+            string.IsNullOrWhiteSpace(current) ? fallback : current;
+
+        private static string FitSegment(string? value) => FitLength(value, 5);
+
+        private static string FitLength(string? value, int maxLength)
+        {
+            var trimmed = (value ?? string.Empty).Trim();
+            return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
+        }
+
+        private static int CountFilledSegments(CuentaContableDto dto)
+        {
+            var segments = new[]
+            {
+                dto.Cuenta,
+                dto.SubCuenta,
+                dto.SubSubCuenta,
+                dto.SubSubSubCuenta,
+                dto.SubSubSubSubCuenta,
+                dto.S5,
+                dto.S6,
+                dto.S7,
+                dto.S8,
+                dto.S9,
+                dto.S10
+            };
+
+            return Math.Max(1, segments.Count(s => !string.IsNullOrWhiteSpace(s)));
         }
     }
 }

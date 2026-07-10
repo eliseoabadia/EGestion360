@@ -1,5 +1,4 @@
 @using EG.Common.GenericModel
-@using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -8,22 +7,23 @@
 @using MudBlazor
 
 @inject IGenericCrudService<ProgramaResponse> Service
-@inject IGenericCrudService<UsuarioAreaResponse> UnidadResponsableService
+@inject IGenericCrudService<UrResponse> UrService
 @inject IGenericCrudService<GfResponse> GfService
 @inject IGenericCrudService<FnResponse> FnService
 @inject IGenericCrudService<SubFuncionResponse> SubFuncionService
 @inject IGenericCrudService<ActividadInstitucionalResponse> ActividadInstitucionalService
-@inject IGenericCrudService<AniosResponse> AnioService
 @inject IGenericCrudService<SectorResponse> SectorService
 @inject IGenericCrudService<TipoRecursoResponse> TipoRecursoService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteFinanciamientoService
 @inject IGenericCrudService<ProgramaPresupuestalResponse> ProgramaPresupuestalService
 @inject AnioPresupuestalStateService AnioStateService
+@inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ProgramaResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.Large"
+                MaxWidth="MaxWidth.ExtraExtraLarge"
+                DialogClass="crud-dialog-wide-xl"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -116,15 +116,6 @@
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <PagedAutocomplete Value="@_selectedAnio"
-                                       ValueChanged="value => _selectedAnio = value"
-                                       Label="Anio"
-                                       Clearable="true"
-                                       PageSize="100"
-                                       LoadPage="LoadAniosPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="4">
                     <PagedAutocomplete Value="@_selectedSector"
                                        ValueChanged="value => _selectedSector = value"
                                        Label="Sector"
@@ -177,12 +168,10 @@
     private LookupItem? _selectedFn;
     private LookupItem? _selectedSf;
     private LookupItem? _selectedActividadInstitucional;
-    private LookupItem? _selectedAnio;
     private LookupItem? _selectedSector;
     private LookupItem? _selectedTipoRecurso;
     private LookupItem? _selectedFuenteFinanciamiento;
     private LookupItem? _selectedPp;
-    private List<UsuarioAreaResponse>? _unidadResponsableCache;
     private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar Programa Presupuestal" : "Nuevo Programa Presupuestal";
@@ -193,12 +182,15 @@
     {
         try
         {
+            await SucursalStateService.InitializeAsync();
             await AnioStateService.InitializeAsync();
 
             if (Id.HasValue)
             {
                 await CargarDatosAsync();
             }
+
+            ApplyHeaderAnio();
         }
         finally
         {
@@ -219,7 +211,6 @@
                 _selectedFn = new LookupItem { Id = item.FkidFnPres, Text = TextOrDefault(item.FnclaveNombre, item.FkidFnPres) };
                 _selectedSf = new LookupItem { Id = item.FkidSfPres, Text = TextOrDefault(item.SfclaveNombre, item.FkidSfPres) };
                 _selectedActividadInstitucional = new LookupItem { Id = item.FkidActividadInstitucionalSis, Text = TextOrDefault(item.ActividadInstitucionalClaveNombre, item.FkidActividadInstitucionalSis) };
-                _selectedAnio = item.FkidAnioSis.HasValue ? new LookupItem { Id = item.FkidAnioSis.Value, Text = item.AnioClave?.ToString() ?? item.FkidAnioSis.Value.ToString() } : null;
                 _selectedSector = item.FkidSectorPres.HasValue ? new LookupItem { Id = item.FkidSectorPres.Value, Text = TextOrDefault(item.SectorClaveNombre, item.FkidSectorPres.Value) } : null;
                 _selectedTipoRecurso = item.FkidTipoRecursoPres.HasValue ? new LookupItem { Id = item.FkidTipoRecursoPres.Value, Text = TextOrDefault(item.TipoRecursoClaveNombre, item.FkidTipoRecursoPres.Value) } : null;
                 _selectedFuenteFinanciamiento = item.FkidFuenteFinanciamientoPres.HasValue ? new LookupItem { Id = item.FkidFuenteFinanciamientoPres.Value, Text = TextOrDefault(item.FuenteFinanciamientoClaveNombre, item.FkidFuenteFinanciamientoPres.Value) } : null;
@@ -251,12 +242,17 @@
             return;
         }
 
+        if (!ApplyHeaderAnio())
+        {
+            Snackbar.Add("Selecciona el anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
         item.FkidUrPres = _selectedUr.Id;
         item.FkidGfPres = _selectedGf.Id;
         item.FkidFnPres = _selectedFn.Id;
         item.FkidSfPres = _selectedSf.Id;
         item.FkidActividadInstitucionalSis = _selectedActividadInstitucional.Id;
-        item.FkidAnioSis = _selectedAnio?.Id;
         item.FkidSectorPres = _selectedSector?.Id;
         item.FkidTipoRecursoPres = _selectedTipoRecurso?.Id;
         item.FkidFuenteFinanciamientoPres = _selectedFuenteFinanciamiento?.Id;
@@ -285,22 +281,8 @@
 
     private async Task<ComboLookupResult> LoadUnidadesResponsablesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var items = FilterUsuarioAreas(await GetUnidadesResponsablesAsync(), filter)
-            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
-
-        return ToPagedComboResult(items, page, pageSize);
-    }
-
-    private async Task<IEnumerable<UsuarioAreaResponse>> GetUnidadesResponsablesAsync()
-    {
-        if (_unidadResponsableCache != null)
-        {
-            return _unidadResponsableCache;
-        }
-
-        var response = await UnidadResponsableService.GetAllAsync();
-        _unidadResponsableCache = response?.Items?.ToList() ?? new List<UsuarioAreaResponse>();
-        return _unidadResponsableCache;
+        var response = await UrService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidUr, Text = TextOrDefault(x.ClaveNombre, x.PkidUr) }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadGruposFuncionalesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -327,12 +309,6 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidActividadInstitucional, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
-    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await AnioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = x.Clave.ToString() }), response?.TotalCount);
-    }
-
     private async Task<ComboLookupResult> LoadSectoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await SectorService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
@@ -347,13 +323,7 @@
 
     private async Task<ComboLookupResult> LoadFuentesFinanciamientoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var anioFilter = GetAnioFilter();
-        if (anioFilter == null)
-        {
-            return new ComboLookupResult();
-        }
-
-        var response = await FuenteFinanciamientoService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending, anioFilter);
+        var response = await FuenteFinanciamientoService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
@@ -369,35 +339,15 @@
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
     }
 
-    private Dictionary<string, object>? GetAnioFilter() =>
-        AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0
-            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
-            : null;
-
-    private static IEnumerable<UsuarioAreaResponse> FilterUsuarioAreas(IEnumerable<UsuarioAreaResponse>? items, string filter)
+    private bool ApplyHeaderAnio()
     {
-        var query = (items ?? Enumerable.Empty<UsuarioAreaResponse>())
-            .Where(x => x.PkidArea > 0);
-
-        if (!string.IsNullOrWhiteSpace(filter))
+        if (AnioStateService.AnioId is not > 0)
         {
-            query = query.Where(x => x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase));
+            return false;
         }
 
-        return query.OrderBy(x => x.UsuarioAreaDescripcion);
-    }
-
-    private static ComboLookupResult ToPagedComboResult(IEnumerable<LookupItem> items, int page, int pageSize)
-    {
-        var list = items.ToList();
-        var currentPage = Math.Max(1, page);
-        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
-
-        return new ComboLookupResult
-        {
-            Items = list.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
-            TotalCount = list.Count
-        };
+        item.FkidAnioSis = AnioStateService.AnioId.Value;
+        return true;
     }
 
     private static string TextOrDefault(string? text, int id) =>

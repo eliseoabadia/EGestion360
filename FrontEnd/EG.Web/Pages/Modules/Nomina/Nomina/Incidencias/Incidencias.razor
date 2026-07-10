@@ -156,9 +156,8 @@
 				await table.ReloadData();
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al crear incidencia: {ex}");
 			Snackbar.Add("Error al crear la incidencia", Severity.Error);
 		}
 	}
@@ -197,9 +196,8 @@
 				await table.ReloadData();
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al editar incidencia: {ex}");
 			Snackbar.Add("Error al editar la incidencia", Severity.Error);
 		}
 	}
@@ -238,9 +236,8 @@
 				await table.ReloadData();
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al eliminar incidencia: {ex}");
 			Snackbar.Add("Error al eliminar la incidencia", Severity.Error);
 		}
 	}
@@ -277,9 +274,8 @@
 				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al exportar incidencias: {ex}");
 			Snackbar.Add("Error al exportar los datos", Severity.Error);
 		}
 	}

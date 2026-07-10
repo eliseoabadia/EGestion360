@@ -3,10 +3,12 @@
 @using System.Reflection
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
+@using EG.Web.Services
 @using MudBlazor
 
 @inject IGenericCrudService<TItem> Service
 @inject ISnackbar Snackbar
+@inject AnioPresupuestalStateService AnioStateService
 
 <BaseCrudDialog TItem="TItem"
                 Title="@DialogTitle"
@@ -69,8 +71,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await AnioStateService.InitializeAsync();
         SetDefaultValues();
         ApplyInitialValues();
+        ApplyHeaderAnio(overwrite: false);
 
         if (Id.HasValue)
         {
@@ -84,6 +88,7 @@
         if (response?.Success == true && response.Data != null)
         {
             item = response.Data;
+            ApplyHeaderAnio(overwrite: true);
         }
     }
 
@@ -96,6 +101,7 @@
             return;
         }
 
+        ApplyHeaderAnio(overwrite: true);
         TrimStrings();
 
         var response = Id.HasValue
@@ -118,7 +124,7 @@
         SetIfExists("Estatus", "BORRADOR");
         SetIfExists("Sentido", "Ascendente");
         SetIfExists("FechaCreacion", DateTime.Now);
-        SetIfExists("Anio", DateTime.Today.Year);
+        SetIfExists("Anio", AnioStateService.AnioClave ?? DateTime.Today.Year);
     }
 
     private void ApplyInitialValues()
@@ -160,6 +166,38 @@
         }
     }
 
+    private void SetPropertyValueIfExists(string propertyName, object value, bool overwrite)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property == null || !property.CanWrite)
+        {
+            return;
+        }
+
+        var current = property.GetValue(item);
+        if (!overwrite && current != null && !IsDefaultValue(property.PropertyType, current))
+        {
+            return;
+        }
+
+        var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        var converted = targetType.IsInstanceOfType(value)
+            ? value
+            : Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+
+        property.SetValue(item, converted);
+    }
+
+    private void ApplyHeaderAnio(bool overwrite)
+    {
+        SetPropertyValueIfExists("Anio", AnioStateService.AnioClave ?? DateTime.Today.Year, overwrite);
+
+        if (AnioStateService.AnioId is > 0)
+        {
+            SetPropertyValueIfExists("FkidAnioSis", AnioStateService.AnioId.Value, overwrite);
+        }
+    }
+
     private static bool IsDefaultValue(Type propertyType, object current)
     {
         if (propertyType == typeof(string))
@@ -189,6 +227,8 @@
             "UsuarioCreacion" or
             "FechaModificacion" or
             "UsuarioModificacion" or
+            "Anio" or
+            "FkidAnioSis" or
             "ProgramaClave" or
             "ProgramaDescripcion" or
             "EntidadNombre" or

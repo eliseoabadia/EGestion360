@@ -37,10 +37,6 @@
             <MudItem xs="12">
                 <div class="budget-ribbon">
                     <div>
-                        <span>Anio presupuestal</span>
-                        <strong>@BudgetYearText</strong>
-                    </div>
-                    <div>
                         <span>Total mensual @CurrencyDisplay</span>
                         <strong>@Money(TotalMeses)</strong>
                     </div>
@@ -204,7 +200,7 @@
 <style>
     .anteproyecto-dialog .budget-ribbon {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         margin-bottom: 2px;
     }
@@ -318,7 +314,6 @@
     private string dialogTitle => IsReadOnly ? "Ver Anteproyecto Autorizado" : Id.HasValue ? "Editar Anteproyecto de Egresos" : "Nuevo Anteproyecto de Egresos";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
-    private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
     private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;

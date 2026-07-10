@@ -20,6 +20,7 @@
 <BaseCrudDialog TItem="EgresoAutorizadoResponse"
                 Title="@dialogTitle"
                 MaxWidth="MaxWidth.ExtraExtraLarge"
+                DialogClass="crud-dialog-wide-xl"
                 ActionColor="@actionColor"
                 ActionIcon="@actionIcon"
                 ActionText="@actionText"
@@ -41,11 +42,7 @@
             <MudItem xs="12">
                 <div class="budget-ribbon">
                     <div>
-                        <span>Anio presupuestal</span>
-                        <strong>@BudgetYearText</strong>
-                    </div>
-                    <div>
-                        <span>Total autorizado @CurrencyDisplay</span>
+                        <span>Total @AmountKind @CurrencyDisplay</span>
                         <strong>@Money(TotalMeses)</strong>
                     </div>
                     <div>
@@ -154,7 +151,7 @@
                     <div class="months-header">
                         <div>
                             <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
-                            <MudText Typo="Typo.caption">Captura el monto autorizado por mes.</MudText>
+                            <MudText Typo="Typo.caption">@MonthlyAmountHelpText</MudText>
                         </div>
                         <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
                     </div>
@@ -183,7 +180,7 @@
 <style>
     .presupuesto-autorizado-dialog .budget-ribbon {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         margin-bottom: 2px;
     }
@@ -265,6 +262,8 @@
     [Parameter] public EgresoAutorizadoResponse? PrefillItem { get; set; }
     [Parameter] public bool IsAuthorizationFlow { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public string? ReadOnlyTitle { get; set; }
+    [Parameter] public string AmountKind { get; set; } = "autorizado";
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
@@ -287,14 +286,16 @@
     private LookupItem? _selectedPy;
     private bool _formLoading = true;
 
-    private string dialogTitle => IsReadOnly ? "Ver Presupuesto Autorizado" : IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
+    private string dialogTitle => IsReadOnly ? ReadOnlyTitle ?? "Ver Presupuesto Autorizado" : IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
     private string actionText => IsAuthorizationFlow ? "Firmar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
     private string cancelText => IsReadOnly ? "Cerrar" : "Cancelar";
     private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
     private string actionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
-    private string BudgetYearText => AnioStateService.AnioClave?.ToString() ?? AnioId.ToString();
     private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
+    private string MonthlyAmountHelpText => IsReadOnly
+        ? $"Monto {AmountKind} por mes."
+        : $"Captura el monto {AmountKind} por mes.";
     private bool AmountsLocked => IsReadOnly || IsAuthorizationFlow || Id.HasValue;
     private bool SourceFieldsLocked => IsAuthorizationFlow || (Id.HasValue && item.FkidEgresoProyectadoPres.HasValue);
     private bool FormFieldsLocked => IsReadOnly || SourceFieldsLocked;

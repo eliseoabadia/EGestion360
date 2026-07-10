@@ -37,15 +37,7 @@
     </TitleContent>
     <DialogContent>
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="4">
-                <MudTextField Value="@BudgetYearText"
-                              Label="Anio presupuestal"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="Selecciona un anio presupuestal"
-                              ReadOnly="true" />
-            </MudItem>
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <MudTextField Value="@EmpresaText"
                               Label="Empresa seleccionada"
                               Variant="Variant.Outlined"
@@ -53,7 +45,7 @@
                               RequiredError="Selecciona una empresa"
                               ReadOnly="true" />
             </MudItem>
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <MudDatePicker @bind-Date="_fecha"
                                Label="Fecha inicial por defecto"
                                DateFormat="dd/MM/yyyy"
@@ -202,7 +194,6 @@
         <MudExpansionPanels Elevation="0" Class="mt-3">
             <MudExpansionPanel Text="Asistente de carga y RAG" Expanded="@(_ragSession != null || _ragAnswer != null)">
                 <div class="anteproyecto-rag-context">
-                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">Anio @BudgetYearText</MudChip>
                     <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@EmpresaText</MudChip>
                     @if (_ragSession != null)
                     {

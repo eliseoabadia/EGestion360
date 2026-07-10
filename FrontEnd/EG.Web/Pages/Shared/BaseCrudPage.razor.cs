@@ -1,4 +1,4 @@
-using EG.Web.Auth;
+﻿using EG.Web.Auth;
 using EG.Web.Contracts;
 using EG.Web.Extensions;
 using Microsoft.AspNetCore.Components;
@@ -138,14 +138,11 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         IsInitialized = true;
         try
         {
-            Console.WriteLine($"🔷 VerifyAccess: Module={ModuleName}, SubModule={SubModuleName}");
             CanView = AuthProvider.HasPermission(ModuleName, SubModuleName, "view")
                 || AuthProvider.HasPermission(ModuleName, SubModuleName, "view-menu");
-            Console.WriteLine($"🔷 VerifyAccess: CanView={CanView}");
 
             if (!CanView)
             {
-                Console.WriteLine("⚠️ VerifyAccess: Sin permiso de vista, redirigiendo...");
                 HasAccess = false;
                 StateHasChanged();
                 await Task.Delay(2000);
@@ -159,12 +156,10 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             CanExport = AuthProvider.HasPermission(ModuleName, SubModuleName, "CanExportToExcel");
             CanAuthorize = AuthProvider.HasPermission(ModuleName, SubModuleName, "authorize");
 
-            Console.WriteLine($"🔷 VerifyAccess: Create={CanCreate}, Update={CanUpdate}, Delete={CanDelete}, Export={CanExport}, Authorize={CanAuthorize}");
             HasAccess = true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ VerifyAccess: {ex.Message}");
             Snackbar.Add($"Error al verificar permisos: {ex.Message}", Severity.Error);
             await Task.Delay(1000);
             NavigationManager.NavigateTo("/", replace: true);
@@ -189,7 +184,6 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
 
-            Console.WriteLine($"🔷 LoadServerData: Page={CurrentPage}, PageSize={PageSize}, Sort={SortLabel}, Dir={SortDirection}");
 
             var response = await Service.GetAllPaginadoAsync(
                 CurrentPage,
@@ -204,11 +198,9 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             {
                 Elements = response.Items.ToList();
                 TotalCount = response.TotalCount;
-                Console.WriteLine($"✅ LoadServerData: {Elements.Count} items de {TotalCount} totales");
             }
             else
             {
-                Console.WriteLine($"⚠️ LoadServerData: falló (Success={response?.Success}, Items null={response?.Items == null}, Msg={response?.Message})");
                 Elements.Clear();
                 TotalCount = 0;
                 if (!string.IsNullOrEmpty(response?.Message))
@@ -225,7 +217,6 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ LoadServerData: {ex.Message}");
             Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
             return new TableData<TResponse>
             {
@@ -249,7 +240,6 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
         try
         {
-            await Task.Delay(500, SearchCts.Token);
             if (!SearchCts.Token.IsCancellationRequested)
             {
                 await ReloadData();
@@ -258,7 +248,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         catch (TaskCanceledException) { }
     }
 
-    // ==================== M�TODOS CRUD MEJORADOS ====================
+    // ==================== Mï¿½TODOS CRUD MEJORADOS ====================
 
     protected virtual async Task CreateItem()
     {
@@ -279,26 +269,20 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine("?? Abriendo di�logo de crear...");
         var dialog = await DialogService.ShowAsync(CreateDialogType, $"Crear {SubModuleName}",
             new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("? Esperando resultado del di�logo...");
         var result = await dialog.Result;
         
         if (result == null)
         {
-            Console.WriteLine("?? Resultado es null");
             return;
         }
         
-        Console.WriteLine($"?? Resultado del di�logo: Canceled={result.Canceled}");
         
         if (!result.Canceled)
         {
-            Console.WriteLine("?? Recargando datos...");
             await ReloadData();
-            Console.WriteLine("? Datos recargados");
         }
         }
         finally
@@ -327,27 +311,21 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        Console.WriteLine($"?? Abriendo di�logo de editar para ID: {id}");
         var parameters = new DialogParameters { ["Id"] = id };
         var dialog = await DialogService.ShowAsync(EditDialogType, $"Editar {SubModuleName}", parameters,
             new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true });
 
-        Console.WriteLine("? Esperando resultado del di�logo...");
         var result = await dialog.Result;
         
         if (result == null)
         {
-            Console.WriteLine("?? Resultado es null");
             return;
         }
         
-        Console.WriteLine($"?? Resultado del di�logo: Canceled={result.Canceled}, Data={result.Data}");
 
         if (!result.Canceled)
         {
-            Console.WriteLine("?? Recargando datos...");
             await ReloadData();
-            Console.WriteLine("? Datos recargados");
         }
         }
         finally
@@ -376,7 +354,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        // Obtener el nombre del item para mostrarlo en el di�logo
+        // Obtener el nombre del item para mostrarlo en el diï¿½logo
         var itemName = await GetItemNameForDelete(id);
 
         var parameters = new DialogParameters
@@ -407,13 +385,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // M�todo para obtener el nombre del item (sobrescribir en cada p�gina)
+    // Mï¿½todo para obtener el nombre del item (sobrescribir en cada pï¿½gina)
     protected virtual Task<string> GetItemNameForDelete(int id)
     {
         return Task.FromResult(string.Empty);
     }
 
-    // M�todo que ejecuta la eliminaci�n real
+    // Mï¿½todo que ejecuta la eliminaciï¿½n real
     private async Task<bool> ExecuteDelete(int id)
     {
         try
@@ -445,14 +423,14 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // M�todo para recargar datos (sobrescribir en las p�ginas hijas)
+    // Mï¿½todo para recargar datos (sobrescribir en las pï¿½ginas hijas)
     protected virtual async Task ReloadData()
     {
-        // Este m�todo ser� sobrescrito en las p�ginas hijas
+        // Este mï¿½todo serï¿½ sobrescrito en las pï¿½ginas hijas
         await Task.CompletedTask;
     }
 
-    // ==================== FIN M�TODOS CRUD ====================
+    // ==================== FIN Mï¿½TODOS CRUD ====================
 
     protected virtual async Task<List<TResponse>> LoadExportItemsAsync()
     {

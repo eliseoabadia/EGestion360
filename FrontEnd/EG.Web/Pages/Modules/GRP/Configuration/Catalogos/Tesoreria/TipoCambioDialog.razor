@@ -1,9 +1,12 @@
 @using MudBlazor
+@using EG.Common.GenericModel
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Domain.DTOs.Responses.Tesoreria
 
 @inject IGenericCrudService<TipoCambioResponse> Service
+@inject IGenericCrudService<TipoMonedaResponse> TipoMonedaService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="TipoCambioResponse"
@@ -15,6 +18,14 @@
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="TipoCambioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+
+        <PagedAutocomplete Value="@selectedMoneda"
+                           ValueChanged="value => selectedMoneda = value"
+                           Label="Moneda"
+                           Required="true"
+                           RequiredError="La moneda es requerida"
+                           PageSize="50"
+                           LoadPage="LoadMonedasPageAsync" />
 
         <MudNumericField @bind-Value="item.Cantidad"
                           Label="Cantidad (Tipo de Cambio)"
@@ -42,6 +53,7 @@
 
     private BaseEntityForm<TipoCambioResponse> form = null!;
     private TipoCambioResponse item = new() { Activo = true, Cantidad = 1.0m };
+    private LookupItem? selectedMoneda;
     private DateTime? selectedDate = DateTime.Today;
 
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Cambio" : "Nuevo Tipo de Cambio";
@@ -64,6 +76,11 @@
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
+                selectedMoneda = new LookupItem
+                {
+                    Id = item.FkidTipoMonedaTes,
+                    Text = TextOrDefault($"{item.MonedaCodigo} - {item.MonedaDescripcion}", item.FkidTipoMonedaTes)
+                };
                 selectedDate = item.Fecha;
             }
         }
@@ -77,6 +94,14 @@
     {
         try
         {
+            if (selectedMoneda == null)
+            {
+                Snackbar.Add("Selecciona una moneda.", Severity.Warning);
+                return;
+            }
+
+            item.FkidTipoMonedaTes = selectedMoneda.Id;
+
             if (selectedDate.HasValue)
                 item.Fecha = selectedDate.Value;
 
@@ -107,4 +132,22 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+
+    private async Task<ComboLookupResult> LoadMonedasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await TipoMonedaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var items = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidTipoMoneda,
+            Text = $"{x.CodigoIso4217} - {x.Descripcion}"
+        });
+
+        var list = items?.ToList() ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+
+    private static string TextOrDefault(string? text, int id) =>
+        string.IsNullOrWhiteSpace(text) || text.Trim() == "-"
+            ? id.ToString()
+            : text.Trim();
 }

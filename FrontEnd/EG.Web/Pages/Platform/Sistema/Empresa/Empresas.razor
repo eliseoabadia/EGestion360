@@ -116,13 +116,8 @@
     {
         if (table != null)
         {
-            Console.WriteLine("🔄 Recargando tabla de empresas...");
             await table.ReloadData();
             StateHasChanged();
-        }
-        else
-        {
-            Console.WriteLine("⚠️ table es null en ReloadData");
         }
     }
 

@@ -195,6 +195,52 @@
         return response?.Data?.ClaveNombre ?? "el programa presupuestal";
     }
 
+    protected override async Task CreateItem()
+    {
+        if (!CanCreate)
+        {
+            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        if (!HasSelectedAnio())
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
+        var dialog = await DialogService.ShowAsync(
+            CreateDialogType,
+            "Crear Programa Presupuestal",
+            new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
+    protected override async Task EditItem(int id)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters { ["Id"] = id };
+        var dialog = await DialogService.ShowAsync(
+            EditDialogType,
+            "Editar Programa Presupuestal",
+            parameters,
+            new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+
+        if ((await dialog.Result) is { Canceled: false })
+        {
+            await ReloadData();
+        }
+    }
+
     protected override async Task ExportToExcel()
     {
         if (!CanExport)

@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using EG.Business.Interfaces;
 using EG.Domain.Interfaces;
 using EG.Dommain.DTOs.Responses;
@@ -144,7 +144,7 @@ namespace EG.Business.Services
 
         /// <summary>
         /// Obtiene los claims del usuario desde la base de datos.
-        /// Solo devuelve permisos asociados a menús activos.
+        /// Solo devuelve permisos asociados a menÃºs activos.
         /// </summary>
         public async Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int usuarioId)
         {
@@ -170,9 +170,8 @@ namespace EG.Business.Services
 
                 return await GetClaimsFromRolesAsync(usuarioId);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error obteniendo claims para usuario {usuarioId}: {ex.Message}");
                 throw;
             }
         }

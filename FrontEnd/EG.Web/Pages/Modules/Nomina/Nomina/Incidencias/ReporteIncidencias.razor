@@ -144,9 +144,8 @@
 				parameters,
 				new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al ver detalles: {ex}");
 			Snackbar.Add("Error al cargar los detalles", Severity.Error);
 		}
 	}
@@ -187,9 +186,8 @@
 				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al exportar reporte: {ex}");
 			Snackbar.Add("Error al exportar los datos", Severity.Error);
 		}
 	}

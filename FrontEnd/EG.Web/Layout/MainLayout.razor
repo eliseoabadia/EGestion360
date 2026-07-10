@@ -144,8 +144,8 @@
             </div>
             <button type="button"
                     class="sidebar-resize-handle @(_drawerOpen ? "visible" : "collapsed")"
-                    title="Arrastra para ajustar el menu"
-                    aria-label="Ajustar ancho del menu lateral"
+                    title="Arrastra para ajustar el menú"
+                    aria-label="Ajustar ancho del menú lateral"
                     aria-hidden="@(!_drawerOpen)"
                     tabindex="@(_drawerOpen ? "0" : "-1")"></button>
             <main class="main-content">
@@ -306,7 +306,6 @@
             var response = await AnioService.GetAllPaginadoAsync(1, 100, string.Empty, "Clave", SortDirection.Descending);
             if (response?.Success != true || response.Items == null || response.Items.Count == 0)
             {
-                Console.WriteLine($"LoadAniosAsync: GetAllPaginado no regreso anios. Success={response?.Success}, Message={response?.Message}");
                 response = await AnioService.GetAllAsync();
             }
 
@@ -314,7 +313,6 @@
 
             if (!_anios.Any())
             {
-                Console.WriteLine("LoadAniosAsync: no hay anios presupuestales activos para mostrar.");
                 return;
             }
 
@@ -328,7 +326,6 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LoadAniosAsync: error al cargar anios presupuestales. {ex.Message}");
             _anios = new List<AniosResponse>();
         }
         finally

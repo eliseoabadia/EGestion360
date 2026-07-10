@@ -186,8 +186,8 @@
             var response = await _service.CreateAsync(menu);
             if (response != null && response.Success)
             {
-                Snackbar.Add("Menú creado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
+                return;
             }
             else
             {

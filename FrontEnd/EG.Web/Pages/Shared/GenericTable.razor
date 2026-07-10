@@ -1,6 +1,7 @@
 ﻿@typeparam TItem
 @using System.Globalization
 @using MudBlazor
+@implements IDisposable
 @inject IJSRuntime JSRuntime
 
 <MudPaper id="@tableElementId" Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-table">
@@ -260,6 +261,7 @@
     [Parameter] public string SearchString { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> SearchStringChanged { get; set; }
     [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public int SearchDebounceMilliseconds { get; set; } = 400;
 
     [Parameter] public RenderFragment Header { get; set; } = null!;
     [Parameter] public RenderFragment<TItem> Row { get; set; } = null!;
@@ -281,10 +283,13 @@
     private bool actionInProgress = false;
     private int? loadedTotalCount;
     private string appliedSearchString = string.Empty;
+    private string submittedSearchString = string.Empty;
+    private int searchDebounceVersion;
+    private bool disposed;
     private bool IsTableBusy => Loading || isLoading || actionInProgress;
     private int EffectiveTotalCount => loadedTotalCount ?? TotalCount;
     private string AppliedSearchString => appliedSearchString;
-    private bool HasPendingSearch => !SearchEquals(SearchString, appliedSearchString);
+    private bool HasPendingSearch => !SearchEquals(SearchString, submittedSearchString);
     private string CurrentBusyMessage => actionInProgress ? ActionLoadingMessage : LoadingMessage;
     private string EffectiveContextAssistantMessage => string.IsNullOrWhiteSpace(ContextAssistantMessage)
         ? BuildContextAssistantMessage()
@@ -300,6 +305,17 @@
     private bool ShowAutoColumnSelector => EnableAutoColumnSelector && autoColumnOptions.Count > Math.Max(0, AutoColumnSelectorThreshold);
     private int VisibleAutoColumnCount => autoColumnOptions.Count(column => IsAutoColumnVisible(column.Index));
     private IEnumerable<int> HiddenColumnIndexes => hiddenAutoColumnIndexes.Concat(hiddenControlColumnIndexes).Distinct();
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(submittedSearchString)
+            && string.IsNullOrWhiteSpace(appliedSearchString)
+            && !string.IsNullOrWhiteSpace(SearchString))
+        {
+            submittedSearchString = SearchString.Trim();
+            appliedSearchString = submittedSearchString;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -357,12 +373,12 @@
             {
                 var tableData = await ServerDataFunc(state, cancellationToken);
                 loadedTotalCount = tableData.TotalItems;
-                appliedSearchString = SearchString?.Trim() ?? string.Empty;
+                appliedSearchString = submittedSearchString;
                 return tableData;
             }
 
             loadedTotalCount = 0;
-            appliedSearchString = SearchString?.Trim() ?? string.Empty;
+            appliedSearchString = submittedSearchString;
             return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
         }
         finally
@@ -384,8 +400,8 @@
             var typedSearch = SearchString?.Trim() ?? string.Empty;
 
             return string.IsNullOrWhiteSpace(typedSearch)
-                ? "Limpiaste la busqueda. Presiona Enter para recargar la lista completa."
-                : $"Escribiste \"{typedSearch}\". Presiona Enter para aplicar la busqueda.";
+                ? "Limpiaste la busqueda. La lista se recargara automaticamente."
+                : $"Escribiste \"{typedSearch}\". La busqueda se aplicara automaticamente.";
         }
 
         if (EffectiveTotalCount == 0 && !string.IsNullOrWhiteSpace(AppliedSearchString))
@@ -402,7 +418,7 @@
 
         if (!string.IsNullOrWhiteSpace(AppliedSearchString))
         {
-            return $"Busqueda aplicada con {EffectiveTotalCount.ToString("N0", CultureInfo.InvariantCulture)} resultado(s). Cambia el texto y presiona Enter para recargar.";
+            return $"Busqueda aplicada con {EffectiveTotalCount.ToString("N0", CultureInfo.InvariantCulture)} resultado(s). Cambia el texto para recargar.";
         }
 
         if (ReadOnly)
@@ -413,24 +429,12 @@
         return "Datos listos. Revisa los campos obligatorios antes de guardar y usa la busqueda para enfocar el trabajo.";
     }
 
-    private async void HandleKeyUp(KeyboardEventArgs args)
+    private async Task HandleKeyUp(KeyboardEventArgs args)
     {
         if (args.Key == "Enter")
         {
-            if (IsTableBusy)
-                return;
-
-            await SearchStringChanged.InvokeAsync(SearchString);
-            if (OnSearch.HasDelegate)
-            {
-                await OnSearch.InvokeAsync();
-                return;
-            }
-
-            if (mudTableRef is not null)
-            {
-                await mudTableRef.ReloadServerData();
-            }
+            searchDebounceVersion++;
+            await ApplySearchAsync();
         }
     }
 
@@ -438,6 +442,61 @@
     {
         SearchString = value ?? string.Empty;
         await SearchStringChanged.InvokeAsync(SearchString);
+        QueueSearchDebounce();
+    }
+
+    private void QueueSearchDebounce()
+    {
+        var version = ++searchDebounceVersion;
+        _ = DebounceSearchAsync(version);
+    }
+
+    private async Task DebounceSearchAsync(int version)
+    {
+        try
+        {
+            await Task.Delay(Math.Max(0, SearchDebounceMilliseconds));
+
+            if (disposed || version != searchDebounceVersion)
+            {
+                return;
+            }
+
+            await InvokeAsync(async () =>
+            {
+                if (disposed || version != searchDebounceVersion)
+                {
+                    return;
+                }
+
+                await ApplySearchAsync();
+            });
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    private async Task ApplySearchAsync()
+    {
+        if (IsTableBusy)
+        {
+            return;
+        }
+
+        submittedSearchString = SearchString?.Trim() ?? string.Empty;
+        await SearchStringChanged.InvokeAsync(SearchString);
+
+        if (OnSearch.HasDelegate)
+        {
+            await OnSearch.InvokeAsync();
+            return;
+        }
+
+        if (mudTableRef is not null)
+        {
+            await mudTableRef.ReloadServerData();
+        }
     }
 
     private async Task ExportToExcel()
@@ -625,6 +684,12 @@
 
     private static bool SearchEquals(string? left, string? right) =>
         string.Equals(left?.Trim() ?? string.Empty, right?.Trim() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+
+    public void Dispose()
+    {
+        disposed = true;
+        searchDebounceVersion++;
+    }
 
     private sealed record AutoColumnOption(int Index, string Label);
 

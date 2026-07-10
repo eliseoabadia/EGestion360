@@ -113,6 +113,7 @@ namespace EG.ApiCoreBS.Controllers.General
             try
             {
                 var dto = request.Adapt<UsuarioDto>();
+                NormalizeUsuarioDtoEmpresa(request, dto);
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
 
@@ -150,6 +151,7 @@ namespace EG.ApiCoreBS.Controllers.General
             try
             {
                 var dto = request.Adapt<UsuarioDto>();
+                NormalizeUsuarioDtoEmpresa(request, dto);
                 dto.PkIdUsuario = id;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
@@ -231,5 +233,15 @@ namespace EG.ApiCoreBS.Controllers.General
                 Code = code.ToCode(),
                 TotalCount = 0
             };
+
+        private static void NormalizeUsuarioDtoEmpresa(UsuarioResponse request, UsuarioDto dto)
+        {
+            if (dto.FkidEmpresaSis > 0)
+                return;
+
+            dto.FkidEmpresaSis = request.IdEmpresa > 0
+                ? request.IdEmpresa
+                : request.PkidEmpresa;
+        }
     }
 }

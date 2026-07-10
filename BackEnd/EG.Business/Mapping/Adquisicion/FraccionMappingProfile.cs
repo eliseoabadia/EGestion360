@@ -15,7 +15,6 @@ namespace EG.Business.Mapping.Adquisicion
                 .Map(dest => dest.NombreArticulo, src => src.ArticuloDescripcion);
             config.NewConfig<FraccionResponse, FraccionDto>()
                 .Ignore(dest => dest.PkidFraccion)
-                .Ignore(dest => dest.FkidArticuloOrco)
                 .IgnoreNullValues(true);
         }
     }

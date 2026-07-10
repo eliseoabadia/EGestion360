@@ -359,9 +359,8 @@ namespace EG.Web.Auth
                 foreach (var item in dbClaims)
                     AddPermissionEntry(item.Group, item.SubGroup, item.Values);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error loading DB permissions: {ex.Message}");
             }
         }
 
@@ -396,9 +395,8 @@ namespace EG.Web.Auth
                     AddPermissionEntry(item.Group, item.SubGroup, item.Values);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error refreshing DB permissions: {ex.Message}");
             }
         }
 

@@ -168,6 +168,56 @@ body,
     flex-direction: column !important;
 }
 
+.mud-dialog:has(.crud-dialog .entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog:has(.crud-dialog .crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog:has(.mud-dialog-content > .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog:has(.mud-dialog-content > form > .mud-grid > .mud-grid-item:nth-of-type(6)),
+.mud-dialog:has(.crud-dialog-wide),
+.mud-dialog:has(.crud-dialog-wide-xl),
+.mud-dialog:has(.crud-dialog-wide-xxl) {
+    width: min(96vw, 1600px) !important;
+    max-width: calc(100vw - 48px) !important;
+    margin: 12px 24px !important;
+}
+
+.mud-dialog:has(.crud-dialog .entity-form-content .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog:has(.crud-dialog .crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog:has(.mud-dialog-content > .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog:has(.mud-dialog-content > form > .mud-grid > .mud-grid-item:nth-of-type(11)),
+.mud-dialog:has(.crud-dialog-wide-xl) {
+    width: min(96vw, 1680px) !important;
+}
+
+.mud-dialog:has(.crud-dialog .entity-form-content .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog:has(.crud-dialog .crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog:has(.mud-dialog-content > .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog:has(.mud-dialog-content > form > .mud-grid > .mud-grid-item:nth-of-type(16)),
+.mud-dialog:has(.crud-dialog-wide-xxl) {
+    width: min(96vw, 1840px) !important;
+}
+
+@media (max-width: 960px) {
+    .mud-dialog:has(.crud-dialog .entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog:has(.crud-dialog .crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog:has(.mud-dialog-content > .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog:has(.mud-dialog-content > form > .mud-grid > .mud-grid-item:nth-of-type(6)),
+    .mud-dialog:has(.crud-dialog-wide),
+    .mud-dialog:has(.crud-dialog-wide-xl),
+    .mud-dialog:has(.crud-dialog-wide-xxl) {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px !important;
+    }
+}
+
 .mud-dialog .mud-dialog-title {
     flex: 0 0 auto;
     min-height: 44px;

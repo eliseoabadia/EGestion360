@@ -239,6 +239,7 @@
     private string ActionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
     private string ActionText => IsAuthorizationFlow ? "Autorizar deposito" : Id.HasValue ? "Actualizar" : "Crear deposito";
     private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
+    private int SelectedAnioId => AnioId > 0 ? AnioId : AnioStateService.AnioId.GetValueOrDefault();
     private string PolicyStatus => item.FkidPolizaConta > 0
         ? $"{(string.IsNullOrWhiteSpace(item.ClavePoliza) ? $"#{item.FkidPolizaConta}" : item.ClavePoliza)} {(item.PolizaBalanceada == true ? "balanceada" : "pendiente")}"
         : "Se genera al guardar";
@@ -297,6 +298,11 @@
         if (TotalMeses <= 0m)
         {
             Snackbar.Add("El total mensual debe ser mayor que cero.", Severity.Warning);
+            return;
+        }
+        if (SelectedAnioId <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
             return;
         }
 
@@ -364,7 +370,7 @@
     }
 
     private Task<ComboLookupResult> LoadIngresosAsync(int page, int size, string filter, CancellationToken ct)
-        => LoadLookupAsync("GetIngresoAutorizadoLookupPaginado", page, size, filter, ct, AnioId > 0 ? $"&idAnio={AnioId}" : string.Empty);
+        => LoadLookupAsync("GetIngresoAutorizadoLookupPaginado", page, size, filter, ct, SelectedAnioId > 0 ? $"&idAnio={SelectedAnioId}" : string.Empty);
     private Task<ComboLookupResult> LoadCLCFacturasAsync(int page, int size, string filter, CancellationToken ct)
         => LoadLookupAsync("GetCLCFacturaLookupPaginado", page, size, filter, ct);
     private Task<ComboLookupResult> LoadTiposDoctoAsync(int page, int size, string filter, CancellationToken ct)

@@ -184,9 +184,8 @@ namespace EG.Web.Services
                 // Para bool, usamos el valor directamente
                 return result is true;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error al establecer imagen de perfil: {ex.Message}");
                 return false;
             }
         }

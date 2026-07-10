@@ -71,6 +71,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.UtcNow;
             dto.Activo = true;
+            dto.FkidCapituloConta = await ResolveCapituloIdAsync(response, dto);
 
             var exists = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.Activo);
             if (exists.Any())
@@ -91,6 +92,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.PkidConcepto = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.UtcNow;
+            dto.FkidCapituloConta = await ResolveCapituloIdAsync(response, dto);
 
             var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Descripcion.ToLower() == dto.Descripcion.ToLower() && e.PkidConcepto != id && e.Activo);
             if (duplicate.Any())
@@ -109,6 +111,42 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) throw new KeyNotFoundException($"Concepto con ID {id} no encontrado");
             await _repository.DeleteAsync(id);
+        }
+
+        private async Task<int> ResolveCapituloIdAsync(ConceptoResponse response, ConceptoDto dto)
+        {
+            if (dto.FkidCapituloConta > 0)
+            {
+                return dto.FkidCapituloConta;
+            }
+
+            if (response.FkidCapituloSis > 0)
+            {
+                return response.FkidCapituloSis;
+            }
+
+            var clave = (response.Clave ?? dto.Clave ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(clave))
+            {
+                throw new ArgumentException("Captura una clave valida para determinar el capitulo.");
+            }
+
+            var capitulos = await _context.Capitulos
+                .Where(c => c.Activo)
+                .ToListAsync();
+
+            var match = capitulos
+                .Where(c => !string.IsNullOrWhiteSpace(c.Clave)
+                    && clave.StartsWith(c.Clave.Trim(), StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(c => c.Clave.Trim().Length)
+                .FirstOrDefault();
+
+            if (match != null)
+            {
+                return match.PkidCapitulo;
+            }
+
+            throw new ArgumentException("No se pudo determinar el capitulo de la partida presupuestal. Captura una clave que inicie con un capitulo valido.");
         }
 
         public async Task<PagedResult<ConceptoResponse>> GetAllPaginadoAsync(PagedRequest request)

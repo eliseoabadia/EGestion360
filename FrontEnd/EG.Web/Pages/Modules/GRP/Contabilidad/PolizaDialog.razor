@@ -1,6 +1,5 @@
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Contabilidad
-@using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
@@ -8,7 +7,6 @@
 @using MudBlazor
 
 @inject IGenericCrudService<PolizaResponse> Service
-@inject IGenericCrudService<AniosResponse> AnioService
 @inject IGenericCrudService<TipoPolizaResponse> TipoPolizaService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
@@ -27,15 +25,6 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedAnio"
-                                   ValueChanged="value => _selectedAnio = value"
-                                   Label="Año"
-                                   Required="true"
-                                   RequiredError="El año es requerido"
-                                   LoadPage="LoadAniosPageAsync" />
-            </MudItem>
-
             <MudItem xs="12" md="6">
                 <MudSelect T="int"
                            @bind-Value="item.FkidMesSis"
@@ -119,7 +108,6 @@
         Autorizado = false
     };
     private DateTime? _fechaPoliza = DateTime.Today;
-    private LookupItem? _selectedAnio;
     private LookupItem? _selectedTipoPoliza;
     private bool _permitirModificar = true;
     private bool _autorizado;
@@ -153,18 +141,7 @@
             await CargarDatosAsync();
             return;
         }
-
-        if (AnioStateService.AnioId.HasValue)
-        {
-            item.FkidAnioSis = AnioStateService.AnioId.Value;
-            _selectedAnio = new LookupItem
-            {
-                Id = AnioStateService.AnioId.Value,
-                Text = string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
-                    ? AnioStateService.AnioId.Value.ToString()
-                    : AnioStateService.AnioTexto
-            };
-        }
+        ApplyHeaderAnio();
     }
 
     private async Task CargarDatosAsync()
@@ -178,11 +155,6 @@
                 _fechaPoliza = item.FechaPoliza;
                 _permitirModificar = item.PermitirModificar ?? true;
                 _autorizado = item.Autorizado ?? false;
-                _selectedAnio = new LookupItem
-                {
-                    Id = item.FkidAnioSis,
-                    Text = item.Anio > 0 ? item.Anio.ToString() : item.FkidAnioSis.ToString()
-                };
                 _selectedTipoPoliza = new LookupItem
                 {
                     Id = item.FkidTipoPolizaSis,
@@ -203,10 +175,10 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
-
-        if (_selectedAnio == null)
+        ApplyHeaderAnio();
+        if (item.FkidAnioSis <= 0)
         {
-            Snackbar.Add("Selecciona el año de la póliza.", Severity.Warning);
+            Snackbar.Add("Selecciona el anio presupuestal en el encabezado.", Severity.Warning);
             return;
         }
 
@@ -221,8 +193,6 @@
             Snackbar.Add("Selecciona un mes válido.", Severity.Warning);
             return;
         }
-
-        item.FkidAnioSis = _selectedAnio.Id;
         item.FkidTipoPolizaSis = _selectedTipoPoliza.Id;
         item.FechaPoliza = _fechaPoliza ?? DateTime.Today;
         item.ClavePoliza = item.ClavePoliza?.Trim() ?? string.Empty;
@@ -251,16 +221,17 @@
         }
     }
 
-    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await AnioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Descending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}".Trim(' ', '-') }), response?.TotalCount);
-    }
-
     private async Task<ComboLookupResult> LoadTiposPolizaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await TipoPolizaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPoliza, Text = x.Descripcion }), response?.TotalCount);
+    }
+    private void ApplyHeaderAnio()
+    {
+        if (AnioStateService.AnioId is > 0)
+        {
+            item.FkidAnioSis = AnioStateService.AnioId.Value;
+        }
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)

@@ -1,5 +1,4 @@
 using EG.Common.GenericModel;
-using EG.Common.Helper;
 using EG.Web.Contracts.Configuration;
 using EG.Web.Helpers;
 using EG.Web.Models.Configuration;
@@ -14,21 +13,17 @@ namespace EG.Web.Services
     public class NavigateService : INavigateService
     {
         //private readonly Logger.Log4NetLogger _logger = new Logger.Log4NetLogger(typeof(NavigateService));
-        private readonly ApplicationInstance _application;
         private readonly IJSRuntime _jsRuntime;
         private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
 
         public static readonly string TOKENKEY = "authToken";
 
         public bool IsAuthenticated { get; private set; } = false;
 
-        public NavigateService(HttpClient httpClient, IJSRuntime jsRuntime, ApplicationInstance application)
+        public NavigateService(HttpClient httpClient, IJSRuntime jsRuntime)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
-            _application = application;
-            _baseUrl = httpClient.BaseAddress?.ToString() ?? string.Empty;
         }
 
         public async Task<MenuResponse> GetMenuAsync(int _userId)
@@ -51,7 +46,6 @@ namespace EG.Web.Services
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
-                    Console.WriteLine("NavigateService.GetMenuAsync: token no disponible; se omite la carga del menu.");
                     return resultado;
                 }
 
@@ -70,42 +64,29 @@ namespace EG.Web.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, $"api/Navigate/{_userId}");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenValue);
 
-                Console.WriteLine($"=== NavigateService.GetMenuAsync: Sending request to api/Navigate/{_userId} ===");
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
-                Console.WriteLine($"Response status: {(int)response.StatusCode} {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Response body length: {responseBody.Length}");
-                    Console.WriteLine($"Response body (first 300 chars): {responseBody.Substring(0, Math.Min(300, responseBody.Length))}");
 
                     // Deserializamos directamente a una lista
                     var items = JsonSerializer.Deserialize<List<MenuItem>>(responseBody, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
-                    Console.WriteLine($"Deserialized items count: {items?.Count}");
 
                     resultado.Items = BuildMenuTreeV2(items ?? new List<MenuItem>()) ?? new List<MenuItem>();
-                    Console.WriteLine($"After BuildMenuTreeV2 - root items: {resultado.Items?.Count}");
 
                     return resultado;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     // Si recibimos 401, limpiar estado cliente y devolver vacío para forzar re-login desde UI
-                    Console.WriteLine("NavigateService: Unauthorized (401) al obtener menu. SessionGuard administrara la sesion activa.");
-                }
-                else
-                {
-                    var errorBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error al obtener menú: {response.StatusCode}, Body: {errorBody}");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error al obtener menú: {ex}");
             }
 
             return resultado;
@@ -125,7 +106,14 @@ namespace EG.Web.Services
 
         public static List<MenuItem> BuildMenuTreeV2(List<MenuItem> flatMenuList)
         {
-            var menuLookup = flatMenuList.ToDictionary(m => m.PkidMenu);
+            foreach (var menu in flatMenuList)
+            {
+                menu.Children.Clear();
+            }
+
+            var menuLookup = flatMenuList
+                .GroupBy(m => m.PkidMenu)
+                .ToDictionary(group => group.Key, group => group.First());
             var rootMenus = new List<MenuItem>();
 
             foreach (var menuItem in flatMenuList)
@@ -186,7 +174,6 @@ namespace EG.Web.Services
 
                 if (string.IsNullOrWhiteSpace(rawToken))
                 {
-                    Console.WriteLine("GetAllClaimsByUserAsync: No hay token disponible.");
                     return new List<ClaimItemModel>();
                 }
 
@@ -210,15 +197,12 @@ namespace EG.Web.Services
                     {
                         PropertyNameCaseInsensitive = true
                     });
-                    Console.WriteLine($"GetAllClaimsByUserAsync: {claims?.Count ?? 0} claims obtenidos.");
                     return claims ?? new List<ClaimItemModel>();
                 }
 
-                Console.WriteLine($"GetAllClaimsByUserAsync: Error HTTP {response.StatusCode}");
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"GetAllClaimsByUserAsync Exception: {ex.Message}");
             }
 
             return new List<ClaimItemModel>();

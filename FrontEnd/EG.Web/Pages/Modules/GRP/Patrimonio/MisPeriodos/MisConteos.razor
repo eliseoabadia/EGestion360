@@ -227,8 +227,8 @@
 
     [Inject] private IGenericCrudService<ConteoDetalleEscaneoResponse> EscaneoService { get; set; } = null!;
 
-    protected override string ModuleName => "conteociclico";
-    protected override string SubModuleName => "mis-periodos";
+    protected override string ModuleName => "Almacen";
+    protected override string SubModuleName => "Numero_Conteo";
 
     protected override Type CreateDialogType => typeof(ConteoDialog);
     protected override Type EditDialogType => typeof(ConteoDialog);

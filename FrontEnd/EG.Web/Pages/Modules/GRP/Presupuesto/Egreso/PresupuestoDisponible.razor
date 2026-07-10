@@ -1,6 +1,7 @@
 @page "/Presupuesto/Egreso/Presupuesto_Disponible"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Domain.DTOs.Responses.PresupuestoModificado
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -74,24 +75,24 @@
                 </Header>
 
                 <Row Context="item">
-                    <MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">
                         <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
                         <span>@TextOrDash(item.ProgramaDescripcion)</span>
                     </MudTd>
-                    <MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">
                         <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
                         <span>@TextOrDash(item.PartidaDescripcion)</span>
                     </MudTd>
-                    <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
-                    <MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">@TextOrDash(item.AreaNombre)</MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">
                         <span>FF: @TextOrDash(item.FuenteFinanciamientoClaveNombre)</span><br />
                         <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
                         <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
                         <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
                         <span>PY: @TextOrDash(item.PyClaveNombre)</span>
                     </MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">@TextOrDash(item.Descripcion)</MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))">
                         <div class="month-spark">
                             @foreach (var month in GetMonths(item))
                             {
@@ -100,7 +101,7 @@
                             }
                         </div>
                     </MudTd>
-                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
+                    <MudTd Class="detail-cell" @ondblclick="@(() => ViewItem(item))"><strong>@Money(item.Total ?? 0m)</strong></MudTd>
                 </Row>
             </GenericTable>
         </div>
@@ -174,6 +175,10 @@
     .presupuesto-disponible-page .main-cell {
         font-weight: 700;
         line-height: 1.15;
+    }
+
+    .presupuesto-disponible-page .detail-cell {
+        cursor: zoom-in;
     }
 
     .presupuesto-disponible-page td span {
@@ -367,6 +372,82 @@
         Task.FromResult(Elements.FirstOrDefault(x => x.PkidEgresoAutorizado == id)?.Descripcion ?? "el presupuesto disponible");
 
     protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+
+    private async Task ViewItem(EgresoDisponibleResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["AnioId"] = AnioStateService.AnioId ?? 0,
+            ["CurrencySymbol"] = _currencySymbol,
+            ["CurrencyName"] = _currencyName,
+            ["PrefillItem"] = ToAuthorizedSnapshot(item),
+            ["IsReadOnly"] = true,
+            ["ReadOnlyTitle"] = "Ver Presupuesto Disponible",
+            ["AmountKind"] = "disponible"
+        };
+
+        var dialog = await DialogService.ShowAsync<PresupuestoAutorizadoDialog>(
+            "Ver presupuesto disponible",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+
+        await dialog.Result;
+    }
+
+    private static EgresoAutorizadoResponse ToAuthorizedSnapshot(EgresoDisponibleResponse source) => new()
+    {
+        PkidEgresoAutorizado = source.PkidEgresoAutorizado,
+        FkidEgresoProyectadoPres = source.FkidEgresoProyectadoPres,
+        FkidAnioSis = source.FkidAnioSis,
+        AnioClave = source.AnioClave,
+        FkidProgramaPres = source.FkidProgramaPres,
+        ProgramaClave = source.ProgramaClave,
+        ProgramaDescripcion = source.ProgramaDescripcion,
+        ProgramaClaveNombre = source.ProgramaClaveNombre,
+        FkidPartidaConta = source.FkidPartidaConta,
+        PartidaClave = source.PartidaClave,
+        PartidaDescripcion = source.PartidaDescripcion,
+        PartidaClaveNombre = source.PartidaClaveNombre,
+        FkidAreaSis = source.FkidAreaSis,
+        AreaClave = source.AreaClave,
+        AreaNombre = source.AreaNombre,
+        FkidFuenteFinanciamientoPres = source.FkidFuenteFinanciamientoPres,
+        FuenteFinanciamientoClave = source.FuenteFinanciamientoClave,
+        FuenteFinanciamientoDescripcion = source.FuenteFinanciamientoDescripcion,
+        FuenteFinanciamientoClaveNombre = source.FuenteFinanciamientoClaveNombre,
+        FkidTipoGastoPres = source.FkidTipoGastoPres,
+        TipoGastoClave = source.TipoGastoClave,
+        TipoGastoDescripcion = source.TipoGastoDescripcion,
+        TipoGastoClaveNombre = source.TipoGastoClaveNombre,
+        FkidDigitoIdentificadorPres = source.FkidDigitoIdentificadorPres,
+        DigitoIdentificadorClave = source.DigitoIdentificadorClave,
+        DigitoIdentificadorDescripcion = source.DigitoIdentificadorDescripcion,
+        DigitoIdentificadorClaveNombre = source.DigitoIdentificadorClaveNombre,
+        FkidDestinoGastoPres = source.FkidDestinoGastoPres,
+        DestinoGastoClave = source.DestinoGastoClave,
+        DestinoGastoDescripcion = source.DestinoGastoDescripcion,
+        DestinoGastoClaveNombre = source.DestinoGastoClaveNombre,
+        FkidPyPres = source.FkidPyPres,
+        PyClave = source.PyClave,
+        PyDescripcion = source.PyDescripcion,
+        PyClaveNombre = source.PyClaveNombre,
+        Descripcion = source.Descripcion,
+        Fecha = source.Fecha,
+        Enero = source.Enero ?? 0m,
+        Febrero = source.Febrero ?? 0m,
+        Marzo = source.Marzo ?? 0m,
+        Abril = source.Abril ?? 0m,
+        Mayo = source.Mayo ?? 0m,
+        Junio = source.Junio ?? 0m,
+        Julio = source.Julio ?? 0m,
+        Agosto = source.Agosto ?? 0m,
+        Septiembre = source.Septiembre ?? 0m,
+        Octubre = source.Octubre ?? 0m,
+        Noviembre = source.Noviembre ?? 0m,
+        Diciembre = source.Diciembre ?? 0m,
+        Total = source.Total,
+        Activo = true
+    };
 
     private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
 

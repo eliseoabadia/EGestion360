@@ -211,8 +211,8 @@
             var response = await _service.UpdateAsync(menu, MenuId);
             if (response != null && response.Success)
             {
-                Snackbar.Add("Menú actualizado exitosamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
+                return;
             }
             else
             {

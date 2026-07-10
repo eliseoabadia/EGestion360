@@ -27,6 +27,7 @@ namespace EG.Application.Services.General
 
         private void ConfigureService()
         {
+            _serviceView.DisableEmpresaFilter();
             _service.AddInclude(us => us.FkidUsuarioSisNavigation);
             _service.AddInclude(us => us.FkidSucursalSisNavigation);
             _service.AddRelationFilter("Usuario", new List<string> { "Nombre", "ApellidoPaterno", "Email" });
@@ -181,7 +182,16 @@ namespace EG.Application.Services.General
                 throw new ArgumentException("Debe seleccionar un usuario valido");
 
             if (_dto.IdSucursal <= 0)
-                throw new ArgumentException("Debe seleccionar una sucursal valida");
+            {
+                var empresaId = _dto.IdEmpresa.GetValueOrDefault() > 0
+                    ? _dto.IdEmpresa.Value
+                    : _dto.PkidEmpresa;
+
+                if (empresaId <= 0)
+                    throw new ArgumentException("Debe seleccionar una sucursal o empresa valida");
+
+                _dto.IdSucursal = await ResolveSucursalAccesoAsync(empresaId, usuarioActual);
+            }
 
             var now = DateTime.Now;
             var entity = await _context.UsuarioSucursals
@@ -230,6 +240,8 @@ namespace EG.Application.Services.General
                 ?? new UsuarioSucursalResponse
                 {
                     PkIdUsuario = _dto.PkIdUsuario,
+                    IdEmpresa = _dto.IdEmpresa.GetValueOrDefault() > 0 ? _dto.IdEmpresa : _dto.PkidEmpresa,
+                    PkidEmpresa = _dto.PkidEmpresa > 0 ? _dto.PkidEmpresa : _dto.IdEmpresa.GetValueOrDefault(),
                     IdSucursal = _dto.IdSucursal,
                     AsignacionActiva = true,
                     PuedeAcceder = true,
@@ -239,6 +251,116 @@ namespace EG.Application.Services.General
                     EsGerente = entity.EsGerente,
                     EsSupervisor = entity.EsSupervisor
                 };
+        }
+
+        private async Task<int> ResolveSucursalAccesoAsync(int empresaId, int usuarioActual)
+        {
+            var sucursalId = await _context.Sucursals
+                .Where(x => x.FkidEmpresaSis == empresaId && x.Activo && x.EsActiva)
+                .OrderByDescending(x => x.EsMatriz)
+                .ThenBy(x => x.Nombre)
+                .Select(x => x.PkidSucursal)
+                .FirstOrDefaultAsync();
+
+            if (sucursalId > 0)
+                return sucursalId;
+
+            var empresa = await _context.Empresas
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidEmpresa == empresaId && x.Activo);
+
+            if (empresa == null)
+                throw new InvalidOperationException("Empresa no encontrada o inactiva");
+
+            var estadoId = await _context.EmpresaEstados
+                .Where(x => x.FkidEmpresaSis == empresaId && x.Activo)
+                .OrderByDescending(x => x.EsOficinaPrincipal)
+                .Select(x => x.FkidEstadoSis)
+                .FirstOrDefaultAsync();
+
+            if (estadoId <= 0)
+            {
+                estadoId = await _context.Estados
+                    .Where(x => x.Activo)
+                    .OrderBy(x => x.PkidEstado)
+                    .Select(x => x.PkidEstado)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (estadoId <= 0)
+                throw new InvalidOperationException("No hay estados activos para crear la sucursal de acceso");
+
+            var tipoSucursalId = await _context.CatTipoSucursals
+                .Where(x => x.Activo)
+                .OrderBy(x => x.PkidTipoSucursal)
+                .Select(x => x.PkidTipoSucursal)
+                .FirstOrDefaultAsync();
+
+            if (tipoSucursalId <= 0)
+                throw new InvalidOperationException("No hay tipos de sucursal activos para crear la sucursal de acceso");
+
+            var codigo = await BuildSucursalCodeAsync(empresaId);
+            var nombreEmpresa = FirstText(empresa.NombreCorto, empresa.Nombre, empresa.RazonSocial, $"Empresa {empresaId}");
+            var now = DateTime.Now;
+
+            var sucursal = new Sucursal
+            {
+                FkidEmpresaSis = empresaId,
+                FkidEstadoSis = estadoId,
+                Nombre = TrimToLength($"{nombreEmpresa} Matriz", 128),
+                CodigoSucursal = codigo,
+                Alias = "Matriz",
+                FkidTipoSucursal = tipoSucursalId,
+                FkidMonedaLocalSis = empresa.FkidMonedaBaseSis > 0 ? empresa.FkidMonedaBaseSis : null,
+                Direccion = "Direccion principal",
+                Ciudad = "Sin especificar",
+                EsMatriz = true,
+                EsActiva = true,
+                Activo = true,
+                FechaCreacion = now,
+                UsuarioCreacion = usuarioActual
+            };
+
+            _context.Sucursals.Add(sucursal);
+            await _context.SaveChangesAsync();
+
+            return sucursal.PkidSucursal;
+        }
+
+        private async Task<string> BuildSucursalCodeAsync(int empresaId)
+        {
+            var baseCode = TrimToLength($"EMP{empresaId}-MAT", 20);
+            var code = baseCode;
+            var index = 1;
+
+            while (await _context.Sucursals.AnyAsync(x => x.CodigoSucursal == code))
+            {
+                var suffix = $"-{index}";
+                code = TrimToLength(baseCode, 20 - suffix.Length) + suffix;
+                index++;
+            }
+
+            return code;
+        }
+
+        private static string FirstText(params string?[] values)
+        {
+            foreach (var value in values)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value.Trim();
+            }
+
+            return string.Empty;
+        }
+
+        private static string TrimToLength(string value, int maxLength)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            value = value.Trim();
+            return value.Length <= maxLength ? value : value[..maxLength];
         }
 
         public async Task<bool> DeleteAsync(int usuarioId, int sucursalId, int usuarioActual)

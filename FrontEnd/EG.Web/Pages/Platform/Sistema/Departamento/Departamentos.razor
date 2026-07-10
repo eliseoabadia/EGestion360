@@ -24,6 +24,8 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
+                      CurrentPage="@CurrentPage"
+                      PageSize="@PageSize"
                       OnSearch="OnSearch">
 
             <Header>
@@ -69,6 +71,13 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<DepartamentoResponse>);
 
     protected override string GetDefaultSortLabel() => "DepartamentoNombre";
+
+    protected override async Task CreateItem()
+    {
+        CurrentPage = 0;
+        SearchString = string.Empty;
+        await base.CreateItem();
+    }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<DepartamentoResponse> items)
     {

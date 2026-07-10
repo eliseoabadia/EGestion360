@@ -38,7 +38,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
+            if (result == null) return NotFound(Error("Unidad no encontrada", "NOT_FOUND"));
             return Ok(new PagedResult<UnidadeResponse>
             {
                 Success = true,
@@ -56,7 +56,8 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.CreateAsync(dto, GetCurrentUserId());
-            return CreatedAtAction(nameof(GetById), new { id = response.PkidUnidades }, response);
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidUnidades },
+                Success("Unidad creada correctamente", response));
         }
 
         [HttpPut("{id}")]
@@ -65,8 +66,8 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.UpdateAsync(id, dto, GetCurrentUserId());
-            if (response == null) return NotFound();
-            return Ok(response);
+            if (response == null) return NotFound(Error("Unidad no encontrada", "NOT_FOUND"));
+            return Ok(Success("Unidad actualizada correctamente", response));
         }
 
         [HttpDelete("{id}")]
@@ -76,15 +77,21 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             try
             {
                 await _service.DeleteAsync(id);
-                return NoContent();
+                return Ok(new PagedResult<UnidadeResponse>
+                {
+                    Success = true,
+                    Message = "Unidad eliminada correctamente",
+                    Code = "SUCCESS",
+                    TotalCount = 0
+                });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound();
+                return NotFound(Error("Unidad no encontrada", "NOT_FOUND"));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { Success = false, Message = ex.Message, Code = "BUSINESS_RULE" });
+                return Conflict(Error(ex.Message, "BUSINESS_RULE"));
             }
         }
 
@@ -99,6 +106,26 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             return Ok(await _service.GetLookupPaginadoAsync(page, pageSize, filter));
         }
+
+        private static PagedResult<UnidadeResponse> Success(string message, UnidadeResponse data) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Data = data,
+                Items = new List<UnidadeResponse> { data },
+                TotalCount = 1
+            };
+
+        private static PagedResult<UnidadeResponse> Error(string message, string code = "ERROR") =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
 
     }
 }

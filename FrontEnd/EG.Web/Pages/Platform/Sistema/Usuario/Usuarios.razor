@@ -160,14 +160,11 @@
     {
         try
         {
-            Console.WriteLine("🔷 Usuarios: OnInitializedAsync iniciado");
             await base.OnInitializedAsync();
-            Console.WriteLine("🔷 Usuarios: OnInitializedAsync completado");
         }
         catch (Exception ex)
         {
             _pageError = $"Error de inicialización: {ex.Message}";
-            Console.WriteLine($"❌ Usuarios: OnInitializedAsync error: {ex}");
             Snackbar.Add(_pageError, Severity.Error);
         }
     }
@@ -176,14 +173,11 @@
     {
         try
         {
-            Console.WriteLine($"🔷 Usuarios: OnAfterRenderAsync firstRender={firstRender}");
             await base.OnAfterRenderAsync(firstRender);
-            Console.WriteLine("🔷 Usuarios: OnAfterRenderAsync completado");
         }
         catch (Exception ex)
         {
             _pageError = $"Error de renderizado: {ex.Message}";
-            Console.WriteLine($"❌ Usuarios: OnAfterRenderAsync error: {ex}");
             Snackbar.Add(_pageError, Severity.Error);
         }
     }
@@ -193,7 +187,6 @@
     {
         if (table != null)
         {
-            Console.WriteLine("🔄 Recargando tabla de usuarios...");
             await table.ReloadData();
             StateHasChanged();
         }

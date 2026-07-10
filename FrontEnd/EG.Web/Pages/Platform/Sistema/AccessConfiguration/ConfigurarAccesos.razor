@@ -430,6 +430,7 @@
         flex-direction: column;
         height: auto;
         min-height: 100%;
+        min-width: 0;
         padding: 12px;
         overflow: visible;
         background:
@@ -457,6 +458,7 @@
     .access-hero {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 12px;
         padding: 14px 16px;
         margin-bottom: 12px;
@@ -468,6 +470,12 @@
         align-items: center;
         gap: 10px;
         font-weight: 800;
+    }
+
+    .access-hero > .mud-stack-row {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        min-width: 0;
     }
 
     .access-grid {
@@ -520,7 +528,7 @@
     }
 
     .tab-grid.users-tab {
-        grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
         height: auto;
     }
 
@@ -641,7 +649,7 @@
 
     .role-picker-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 8px;
         align-content: start;
         flex: 1 1 auto;
@@ -651,6 +659,21 @@
         overflow-y: auto;
         padding: 0 6px 10px 0;
         scrollbar-gutter: stable;
+    }
+
+    @@media (max-width: 1400px) {
+        .tab-grid.users-tab {
+            grid-template-columns: 1fr;
+        }
+
+        .role-picker-list {
+            max-height: 420px;
+        }
+
+        .user-empty,
+        .role-empty {
+            min-height: 180px;
+        }
     }
 
     .role-option {

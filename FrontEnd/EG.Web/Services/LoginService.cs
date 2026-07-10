@@ -1,4 +1,4 @@
-using EG.Common.Helper;
+﻿using EG.Common.Helper;
 using EG.Domain.DTOs.Responses.General;
 using EG.Web.Contracts;
 using EG.Web.Models;
@@ -48,20 +48,15 @@ namespace EG.Web.Services
                         // Opcional: guardar token en localStorage para persistencia entre recargas
                         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", resultado.AccessToken);
 
-                        Console.WriteLine($"LoginService: Login exitoso para usuario {usuario}");
                     }
                 }
                 else
                 {
                     resultado.PayrollId = "0";
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"LoginService Error HTTP {response.StatusCode}: {responseBody}");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"LoginService Exception: {ex.Message}");
-                Console.WriteLine($"Stack: {ex.StackTrace}");
                 resultado.PayrollId = "0";
             }
 
@@ -76,20 +71,18 @@ namespace EG.Web.Services
                 var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
                 if (string.IsNullOrEmpty(token))
                 {
-                    Console.WriteLine("GetSucursalesUsuarioAsync: No hay token en localStorage");
                     return new List<SucursalResponse>();
                 }
 
                 // Normalizar el token (remover comillas si existen)
                 token = token.Trim('"', '\'');
 
-                // Crear cliente HTTP con la configuración "ApiClient"
+                // Crear cliente HTTP con la configuraciÃ³n "ApiClient"
                 var client = _httpClientFactory.CreateClient("ApiClient");
-                // Agregar el token Bearer al cliente para esta petición
+                // Agregar el token Bearer al cliente para esta peticiÃ³n
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var url = $"api/UsuarioSucursal/usuario/{usuarioId}";
-                Console.WriteLine($"GetSucursalesUsuarioAsync: Llamando a {client.BaseAddress}{url}");
 
                 HttpResponseMessage response = await client.GetAsync(url);
 
@@ -104,33 +97,21 @@ namespace EG.Web.Services
                         {
                             PkidSucursal = x.IdSucursal ?? 0,
                             Nombre = x.NombreSucursal ?? string.Empty,
-                            Direccion = x.DireccionSucursal ?? string.Empty
+                            Direccion = x.DireccionSucursal ?? string.Empty,
+                            FkidEmpresaSis = x.PkidEmpresa ?? x.IdEmpresa,
+                            NombreEmpresa = x.NombreEmpresa,
+                            CodigoSucursal = x.CodigoSucursal
                         }).ToList();
 
-                        Console.WriteLine($"GetSucursalesUsuarioAsync: Éxito. Se obtuvieron {sucursales.Count} sucursales");
                         return sucursales;
                     }
-                    else
-                    {
-                        Console.WriteLine($"GetSucursalesUsuarioAsync: Respuesta sin datos o no exitosa");
-                    }
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"GetSucursalesUsuarioAsync Error HTTP {response.StatusCode}");
-                    Console.WriteLine($"Response: {errorContent}");
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
-                Console.WriteLine($"GetSucursalesUsuarioAsync HttpRequestException: {ex.Message}");
-                Console.WriteLine($"Stack: {ex.StackTrace}");
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"GetSucursalesUsuarioAsync Exception: {ex.Message}");
-                Console.WriteLine($"Stack: {ex.StackTrace}");
             }
 
             return new List<SucursalResponse>();
@@ -138,12 +119,11 @@ namespace EG.Web.Services
 
         public async Task Logout()
         {
-            // Limpiar estado de autenticación
+            // Limpiar estado de autenticaciÃ³n
             IsAuthenticated = false;
             _application.RemoveVariable(Const.KEY_USERID);
             _application.RemoveVariable(Const.KEY_TOKEN);
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
-            Console.WriteLine("Logout completado");
         }
     }
 }

@@ -63,6 +63,31 @@
     background-size: 44px 44px;
 }
 
+::deep .mud-dialog.crud-dialog.crud-dialog-wide,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) {
+    width: min(1280px, calc(100vw - 96px)) !important;
+    max-width: calc(100vw - 96px) !important;
+}
+
+::deep .mud-dialog.crud-dialog.crud-dialog-wide-xl,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(11)),
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(11)) {
+    width: min(1480px, calc(100vw - 96px)) !important;
+}
+
+::deep .mud-dialog.crud-dialog.crud-dialog-wide-xxl,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(16)),
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(16)) {
+    width: min(1600px, calc(100vw - 96px)) !important;
+}
+
+::deep .mud-dialog.crud-dialog.crud-dialog-wide .mud-dialog-content,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .mud-dialog-content,
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .mud-dialog-content {
+    padding: 16px 18px 8px !important;
+}
+
 ::deep .mud-dialog.crud-dialog > .mud-dialog-title > .mud-button-root:not(.crud-dialog-close) {
     display: none !important;
 }
@@ -120,6 +145,31 @@
     background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 3%, transparent);
 }
 
+::deep .mud-dialog.crud-dialog.crud-dialog-wide .crud-dialog-shell,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-shell,
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-shell {
+    padding: 16px;
+    overflow: visible;
+}
+
+::deep .mud-dialog.crud-dialog.crud-dialog-wide .crud-dialog-actions,
+::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-actions,
+::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    margin-right: -16px;
+    margin-bottom: -16px;
+    margin-left: -16px;
+    padding: 12px 16px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    backdrop-filter: blur(12px);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-surface) 72%, transparent), var(--mud-palette-surface)),
+        color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 4%, var(--mud-palette-surface));
+}
+
 @media (max-height: 760px) {
     .crud-dialog-shell {
         padding: 12px;
@@ -128,5 +178,36 @@
     .crud-dialog-actions {
         margin-top: 10px;
         padding-top: 10px;
+    }
+}
+
+@media (max-width: 960px) {
+    ::deep .mud-dialog.crud-dialog.crud-dialog-wide,
+    ::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)),
+    ::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px !important;
+    }
+
+    ::deep .mud-dialog.crud-dialog.crud-dialog-wide .mud-dialog-content,
+    ::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .mud-dialog-content,
+    ::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .mud-dialog-content {
+        padding: 12px !important;
+    }
+
+    ::deep .mud-dialog.crud-dialog.crud-dialog-wide .crud-dialog-shell,
+    ::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-shell,
+    ::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-shell {
+        padding: 12px;
+    }
+
+    ::deep .mud-dialog.crud-dialog.crud-dialog-wide .crud-dialog-actions,
+    ::deep .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-actions,
+    ::deep .mud-dialog.crud-dialog:has(.crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(6)) .crud-dialog-actions {
+        margin-right: -12px;
+        margin-bottom: -12px;
+        margin-left: -12px;
+        padding: 10px 12px;
     }
 }

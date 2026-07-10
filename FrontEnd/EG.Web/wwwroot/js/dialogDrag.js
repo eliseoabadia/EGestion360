@@ -2,6 +2,13 @@ window.egDialogDrag = (function () {
     const dragHandleSelector = ".mud-dialog-title";
     const dialogSelector = ".mud-dialog";
     const interactiveSelector = "button, a, input, textarea, select, label, .mud-button-root, .mud-icon-button, .mud-input-control";
+    const crudDialogSelector = ".mud-dialog.crud-dialog";
+    const formFieldSelector = [
+        ".entity-form-content > .mud-grid > .mud-grid-item",
+        ".entity-form-content > .mud-grid > [class*='mud-grid-item']",
+        ".entity-form-content > .eg-form-loading-state > .mud-grid > .mud-grid-item",
+        ".entity-form-content > .eg-form-loading-state > .mud-grid > [class*='mud-grid-item']"
+    ].join(", ");
     let observer;
 
     function isSmallViewport() {
@@ -86,6 +93,8 @@ window.egDialogDrag = (function () {
     }
 
     function attachDialog(dialog) {
+        applyCrudDialogSizing(dialog);
+
         const handle = dialog.querySelector(dragHandleSelector);
         if (!handle || handle.dataset.egDialogDrag === "true") {
             return;
@@ -94,6 +103,17 @@ window.egDialogDrag = (function () {
         handle.dataset.egDialogDrag = "true";
         handle.classList.add("eg-dialog-drag-handle");
         handle.addEventListener("pointerdown", onPointerDown);
+    }
+
+    function applyCrudDialogSizing(dialog) {
+        if (!dialog.matches(crudDialogSelector)) {
+            return;
+        }
+
+        const fieldCount = dialog.querySelectorAll(formFieldSelector).length;
+        dialog.classList.toggle("crud-dialog-wide", fieldCount >= 7);
+        dialog.classList.toggle("crud-dialog-wide-xl", fieldCount >= 11);
+        dialog.classList.toggle("crud-dialog-wide-xxl", fieldCount >= 16);
     }
 
     function attachAll() {
@@ -107,6 +127,7 @@ window.egDialogDrag = (function () {
             observer = new MutationObserver(attachAll);
             observer.observe(document.body, { childList: true, subtree: true });
             window.addEventListener("resize", () => {
+                attachAll();
                 document.querySelectorAll(".eg-draggable-dialog").forEach(clampDialog);
             });
         }

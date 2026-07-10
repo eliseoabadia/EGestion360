@@ -236,7 +236,7 @@
 				await table.ReloadData();
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
 			Snackbar.Add("Error al justificar la incidencia", Severity.Error);
 		}
@@ -276,9 +276,8 @@
 
 			Snackbar.Add("No fue posible cargar la incidencia", Severity.Error);
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al autorizar justificación: {ex}");
 			Snackbar.Add("Error al autorizar la justificación", Severity.Error);
 		}
 	}
@@ -319,9 +318,8 @@
 				$"{SubModuleName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		}
-		catch (Exception ex)
+		catch
 		{
-			Console.WriteLine($"Error al exportar justificaciones: {ex}");
 			Snackbar.Add("Error al exportar los datos", Severity.Error);
 		}
 	}

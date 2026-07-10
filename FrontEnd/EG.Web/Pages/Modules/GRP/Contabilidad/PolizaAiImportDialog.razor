@@ -2,7 +2,6 @@
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Contabilidad
 @using EG.Domain.DTOs.Responses.Contabilidad
-@using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using EG.Web.Contracts.Modules.GRP.Contabilidad
 @using EG.Web.Contracts.Platform.DocumentRag
@@ -17,7 +16,6 @@
 
 @inject IPolizaAiImportService ImportService
 @inject IDocumentRagService RagService
-@inject IGenericCrudService<AniosResponse> AnioService
 @inject IGenericCrudService<TipoPolizaResponse> TipoPolizaService
 @inject IGenericCrudService<CuentaContableResponse> CuentaService
 @inject AnioPresupuestalStateService AnioStateService
@@ -35,15 +33,7 @@
     </TitleContent>
     <DialogContent>
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedAnio"
-                                   ValueChanged="OnAnioChanged"
-                                   Label="Anio"
-                                   Required="true"
-                                   RequiredError="Selecciona un anio"
-                                   LoadPage="LoadAniosPageAsync" />
-            </MudItem>
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <MudSelect T="int?" @bind-Value="_header.FkidMesSis" Label="Mes" Variant="Variant.Outlined" Required="true" RequiredError="Selecciona un mes">
                     @foreach (var month in MonthOptions)
                     {
@@ -51,7 +41,7 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="4">
+            <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedTipoPoliza"
                                    ValueChanged="OnTipoPolizaChanged"
                                    Label="Tipo de poliza"
@@ -148,7 +138,6 @@
         <MudExpansionPanels Elevation="0" Class="mt-3">
             <MudExpansionPanel Text="Asistente de carga y RAG" Expanded="@(_ragSession != null || _ragAnswer != null)">
                 <div class="poliza-rag-context">
-                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">Anio @(_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-")</MudChip>
                     <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@EmpresaText</MudChip>
                     @if (_ragSession != null)
                     {
@@ -426,7 +415,6 @@
 
     private IBrowserFile? _file;
     private PolizaAiImportPreviewResponse? _preview;
-    private LookupItem? _selectedAnio;
     private LookupItem? _selectedTipoPoliza;
     private LookupItem? _selectedCuentaDebe;
     private LookupItem? _selectedCuentaHaber;
@@ -487,6 +475,9 @@
     private string EmpresaText => _header.FkidEmpresaSis is > 0
         ? $"{_header.FkidEmpresaSis} - {SucursalStateService.EmpresaNombre}"
         : "Sin empresa seleccionada";
+    private string HeaderAnioText => _header.Anio?.ToString(CultureInfo.InvariantCulture)
+        ?? AnioStateService.AnioClave?.ToString(CultureInfo.InvariantCulture)
+        ?? "-";
 
     private static readonly IReadOnlyList<MonthOption> MonthOptions =
     [
@@ -511,27 +502,7 @@
 
         _header.FkidEmpresaSis = SucursalStateService.EmpresaId ?? await SucursalStateService.GetEmpresaIdAsync();
 
-        if (AnioStateService.AnioId.HasValue)
-        {
-            _header.FkidAnioSis = AnioStateService.AnioId.Value;
-            _header.Anio = AnioStateService.AnioClave;
-            _selectedAnio = new LookupItem
-            {
-                Id = AnioStateService.AnioId.Value,
-                Text = string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
-                    ? AnioStateService.AnioId.Value.ToString(CultureInfo.InvariantCulture)
-                    : AnioStateService.AnioTexto
-            };
-        }
-    }
-
-    private Task OnAnioChanged(LookupItem? value)
-    {
-        _selectedAnio = value;
-        _header.FkidAnioSis = value?.Id;
-        _header.Anio = TryParseYear(value?.Text);
-        RefreshAssistantContext();
-        return Task.CompletedTask;
+        ApplyHeaderAnio();
     }
 
     private Task OnTipoPolizaChanged(LookupItem? value)
@@ -580,6 +551,12 @@
             return;
 
         BuildHeader();
+        if (_header.FkidAnioSis.GetValueOrDefault() <= 0)
+        {
+            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+
         if (_header.FkidEmpresaSis.GetValueOrDefault() <= 0)
         {
             Snackbar.Add("Selecciona una empresa antes de importar la poliza.", Severity.Warning);
@@ -624,6 +601,9 @@
         _busy = true;
         try
         {
+            BuildHeader();
+            _preview.Header.FkidAnioSis = _header.FkidAnioSis;
+            _preview.Header.Anio = _header.Anio;
             _preview.Header.FkidEmpresaSis = _header.FkidEmpresaSis;
             var details = BuildDetailsForImport();
             var response = await ImportService.ConfirmAsync(new PolizaAiImportConfirmRequest
@@ -655,11 +635,20 @@
     private void BuildHeader()
     {
         _header.FechaPoliza = _fechaPoliza ?? DateTime.Today;
-        _header.FkidAnioSis = _selectedAnio?.Id ?? _header.FkidAnioSis;
-        _header.Anio = TryParseYear(_selectedAnio?.Text) ?? _header.Anio;
+        ApplyHeaderAnio();
         _header.FkidTipoPolizaSis = _selectedTipoPoliza?.Id ?? _header.FkidTipoPolizaSis;
         _header.TipoPoliza = _selectedTipoPoliza?.Text ?? _header.TipoPoliza;
         _header.FkidEmpresaSis ??= SucursalStateService.EmpresaId;
+    }
+
+    private void ApplyHeaderAnio()
+    {
+        if (AnioStateService.AnioId is > 0)
+        {
+            _header.FkidAnioSis = AnioStateService.AnioId.Value;
+        }
+
+        _header.Anio = AnioStateService.AnioClave ?? _header.Anio;
     }
 
     private async Task IndexFileForRagAsync()
@@ -735,7 +724,7 @@
         Servicio = "AiImport",
         FkidEmpresaSis = _header.FkidEmpresaSis,
         Titulo = $"Poliza {_header.ClavePoliza ?? "sin clave"}",
-        Descripcion = $"Empresa: {EmpresaText}. Anio: {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}. Mes: {_header.FkidMesSis?.ToString() ?? "-"}. Archivo: {_file?.Name ?? "sin archivo"}."
+        Descripcion = $"Empresa: {EmpresaText}. Anio: {HeaderAnioText}. Mes: {_header.FkidMesSis?.ToString() ?? "-"}. Archivo: {_file?.Name ?? "sin archivo"}."
     };
 
     private async Task AskAssistantFields()
@@ -834,7 +823,7 @@
         var warnings = _preview.Messages.Where(message => !IsError(message)).ToList();
         var sb = new StringBuilder();
 
-        sb.AppendLine($"Contexto de carga: empresa {EmpresaText}, anio {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}, mes {_header.FkidMesSis?.ToString() ?? "-"}.");
+        sb.AppendLine($"Contexto de carga: empresa {EmpresaText}, anio {HeaderAnioText}, mes {_header.FkidMesSis?.ToString() ?? "-"}.");
         sb.AppendLine($"La poliza tiene {_preview.Details.Count} movimiento(s), debe {Money(_preview.TotalDebe)}, haber {Money(_preview.TotalHaber)} y diferencia {Money(_preview.Diferencia)}.");
 
         if (_preview.CanImport && _preview.EstaCuadrada)
@@ -905,7 +894,7 @@
         sb.AppendLine("Ruta: /Contabilidad/Polizas.");
         sb.AppendLine("Modulo/Submodulo: Contabilidad / Polizas.");
         sb.AppendLine($"Empresa seleccionada: {EmpresaText}.");
-        sb.AppendLine($"Anio: {_header.Anio?.ToString() ?? _selectedAnio?.Text ?? "-"}.");
+        sb.AppendLine($"Anio: {HeaderAnioText}.");
         sb.AppendLine($"Mes: {_header.FkidMesSis?.ToString() ?? "-"}.");
         sb.AppendLine($"Tipo de poliza: {_selectedTipoPoliza?.Text ?? _header.TipoPoliza ?? "sin seleccionar"}.");
         sb.AppendLine($"Fecha: {(_fechaPoliza ?? DateTime.Today):dd/MM/yyyy}.");
@@ -976,7 +965,7 @@
     {
         var missing = new List<string>();
 
-        if (_selectedAnio == null && _header.FkidAnioSis.GetValueOrDefault() <= 0)
+        if (_header.FkidAnioSis.GetValueOrDefault() <= 0)
             missing.Add("Anio");
         if (_header.FkidMesSis is < 1 or > 12 or null)
             missing.Add("Mes");
@@ -1029,12 +1018,6 @@
         return message.Code == "DOUBLE_AMOUNT"
             ? IsDoubleAmount(detail)
             : debit ? IsDebitOnly(detail) || IsDoubleAmount(detail) : IsCreditOnly(detail) || IsDoubleAmount(detail);
-    }
-
-    private async Task<ComboLookupResult> LoadAniosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await AnioService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Descending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidAnio, Text = $"{x.Clave} - {x.Descripcion}".Trim(' ', '-') }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadTiposPolizaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -1245,15 +1228,6 @@
             .Replace("ú", "u")
             .Replace("ü", "u")
             .Replace("ñ", "n");
-    }
-
-    private static int? TryParseYear(string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return null;
-
-        var first = text.Split('-', 2)[0].Trim();
-        return int.TryParse(first, out var year) ? year : null;
     }
 
     private async Task ReleaseRagSessionAsync(bool showSnackbar)

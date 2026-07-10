@@ -37,8 +37,8 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            if (result == null) return NotFound(Error("Estatus de solicitud no encontrado", "NOT_FOUND"));
+            return Ok(Success("Estatus de solicitud encontrado", result));
         }
 
         [HttpPost]
@@ -47,7 +47,8 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.CreateAsync(dto, GetCurrentUserId());
-            return CreatedAtAction(nameof(GetById), new { id = response.PkidEstatusSolicitud }, response);
+            return CreatedAtAction(nameof(GetById), new { id = response.PkidEstatusSolicitud },
+                Success("Estatus de solicitud creado correctamente", response));
         }
 
         [HttpPut("{id}")]
@@ -56,8 +57,8 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var response = await _service.UpdateAsync(id, dto, GetCurrentUserId());
-            if (response == null) return NotFound();
-            return Ok(response);
+            if (response == null) return NotFound(Error("Estatus de solicitud no encontrado", "NOT_FOUND"));
+            return Ok(Success("Estatus de solicitud actualizado correctamente", response));
         }
 
         [HttpDelete("{id}")]
@@ -67,17 +68,43 @@ namespace EG.ApiCoreBS.Controllers.Almacen
             try
             {
                 await _service.DeleteAsync(id);
-                return NoContent();
+                return Ok(new PagedResult<EstatusSolicitudResponse>
+                {
+                    Success = true,
+                    Message = "Estatus de solicitud eliminado correctamente",
+                    Code = "SUCCESS",
+                    TotalCount = 0
+                });
             }
             catch (KeyNotFoundException)
             {
-                return NotFound();
+                return NotFound(Error("Estatus de solicitud no encontrado", "NOT_FOUND"));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { Success = false, Message = ex.Message, Code = "BUSINESS_RULE" });
+                return Conflict(Error(ex.Message, "BUSINESS_RULE"));
             }
         }
+
+        private static PagedResult<EstatusSolicitudResponse> Success(string message, EstatusSolicitudResponse data) =>
+            new()
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Data = data,
+                Items = new List<EstatusSolicitudResponse> { data },
+                TotalCount = 1
+            };
+
+        private static PagedResult<EstatusSolicitudResponse> Error(string message, string code = "ERROR") =>
+            new()
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
 
     }
 }

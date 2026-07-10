@@ -19,6 +19,7 @@
 @inject AuthService AuthService
 @inject IJSRuntime _jsRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SucursalStateService SucursalStateService
 
 <MudContainer Class="profile-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100%;">
     @if (!_isInitialized)
@@ -126,10 +127,10 @@
                 <section class="profile-security">
                     <div class="profile-section-heading">
                         <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
-                        <MudText Typo="Typo.subtitle2">Cambiar contrasena</MudText>
+                        <MudText Typo="Typo.subtitle2">Cambiar contraseña</MudText>
                     </div>
 
-                    <MudTextField Label="Contrasena actual"
+                    <MudTextField Label="Contraseña actual"
                                   @bind-Value="currentPassword"
                                   InputType="@PasswordInputType"
                                   Margin="Margin.Dense"
@@ -138,7 +139,7 @@
                                   OnAdornmentClick="TogglePasswordVisibility"
                                   Disabled="@loading" />
 
-                    <MudTextField Label="Nueva contrasena"
+                    <MudTextField Label="Nueva contraseña"
                                   @bind-Value="newPassword"
                                   InputType="@PasswordInputType"
                                   Margin="Margin.Dense"
@@ -147,7 +148,7 @@
                                   OnAdornmentClick="TogglePasswordVisibility"
                                   Disabled="@loading" />
 
-                    <MudTextField Label="Confirmar contrasena"
+                    <MudTextField Label="Confirmar contraseña"
                                   @bind-Value="confirmPassword"
                                   InputType="@PasswordInputType"
                                   Margin="Margin.Dense"
@@ -163,7 +164,7 @@
                                OnClick="CambiarPasswordAsync"
                                Disabled="@loading"
                                FullWidth="true">
-                        Actualizar contrasena
+                        Actualizar contraseña
                     </MudButton>
                 </section>
 
@@ -203,7 +204,7 @@
                                   Placeholder="e.firma principal"
                                   Disabled="@(loading || _pfxUploading)" />
 
-                    <MudTextField Label="Contrasena del PFX"
+                    <MudTextField Label="Contraseña del PFX"
                                   @bind-Value="_pfxPassword"
                                   InputType="InputType.Password"
                                   Margin="Margin.Dense"
@@ -244,7 +245,7 @@
                     <div class="profile-main-header">
                         <div class="profile-section-heading">
                             <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
-                            <MudText Typo="Typo.subtitle1">Informacion del usuario</MudText>
+                            <MudText Typo="Typo.subtitle1">Información del usuario</MudText>
                         </div>
                         <MudText Typo="Typo.caption" Class="profile-muted">ID @userProfile.PkIdUsuario</MudText>
                     </div>
@@ -257,7 +258,9 @@
                                       Disabled="@ProfileFieldsDisabled" />
 
                         <MudSelect Label="Empresa"
-                                   @bind-Value="userProfile.PkidEmpresa"
+                                   Value="@userProfile.PkidEmpresa"
+                                   ValueChanged="OnEmpresaChanged"
+                                   T="int"
                                    Required="true"
                                    Margin="Margin.Dense"
                                    Disabled="@ProfileFieldsDisabled">
@@ -275,22 +278,22 @@
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudTextField Label="Telefono"
+                        <MudTextField Label="Teléfono"
                                       @bind-Value="userProfile.TelefonoUsuario"
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudTextField Label="Direccion 1"
+                        <MudTextField Label="Dirección 1"
                                       @bind-Value="userProfile.Direccion1"
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudTextField Label="Direccion 2"
+                        <MudTextField Label="Dirección 2"
                                       @bind-Value="userProfile.Direccion2"
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudTextField Label="Codigo Postal"
+                        <MudTextField Label="Código Postal"
                                       @bind-Value="userProfile.CodigoPostalUsuario"
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
@@ -300,7 +303,7 @@
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudTextField Label="Numero Social"
+                        <MudTextField Label="Número Social"
                                       @bind-Value="userProfile.NumeroSocial"
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
@@ -335,7 +338,7 @@
                                       Margin="Margin.Dense"
                                       Disabled="true" />
 
-                        <MudTextField Label="Telefono movil"
+                        <MudTextField Label="Teléfono movil"
                                       @bind-Value="userProfile.TelefonoMovil"
                                       Margin="Margin.Dense"
                                       Disabled="true" />
@@ -351,7 +354,7 @@
                         </div>
 
                         <div class="profile-option-group">
-                            <MudText Typo="Typo.caption" Class="profile-option-label">Genero</MudText>
+                            <MudText Typo="Typo.caption" Class="profile-option-label">Género</MudText>
                             <MudRadioGroup @bind-Value="userProfile.Sexo" Disabled="@ProfileFieldsDisabled" Class="profile-radio-group">
                                 <MudRadio Value="true" Color="Color.Primary" Dense="true">Femenino</MudRadio>
                                 <MudRadio Value="false" Color="Color.Secondary" Dense="true">Masculino</MudRadio>
@@ -441,7 +444,7 @@
     private bool ProfileFieldsDisabled => loading || IsSelfProfileRoute;
     private string ProfileTitle => IsSelfProfileRoute ? "Perfil" : "Mi perfil";
     private string ProfileSubtitle => IsSelfProfileRoute
-        ? "Consulta tus datos basicos y cambia tu contrasena"
+        ? "Consulta tus datos básicos y cambia tu contraseña"
         : "Datos personales, empresa y seguridad de acceso";
     private string SelectedEmpresaName => empresas.FirstOrDefault(empresa => empresa.PkidEmpresa == userProfile.PkidEmpresa)?.EmpresaNombre
         ?? userProfile.NombreEmpresa
@@ -550,6 +553,7 @@
                     return;
                 }
 
+                await SucursalStateService.InitializeAsync();
                 await LoadUserProfileData();
                 await LoadEmpresas();
                 await LoadFirmaCertificatesAsync();
@@ -593,13 +597,10 @@
                             .ToList();
                     }
                 }
-
-                Console.WriteLine($"Se cargaron {empresas.Count} empresas desde consulta paginada");
             }
             else
             {
                 var errorMessage = responseEmpresas?.Message ?? "Error al cargar las empresas";
-                Console.WriteLine($"Advertencia: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Warning);
                 empresas = new List<EmpresaResponse>();
             }
@@ -621,16 +622,13 @@
             if (responseUserById == null || !responseUserById.Success || responseUserById.Data == null)
             {
                 var errorMessage = responseUserById?.Message ?? "Error al cargar perfil";
-                Console.WriteLine($"Advertencia: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Error);
                 return;
             }
             else
             {
                 userProfile = responseUserById.Data;
-                Console.WriteLine($"Perfil cargado: ID {userProfile.PkIdUsuario}, " +
-                                  $"Nombre: {userProfile.NombreCompleto}, " +
-                                  $"Iniciales: {userProfile.Iniciales}");
+                NormalizeProfileEmpresa();
             }
 
             // Cargar imagen de perfil
@@ -661,6 +659,8 @@
                 return;
             }
 
+            NormalizeProfileEmpresa();
+
             await form.Validate();
 
             if (!form.IsValid)
@@ -674,7 +674,6 @@
             if (response == null || !response.Success)
             {
                 var errorMessage = response?.Message ?? "Error al guardar cambios: respuesta nula";
-                Console.WriteLine($"Error: {errorMessage}");
                 Snackbar.Add(errorMessage, Severity.Error);
                 return;
             }
@@ -685,7 +684,6 @@
                 ? response.Message
                 : $"Usuario actualizado: ID {userProfile.PkIdUsuario}, Nombre: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
 
-            Console.WriteLine(successMessage);
             Snackbar.Add(successMessage, Severity.Success);
 
             // Recargar datos después de guardar
@@ -699,6 +697,32 @@
         {
             loading = false;
             StateHasChanged();
+        }
+    }
+
+    private Task OnEmpresaChanged(int empresaId)
+    {
+        userProfile.PkidEmpresa = empresaId;
+        userProfile.IdEmpresa = empresaId;
+        return Task.CompletedTask;
+    }
+
+    private void NormalizeProfileEmpresa()
+    {
+        if (userProfile.PkidEmpresa <= 0 && userProfile.IdEmpresa > 0)
+        {
+            userProfile.PkidEmpresa = userProfile.IdEmpresa;
+        }
+
+        if (userProfile.IdEmpresa <= 0 && userProfile.PkidEmpresa > 0)
+        {
+            userProfile.IdEmpresa = userProfile.PkidEmpresa;
+        }
+
+        if (userProfile.PkidEmpresa <= 0 && SucursalStateService.EmpresaId.GetValueOrDefault() > 0)
+        {
+            userProfile.PkidEmpresa = SucursalStateService.EmpresaId.Value;
+            userProfile.IdEmpresa = SucursalStateService.EmpresaId.Value;
         }
     }
 
@@ -777,7 +801,7 @@
 
         if (string.IsNullOrWhiteSpace(_pfxPassword))
         {
-            Snackbar.Add("Captura la contrasena del PFX.", Severity.Warning);
+            Snackbar.Add("Captura la contraseña del PFX.", Severity.Warning);
             return;
         }
 
@@ -817,25 +841,25 @@
     {
         if (string.IsNullOrWhiteSpace(currentPassword))
         {
-            Snackbar.Add("Captura la contrasena actual.", Severity.Warning);
+            Snackbar.Add("Captura la contraseña actual.", Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(newPassword))
         {
-            Snackbar.Add("Captura la nueva contrasena.", Severity.Warning);
+            Snackbar.Add("Captura la nueva contraseña.", Severity.Warning);
             return;
         }
 
         if (newPassword.Length < 6)
         {
-            Snackbar.Add("La nueva contrasena debe tener al menos 6 caracteres.", Severity.Warning);
+            Snackbar.Add("La nueva contraseña debe tener al menos 6 caracteres.", Severity.Warning);
             return;
         }
 
         if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
         {
-            Snackbar.Add("La confirmacion no coincide con la nueva contrasena.", Severity.Warning);
+            Snackbar.Add("La confirmación no coincide con la nueva contraseña.", Severity.Warning);
             return;
         }
 
@@ -850,15 +874,15 @@
                 currentPassword = string.Empty;
                 newPassword = string.Empty;
                 confirmPassword = string.Empty;
-                Snackbar.Add(response.Message ?? "Contrasena actualizada correctamente.", Severity.Success);
+                Snackbar.Add(response.Message ?? "Contraseña actualizada correctamente.", Severity.Success);
                 return;
             }
 
-            Snackbar.Add(response?.Message ?? "No fue posible cambiar la contrasena.", Severity.Error);
+            Snackbar.Add(response?.Message ?? "No fue posible cambiar la contraseña.", Severity.Error);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cambiar contrasena: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al cambiar contraseña: {ex.Message}", Severity.Error);
         }
         finally
         {
