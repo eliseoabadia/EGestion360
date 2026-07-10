@@ -247,6 +247,18 @@ body,
     }
 }
 
+/* Los asistentes de importacion conservan espacio para sus tablas, sin activar la
+   heuristica global de formularios con muchos campos. */
+.mud-dialog:has(.poliza-ai-dialog),
+.mud-dialog:has(.anteproyecto-ai-dialog),
+.mud-dialog.poliza-ai-dialog,
+.mud-dialog.anteproyecto-ai-dialog {
+    width: min(94vw, 1120px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: min(86dvh, 820px) !important;
+    margin: 12px !important;
+}
+
 .mud-dialog .mud-dialog-title {
     flex: 0 0 auto;
     min-height: 44px;

@@ -42,7 +42,11 @@ Valores clave:
   "MaxFileSizeMB": 50,
   "MaxSessionDocuments": 12,
   "MaxSessionTotalMB": 150,
+  "MaxGlobalMemoryMB": 512,
+  "MaxSessionsPerUser": 4,
   "SessionTtlMinutes": 120,
+  "CleanupIntervalSeconds": 300,
+  "MaxHistoryItems": 50,
   "ChunkSize": 1400,
   "ChunkOverlap": 180,
   "TopK": 6,
@@ -51,7 +55,13 @@ Valores clave:
   "TesseractExePath": "C:/Program Files (x86)/Tesseract-OCR/tesseract.exe",
   "TessdataPrefixPath": "C:/Program Files (x86)/Tesseract-OCR",
   "TesseractLanguage": "spa+eng",
-  "TempPath": "C:/inetpub/wwwroot/GE_Back/RagTemp"
+  "TempPath": "C:/inetpub/wwwroot/GE_Back/RagTemp",
+  "Embeddings": {
+    "Enabled": false,
+    "Endpoint": "https://api.openai.com/v1/embeddings",
+    "ApiKey": "configurar-como-secreto",
+    "Model": "text-embedding-3-small"
+  }
 }
 ```
 
@@ -94,6 +104,15 @@ La indexacion vive en memoria del proceso API. No se guarda contenido ni embeddi
 - Al salir de la vista Blazor se intenta liberar la sesion.
 - Si el usuario abandona la pagina sin llamada de cierre, el backend libera por TTL (`SessionTtlMinutes`).
 - Al reiniciar el backend se pierden las sesiones activas.
+- Un servicio en segundo plano libera sesiones expiradas cada `CleanupIntervalSeconds`, aun si no llegan nuevas solicitudes.
+- `MaxGlobalMemoryMB` y `MaxSessionsPerUser` evitan que las sesiones temporales agoten la memoria del proceso.
+- El historial se conserva hasta `MaxHistoryItems` por sesion.
+
+## Recuperacion semantica y citas Excel
+
+- Sin configuracion adicional, la recuperacion mantiene el ranking lexico/extractivo.
+- Si se habilita `DocumentRag:Embeddings` con un endpoint compatible con OpenAI, el servicio combina similitud vectorial y coincidencia lexica. La clave debe inyectarse como secreto de despliegue, nunca versionarse en `appsettings.json`.
+- Los archivos XLSX ahora conservan nombre de hoja y rango de filas en las citas. La interfaz muestra esa ubicacion para que el usuario pueda verificar la evidencia directamente en Excel.
 
 Para una version persistente futura:
 

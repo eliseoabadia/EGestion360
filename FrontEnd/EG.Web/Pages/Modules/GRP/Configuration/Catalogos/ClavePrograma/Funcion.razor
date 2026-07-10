@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="FnResponse"
+        <GenericDataGrid TItem="FnResponse"
                       @ref="table"
                       Title="Lista de Funciones"
                       SearchPlaceholder="Buscar por clave, descripción o grupo funcional..."
@@ -26,43 +26,13 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidFn" T="FnResponse">ID</MudTableSortLabel></MudTh>
-                 <MudTh><MudTableSortLabel SortLabel="Clave" T="FnResponse">Clave FN</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FnResponse">Función</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="GfClaveNombre" T="FnResponse">Grupo Funcional</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidFn))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidFn))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidFn</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.GfClaveNombre</MudTd>
-                
-            </Row>
-        </GenericTable>
+            <Columns><TemplateColumn T="FnResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidFn))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidFn))" /></MudTooltip></CellTemplate></TemplateColumn><PropertyColumn T="FnResponse" TProperty="int" Property="x => x.PkidFn" Title="ID" Identifier="PkidFn" /><PropertyColumn T="FnResponse" TProperty="string" Property="x => x.Clave" Title="Clave FN" Identifier="Clave" /><PropertyColumn T="FnResponse" TProperty="string" Property="x => x.Descripcion" Title="Función" Identifier="Descripcion" /><PropertyColumn T="FnResponse" TProperty="string" Property="x => x.GfClaveNombre" Title="Grupo Funcional" Identifier="GfClaveNombre" /></Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<FnResponse> table = null!;
+    private GenericDataGrid<FnResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
     protected override string SubModuleName => "Funcion";

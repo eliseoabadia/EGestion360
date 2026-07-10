@@ -14,6 +14,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
     [Authorize]
     public class PolizaController : ControllerBase
     {
+        private const long MaxAiImportFileSize = 50L * 1024L * 1024L;
         private readonly IPolizaService _service;
         private readonly IUserContextService _userContext;
 
@@ -50,7 +51,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("ai-import/preview")]
-        [RequestSizeLimit(50 * 1024 * 1024)]
+        [RequestSizeLimit(MaxAiImportFileSize)]
         public async Task<ActionResult<PagedResult<PolizaAiImportPreviewResponse>>> PreviewAiImport([FromForm] PolizaAiImportUploadFormRequest request)
         {
             if (request.File == null || request.File.Length == 0)
@@ -63,13 +64,25 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 });
             }
 
+            if (request.File.Length > MaxAiImportFileSize)
+            {
+                return BadRequest(new PagedResult<PolizaAiImportPreviewResponse>
+                {
+                    Success = false,
+                    Message = "El archivo supera el limite de 50 MB.",
+                    Code = "FILE_TOO_LARGE"
+                });
+            }
+
             await using var stream = request.File.OpenReadStream();
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
 
+            var empresaContexto = _userContext.TryGetCurrentEmpresaId();
+
             var header = new PolizaAiImportHeaderRequest
             {
-                FkidEmpresaSis = request.FkidEmpresaSis ?? _userContext.TryGetCurrentEmpresaId(),
+                FkidEmpresaSis = empresaContexto ?? request.FkidEmpresaSis,
                 FkidAnioSis = request.FkidAnioSis,
                 Anio = request.Anio,
                 FkidMesSis = request.FkidMesSis,
@@ -101,7 +114,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpPost("ai-import/confirm")]
         public async Task<ActionResult<PagedResult<PolizaAiImportPreviewResponse>>> ConfirmAiImport([FromBody] PolizaAiImportConfirmRequest request)
         {
-            request.Header.FkidEmpresaSis ??= _userContext.TryGetCurrentEmpresaId();
+            request.Header.FkidEmpresaSis = _userContext.TryGetCurrentEmpresaId() ?? request.Header.FkidEmpresaSis;
             var result = await _service.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }

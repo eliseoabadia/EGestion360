@@ -1,0 +1,360 @@
+@typeparam TItem
+@using MudBlazor
+@implements IDisposable
+@inject ISnackbar Snackbar
+@inject ILogger<GenericDataGrid<TItem>> Logger
+
+<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-data-grid">
+    @if (actionInProgress)
+    {
+        <div class="eg-generic-data-grid-busy" role="status" aria-live="polite">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            <span>@ActionLoadingMessage</span>
+        </div>
+    }
+
+    <MudDataGrid T="TItem"
+                 @ref="dataGridRef"
+                 ServerData="LoadServerDataAsync"
+                 RowsPerPage="@PageSize"
+                 Dense="@Dense"
+                 Hover="@Hover"
+                 Striped="@Striped"
+                 FixedHeader="@FixedHeader"
+                 Height="@TableHeight"
+                 Loading="@IsGridBusy"
+                 LoadingProgressColor="Color.Primary"
+                 ReadOnly="@ReadOnly"
+                 Filterable="@EnableColumnFilters"
+                 FilterMode="DataGridFilterMode.ColumnFilterMenu"
+                 Hideable="@EnableColumnOptions"
+                 ShowColumnOptions="@EnableColumnOptions"
+                 ShowMenuIcon="false"
+                 DragDropColumnReordering="@EnableColumnReordering"
+                 ColumnsPanelReordering="@EnableColumnReordering"
+                 ColumnResizeMode="@ColumnResizeMode"
+                 Groupable="@EnableGrouping">
+
+        <ToolBarContent>
+            <div class="eg-data-grid-title">
+                <span class="eg-data-grid-title-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h6">@Title</MudText>
+                    <span>@totalItems.ToString("N0") registro(s)</span>
+                </div>
+            </div>
+            <MudSpacer />
+
+            @if (ShowRefreshButton)
+            {
+                <MudTooltip Text="Actualizar información">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Disabled="@IsGridBusy"
+                                   OnClick="ReloadDataWithFeedbackAsync"
+                                   Class="eg-data-grid-tool-button" />
+                </MudTooltip>
+            }
+
+            @if (ShowExportButton)
+            {
+                <MudTooltip Text="Exportar a Excel">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportToExcelAsync"
+                               Size="Size.Small"
+                               Disabled="@IsGridBusy"
+                               Class="eg-data-grid-export-button">
+                        Exportar Excel
+                    </MudButton>
+                </MudTooltip>
+            }
+
+            @if (ToolbarActions is not null)
+            {
+                @ToolbarActions
+            }
+
+            @if (EnableColumnOptions)
+            {
+                <MudTooltip Text="Mostrar u ocultar columnas">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.ViewColumn"
+                               Size="Size.Small"
+                               Disabled="@IsGridBusy"
+                               OnClick="ShowColumnsPanel"
+                               Class="eg-data-grid-columns-button">
+                        Columnas
+                    </MudButton>
+                </MudTooltip>
+            }
+
+            <MudTextField T="string"
+                          Value="@SearchString"
+                          ValueChanged="@(value => OnSearchTextChanged(value))"
+                          Placeholder="@SearchPlaceholder"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          Disabled="@IsGridBusy"
+                          OnKeyUp="HandleKeyUp"
+                          Class="eg-data-grid-search mt-0" />
+        </ToolBarContent>
+
+        <Columns>
+            @Columns
+        </Columns>
+
+        <NoRecordsContent>
+            <div class="eg-data-grid-empty" role="status">
+                <MudIcon Icon="@(string.IsNullOrWhiteSpace(lastLoadError) ? Icons.Material.Filled.Inbox : Icons.Material.Filled.CloudOff)" Size="Size.Medium" />
+                <strong>@(string.IsNullOrWhiteSpace(lastLoadError) ? "Aún no hay registros" : "No pudimos cargar la información")</strong>
+                <span>@(lastLoadError ?? "Revisa el contexto activo, permisos o filtros aplicados.")</span>
+                @if (!string.IsNullOrWhiteSpace(lastLoadError))
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="ReloadDataWithFeedbackAsync">
+                        Intentar nuevamente
+                    </MudButton>
+                }
+            </div>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <div class="eg-data-grid-loading-row">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                <MudText Typo="Typo.body2">@LoadingMessage</MudText>
+            </div>
+        </LoadingContent>
+
+        <PagerContent>
+            <MudDataGridPager T="TItem"
+                              RowsPerPageString="Filas por página"
+                              PageSizeOptions="@PageSizeOptions"
+                              InfoFormat="{first_item}-{last_item} de {all_items}" />
+        </PagerContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public int Elevation { get; set; } = 2;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
+    [Parameter] public string SearchString { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SearchStringChanged { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public int SearchDebounceMilliseconds { get; set; } = 400;
+    [Parameter] public bool ShowRefreshButton { get; set; } = true;
+    [Parameter] public bool ShowExportButton { get; set; }
+    [Parameter] public bool EnableColumnOptions { get; set; } = true;
+    [Parameter] public bool EnableColumnReordering { get; set; } = true;
+    [Parameter] public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Column;
+    [Parameter] public bool EnableColumnFilters { get; set; }
+    [Parameter] public bool EnableGrouping { get; set; }
+    [Parameter] public bool Dense { get; set; } = true;
+    [Parameter] public bool Hover { get; set; } = true;
+    [Parameter] public bool Striped { get; set; }
+    [Parameter] public bool ReadOnly { get; set; } = true;
+    [Parameter] public bool FixedHeader { get; set; } = true;
+    [Parameter] public string TableHeight { get; set; } = "100%";
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
+    [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
+    [Parameter] public string ActionLoadingMessage { get; set; } = "Procesando...";
+    [Parameter] public RenderFragment Columns { get; set; } = null!;
+    [Parameter] public RenderFragment? ToolbarActions { get; set; }
+    [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>> ServerDataFunc { get; set; } = null!;
+    [Parameter] public Func<Task>? ExportFunc { get; set; }
+
+    private MudDataGrid<TItem>? dataGridRef;
+    private bool isLoading;
+    private bool actionInProgress;
+    private bool disposed;
+    private int searchDebounceVersion;
+    private int totalItems;
+    private string? lastLoadError;
+
+    private bool IsGridBusy => isLoading || actionInProgress;
+
+    private async Task<GridData<TItem>> LoadServerDataAsync(GridState<TItem> state, CancellationToken cancellationToken)
+    {
+        isLoading = true;
+
+        try
+        {
+            if (ServerDataFunc is null)
+            {
+                lastLoadError = "La tabla no tiene configurada una fuente de datos.";
+                Logger.LogError("GenericDataGrid no tiene ServerDataFunc. Title={Title}", Title);
+                return new GridData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+            }
+
+            var sort = state.SortDefinitions
+                .OrderBy(definition => definition.Index)
+                .FirstOrDefault();
+
+            var tableState = new TableState
+            {
+                Page = state.Page,
+                PageSize = state.PageSize,
+                SortLabel = sort?.SortBy,
+                SortDirection = sort?.Descending == true ? SortDirection.Descending : SortDirection.Ascending
+            };
+
+            var tableData = await ServerDataFunc(tableState, cancellationToken);
+            totalItems = tableData.TotalItems;
+            lastLoadError = null;
+            return new GridData<TItem> { Items = tableData.Items, TotalItems = tableData.TotalItems };
+        }
+        catch (Exception ex)
+        {
+            lastLoadError = "No fue posible cargar la información. Revisa tu conexión e intenta nuevamente.";
+            totalItems = 0;
+            Logger.LogError(ex, "Error al cargar GenericDataGrid. Title={Title}", Title);
+            Snackbar.Add(lastLoadError, Severity.Error);
+            return new GridData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+        }
+        finally
+        {
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task OnSearchTextChanged(string? value)
+    {
+        SearchString = value ?? string.Empty;
+        await SearchStringChanged.InvokeAsync(SearchString);
+        var version = ++searchDebounceVersion;
+        _ = DebounceSearchAsync(version);
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            searchDebounceVersion++;
+            await ApplySearchAsync();
+        }
+    }
+
+    private async Task DebounceSearchAsync(int version)
+    {
+        try
+        {
+            await Task.Delay(Math.Max(0, SearchDebounceMilliseconds));
+            if (disposed || version != searchDebounceVersion)
+            {
+                return;
+            }
+
+            await InvokeAsync(async () =>
+            {
+                if (!disposed && version == searchDebounceVersion)
+                {
+                    await ApplySearchAsync();
+                }
+            });
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Logger.LogDebug(ex, "Se canceló una búsqueda al liberar GenericDataGrid. Title={Title}", Title);
+        }
+    }
+
+    private async Task ApplySearchAsync()
+    {
+        if (IsGridBusy)
+        {
+            return;
+        }
+
+        if (OnSearch.HasDelegate)
+        {
+            await OnSearch.InvokeAsync();
+            return;
+        }
+
+        await ReloadData();
+    }
+
+    public async Task ReloadData()
+    {
+        if (dataGridRef is null)
+        {
+            Logger.LogWarning("Se intentó recargar GenericDataGrid antes de estar listo. Title={Title}", Title);
+            Snackbar.Add("La tabla aún no está lista. Espera un momento e intenta nuevamente.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await dataGridRef.ReloadServerData();
+        }
+        catch (Exception ex)
+        {
+            lastLoadError = "No fue posible actualizar la información. Intenta nuevamente.";
+            Logger.LogError(ex, "Error al recargar GenericDataGrid. Title={Title}", Title);
+            Snackbar.Add(lastLoadError, Severity.Error);
+        }
+    }
+
+    private async Task ReloadDataWithFeedbackAsync()
+    {
+        await ReloadData();
+        if (string.IsNullOrWhiteSpace(lastLoadError))
+        {
+            Snackbar.Add("Información actualizada.", Severity.Success);
+        }
+    }
+
+    private void ShowColumnsPanel(MouseEventArgs args)
+    {
+        dataGridRef?.ShowColumnsPanel(args);
+    }
+
+    private async Task ExportToExcelAsync()
+    {
+        if (ExportFunc is null)
+        {
+            Logger.LogWarning("Se solicitó exportar GenericDataGrid sin ExportFunc. Title={Title}", Title);
+            Snackbar.Add("La exportación no está disponible para esta tabla.", Severity.Warning);
+            return;
+        }
+
+        actionInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await ExportFunc();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al exportar GenericDataGrid. Title={Title}", Title);
+            Snackbar.Add("No fue posible completar la exportación. El detalle técnico quedó registrado.", Severity.Error);
+        }
+        finally
+        {
+            actionInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        searchDebounceVersion++;
+    }
+}

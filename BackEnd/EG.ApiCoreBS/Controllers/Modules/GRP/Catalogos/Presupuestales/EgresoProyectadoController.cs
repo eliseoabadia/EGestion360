@@ -14,6 +14,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     [Authorize]
     public class EgresoProyectadoController : ControllerBase
     {
+        private const long MaxAiImportFileSize = 50L * 1024L * 1024L;
         private readonly IEgresoProyectadoAppService _appService;
         private readonly IUserContextService _userContext;
 
@@ -53,7 +54,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         }
 
         [HttpPost("ai-import/preview")]
-        [RequestSizeLimit(50 * 1024 * 1024)]
+        [RequestSizeLimit(MaxAiImportFileSize)]
         public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> PreviewAiImport([FromForm] EgresoProyectadoAiImportUploadFormRequest request)
         {
             if (request.File == null || request.File.Length == 0)
@@ -66,9 +67,21 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 });
             }
 
+            if (request.File.Length > MaxAiImportFileSize)
+            {
+                return BadRequest(new PagedResult<EgresoProyectadoAiImportPreviewResponse>
+                {
+                    Success = false,
+                    Message = "El archivo supera el limite de 50 MB.",
+                    Code = "FILE_TOO_LARGE"
+                });
+            }
+
             await using var stream = request.File.OpenReadStream();
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
+
+            var empresaContexto = _userContext.TryGetCurrentEmpresaId();
 
             var dto = new EgresoProyectadoAiImportUploadRequest
             {
@@ -82,7 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
                 {
                     FkidAnioSis = request.FkidAnioSis,
                     Anio = request.Anio,
-                    FkidEmpresaSis = request.FkidEmpresaSis ?? _userContext.TryGetCurrentEmpresaId(),
+                    FkidEmpresaSis = empresaContexto ?? request.FkidEmpresaSis,
                     EmpresaNombre = request.EmpresaNombre,
                     Fecha = request.Fecha
                 }
@@ -95,7 +108,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("ai-import/confirm")]
         public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> ConfirmAiImport([FromBody] EgresoProyectadoAiImportConfirmRequest request)
         {
-            request.Header.FkidEmpresaSis ??= _userContext.TryGetCurrentEmpresaId();
+            request.Header.FkidEmpresaSis = _userContext.TryGetCurrentEmpresaId() ?? request.Header.FkidEmpresaSis;
             var result = await _appService.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }

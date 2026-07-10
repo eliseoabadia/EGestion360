@@ -136,7 +136,7 @@
         </div>
 
         <MudExpansionPanels Elevation="0" Class="mt-3">
-            <MudExpansionPanel Text="Asistente de carga y RAG" Expanded="@(_ragSession != null || _ragAnswer != null)">
+            <MudExpansionPanel Text="Ayuda de carga y consulta del archivo" @bind-Expanded="_isRagExpanded">
                 <div class="poliza-rag-context">
                     <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@EmpresaText</MudChip>
                     @if (_ragSession != null)
@@ -185,7 +185,7 @@
                     <MudTextField @bind-Value="_ragQuestion"
                                   Placeholder="Pregunta sobre el archivo cargado..."
                                   Variant="Variant.Outlined"
-                                  Lines="2"
+                                  Lines="1"
                                   Disabled="@(_ragBusy || _busy)"
                                   Immediate="true" />
                     <MudButton Variant="Variant.Filled"
@@ -204,7 +204,15 @@
                 @if (_ragAnswer != null)
                 {
                     <div class="poliza-rag-answer">
-                        <strong>Respuesta</strong>
+                        <div class="poliza-rag-answer-head">
+                            <strong>Respuesta</strong>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Color="@(_ragAnswer.AnsweredFromDocuments ? Color.Success : Color.Info)"
+                                     Variant="Variant.Outlined">
+                                @(_ragAnswer.AnsweredFromDocuments ? "Basada en el archivo" : "Resumen de validacion")
+                            </MudChip>
+                        </div>
                         <p>@_ragAnswer.Answer</p>
                         @if (_ragAnswer.Citations.Count > 0)
                         {
@@ -212,7 +220,7 @@
                                 @foreach (var citation in _ragAnswer.Citations.Take(3))
                                 {
                                     <div>
-                                        <span>@citation.DocumentName - chunk @citation.ChunkIndex</span>
+                                        <span>@citation.DocumentName - @CitationLocation(citation)</span>
                                         <small>@citation.Snippet</small>
                                     </div>
                                 }
@@ -255,7 +263,7 @@
                 </MudAlert>
             }
 
-            <MudTable Items="@_preview.Details" Dense="true" Hover="true" Class="mt-3" Height="300px" FixedHeader="true">
+            <MudTable Items="@_preview.Details" Dense="true" Hover="true" Class="mt-3 poliza-ai-preview-table" Height="260px" FixedHeader="true">
                 <HeaderContent>
                     <MudTh>Fila</MudTh>
                     <MudTh>Cuenta</MudTh>
@@ -299,7 +307,7 @@
         display: grid;
         place-items: center;
         gap: 4px;
-        min-height: 104px;
+        min-height: 72px;
         margin-top: 12px;
         border: 1px dashed var(--mud-palette-lines-inputs);
         border-radius: 8px;
@@ -319,7 +327,7 @@
 
     .poliza-ai-summary {
         display: grid;
-        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
         gap: 8px;
     }
 
@@ -358,11 +366,11 @@
     }
 
     .poliza-rag-actions {
-        margin-top: 12px;
+        margin-top: 8px;
     }
 
     .poliza-rag-question {
-        margin-top: 10px;
+        margin-top: 8px;
     }
 
     .poliza-rag-question .mud-input-control {
@@ -375,6 +383,16 @@
         border-radius: 8px;
         padding: 10px;
         background: var(--mud-palette-surface);
+        max-height: 230px;
+        overflow-y: auto;
+    }
+
+    .poliza-rag-answer-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
     }
 
     .poliza-rag-answer p {
@@ -397,6 +415,10 @@
     .poliza-rag-citations small {
         display: block;
         color: var(--mud-palette-text-secondary);
+    }
+
+    .poliza-ai-preview-table .mud-table-container {
+        overflow-x: auto;
     }
 </style>
 
@@ -424,12 +446,13 @@
     private DocumentRagSessionResponse? _ragSession;
     private DocumentRagAskResponse? _ragAnswer;
     private string _ragQuestion = string.Empty;
-    private string _assistantContext = string.Empty;
+    private string? _indexedFileKey;
     private string _ragNotice = string.Empty;
     private Severity _ragNoticeSeverity = Severity.Info;
     private bool _busy;
     private bool _ragBusy;
     private bool _ragReleased;
+    private bool _isRagExpanded;
 
     private bool CanImport => _preview?.CanImport == true
         && _preview.EstaCuadrada
@@ -510,7 +533,6 @@
         _selectedTipoPoliza = value;
         _header.FkidTipoPolizaSis = value?.Id;
         _header.TipoPoliza = value?.Text;
-        RefreshAssistantContext();
         return Task.CompletedTask;
     }
 
@@ -542,7 +564,8 @@
         _ragAnswer = null;
         _ragNotice = string.Empty;
         _ragQuestion = string.Empty;
-        _assistantContext = string.Empty;
+        _indexedFileKey = null;
+        _isRagExpanded = false;
     }
 
     private async Task Analyze()
@@ -576,9 +599,7 @@
                 _fechaPoliza = _preview.Header.FechaPoliza;
                 _baseDetails = _preview.Details.Select(CloneDetail).ToList();
                 _baseMessages = _preview.Messages.ToList();
-                SelectAccountsFromPreview();
                 ApplyManualAccountsToPreview();
-                RefreshAssistantContext();
             }
 
             if (_preview != null)
@@ -602,9 +623,7 @@
         try
         {
             BuildHeader();
-            _preview.Header.FkidAnioSis = _header.FkidAnioSis;
-            _preview.Header.Anio = _header.Anio;
-            _preview.Header.FkidEmpresaSis = _header.FkidEmpresaSis;
+            SyncPreviewHeader();
             var details = BuildDetailsForImport();
             var response = await ImportService.ConfirmAsync(new PolizaAiImportConfirmRequest
             {
@@ -651,10 +670,37 @@
         _header.Anio = AnioStateService.AnioClave ?? _header.Anio;
     }
 
+    private void SyncPreviewHeader()
+    {
+        if (_preview == null)
+            return;
+
+        _preview.Header.FkidEmpresaSis = _header.FkidEmpresaSis;
+        _preview.Header.FkidAnioSis = _header.FkidAnioSis;
+        _preview.Header.Anio = _header.Anio;
+        _preview.Header.FkidMesSis = _header.FkidMesSis;
+        _preview.Header.Mes = _header.Mes;
+        _preview.Header.FkidTipoPolizaSis = _header.FkidTipoPolizaSis;
+        _preview.Header.TipoPoliza = _header.TipoPoliza;
+        _preview.Header.ClavePoliza = _header.ClavePoliza;
+        _preview.Header.NombrePoliza = _header.NombrePoliza;
+        _preview.Header.FechaPoliza = _header.FechaPoliza;
+        _preview.Header.PermitirModificar = _header.PermitirModificar;
+        _preview.Header.Autorizado = _header.Autorizado;
+    }
+
     private async Task IndexFileForRagAsync()
     {
         if (_file == null)
             return;
+
+        var fileKey = GetFileKey(_file);
+        if (_ragSession?.IndexedChunkCount > 0 && string.Equals(_indexedFileKey, fileKey, StringComparison.Ordinal))
+        {
+            _ragNoticeSeverity = Severity.Info;
+            _ragNotice = "El archivo actual ya esta indexado para consultas.";
+            return;
+        }
 
         _ragBusy = true;
         _ragNotice = "Indexando archivo para RAG...";
@@ -672,6 +718,7 @@
                 _ragNotice = response.Data.ChunkCount > 0
                     ? "Archivo indexado para consultas RAG."
                     : response.Data.Message;
+                _indexedFileKey = fileKey;
                 _ragQuestion = string.IsNullOrWhiteSpace(_ragQuestion)
                     ? "Que me falta para completar correctamente la poliza?"
                     : _ragQuestion;
@@ -727,6 +774,9 @@
         Descripcion = $"Empresa: {EmpresaText}. Anio: {HeaderAnioText}. Mes: {_header.FkidMesSis?.ToString() ?? "-"}. Archivo: {_file?.Name ?? "sin archivo"}."
     };
 
+    private static string GetFileKey(IBrowserFile file)
+        => $"{file.Name}|{file.Size}|{file.LastModified.ToUnixTimeMilliseconds()}";
+
     private async Task AskAssistantFields()
     {
         _ragQuestion = "Que columnas y campos de poliza identifica el archivo?";
@@ -770,18 +820,17 @@
                 return;
             }
 
-            RefreshAssistantContext();
-            var question = $"{questionText}\n\nContexto operativo de la pagina:\n{_assistantContext}";
             var response = await RagService.AskAsync(new DocumentRagAskRequest
             {
                 SessionId = _ragSession!.SessionId,
-                Question = question,
+                Question = questionText,
                 TopK = 6
             });
 
             if (response.Success && response.Data != null)
             {
                 _ragAnswer = response.Data;
+                _isRagExpanded = true;
                 if (!response.Data.AnsweredFromDocuments)
                 {
                     var fallback = TryBuildPreviewAnswer(questionText, force: true);
@@ -881,59 +930,7 @@
             AnsweredFromDocuments = false,
             AskedAtUtc = DateTime.UtcNow
         };
-    }
-
-    private void RefreshAssistantContext()
-    {
-        _assistantContext = BuildAssistantContext();
-    }
-
-    private string BuildAssistantContext()
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("Ruta: /Contabilidad/Polizas.");
-        sb.AppendLine("Modulo/Submodulo: Contabilidad / Polizas.");
-        sb.AppendLine($"Empresa seleccionada: {EmpresaText}.");
-        sb.AppendLine($"Anio: {HeaderAnioText}.");
-        sb.AppendLine($"Mes: {_header.FkidMesSis?.ToString() ?? "-"}.");
-        sb.AppendLine($"Tipo de poliza: {_selectedTipoPoliza?.Text ?? _header.TipoPoliza ?? "sin seleccionar"}.");
-        sb.AppendLine($"Fecha: {(_fechaPoliza ?? DateTime.Today):dd/MM/yyyy}.");
-        sb.AppendLine("Reglas de carga:");
-        sb.AppendLine("- El archivo debe contener movimientos de poliza.");
-        sb.AppendLine("- Campos clave: Cuenta, Concepto/Descripcion, Debe y Haber.");
-        sb.AppendLine("- La empresa, anio, mes y tipo de poliza forman parte del encabezado de la carga.");
-        sb.AppendLine("- La suma del Debe debe ser igual a la suma del Haber.");
-        sb.AppendLine("- Cada movimiento debe tener cuenta contable resuelta.");
-        sb.AppendLine("- Si una fila trae Debe y Haber, se puede dividir usando Cuenta debe y Cuenta haber.");
-        sb.AppendLine("- Importar poliza solo se habilita cuando no quedan errores y la poliza esta cuadrada.");
-        sb.AppendLine("Campos manuales seleccionados:");
-        AppendSelectedHelp(sb, "Cuenta debe", _selectedCuentaDebe);
-        AppendSelectedHelp(sb, "Cuenta haber", _selectedCuentaHaber);
-
-        if (_preview != null)
-        {
-            var errors = _preview.Messages.Count(IsError);
-            var warnings = _preview.Messages.Count - errors;
-            sb.AppendLine("Estado del analisis:");
-            sb.AppendLine($"- Movimientos: {_preview.Details.Count}.");
-            sb.AppendLine($"- Columnas detectadas: {_preview.DetectedColumns.Count}.");
-            sb.AppendLine($"- Debe: {Money(_preview.TotalDebe)}; Haber: {Money(_preview.TotalHaber)}; Diferencia: {Money(_preview.Diferencia)}.");
-            sb.AppendLine($"- Cuadrada: {(_preview.EstaCuadrada ? "si" : "no")}; errores: {errors}; avisos: {warnings}; puede importar: {(_preview.CanImport ? "si" : "no")}.");
-
-            foreach (var message in _preview.Messages.Take(12))
-            {
-                sb.AppendLine($"- {message.Severity}: {FormatMessage(message)}");
-            }
-        }
-
-        return sb.ToString().Trim();
-    }
-
-    private static void AppendSelectedHelp(StringBuilder sb, string label, LookupItem? value)
-    {
-        sb.AppendLine(value == null
-            ? $"- {label}: sin seleccionar."
-            : $"- {label}: {value.Text} (Id {value.Id}).");
+        _isRagExpanded = true;
     }
 
     private void AppendAccountAction(StringBuilder sb, string label, LookupItem? selected, Func<PolizaAiImportDetailRequest, bool> predicate)
@@ -1044,12 +1041,6 @@
 
     private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", CultureInfo.InvariantCulture)}";
 
-    private void SelectAccountsFromPreview()
-    {
-        _selectedCuentaDebe ??= ToAccountLookup(_baseDetails.FirstOrDefault(x => IsDebitOnly(x) && HasAccount(x)));
-        _selectedCuentaHaber ??= ToAccountLookup(_baseDetails.FirstOrDefault(x => IsCreditOnly(x) && HasAccount(x)));
-    }
-
     private void ApplyManualAccountsToPreview()
     {
         if (_preview == null)
@@ -1078,7 +1069,6 @@
     private void ApplyManualAccountsAndRefreshAssistant()
     {
         ApplyManualAccountsToPreview();
-        RefreshAssistantContext();
 
         if (_ragAnswer != null && !string.IsNullOrWhiteSpace(_ragQuestion))
         {
@@ -1164,24 +1154,6 @@
         ImporteHaber = detail.ImporteHaber
     };
 
-    private static LookupItem? ToAccountLookup(PolizaAiImportDetailRequest? detail)
-    {
-        if (detail?.FkidCuentaContableConta is not > 0)
-            return null;
-
-        var text = string.IsNullOrWhiteSpace(detail.CuentaDescripcion)
-            ? detail.Cuenta
-            : $"{detail.Cuenta} - {detail.CuentaDescripcion}";
-
-        return new LookupItem
-        {
-            Id = detail.FkidCuentaContableConta.Value,
-            Text = string.IsNullOrWhiteSpace(text)
-                ? detail.FkidCuentaContableConta.Value.ToString(CultureInfo.InvariantCulture)
-                : text
-        };
-    }
-
     private static void AssignAccount(PolizaAiImportDetailRequest detail, LookupItem? account)
     {
         if (account == null)
@@ -1213,6 +1185,19 @@
         return $"{location}{message.Message}";
     }
 
+    private static string CitationLocation(DocumentRagCitationResponse citation)
+    {
+        if (string.IsNullOrWhiteSpace(citation.SheetName))
+            return $"fragmento {citation.ChunkIndex}";
+
+        if (!citation.RowStart.HasValue)
+            return $"hoja {citation.SheetName}";
+
+        return citation.RowEnd.GetValueOrDefault() > citation.RowStart.Value
+            ? $"hoja {citation.SheetName}, filas {citation.RowStart}-{citation.RowEnd}"
+            : $"hoja {citation.SheetName}, fila {citation.RowStart}";
+    }
+
     private static bool ContainsAny(string value, params string[] terms)
         => terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
 
@@ -1241,7 +1226,9 @@
         _ragReleased = true;
 
         if (showSnackbar)
-            Snackbar.Add(response.Message ?? "Memoria RAG liberada.", Severity.Success);
+            Snackbar.Add(
+                response.Message ?? (response.Success ? "Memoria RAG liberada." : "No fue posible confirmar la liberacion de memoria RAG."),
+                response.Success ? Severity.Success : Severity.Warning);
     }
 
     private async Task Close()

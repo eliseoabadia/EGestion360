@@ -14,7 +14,7 @@
                    
                     />
 
-        <GenericTable TItem="MotivoEsResponse"
+        <GenericDataGrid TItem="MotivoEsResponse"
                       @ref="table"
                       Title="Lista de Motivos"
                       SearchPlaceholder="Buscar por descripción..."
@@ -24,41 +24,13 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidMotivoEs" T="MotivoEsResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="MotivoEsResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="AplicaEntrada" T="MotivoEsResponse">Aplica Entrada</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="AplicaSalida" T="MotivoEsResponse">Aplica Salida</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidMotivoEs))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidMotivoEs))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidMotivoEs</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.AplicaEntrada</MudTd>
-                <MudTd>@item.AplicaSalida</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns><TemplateColumn T="MotivoEsResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMotivoEs))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMotivoEs))" /></MudTooltip></CellTemplate></TemplateColumn><PropertyColumn T="MotivoEsResponse" TProperty="int" Property="x => x.PkidMotivoEs" Title="ID" Identifier="PkidMotivoEs" /><PropertyColumn T="MotivoEsResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" /><PropertyColumn T="MotivoEsResponse" TProperty="bool" Property="x => x.AplicaEntrada" Title="Aplica Entrada" Identifier="AplicaEntrada" /><PropertyColumn T="MotivoEsResponse" TProperty="bool" Property="x => x.AplicaSalida" Title="Aplica Salida" Identifier="AplicaSalida" /></Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<MotivoEsResponse> table = null!;
+    private GenericDataGrid<MotivoEsResponse> table = null!;
 
     protected override string ModuleName => "Almacen";
     protected override string SubModuleName => "Movimiento_Entrada_Salida";

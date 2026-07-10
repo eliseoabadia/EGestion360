@@ -671,7 +671,7 @@
         var dialog = await DialogService.ShowAsync<AnteproyectoEgresosAiImportDialog>(
             "Alta desde Excel",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = false });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })

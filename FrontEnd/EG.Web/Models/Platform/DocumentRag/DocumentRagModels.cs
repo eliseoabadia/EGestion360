@@ -84,6 +84,9 @@ namespace EG.Web.Models.Platform.DocumentRag
         public string DocumentName { get; set; } = string.Empty;
         public int ChunkIndex { get; set; }
         public int? Page { get; set; }
+        public string? SheetName { get; set; }
+        public int? RowStart { get; set; }
+        public int? RowEnd { get; set; }
         public double Score { get; set; }
         public string Snippet { get; set; } = string.Empty;
     }

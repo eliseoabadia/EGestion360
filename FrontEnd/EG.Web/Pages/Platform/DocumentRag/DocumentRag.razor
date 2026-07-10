@@ -150,7 +150,7 @@
                                     {
                                         <div class="rag-citation">
                                             <strong>@citation.DocumentName</strong>
-                                            <span>chunk @citation.ChunkIndex - score @citation.Score.ToString("0.000")</span>
+                                            <span>@CitationLocation(citation) - score @citation.Score.ToString("0.000")</span>
                                             <p>@citation.Snippet</p>
                                         </div>
                                     }
@@ -285,7 +285,6 @@
         _asking = true;
         _busy = true;
         var question = _question.Trim();
-        var contextualQuestion = BuildContextualQuestion(question);
         await InvokeAsync(StateHasChanged);
 
         try
@@ -293,7 +292,7 @@
             var response = await RagService.AskAsync(new DocumentRagAskRequest
             {
                 SessionId = _session.SessionId,
-                Question = contextualQuestion
+                Question = question
             });
 
             if (response.Success && response.Data != null)
@@ -376,22 +375,17 @@
         return _sessionRequest;
     }
 
-    private string BuildContextualQuestion(string question)
+    private static string CitationLocation(DocumentRagCitationResponse citation)
     {
-        var request = BuildSessionRequest();
-        var contextLines = new[]
-        {
-            $"Modulo: {request.Modulo}",
-            $"Submodulo: {request.SubModulo ?? "-"}",
-            $"Controlador: {request.Controlador ?? "-"}",
-            $"Servicio: {request.Servicio ?? "-"}",
-            $"EntidadId: {request.EntidadId?.ToString() ?? "-"}",
-            $"EmpresaId: {request.FkidEmpresaSis?.ToString() ?? "-"}",
-            $"Titulo: {request.Titulo ?? "-"}",
-            $"Descripcion/reglas: {request.Descripcion ?? "-"}"
-        };
+        if (string.IsNullOrWhiteSpace(citation.SheetName))
+            return $"fragmento {citation.ChunkIndex}";
 
-        return $"{question}\n\nContexto operativo de la sesion:\n{string.Join('\n', contextLines)}";
+        if (!citation.RowStart.HasValue)
+            return $"hoja {citation.SheetName}";
+
+        return citation.RowEnd.GetValueOrDefault() > citation.RowStart.Value
+            ? $"hoja {citation.SheetName}, filas {citation.RowStart}-{citation.RowEnd}"
+            : $"hoja {citation.SheetName}, fila {citation.RowStart}";
     }
 
     private static string GetDocumentIcon(DocumentRagDocumentResponse document)

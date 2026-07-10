@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ProcedimientoContratacionResponse"
+        <GenericDataGrid TItem="ProcedimientoContratacionResponse"
                       @ref="table"
                       Title="Lista de Procedimientos"
                       SearchPlaceholder="Buscar por descripción..."
@@ -26,40 +26,18 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidProcedimientoContratacion" T="ProcedimientoContratacionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProcedimientoContratacionResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FundamentoJuridico" T="ProcedimientoContratacionResponse">Fundamento Jurídico</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidProcedimientoContratacion))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidProcedimientoContratacion))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidProcedimientoContratacion</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd Style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.FundamentoJuridico</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn T="ProcedimientoContratacionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidProcedimientoContratacion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidProcedimientoContratacion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProcedimientoContratacionResponse" TProperty="int" Property="x => x.PkidProcedimientoContratacion" Title="ID" Identifier="PkidProcedimientoContratacion" />
+                <PropertyColumn T="ProcedimientoContratacionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="ProcedimientoContratacionResponse" TProperty="string" Property="x => x.FundamentoJuridico" Title="Fundamento Jurídico" Identifier="FundamentoJuridico" CellStyle="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ProcedimientoContratacionResponse> table = null!;
+    private GenericDataGrid<ProcedimientoContratacionResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Procedimientos_Contratacion";

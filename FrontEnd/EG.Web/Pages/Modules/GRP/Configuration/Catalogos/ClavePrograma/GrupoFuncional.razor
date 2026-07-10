@@ -14,7 +14,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="GfResponse"
+        <GenericDataGrid TItem="GfResponse"
                       @ref="table"
                       Title="Lista de Grupos Funcionales"
                       SearchPlaceholder="Buscar por clave o descripción..."
@@ -25,40 +25,13 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidGf" T="GfResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="GfResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="GfResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="gf">
-                <MudTd>
-                    <MudTooltip Text="Editar grupo funcional">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(gf.PkidGf))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar grupo funcional">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(gf.PkidGf))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@gf.PkidGf</MudTd>
-                <MudTd>@gf.Clave</MudTd>
-                <MudTd>@gf.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns><TemplateColumn T="GfResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar grupo funcional"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidGf))" /></MudTooltip><MudTooltip Text="Eliminar grupo funcional"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidGf))" /></MudTooltip></CellTemplate></TemplateColumn><PropertyColumn T="GfResponse" TProperty="int" Property="x => x.PkidGf" Title="ID" Identifier="PkidGf" /><PropertyColumn T="GfResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" /><PropertyColumn T="GfResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" /></Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<GfResponse> table = null!;
+    private GenericDataGrid<GfResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
     protected override string SubModuleName => "Finalidad";

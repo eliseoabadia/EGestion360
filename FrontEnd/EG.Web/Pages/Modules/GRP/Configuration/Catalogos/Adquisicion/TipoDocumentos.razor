@@ -7,26 +7,18 @@
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Documentos" Subtitle="Catálogo de tipos de documentos" Icon="@Icons.Material.Filled.Description" CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoDocumentoResponse" @ref="table" Title="Lista de Tipos de Documentos" SearchPlaceholder="Buscar..." ShowExportButton="@CanExport" ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel" SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoDocumento" T="TipoDocumentoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoDocumentoResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidTipoDocumento))" /></MudTooltip>
-                    <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidTipoDocumento))" /></MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoDocumento</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+        <GenericDataGrid TItem="TipoDocumentoResponse" @ref="table" Title="Lista de Tipos de Documentos" SearchPlaceholder="Buscar..." ShowExportButton="@CanExport" ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel" SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
+            <Columns>
+                <TemplateColumn T="TipoDocumentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDocumento))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDocumento))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoDocumentoResponse" TProperty="int" Property="x => x.PkidTipoDocumento" Title="ID" Identifier="PkidTipoDocumento" />
+                <PropertyColumn T="TipoDocumentoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoDocumentoResponse> table = null!;
+    private GenericDataGrid<TipoDocumentoResponse> table = null!;
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Tipo_Documentos";
     protected override Type CreateDialogType => typeof(TipoDocumentoDialog);

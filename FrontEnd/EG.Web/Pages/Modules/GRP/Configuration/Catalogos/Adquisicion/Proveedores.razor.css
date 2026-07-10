@@ -1,0 +1,8 @@
+.proveedores-nombre-cell {
+    display: block;
+    width: 100%;
+    min-width: 10ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

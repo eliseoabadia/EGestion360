@@ -79,10 +79,17 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
                 var account = Get(row, columnMap, "Cuenta");
                 var description = Get(row, columnMap, "Descripcion");
-                var debe = ParseAmount(Get(row, columnMap, "Debe"));
-                var haber = ParseAmount(Get(row, columnMap, "Haber"));
-                var importe = ParseAmount(Get(row, columnMap, "Importe"));
+                var debeText = Get(row, columnMap, "Debe");
+                var haberText = Get(row, columnMap, "Haber");
+                var importeText = Get(row, columnMap, "Importe");
+                var debe = ParseAmount(debeText);
+                var haber = ParseAmount(haberText);
+                var importe = ParseAmount(importeText);
                 var naturaleza = Get(row, columnMap, "Naturaleza");
+
+                AddInvalidAmountMessage(result, debeText, debe, rowIndex + 1, "Debe");
+                AddInvalidAmountMessage(result, haberText, haber, rowIndex + 1, "Haber");
+                AddInvalidAmountMessage(result, importeText, importe, rowIndex + 1, "Importe");
 
                 if (!debe.HasValue && !haber.HasValue && importe.HasValue)
                 {
@@ -468,6 +475,26 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         private static string? NullIfWhiteSpace(string value)
             => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+        private static void AddInvalidAmountMessage(
+            PolizaAiParsedDocument result,
+            string value,
+            decimal? parsedValue,
+            int rowNumber,
+            string field)
+        {
+            if (string.IsNullOrWhiteSpace(value) || parsedValue.HasValue)
+                return;
+
+            result.Messages.Add(new PolizaAiImportValidationMessage
+            {
+                Severity = "Error",
+                Code = "INVALID_AMOUNT",
+                Message = $"El importe de {field} no tiene un formato numerico valido.",
+                RowNumber = rowNumber,
+                Field = field
+            });
+        }
 
         private static PolizaAiImportValidationMessage Error(string code, string message) => new()
         {

@@ -14,14 +14,20 @@ namespace EG.Application.Services.DocumentRag
 {
     public sealed partial class DocumentRagAppService(
         IOptions<DocumentRagSettings> settings,
-        ILogger<DocumentRagAppService> logger) : IDocumentRagAppService
+        ILogger<DocumentRagAppService> logger,
+        IRagEmbeddingService embeddingService) : IDocumentRagAppService
     {
         private readonly ConcurrentDictionary<Guid, RagSession> _sessions = new();
         private readonly DocumentRagSettings _settings = settings.Value;
+        private readonly object _memorySync = new();
 
         public Task<PagedResult<DocumentRagSessionResponse>> CreateSessionAsync(DocumentRagSessionRequest request, int usuarioActual)
         {
             CleanupExpiredSessions();
+
+            var maxSessions = Math.Max(1, _settings.MaxSessionsPerUser);
+            if (_sessions.Values.Count(session => session.UsuarioId == usuarioActual) >= maxSessions)
+                throw new InvalidOperationException($"El usuario ya tiene el maximo de {maxSessions} sesiones RAG activas.");
 
             var now = DateTime.UtcNow;
             var ttl = TimeSpan.FromMinutes(Math.Max(5, _settings.SessionTtlMinutes));
@@ -82,12 +88,18 @@ namespace EG.Application.Services.DocumentRag
                 Status = extraction.Status,
                 Message = extraction.Message
             };
+            document.Segments.AddRange(extraction.Segments);
 
             document.Chunks.AddRange(CreateChunks(document));
+            await PopulateEmbeddingsAsync(document.Chunks);
 
             lock (session.SyncRoot)
             {
+                if (!_sessions.TryGetValue(session.SessionId, out var activeSession) || !ReferenceEquals(activeSession, session))
+                    throw new InvalidOperationException("La sesion documental expiro mientras se procesaba el archivo.");
+
                 ValidateUpload(request, session);
+                ReserveGlobalMemory(session, document);
                 session.Documents.Add(document);
                 session.TotalBytes += request.TamanoBytes;
                 Touch(session);
@@ -106,7 +118,7 @@ namespace EG.Application.Services.DocumentRag
             return Success(document.Message, ToDocumentResponse(document));
         }
 
-        public Task<PagedResult<DocumentRagAskResponse>> AskAsync(DocumentRagAskRequest request, int usuarioActual)
+        public async Task<PagedResult<DocumentRagAskResponse>> AskAsync(DocumentRagAskRequest request, int usuarioActual)
         {
             CleanupExpiredSessions();
             if (string.IsNullOrWhiteSpace(request.Question))
@@ -131,17 +143,21 @@ namespace EG.Application.Services.DocumentRag
                 .ToList();
             var queryTermSet = queryTerms.ToHashSet(StringComparer.Ordinal);
 
-            var ranked = queryTerms.Count == 0 || chunks.Count == 0
+            var queryEmbedding = await GetQueryEmbeddingAsync(question);
+            var ranked = (queryTerms.Count == 0 && queryEmbedding == null) || chunks.Count == 0
                 ? []
-                : RankChunks(chunks, queryTerms, topK);
+                : RankChunks(chunks, queryTerms, topK, queryEmbedding);
 
-            var hasEvidence = ranked.Any(x => x.Score >= _settings.MinScore);
+            var evidence = ranked
+                .Where(x => x.Score >= _settings.MinScore)
+                .ToList();
+            var hasEvidence = evidence.Count > 0;
             var answer = hasEvidence
-                ? BuildExtractiveAnswer(ranked, queryTermSet)
+                ? BuildExtractiveAnswer(evidence, queryTermSet)
                 : "La informacion no esta en los documentos cargados. No encontre evidencia suficiente en el texto indexado para responder esa pregunta.";
 
             var citations = hasEvidence
-                ? ranked.Select(item => ToCitation(item, queryTermSet)).ToList()
+                ? evidence.Select(item => ToCitation(item, queryTermSet)).ToList()
                 : [];
 
             var response = new DocumentRagAskResponse
@@ -168,6 +184,9 @@ namespace EG.Application.Services.DocumentRag
             lock (session.SyncRoot)
             {
                 session.History.Add(history);
+                var maxHistory = Math.Max(1, _settings.MaxHistoryItems);
+                if (session.History.Count > maxHistory)
+                    session.History.RemoveRange(0, session.History.Count - maxHistory);
                 Touch(session);
             }
 
@@ -180,7 +199,7 @@ namespace EG.Application.Services.DocumentRag
                 TruncateForLog(question, 300),
                 TruncateForLog(answer, 600));
 
-            return Task.FromResult(Success("Pregunta procesada.", response));
+            return Success("Pregunta procesada.", response);
         }
 
         public Task<PagedResult<DocumentRagHistoryItemResponse>> GetHistoryAsync(Guid sessionId, int usuarioActual)
@@ -257,6 +276,9 @@ namespace EG.Application.Services.DocumentRag
 
         private List<RagChunk> CreateChunks(RagDocument document)
         {
+            if (document.Segments.Count > 0)
+                return CreateStructuredChunks(document);
+
             if (string.IsNullOrWhiteSpace(document.Text))
                 return [];
 
@@ -291,7 +313,53 @@ namespace EG.Application.Services.DocumentRag
             return chunks;
         }
 
-        private static RagChunk CreateChunk(RagDocument document, int index, string text)
+        private List<RagChunk> CreateStructuredChunks(RagDocument document)
+        {
+            var chunkSize = Math.Max(500, _settings.ChunkSize);
+            var chunks = new List<RagChunk>();
+            var index = 0;
+
+            foreach (var sheet in document.Segments.GroupBy(segment => segment.SheetName ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            {
+                var builder = new StringBuilder();
+                int? rowStart = null;
+                int? rowEnd = null;
+
+                foreach (var segment in sheet)
+                {
+                    var line = segment.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    if (builder.Length > 0 && builder.Length + line.Length + 1 > chunkSize)
+                    {
+                        chunks.Add(CreateChunk(document, index++, builder.ToString().Trim(), sheet.Key, rowStart, rowEnd));
+                        builder.Clear();
+                        rowStart = null;
+                        rowEnd = null;
+                    }
+
+                    if (builder.Length > 0)
+                        builder.AppendLine();
+                    builder.Append(line);
+                    rowStart ??= segment.RowStart;
+                    rowEnd = segment.RowEnd ?? rowEnd;
+                }
+
+                if (builder.Length > 0)
+                    chunks.Add(CreateChunk(document, index++, builder.ToString().Trim(), sheet.Key, rowStart, rowEnd));
+            }
+
+            return chunks;
+        }
+
+        private static RagChunk CreateChunk(
+            RagDocument document,
+            int index,
+            string text,
+            string? sheetName = null,
+            int? rowStart = null,
+            int? rowEnd = null)
         {
             var tokens = Tokenize(text).Where(term => !StopWords.Contains(term)).ToList();
             return new RagChunk
@@ -300,6 +368,9 @@ namespace EG.Application.Services.DocumentRag
                 DocumentName = document.NombreOriginal,
                 ChunkIndex = index,
                 Text = text,
+                SheetName = string.IsNullOrWhiteSpace(sheetName) ? null : sheetName,
+                RowStart = rowStart,
+                RowEnd = rowEnd,
                 SearchText = NormalizeForSearch(text),
                 TokenCount = tokens.Count,
                 Terms = tokens.ToHashSet(StringComparer.Ordinal),
@@ -309,14 +380,48 @@ namespace EG.Application.Services.DocumentRag
             };
         }
 
-        private List<ScoredChunk> RankChunks(List<RagChunk> chunks, IReadOnlyList<string> queryTerms, int topK)
+        private async Task PopulateEmbeddingsAsync(IReadOnlyList<RagChunk> chunks)
+        {
+            if (!embeddingService.IsEnabled || chunks.Count == 0)
+                return;
+
+            var batchSize = Math.Clamp(_settings.Embeddings.BatchSize, 1, 128);
+            foreach (var batch in chunks.Chunk(batchSize))
+            {
+                var batchChunks = batch.ToList();
+                var embeddings = await embeddingService.EmbedAsync(batchChunks.Select(chunk => chunk.Text).ToList());
+                if (embeddings.Count != batchChunks.Count)
+                {
+                    logger.LogWarning("El proveedor de embeddings devolvio {Received} vectores para {Requested} chunks RAG.", embeddings.Count, batchChunks.Count);
+                    continue;
+                }
+
+                for (var index = 0; index < batchChunks.Count; index++)
+                    batchChunks[index].Embedding = embeddings[index];
+            }
+        }
+
+        private async Task<float[]?> GetQueryEmbeddingAsync(string question)
+        {
+            if (!embeddingService.IsEnabled)
+                return null;
+
+            var embeddings = await embeddingService.EmbedAsync([question]);
+            return embeddings.Count == 1 ? embeddings[0] : null;
+        }
+
+        private List<ScoredChunk> RankChunks(
+            List<RagChunk> chunks,
+            IReadOnlyList<string> queryTerms,
+            int topK,
+            float[]? queryEmbedding)
         {
             var documentFrequency = queryTerms.ToDictionary(
                 term => term,
                 term => chunks.Count(chunk => chunk.Terms.Contains(term)),
                 StringComparer.Ordinal);
 
-            return chunks.Select(chunk =>
+            var lexicalScores = chunks.Select(chunk =>
                 {
                     var score = 0d;
                     foreach (var term in queryTerms)
@@ -337,10 +442,54 @@ namespace EG.Application.Services.DocumentRag
 
                     return new ScoredChunk(chunk, score);
                 })
-                .Where(x => x.Score > 0)
+                .ToList();
+
+            var maxLexicalScore = lexicalScores.Max(item => item.Score);
+            var lexicalWeight = Math.Clamp(_settings.Embeddings.LexicalWeight, 0d, 1d);
+            var semanticWeight = Math.Clamp(_settings.Embeddings.SemanticWeight, 0d, 1d);
+            var totalWeight = lexicalWeight + semanticWeight;
+            if (totalWeight <= 0d)
+            {
+                lexicalWeight = 1d;
+                semanticWeight = 0d;
+            }
+            else
+            {
+                lexicalWeight /= totalWeight;
+                semanticWeight /= totalWeight;
+            }
+
+            return lexicalScores.Select(item =>
+                {
+                    if (queryEmbedding == null || item.Chunk.Embedding == null || item.Chunk.Embedding.Length != queryEmbedding.Length)
+                        return item;
+
+                    var normalizedLexical = maxLexicalScore > 0d ? item.Score / maxLexicalScore : 0d;
+                    var semanticScore = CosineSimilarity(queryEmbedding, item.Chunk.Embedding);
+                    return new ScoredChunk(item.Chunk, normalizedLexical * lexicalWeight + semanticScore * semanticWeight);
+                })
+                .Where(item => item.Score > 0)
                 .OrderByDescending(x => x.Score)
                 .Take(topK)
                 .ToList();
+        }
+
+        private static double CosineSimilarity(IReadOnlyList<float> left, IReadOnlyList<float> right)
+        {
+            double dot = 0d;
+            double leftMagnitude = 0d;
+            double rightMagnitude = 0d;
+            for (var index = 0; index < left.Count; index++)
+            {
+                dot += left[index] * right[index];
+                leftMagnitude += left[index] * left[index];
+                rightMagnitude += right[index] * right[index];
+            }
+
+            if (leftMagnitude <= 0d || rightMagnitude <= 0d)
+                return 0d;
+
+            return Math.Max(0d, dot / Math.Sqrt(leftMagnitude * rightMagnitude));
         }
 
         private static string BuildExtractiveAnswer(IEnumerable<ScoredChunk> rankedChunks, IReadOnlySet<string> queryTerms)
@@ -409,6 +558,9 @@ namespace EG.Application.Services.DocumentRag
                 DocumentName = item.Chunk.DocumentName,
                 ChunkIndex = item.Chunk.ChunkIndex,
                 Page = null,
+                SheetName = item.Chunk.SheetName,
+                RowStart = item.Chunk.RowStart,
+                RowEnd = item.Chunk.RowEnd,
                 Score = Math.Round(item.Score, 4),
                 Snippet = snippet
             };
@@ -431,21 +583,58 @@ namespace EG.Application.Services.DocumentRag
             return session;
         }
 
-        private void CleanupExpiredSessions()
+        public void CleanupExpiredSessions()
         {
             var now = DateTime.UtcNow;
             foreach (var pair in _sessions.Where(pair => pair.Value.ExpiresAtUtc < now).ToList())
             {
                 if (_sessions.TryRemove(pair.Key, out var removed))
                 {
+                    int documentCount;
+                    int chunkCount;
+                    lock (removed.SyncRoot)
+                    {
+                        documentCount = removed.Documents.Count;
+                        chunkCount = removed.Documents.Sum(x => x.Chunks.Count);
+                    }
+
                     logger.LogInformation(
                         "RAG sesion expirada liberada. Usuario={Usuario}; SessionId={SessionId}; Documentos={Documentos}; Chunks={Chunks}",
                         removed.UsuarioId,
                         removed.SessionId,
-                        removed.Documents.Count,
-                        removed.Documents.Sum(x => x.Chunks.Count));
+                        documentCount,
+                        chunkCount);
                 }
             }
+        }
+
+        private void ReserveGlobalMemory(RagSession session, RagDocument document)
+        {
+            var documentBytes = EstimateMemoryBytes(document);
+            var maxBytes = Math.Max(1, _settings.MaxGlobalMemoryMB) * 1024L * 1024L;
+
+            lock (_memorySync)
+            {
+                var usedBytes = _sessions.Values.Sum(item => item.EstimatedMemoryBytes);
+                if (usedBytes + documentBytes > maxBytes)
+                    throw new InvalidOperationException($"El RAG alcanzo el limite global de memoria de {_settings.MaxGlobalMemoryMB} MB. Libera sesiones o intenta mas tarde.");
+
+                session.EstimatedMemoryBytes += documentBytes;
+            }
+        }
+
+        private static long EstimateMemoryBytes(RagDocument document)
+        {
+            var textBytes = document.Text.Length * sizeof(char);
+            var segmentBytes = document.Segments.Sum(segment => segment.Text.Length * sizeof(char));
+            var chunkBytes = document.Chunks.Sum(chunk =>
+                (long)chunk.Text.Length * sizeof(char)
+                + (long)chunk.SearchText.Length * sizeof(char)
+                + (long)chunk.Terms.Count * 80
+                + (long)chunk.TermFrequency.Count * 48
+                + (long)(chunk.Embedding?.Length ?? 0) * sizeof(float));
+
+            return Math.Max(1024L, textBytes + segmentBytes + chunkBytes);
         }
 
         private void Touch(RagSession session)
@@ -581,6 +770,7 @@ namespace EG.Application.Services.DocumentRag
             public DateTime LastAccessAtUtc { get; set; }
             public DateTime ExpiresAtUtc { get; set; }
             public long TotalBytes { get; set; }
+            public long EstimatedMemoryBytes { get; set; }
             public List<RagDocument> Documents { get; } = [];
             public List<DocumentRagHistoryItemResponse> History { get; } = [];
         }
@@ -596,6 +786,7 @@ namespace EG.Application.Services.DocumentRag
             public string Text { get; init; } = string.Empty;
             public string Status { get; init; } = string.Empty;
             public string Message { get; init; } = string.Empty;
+            public List<DocumentTextSegment> Segments { get; } = [];
             public List<RagChunk> Chunks { get; } = [];
         }
 
@@ -605,7 +796,11 @@ namespace EG.Application.Services.DocumentRag
             public string DocumentName { get; init; } = string.Empty;
             public int ChunkIndex { get; init; }
             public string Text { get; init; } = string.Empty;
+            public string? SheetName { get; init; }
+            public int? RowStart { get; init; }
+            public int? RowEnd { get; init; }
             public string SearchText { get; init; } = string.Empty;
+            public float[]? Embedding { get; set; }
             public int TokenCount { get; init; }
             public HashSet<string> Terms { get; init; } = [];
             public Dictionary<string, int> TermFrequency { get; init; } = [];

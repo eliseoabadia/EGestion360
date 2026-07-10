@@ -15,57 +15,55 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ProveedorResponse"
-                      @ref="table"
-                      Title="Lista de Proveedores"
-                      SearchPlaceholder="Buscar por nombre, RFC o clave..."
-                      ShowExportButton="@CanExport"
-                      ServerDataFunc="LoadServerData"
-                      ExportFunc="ExportToExcel"
-                      SearchString="@SearchString"
-                      SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
-
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidProveedor" T="ProveedorResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProveedorResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="ProveedorResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Rfc" T="ProveedorResponse">RFC</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Email" T="ProveedorResponse">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MunicipioNombre" T="ProveedorResponse">Municipio</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidProveedor))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidProveedor))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidProveedor</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd Style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Nombre</MudTd>
-                <MudTd>@item.Rfc</MudTd>
-                <MudTd>@item.Email</MudTd>
-                <MudTd>@item.MunicipioNombre</MudTd>
-            </Row>
-        </GenericTable>
+        <div class="proveedores-data-grid" Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+            <GenericDataGrid TItem="ProveedorResponse"
+                             @ref="table"
+                             Title="Lista de proveedores"
+                             SearchPlaceholder="Buscar por nombre, RFC o clave..."
+                             ShowExportButton="@CanExport"
+                             ColumnResizeMode="ResizeMode.Container"
+                             ServerDataFunc="LoadServerData"
+                             ExportFunc="ExportToExcel"
+                             SearchString="@SearchString"
+                             SearchStringChanged="(s) => SearchString = s"
+                             OnSearch="OnSearch">
+                <Columns>
+                    <TemplateColumn T="ProveedorResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
+                        <CellTemplate>
+                            <MudTooltip Text="Editar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Visible="@CanUpdate"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditItem(context.Item.PkidProveedor))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Visible="@CanDelete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteItem(context.Item.PkidProveedor))" />
+                            </MudTooltip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn T="ProveedorResponse" TProperty="int" Property="x => x.PkidProveedor" Title="ID" Identifier="PkidProveedor" />
+                    <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                    <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre">
+                        <CellTemplate>
+                            <div class="proveedores-nombre-cell" title="@context.Item.Nombre">@context.Item.Nombre</div>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Rfc" Title="RFC" Identifier="Rfc" />
+                    <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Email" Title="Email" Identifier="Email" />
+                    <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.MunicipioNombre" Title="Municipio" Identifier="MunicipioNombre" />
+                </Columns>
+            </GenericDataGrid>
+        </div>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ProveedorResponse> table = null!;
+    private GenericDataGrid<ProveedorResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Proveedores";

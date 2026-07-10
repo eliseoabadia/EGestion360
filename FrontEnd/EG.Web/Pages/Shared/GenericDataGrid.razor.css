@@ -1,0 +1,131 @@
+.eg-generic-data-grid {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.eg-generic-data-grid ::deep .mud-table {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.eg-generic-data-grid ::deep .mud-table-container {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+.eg-generic-data-grid ::deep .mud-table-container > table {
+    width: 100% !important;
+    min-width: 100%;
+    table-layout: auto;
+}
+
+/* Todas las columnas pueden reducirse, pero conservan un ancho legible. */
+.eg-generic-data-grid ::deep .mud-table-head .mud-table-cell,
+.eg-generic-data-grid ::deep .mud-table-body .mud-table-cell {
+    min-width: 10ch;
+}
+
+.eg-generic-data-grid ::deep .mud-table-head .mud-resizer,
+.eg-generic-data-grid ::deep .mud-table-head .mud-resizing {
+    height: 100% !important;
+}
+
+/* MudBlazor extiende la guía de arrastre a todo el alto del grid. */
+.eg-generic-data-grid ::deep .mud-resizing {
+    border-right: 0 !important;
+}
+
+.eg-generic-data-grid-busy {
+    position: absolute;
+    z-index: 4;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 10px;
+    background: var(--mud-palette-surface);
+    box-shadow: var(--mud-elevation-4);
+    transform: translate(-50%, -50%);
+}
+
+.eg-data-grid-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 180px;
+}
+
+.eg-data-grid-title-icon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 12%, transparent);
+    color: var(--mud-palette-primary);
+}
+
+.eg-data-grid-title .mud-typography {
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.eg-data-grid-title > div > span {
+    color: var(--mud-palette-text-secondary);
+    font-size: .75rem;
+}
+
+.eg-data-grid-search {
+    min-width: min(310px, 34vw);
+}
+
+.eg-data-grid-export-button {
+    margin-left: 4px;
+}
+
+.eg-data-grid-columns-button {
+    white-space: nowrap;
+}
+
+.eg-data-grid-empty,
+.eg-data-grid-loading-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 132px;
+    padding: 20px;
+    color: var(--mud-palette-text-secondary);
+    text-align: center;
+}
+
+.eg-data-grid-empty {
+    flex-direction: column;
+}
+
+.eg-data-grid-empty strong {
+    color: var(--mud-palette-text-primary);
+}
+
+@media (max-width: 760px) {
+    .eg-data-grid-title {
+        min-width: 0;
+    }
+
+    .eg-data-grid-search {
+        order: 3;
+        min-width: 100%;
+    }
+}

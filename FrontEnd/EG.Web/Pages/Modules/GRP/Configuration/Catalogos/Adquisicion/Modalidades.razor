@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ModalidadResponse"
+        <GenericDataGrid TItem="ModalidadResponse"
                       @ref="table"
                       Title="Lista de Modalidades"
                       SearchPlaceholder="Buscar por descripción..."
@@ -26,38 +26,22 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidModalidad" T="ModalidadResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ModalidadResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidModalidad))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidModalidad))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidModalidad</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn T="ModalidadResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
+                    <CellTemplate>
+                        <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidModalidad))" /></MudTooltip>
+                        <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidModalidad))" /></MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="ModalidadResponse" TProperty="int" Property="x => x.PkidModalidad" Title="ID" Identifier="PkidModalidad" />
+                <PropertyColumn T="ModalidadResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ModalidadResponse> table = null!;
+    private GenericDataGrid<ModalidadResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Modalidad";

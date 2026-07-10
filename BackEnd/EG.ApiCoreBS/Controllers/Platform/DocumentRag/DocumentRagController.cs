@@ -3,8 +3,10 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.DocumentRag;
 using EG.Domain.DTOs.Responses.DocumentRag;
 using EG.Domain.Interfaces;
+using EG.Domain.Platform.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
 {
@@ -13,12 +15,15 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
     [Authorize]
     public class DocumentRagController(
         IDocumentRagAppService service,
-        IUserContextService userContext) : ControllerBase
+        IUserContextService userContext,
+        IOptions<DocumentRagSettings> settings) : ControllerBase
     {
+        private const long MaxRequestFileSize = 50L * 1024L * 1024L;
+
         [HttpPost("sessions")]
         public async Task<ActionResult<PagedResult<DocumentRagSessionResponse>>> CreateSession([FromBody] DocumentRagSessionRequest request)
         {
-            request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
+            request.FkidEmpresaSis = userContext.TryGetCurrentEmpresaId() ?? request.FkidEmpresaSis;
             return Ok(await service.CreateSessionAsync(request, userContext.GetCurrentUserId()));
         }
 
@@ -27,7 +32,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
             => Ok(await service.GetSessionAsync(sessionId, userContext.GetCurrentUserId()));
 
         [HttpPost("documents")]
-        [RequestSizeLimit(100 * 1024 * 1024)]
+        [RequestSizeLimit(MaxRequestFileSize)]
         public async Task<ActionResult<PagedResult<DocumentRagDocumentResponse>>> Upload([FromForm] DocumentRagUploadFormRequest request)
         {
             if (request.File == null || request.File.Length == 0)
@@ -40,9 +45,23 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
                 });
             }
 
+            var configuredMaxBytes = Math.Max(1, settings.Value.MaxFileSizeMB) * 1024L * 1024L;
+            var maxFileSize = Math.Min(MaxRequestFileSize, configuredMaxBytes);
+            if (request.File.Length > maxFileSize)
+            {
+                return BadRequest(new PagedResult<DocumentRagDocumentResponse>
+                {
+                    Success = false,
+                    Message = $"El archivo supera el limite de {maxFileSize / 1024L / 1024L} MB.",
+                    Code = "FILE_TOO_LARGE"
+                });
+            }
+
             await using var stream = request.File.OpenReadStream();
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
+
+            var empresaContexto = userContext.TryGetCurrentEmpresaId();
 
             var dto = new DocumentRagUploadRequest
             {
@@ -52,7 +71,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
                 Controlador = request.Controlador,
                 Servicio = request.Servicio,
                 EntidadId = request.EntidadId,
-                FkidEmpresaSis = request.FkidEmpresaSis ?? userContext.TryGetCurrentEmpresaId(),
+                FkidEmpresaSis = empresaContexto ?? request.FkidEmpresaSis,
                 Titulo = request.Titulo,
                 Descripcion = request.Descripcion,
                 NombreOriginal = request.File.FileName,

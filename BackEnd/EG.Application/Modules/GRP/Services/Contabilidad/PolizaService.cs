@@ -410,7 +410,9 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 {
                     RowNumber = raw.RowNumber,
                     Cuenta = raw.Cuenta?.Trim() ?? string.Empty,
+                    FkidCuentaContableConta = raw.FkidCuentaContableConta,
                     Descripcion = string.IsNullOrWhiteSpace(raw.Descripcion) ? null : raw.Descripcion.Trim(),
+                    FkidTipoDetallePolizaSis = raw.FkidTipoDetallePolizaSis,
                     TipoDetallePoliza = string.IsNullOrWhiteSpace(raw.TipoDetallePoliza) ? null : raw.TipoDetallePoliza.Trim(),
                     ImporteDebe = NormalizeMoney(raw.ImporteDebe),
                     ImporteHaber = NormalizeMoney(raw.ImporteHaber)

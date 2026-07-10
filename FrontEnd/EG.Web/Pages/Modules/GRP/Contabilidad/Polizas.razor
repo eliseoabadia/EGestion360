@@ -42,7 +42,7 @@
                 </PageHeader>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="PolizaResponse"
+                    <GenericDataGrid TItem="PolizaResponse"
                                   @ref="table"
                                   Title="Pólizas contables"
                                   SearchPlaceholder="Buscar por clave, nombre o tipo..."
@@ -53,44 +53,31 @@
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
 
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidPoliza" T="PolizaResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ClavePoliza" T="PolizaResponse">Clave</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NombrePoliza" T="PolizaResponse">Póliza</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaPoliza" T="PolizaResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoPoliza" T="PolizaResponse">Tipo</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalDebe" T="PolizaResponse">Debe</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalHaber" T="PolizaResponse">Haber</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Diferencia" T="PolizaResponse">Diferencia</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="EstaBalanceado" T="PolizaResponse">Balance</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Autorizado" T="PolizaResponse">Autorización</MudTableSortLabel></MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
+                        <Columns>
+                            <TemplateColumn T="PolizaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
+                                <CellTemplate>
                                 <MudTooltip Text="Ver detalle">
                                     <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
                                                    Color="Color.Info"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => SelectPoliza(item))" />
+                                                   OnClick="@(() => SelectPoliza(context.Item))" />
                                 </MudTooltip>
                                 <DocumentSupportButton Modulo="Contabilidad"
                                                        SubModulo="Polizas"
                                                        Controlador="Poliza"
-                                                       EntidadId="@item.PkidPoliza"
-                                                       RegistroTitulo="@TextOrDash(item.ClavePoliza)"
-                                                       RegistroDescripcion="@TextOrDash(item.NombrePoliza)" />
+                                                       EntidadId="@context.Item.PkidPoliza"
+                                                       RegistroTitulo="@TextOrDash(context.Item.ClavePoliza)"
+                                                       RegistroDescripcion="@TextOrDash(context.Item.NombrePoliza)" />
                                 <MudTooltip Text="Enviar a firma">
                                     <MudIconButton Icon="@Icons.Material.Filled.Send"
                                                    Color="Color.Success"
                                                    Size="Size.Small"
-                                                   Disabled="@(_preparingFirmaPolizaId == item.PkidPoliza)"
-                                                   OnClick="@(() => PrepararPolizaParaFirma(item, true))" />
+                                                   Disabled="@(_preparingFirmaPolizaId == context.Item.PkidPoliza)"
+                                                   OnClick="@(() => PrepararPolizaParaFirma(context.Item, true))" />
                                 </MudTooltip>
                                 <ReportOpenButton ReportName="@PolizaReportName"
-                                                  EntityId="@item.PkidPoliza"
-                                                  Title="@($"Reporte poliza {item.ClavePoliza}")"
+                                                  EntityId="@context.Item.PkidPoliza"
+                                                  Title="@($"Reporte poliza {context.Item.ClavePoliza}")"
                                                   Tooltip="Ver reporte de poliza"
                                                   Color="Color.Secondary"
                                                   Visible="@CanView" />
@@ -104,42 +91,57 @@
                                                    Visible="@CanUpdate"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidPoliza))" />
+                                                   OnClick="@(() => EditItem(context.Item.PkidPoliza))" />
                                 </MudTooltip>
                                 <MudTooltip Text="Eliminar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Visible="@CanDelete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => DeleteItem(item.PkidPoliza))" />
+                                                   OnClick="@(() => DeleteItem(context.Item.PkidPoliza))" />
                                 </MudTooltip>
-                            </MudTd>
-                            <MudTd>@item.PkidPoliza</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(item.ClavePoliza)</MudChip>
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.NombrePoliza)</MudTd>
-                            <MudTd>@item.FechaPoliza.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@TextOrDash(item.TipoPoliza)</MudTd>
-                            <MudTd>@Money(item.TotalDebe)</MudTd>
-                            <MudTd>@Money(item.TotalHaber)</MudTd>
-                            <MudTd>
-                                <MudText Color="@DiferenciaColor(item.Diferencia)" Typo="Typo.body2">
-                                    @Money(item.Diferencia ?? 0m)
-                                </MudText>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.EstaBalanceado ? Color.Success : Color.Warning)" Size="Size.Small">
-                                    @(item.EstaBalanceado ? "Balanceada" : "Pendiente")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Autorizado == true ? Color.Success : Color.Default)" Size="Size.Small">
-                                    @(item.Autorizado == true ? "Autorizada" : "Sin autorizar")
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="int" Property="x => x.PkidPoliza" Title="ID" Identifier="PkidPoliza" />
+                            <PropertyColumn T="PolizaResponse" TProperty="string" Property="x => x.ClavePoliza" Title="Clave" Identifier="ClavePoliza">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(context.Item.ClavePoliza)</MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="string" Property="x => x.NombrePoliza" Title="Póliza" Identifier="NombrePoliza" />
+                            <PropertyColumn T="PolizaResponse" TProperty="DateTime" Property="x => x.FechaPoliza" Title="Fecha" Identifier="FechaPoliza">
+                                <CellTemplate>@context.Item.FechaPoliza.ToString("dd/MM/yyyy")</CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="string" Property="x => x.TipoPoliza" Title="Tipo" Identifier="TipoPoliza" />
+                            <PropertyColumn T="PolizaResponse" TProperty="decimal" Property="x => x.TotalDebe" Title="Debe" Identifier="TotalDebe">
+                                <CellTemplate>@Money(context.Item.TotalDebe)</CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="decimal" Property="x => x.TotalHaber" Title="Haber" Identifier="TotalHaber">
+                                <CellTemplate>@Money(context.Item.TotalHaber)</CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="decimal?" Property="x => x.Diferencia" Title="Diferencia" Identifier="Diferencia">
+                                <CellTemplate>
+                                    <MudText Color="@DiferenciaColor(context.Item.Diferencia)" Typo="Typo.body2">
+                                        @Money(context.Item.Diferencia ?? 0m)
+                                    </MudText>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="bool" Property="x => x.EstaBalanceado" Title="Balance" Identifier="EstaBalanceado">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="@(context.Item.EstaBalanceado ? Color.Success : Color.Warning)" Size="Size.Small">
+                                        @(context.Item.EstaBalanceado ? "Balanceada" : "Pendiente")
+                                    </MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn T="PolizaResponse" TProperty="bool?" Property="x => x.Autorizado" Title="Autorización" Identifier="Autorizado">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="@(context.Item.Autorizado == true ? Color.Success : Color.Default)" Size="Size.Small">
+                                        @(context.Item.Autorizado == true ? "Autorizada" : "Sin autorizar")
+                                    </MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -307,7 +309,7 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<PolizaResponse> table = null!;
+    private GenericDataGrid<PolizaResponse> table = null!;
     private GenericTable<PolizaDetalleResponse> detalleTable = null!;
     private PolizaResponse? SelectedPoliza;
     private string detalleSearchString = string.Empty;
@@ -484,7 +486,7 @@
         var dialog = await DialogService.ShowAsync<PolizaAiImportDialog>(
             "Ayuda IA para poliza",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = false });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })

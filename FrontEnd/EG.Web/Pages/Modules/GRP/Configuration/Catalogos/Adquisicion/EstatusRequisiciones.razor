@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="EstatusRequisicionResponse"
+        <GenericDataGrid TItem="EstatusRequisicionResponse"
                       @ref="table"
                       Title="Lista de Estatus"
                       SearchPlaceholder="Buscar por descripción..."
@@ -26,46 +26,19 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidEstatusRequisicion" T="EstatusRequisicionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusRequisicionResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusRequisicionResponse">Color</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Orden" T="EstatusRequisicionResponse">Orden</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidEstatusRequisicion))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidEstatusRequisicion))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidEstatusRequisicion</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@Color.Primary" Style="@($"background-color: {item.Color}; color: white;")" Size="Size.Small">
-                        @item.Color
-                    </MudChip>
-                </MudTd>
-                <MudTd>@item.Orden</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn T="EstatusRequisicionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="EstatusRequisicionResponse" TProperty="int" Property="x => x.PkidEstatusRequisicion" Title="ID" Identifier="PkidEstatusRequisicion" />
+                <PropertyColumn T="EstatusRequisicionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <TemplateColumn T="EstatusRequisicionResponse" Title="Color" Identifier="Color"><CellTemplate><MudChip T="string" Color="@Color.Primary" Style="@($"background-color: {context.Item.Color}; color: white;")" Size="Size.Small">@context.Item.Color</MudChip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="EstatusRequisicionResponse" TProperty="int" Property="x => x.Orden" Title="Orden" Identifier="Orden" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<EstatusRequisicionResponse> table = null!;
+    private GenericDataGrid<EstatusRequisicionResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "Estatus_Requisicion";

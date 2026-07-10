@@ -13,8 +13,17 @@ namespace EG.Application.Services.DocumentRag
     internal sealed class DocumentTextExtractionResult
     {
         public string Text { get; init; } = string.Empty;
+        public List<DocumentTextSegment> Segments { get; init; } = [];
         public string Status { get; init; } = "INDEXED";
         public string Message { get; init; } = "Documento indexado correctamente.";
+    }
+
+    internal sealed class DocumentTextSegment
+    {
+        public string Text { get; init; } = string.Empty;
+        public string? SheetName { get; init; }
+        public int? RowStart { get; init; }
+        public int? RowEnd { get; init; }
     }
 
     internal static partial class DocumentTextExtractor
@@ -58,6 +67,16 @@ namespace EG.Application.Services.DocumentRag
             return new DocumentTextExtractionResult
             {
                 Text = cleanText,
+                Segments = result.Segments
+                    .Select(segment => new DocumentTextSegment
+                    {
+                        Text = NormalizeExtractedText(segment.Text),
+                        SheetName = segment.SheetName,
+                        RowStart = segment.RowStart,
+                        RowEnd = segment.RowEnd
+                    })
+                    .Where(segment => !string.IsNullOrWhiteSpace(segment.Text))
+                    .ToList(),
                 Status = result.Status,
                 Message = result.Message
             };
@@ -134,31 +153,99 @@ namespace EG.Application.Services.DocumentRag
             using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
             var sharedStrings = ReadSharedStrings(archive);
             var builder = new StringBuilder();
+            var segments = new List<DocumentTextSegment>();
+            var worksheetNames = ReadWorksheetNames(archive);
 
             foreach (var entry in archive.Entries
                 .Where(x => x.FullName.StartsWith("xl/worksheets/sheet", StringComparison.OrdinalIgnoreCase)
                     && x.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(x => x.FullName))
             {
-                builder.AppendLine(Path.GetFileNameWithoutExtension(entry.FullName));
+                var sheetName = worksheetNames.TryGetValue(entry.FullName, out var configuredName)
+                    ? configuredName
+                    : Path.GetFileNameWithoutExtension(entry.FullName);
+                builder.AppendLine(sheetName);
                 using var stream = entry.Open();
                 var document = XDocument.Load(stream);
 
+                var rowIndex = 0;
                 foreach (var row in document.Descendants().Where(x => x.Name.LocalName == "row"))
                 {
-                    var values = row.Elements().Where(x => x.Name.LocalName == "c")
-                        .Select(cell => ReadCellValue(cell, sharedStrings))
-                        .Where(value => !string.IsNullOrWhiteSpace(value))
-                        .ToList();
+                    rowIndex++;
+                    var valuesByColumn = new SortedDictionary<int, string>();
+                    foreach (var cell in row.Elements().Where(x => x.Name.LocalName == "c"))
+                    {
+                        var reference = cell.Attribute("r")?.Value;
+                        valuesByColumn[GetColumnIndex(reference)] = ReadCellValue(cell, sharedStrings);
+                    }
 
-                    if (values.Count > 0)
-                        builder.AppendLine(string.Join('\t', values));
+                    if (valuesByColumn.Count == 0 || valuesByColumn.Values.All(string.IsNullOrWhiteSpace))
+                        continue;
+
+                    var values = Enumerable.Range(0, valuesByColumn.Keys.Max() + 1)
+                        .Select(column => valuesByColumn.TryGetValue(column, out var value) ? value : string.Empty);
+                    var rowText = string.Join('\t', values);
+                    var rowNumber = int.TryParse(row.Attribute("r")?.Value, out var parsedRowNumber)
+                        ? parsedRowNumber
+                        : rowIndex;
+
+                    builder.AppendLine(rowText);
+                    segments.Add(new DocumentTextSegment
+                    {
+                        Text = rowText,
+                        SheetName = sheetName,
+                        RowStart = rowNumber,
+                        RowEnd = rowNumber
+                    });
                 }
 
                 builder.AppendLine();
             }
 
-            return Indexed(builder.ToString());
+            return new DocumentTextExtractionResult
+            {
+                Text = builder.ToString(),
+                Segments = segments
+            };
+        }
+
+        private static Dictionary<string, string> ReadWorksheetNames(ZipArchive archive)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var workbook = archive.GetEntry("xl/workbook.xml");
+            var relationships = archive.GetEntry("xl/_rels/workbook.xml.rels");
+            if (workbook == null || relationships == null)
+                return result;
+
+            using var workbookStream = workbook.Open();
+            using var relationshipsStream = relationships.Open();
+            var workbookDocument = XDocument.Load(workbookStream);
+            var relationshipsDocument = XDocument.Load(relationshipsStream);
+            var targets = relationshipsDocument.Descendants()
+                .Where(item => item.Name.LocalName == "Relationship")
+                .Select(item => new
+                {
+                    Id = item.Attribute("Id")?.Value,
+                    Target = item.Attribute("Target")?.Value
+                })
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Target))
+                .ToDictionary(item => item.Id!, item => item.Target!, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var sheet in workbookDocument.Descendants().Where(item => item.Name.LocalName == "sheet"))
+            {
+                var relationshipId = sheet.Attributes().FirstOrDefault(attribute => attribute.Name.LocalName == "id")?.Value;
+                var name = sheet.Attribute("name")?.Value;
+                if (string.IsNullOrWhiteSpace(relationshipId) || string.IsNullOrWhiteSpace(name)
+                    || !targets.TryGetValue(relationshipId, out var target))
+                    continue;
+
+                var fullName = target.StartsWith("/", StringComparison.Ordinal)
+                    ? target.TrimStart('/')
+                    : $"xl/{target}";
+                result[fullName.Replace('\\', '/')] = name;
+            }
+
+            return result;
         }
 
         private static List<string> ReadSharedStrings(ZipArchive archive)
@@ -189,6 +276,19 @@ namespace EG.Application.Services.DocumentRag
                 return sharedStrings[sharedIndex];
 
             return rawValue;
+        }
+
+        private static int GetColumnIndex(string? reference)
+        {
+            if (string.IsNullOrWhiteSpace(reference))
+                return 0;
+
+            var letters = new string(reference.TakeWhile(char.IsLetter).ToArray()).ToUpperInvariant();
+            var index = 0;
+            foreach (var letter in letters)
+                index = index * 26 + (letter - 'A' + 1);
+
+            return Math.Max(0, index - 1);
         }
 
         private static DocumentTextExtractionResult ExtractPdf(byte[] content)

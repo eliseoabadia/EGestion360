@@ -14,7 +14,7 @@
                    
                     />
 
-        <GenericTable TItem="EstatusSolicitudResponse"
+        <GenericDataGrid TItem="EstatusSolicitudResponse"
                       @ref="table"
                       Title="Lista de Estatus"
                       SearchPlaceholder="Buscar por descripción..."
@@ -24,39 +24,13 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidEstatusSolicitud" T="EstatusSolicitudResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EstatusSolicitudResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Color" T="EstatusSolicitudResponse">Color</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidEstatusSolicitud))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidEstatusSolicitud))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidEstatusSolicitud</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.Color</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns><TemplateColumn T="EstatusSolicitudResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEstatusSolicitud))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEstatusSolicitud))" /></MudTooltip></CellTemplate></TemplateColumn><PropertyColumn T="EstatusSolicitudResponse" TProperty="int" Property="x => x.PkidEstatusSolicitud" Title="ID" Identifier="PkidEstatusSolicitud" /><PropertyColumn T="EstatusSolicitudResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" /><PropertyColumn T="EstatusSolicitudResponse" TProperty="string" Property="x => x.Color" Title="Color" Identifier="Color" /></Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<EstatusSolicitudResponse> table = null!;
+    private GenericDataGrid<EstatusSolicitudResponse> table = null!;
 
     protected override string ModuleName => "Almacen";
     protected override string SubModuleName => "Estatus_Solicitud";

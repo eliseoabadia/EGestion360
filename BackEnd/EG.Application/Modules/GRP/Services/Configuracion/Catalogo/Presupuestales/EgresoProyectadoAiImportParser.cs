@@ -101,28 +101,28 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     DigitoIdentificador = NullIfWhiteSpace(Get(row, columnMap, "DigitoIdentificador")),
                     DestinoGasto = NullIfWhiteSpace(Get(row, columnMap, "DestinoGasto")),
                     Py = NullIfWhiteSpace(Get(row, columnMap, "Py")),
-                    Enero = ParseAmount(Get(row, columnMap, "Enero")) ?? 0m,
-                    Febrero = ParseAmount(Get(row, columnMap, "Febrero")) ?? 0m,
-                    Marzo = ParseAmount(Get(row, columnMap, "Marzo")) ?? 0m,
-                    Abril = ParseAmount(Get(row, columnMap, "Abril")) ?? 0m,
-                    Mayo = ParseAmount(Get(row, columnMap, "Mayo")) ?? 0m,
-                    Junio = ParseAmount(Get(row, columnMap, "Junio")) ?? 0m,
-                    Julio = ParseAmount(Get(row, columnMap, "Julio")) ?? 0m,
-                    Agosto = ParseAmount(Get(row, columnMap, "Agosto")) ?? 0m,
-                    Septiembre = ParseAmount(Get(row, columnMap, "Septiembre")) ?? 0m,
-                    Octubre = ParseAmount(Get(row, columnMap, "Octubre")) ?? 0m,
-                    Noviembre = ParseAmount(Get(row, columnMap, "Noviembre")) ?? 0m,
-                    Diciembre = ParseAmount(Get(row, columnMap, "Diciembre")) ?? 0m
+                    Enero = ReadAmount(result, row, columnMap, "Enero", rowIndex + 1),
+                    Febrero = ReadAmount(result, row, columnMap, "Febrero", rowIndex + 1),
+                    Marzo = ReadAmount(result, row, columnMap, "Marzo", rowIndex + 1),
+                    Abril = ReadAmount(result, row, columnMap, "Abril", rowIndex + 1),
+                    Mayo = ReadAmount(result, row, columnMap, "Mayo", rowIndex + 1),
+                    Junio = ReadAmount(result, row, columnMap, "Junio", rowIndex + 1),
+                    Julio = ReadAmount(result, row, columnMap, "Julio", rowIndex + 1),
+                    Agosto = ReadAmount(result, row, columnMap, "Agosto", rowIndex + 1),
+                    Septiembre = ReadAmount(result, row, columnMap, "Septiembre", rowIndex + 1),
+                    Octubre = ReadAmount(result, row, columnMap, "Octubre", rowIndex + 1),
+                    Noviembre = ReadAmount(result, row, columnMap, "Noviembre", rowIndex + 1),
+                    Diciembre = ReadAmount(result, row, columnMap, "Diciembre", rowIndex + 1)
                 };
 
                 item.Total = item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio
                     + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
 
-                var explicitTotal = ParseAmount(Get(row, columnMap, "Total"));
-                if (item.Total == 0m && explicitTotal.GetValueOrDefault() > 0m)
+                var explicitTotal = ReadAmount(result, row, columnMap, "Total", rowIndex + 1);
+                if (item.Total == 0m && explicitTotal > 0m)
                 {
-                    item.Enero = explicitTotal.Value;
-                    item.Total = explicitTotal.Value;
+                    item.Enero = explicitTotal;
+                    item.Total = explicitTotal;
                 }
 
                 if (IsEmptyBusinessRow(item))
@@ -274,6 +274,30 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 return string.Empty;
 
             return row[index] ?? string.Empty;
+        }
+
+        private static decimal ReadAmount(
+            EgresoProyectadoAiParsedDocument result,
+            IReadOnlyList<string> row,
+            IReadOnlyDictionary<string, int> columnMap,
+            string field,
+            int rowNumber)
+        {
+            var rawValue = Get(row, columnMap, field);
+            var parsedValue = ParseAmount(rawValue);
+            if (!string.IsNullOrWhiteSpace(rawValue) && !parsedValue.HasValue)
+            {
+                result.Messages.Add(new EgresoProyectadoAiImportValidationMessage
+                {
+                    Severity = "Error",
+                    Code = "INVALID_AMOUNT",
+                    Message = $"El importe de {field} no tiene un formato numerico valido.",
+                    RowNumber = rowNumber,
+                    Field = field
+                });
+            }
+
+            return parsedValue ?? 0m;
         }
 
         private static List<List<string>> ReadDelimitedRows(byte[] content)

@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="SubFuncionResponse"
+        <GenericDataGrid TItem="SubFuncionResponse"
                       @ref="table"
                       Title="Lista de Subfunciones"
                       SearchPlaceholder="Buscar por clave o descripción..."
@@ -26,44 +26,13 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidSf" T="SubFuncionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="SubFuncionResponse">Clave Función</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FuncionDescripcion" T="SubFuncionResponse">Función</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SubFuncionClave" T="SubFuncionResponse">Clave SubFunción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SubFuncionDescripcion" T="SubFuncionResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidSf))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidSf))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidSf</MudTd>
-                <MudTd>@item.FuncionClave</MudTd>
-                <MudTd>@item.FuncionDescripcion</MudTd>
-                <MudTd>@item.SubFuncionClave</MudTd>
-                <MudTd>@item.SubFuncionDescripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns><TemplateColumn T="SubFuncionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidSf))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidSf))" /></MudTooltip></CellTemplate></TemplateColumn><PropertyColumn T="SubFuncionResponse" TProperty="int" Property="x => x.PkidSf" Title="ID" Identifier="PkidSf" /><PropertyColumn T="SubFuncionResponse" TProperty="string" Property="x => x.FuncionClave" Title="Clave Función" Identifier="FuncionClave" /><PropertyColumn T="SubFuncionResponse" TProperty="string" Property="x => x.FuncionDescripcion" Title="Función" Identifier="FuncionDescripcion" /><PropertyColumn T="SubFuncionResponse" TProperty="string" Property="x => x.SubFuncionClave" Title="Clave SubFunción" Identifier="SubFuncionClave" /><PropertyColumn T="SubFuncionResponse" TProperty="string" Property="x => x.SubFuncionDescripcion" Title="Descripción" Identifier="SubFuncionDescripcion" /></Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<SubFuncionResponse> table = null!;
+    private GenericDataGrid<SubFuncionResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
     protected override string SubModuleName => "SubFuncion";
