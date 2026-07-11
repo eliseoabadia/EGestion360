@@ -47,7 +47,7 @@
             </section>
 
             <div class="income-table-wrap">
-                <GenericTable TItem="IngreAdecuacionResponse"
+                <GenericDataGrid TItem="IngreAdecuacionResponse"
                               @ref="table"
                               Title="@Title"
                               SearchPlaceholder="Buscar clave, justificacion o poliza..."
@@ -56,45 +56,33 @@
                               ExportFunc="ExportToExcel"
                               SearchString="@SearchString"
                               SearchStringChanged="value => SearchString = value"
-                              OnSearch="OnSearch"
-                              Loading="@Loading">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Clave" T="IngreAdecuacionResponse">Clave</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Fecha" T="IngreAdecuacionResponse">Fecha</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Justificacion" T="IngreAdecuacionResponse">Justificacion</MudTableSortLabel></MudTh>
-                        <MudTh>Aumento</MudTh>
-                        <MudTh>Reduccion</MudTh>
-                        <MudTh>Neto</MudTh>
-                        <MudTh>Poliza</MudTh>
-                        <MudTh>Estado</MudTh>
-                    </Header>
-                    <Row Context="item">
-                        <MudTd>
-                            <MudTooltip Text="Abrir tablero"><MudIconButton Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(item))" /></MudTooltip>
-                            <MudTooltip Text="@RequestTooltip(item)"><MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(item))" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(item, "enviar-solicitud"))" /></MudTooltip>
-                            <MudTooltip Text="Autorizar"><MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(item, "autorizar"))" /></MudTooltip>
-                            <MudTooltip Text="Rechazar y reabrir"><MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@(CanAuthorize && IsRequestSent(item))" Disabled="@item.Autorizado" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(item, "rechazar"))" /></MudTooltip>
+                              OnSearch="OnSearch">
+                    <Columns>
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Acciones" Resizable="false" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
+                            <MudTooltip Text="Abrir tablero"><MudIconButton Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(context.Item))" /></MudTooltip>
+                            <MudTooltip Text="@RequestTooltip(context.Item)"><MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(context.Item))" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(context.Item, "enviar-solicitud"))" /></MudTooltip>
+                            <MudTooltip Text="Autorizar"><MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(context.Item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(context.Item, "autorizar"))" /></MudTooltip>
+                            <MudTooltip Text="Rechazar y reabrir"><MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@(CanAuthorize && IsRequestSent(context.Item))" Disabled="@context.Item.Autorizado" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(context.Item, "rechazar"))" /></MudTooltip>
                             <DocumentSupportButton Modulo="Presupuesto_Modificado"
                                                    SubModulo="@SubModuleNameValue"
                                                    Controlador="IngreAdecuacion"
-                                                   EntidadId="@item.PkidIngreAdecuacion"
+                                                   EntidadId="@context.Item.PkidIngreAdecuacion"
                                                    FkidEmpresaSis="@SucursalStateService.EmpresaId"
-                                                   RegistroTitulo="@TextOrDash(item.Clave)"
-                                                   RegistroDescripcion="@TextOrDash(item.Justificacion)" />
-                            <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsCaptureLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidIngreAdecuacion))" /></MudTooltip>
-                            <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsCaptureLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidIngreAdecuacion))" /></MudTooltip>
-                        </MudTd>
-                        <MudTd><strong>@TextOrDash(item.Clave)</strong><br /><small>@TextOrDash(item.TipoAdecuacionDescripcion)</small></MudTd>
-                        <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd><span class="line-clamp">@TextOrDash(item.Justificacion)</span></MudTd>
-                        <MudTd class="money-cell positive">@Money(item.TotalAumento)</MudTd>
-                        <MudTd class="money-cell warning">@Money(item.TotalReduccion)</MudTd>
-                        <MudTd class="money-cell">@Money(item.Diferencia ?? 0m)</MudTd>
-                        <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
-                        <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item)">@StatusText(item)</MudChip></MudTd>
-                    </Row>
-                </GenericTable>
+                                                   RegistroTitulo="@TextOrDash(context.Item.Clave)"
+                                                   RegistroDescripcion="@TextOrDash(context.Item.Justificacion)" />
+                            <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsCaptureLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidIngreAdecuacion))" /></MudTooltip>
+                            <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsCaptureLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidIngreAdecuacion))" /></MudTooltip>
+                        </CellTemplate></TemplateColumn>
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Clave" Identifier="Clave" Resizable="true"><CellTemplate><strong>@TextOrDash(context.Item.Clave)</strong><br /><small>@TextOrDash(context.Item.TipoAdecuacionDescripcion)</small></CellTemplate></TemplateColumn>
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@context.Item.Fecha.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                        <PropertyColumn T="IngreAdecuacionResponse" TProperty="string" Property="x => x.Justificacion" Title="Justificación" Identifier="Justificacion" />
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Aumento" Identifier="Aumento" Resizable="true"><CellTemplate><span class="money-cell positive">@Money(context.Item.TotalAumento)</span></CellTemplate></TemplateColumn>
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Reducción" Identifier="Reduccion" Resizable="true"><CellTemplate><span class="money-cell warning">@Money(context.Item.TotalReduccion)</span></CellTemplate></TemplateColumn>
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Neto" Identifier="Neto" Resizable="true"><CellTemplate><span class="money-cell">@Money(context.Item.Diferencia ?? 0m)</span></CellTemplate></TemplateColumn>
+                        <PropertyColumn T="IngreAdecuacionResponse" TProperty="string" Property="x => x.ClavePoliza" Title="Póliza" Identifier="Poliza" />
+                        <TemplateColumn T="IngreAdecuacionResponse" Title="Estado" Identifier="Estado" Resizable="true" Sortable="false"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item)">@StatusText(context.Item)</MudChip></CellTemplate></TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             </div>
         }
         else
@@ -142,7 +130,7 @@
                             </div>
                         </header>
                         <div class="board-scroll">
-                            <GenericTable TItem="IngreAdecuacionDetalleResponse"
+                            <GenericDataGrid TItem="IngreAdecuacionDetalleResponse"
                                           @ref="detalleTable"
                                           Title="Movimientos"
                                           ShowExportButton="false"
@@ -150,20 +138,17 @@
                                           SearchString="@detalleSearch"
                                           SearchStringChanged="value => detalleSearch = value"
                                           OnSearch="ReloadDetalle">
-                                <Header>
-                                    <MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Posicion presupuestal</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh>
-                                </Header>
-                                <Row Context="detail">
-                                    <MudTd>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenDetalle(detail.PkidIngreAdecuacionDetalle, detail.FkidTipoMovimientoPres))" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(detail.PkidIngreAdecuacionDetalle))" />
-                                    </MudTd>
-                                    <MudTd><MudChip T="string" Size="Size.Small" Color="@(detail.FkidTipoMovimientoPres == 3 ? Color.Success : Color.Warning)">@TextOrDash(detail.TipoMovimientoDescripcion)</MudChip></MudTd>
-                                    <MudTd><strong>@TextOrDash(detail.PosicionPresupuestal)</strong><br /><small>@TextOrDash(detail.IngresoAutorizadoDescripcion)</small></MudTd>
-                                    <MudTd>@detail.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                                    <MudTd class="money-cell">@Money(Math.Abs(detail.Total ?? 0m))</MudTd>
-                                </Row>
-                            </GenericTable>
+                                <Columns>
+                                    <TemplateColumn T="IngreAdecuacionDetalleResponse" Title="Acciones" Resizable="false" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => OpenDetalle(context.Item.PkidIngreAdecuacionDetalle, context.Item.FkidTipoMovimientoPres))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(context.Item.PkidIngreAdecuacionDetalle))" />
+                                    </CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="IngreAdecuacionDetalleResponse" Title="Tipo" Identifier="Tipo" Resizable="true"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@(context.Item.FkidTipoMovimientoPres == 3 ? Color.Success : Color.Warning)">@TextOrDash(context.Item.TipoMovimientoDescripcion)</MudChip></CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="IngreAdecuacionDetalleResponse" Title="Posición presupuestal" Identifier="PosicionPresupuestal" Resizable="true"><CellTemplate><strong>@TextOrDash(context.Item.PosicionPresupuestal)</strong><br /><small>@TextOrDash(context.Item.IngresoAutorizadoDescripcion)</small></CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="IngreAdecuacionDetalleResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@context.Item.Fecha.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="IngreAdecuacionDetalleResponse" Title="Total" Identifier="Total" Resizable="true"><CellTemplate><span class="money-cell">@Money(Math.Abs(context.Item.Total ?? 0m))</span></CellTemplate></TemplateColumn>
+                                </Columns>
+                            </GenericDataGrid>
                         </div>
                     </section>
 
@@ -252,8 +237,8 @@
     [Parameter] public int DefaultMovimientoId { get; set; }
     [Parameter] public bool AllowBothMovements { get; set; }
 
-    private GenericTable<IngreAdecuacionResponse> table = null!;
-    private GenericTable<IngreAdecuacionDetalleResponse>? detalleTable;
+    private GenericDataGrid<IngreAdecuacionResponse> table = null!;
+    private GenericDataGrid<IngreAdecuacionDetalleResponse>? detalleTable;
     private IngreAdecuacionResponse? Selected;
     private bool SelectedLocked;
     private string detalleSearch = string.Empty;

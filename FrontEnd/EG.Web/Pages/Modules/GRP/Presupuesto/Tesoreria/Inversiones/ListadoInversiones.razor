@@ -29,7 +29,7 @@
                             OnRefresh="() => table.ReloadData()" />
 
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="InversionResponse"
+                    <GenericDataGrid TItem="InversionResponse"
                                   @ref="table"
                                   Title="Inversiones"
                                   SearchPlaceholder="Buscar por cuenta, instrumento o monto..."
@@ -39,66 +39,19 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidInversion" T="InversionResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="CuentaBan" T="InversionResponse">Cuenta bancaria</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Instrumento" T="InversionResponse">Instrumento</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Monto" T="InversionResponse">Monto</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Intereses" T="InversionResponse">Intereses</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Retiros" T="InversionResponse">Retiros</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Saldo" T="InversionResponse">Saldo</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaInversion" T="InversionResponse">Fecha inversion</MudTableSortLabel></MudTh>
-                            <MudTh>Estado</MudTh>
-                        </Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectInversion(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Inversiones"
-                                                       SubModulo="Listado_Inversiones"
-                                                       Controlador="Inversion"
-                                                       EntidadId="@item.PkidInversion"
-                                                       RegistroTitulo="@TextOrDash(item.Instrumento)"
-                                                       RegistroDescripcion="@TextOrDash(item.CuentaBan)" />
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Disabled="@IsLocked(item.PkidInversion)"
-                                                   Size="Size.Small"
-                                                   Color="Color.Primary"
-                                                   OnClick="@(() => EditItem(item.PkidInversion))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Disabled="@IsLocked(item.PkidInversion)"
-                                                   Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   OnClick="@(() => DeleteItem(item.PkidInversion))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@item.PkidInversion</MudTd>
-                            <MudTd>@TextOrDash(item.CuentaBan)</MudTd>
-                            <MudTd>@TextOrDash(item.Instrumento)</MudTd>
-                            <MudTd>@Money(item.Monto)</MudTd>
-                            <MudTd>@Money(item.Intereses)</MudTd>
-                            <MudTd>@Money(item.Retiros)</MudTd>
-                            <MudTd>@Money(item.Saldo ?? item.Monto)</MudTd>
-                            <MudTd>@item.FechaInversion.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>
-                                @if (IsLocked(item.PkidInversion))
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Autorizada</MudChip>
-                                }
-                                else
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">En captura</MudChip>
-                                }
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="InversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Ver detalle"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectInversion(context.Item))" /></MudTooltip><DocumentSupportButton Modulo="Inversiones" SubModulo="Listado_Inversiones" Controlador="Inversion" EntidadId="@context.Item.PkidInversion" RegistroTitulo="@TextOrDash(context.Item.Instrumento)" RegistroDescripcion="@TextOrDash(context.Item.CuentaBan)" /><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item.PkidInversion)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidInversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item.PkidInversion)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidInversion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                            <PropertyColumn T="InversionResponse" TProperty="int" Property="x => x.PkidInversion" Title="ID" Identifier="PkidInversion" />
+                            <PropertyColumn T="InversionResponse" TProperty="string" Property="x => x.CuentaBan" Title="Cuenta bancaria" Identifier="CuentaBan" />
+                            <PropertyColumn T="InversionResponse" TProperty="string" Property="x => x.Instrumento" Title="Instrumento" Identifier="Instrumento" />
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Monto" Identifier="Monto"><CellTemplate>@Money(context.Item.Monto)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Intereses" Identifier="Intereses"><CellTemplate>@Money(context.Item.Intereses)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Retiros" Identifier="Retiros"><CellTemplate>@Money(context.Item.Retiros)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Saldo" Identifier="Saldo"><CellTemplate>@Money(context.Item.Saldo ?? context.Item.Monto)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Fecha inversión" Identifier="FechaInversion"><CellTemplate>@context.Item.FechaInversion.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="InversionResponse" Title="Estado" Sortable="false"><CellTemplate>@if (IsLocked(context.Item.PkidInversion)) { <MudChip T="string" Size="Size.Small" Color="Color.Success">Autorizada</MudChip> } else { <MudChip T="string" Size="Size.Small" Color="Color.Warning">En captura</MudChip> }</CellTemplate></TemplateColumn>
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -777,7 +730,7 @@
 </style>
 
 @code {
-    private GenericTable<InversionResponse> table = null!;
+    private GenericDataGrid<InversionResponse> table = null!;
     private GenericTable<RetiroResponse> retiroTable = null!;
     private GenericTable<PolizaDetalleResponse> contaTable = null!;
     private InversionResponse? SelectedInversion;

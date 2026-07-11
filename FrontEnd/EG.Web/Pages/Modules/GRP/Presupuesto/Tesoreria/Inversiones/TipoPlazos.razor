@@ -9,31 +9,22 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipo de Plazos" Subtitle="Catalogo de plazos para instrumentos de inversion"
                     Icon="@Icons.Material.Filled.Schedule" CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoPlazoResponse" @ref="table" Title="Tipos de plazo"
+        <GenericDataGrid TItem="TipoPlazoResponse" @ref="table" Title="Tipos de plazo"
                       SearchPlaceholder="Buscar descripcion..." ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel"
                       SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoPlazo" T="TipoPlazoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPlazoResponse">Descripcion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Dias" T="TipoPlazoResponse">Dias</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidTipoPlazo))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidTipoPlazo))" />
-                </MudTd>
-                <MudTd>@item.PkidTipoPlazo</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.Dias</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoPlazoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidTipoPlazo))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidTipoPlazo))" /></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoPlazoResponse" TProperty="int" Property="x => x.PkidTipoPlazo" Title="ID" Identifier="PkidTipoPlazo" />
+                <PropertyColumn T="TipoPlazoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="TipoPlazoResponse" TProperty="int" Property="x => x.Dias" Title="Días" Identifier="Dias" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoPlazoResponse> table = null!;
+    private GenericDataGrid<TipoPlazoResponse> table = null!;
     protected override string ModuleName => "Inversiones";
     protected override string SubModuleName => "Tipo_Plazos";
     protected override Type CreateDialogType => typeof(TipoPlazoDialog);

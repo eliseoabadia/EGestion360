@@ -371,7 +371,7 @@
                                     }
                                     else
                                     {
-                                        <GenericTable TItem="ClaimEditorItem"
+                                        <GenericDataGrid TItem="ClaimEditorItem"
                                                       @ref="_claimsTable"
                                                       Title="@ClaimsTableTitle"
                                                       SearchPlaceholder="Buscar menu, ruta o subgrupo"
@@ -379,40 +379,19 @@
                                                       PageSizeOptions="@(new[] { 10, 20, 50 })"
                                                       TableHeight="clamp(320px, calc(100dvh - 500px), 620px)"
                                                       ShowExportButton="false"
-                                                      ShowAddButton="false"
                                                       ServerDataFunc="LoadClaimsTableAsync"
                                                       SearchString="@_claimFilter"
                                                       SearchStringChanged="OnClaimsSearchChanged"
                                                       OnSearch="ReloadClaimsTableAsync">
-                                            <Header>
-                                                <MudTh><MudTableSortLabel SortLabel="DisplayName" T="ClaimEditorItem">Menu</MudTableSortLabel></MudTh>
-                                                <MudTh><MudTableSortLabel SortLabel="Route" T="ClaimEditorItem">Ruta</MudTableSortLabel></MudTh>
+                                            <Columns>
+                                                <TemplateColumn Resizable="true" T="ClaimEditorItem" Title="Menú" Identifier="DisplayName"><CellTemplate><MudText Typo="Typo.body2" Class="claim-title">@context.Item.DisplayName</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.SubGroup</MudText></CellTemplate></TemplateColumn>
+                                                <PropertyColumn T="ClaimEditorItem" TProperty="string" Property="x => x.Route" Title="Ruta" Identifier="Route" />
                                                 @foreach (var action in _snapshot.PermissionActions)
                                                 {
-                                                    <MudTh>@ActionLabel(action)</MudTh>
+                                                    <TemplateColumn Resizable="true" T="ClaimEditorItem" Title="@ActionLabel(action)" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudCheckBox T="bool" Value="@context.Item.HasAction(action)" ValueChanged="@((bool value) => ToggleAction(context.Item, action, value))" Dense="true" Color="@ActionColor(action)" Disabled="@_saving" /></CellTemplate></TemplateColumn>
                                                 }
-                                            </Header>
-                                            <Row>
-                                                <MudTd DataLabel="Menu">
-                                                    <MudText Typo="Typo.body2" Class="claim-title">@context.DisplayName</MudText>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.SubGroup</MudText>
-                                                </MudTd>
-                                                <MudTd DataLabel="Ruta">
-                                                    <MudText Typo="Typo.caption">@context.Route</MudText>
-                                                </MudTd>
-                                                @foreach (var action in _snapshot.PermissionActions)
-                                                {
-                                                    <MudTd DataLabel="@ActionLabel(action)">
-                                                        <MudCheckBox T="bool"
-                                                                     Value="@context.HasAction(action)"
-                                                                     ValueChanged="@((bool value) => ToggleAction(context, action, value))"
-                                                                     Dense="true"
-                                                                     Color="@ActionColor(action)"
-                                                                     Disabled="@_saving" />
-                                                    </MudTd>
-                                                }
-                                            </Row>
-                                        </GenericTable>
+                                            </Columns>
+                                        </GenericDataGrid>
                                     }
                                 }
                             </section>
@@ -924,7 +903,7 @@
     private LookupItem? _selectedRootMenuLookup;
     private AccessRoleSummaryResponse? _selectedRoleSummary;
     private int? _selectedRootMenuId;
-    private GenericTable<ClaimEditorItem>? _claimsTable;
+    private GenericDataGrid<ClaimEditorItem>? _claimsTable;
     private string? _selectedRoleId;
     private string _roleName = string.Empty;
     private string? _roleCode;

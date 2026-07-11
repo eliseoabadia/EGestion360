@@ -33,7 +33,7 @@
         </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="IngresoAutorizadoResponse"
+            <GenericDataGrid TItem="IngresoAutorizadoResponse"
                           @ref="table"
                           Title="Ingresos autorizados"
                           SearchPlaceholder="Buscar programa, origen, clasificacion o descripcion..."
@@ -42,98 +42,82 @@
                           ExportFunc="ExportToExcel"
                           SearchString="@SearchString"
                           SearchStringChanged="value => SearchString = value"
-                          OnSearch="OnSearch"
-                          Loading="@Loading">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="IngresoAutorizadoResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="OrigenDescripcion" T="IngresoAutorizadoResponse">Origen</MudTableSortLabel></MudTh>
-                    <MudTh>Clasificacion</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="IngresoAutorizadoResponse">Descripcion</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="IngresoAutorizadoResponse">Fecha</MudTableSortLabel></MudTh>
-                    <MudTh>Meses</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Total" T="IngresoAutorizadoResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh>Poliza</MudTh>
-                    <MudTh>Estatus</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd Class="ingresos-actions">
+                          OnSearch="OnSearch">
+                <Columns>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Acciones" Resizable="false" Sortable="false" Filterable="false" Hideable="false">
+                      <CellTemplate>
+                        <div class="ingresos-actions">
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
+                                           Visible="@(CanUpdate && !context.Item.EstaAutorizado)"
                                            Disabled="@IsBusy"
                                            Color="Color.Primary"
                                            Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidIngresoAutorizado))" />
+                                           OnClick="@(() => EditItem(context.Item.PkidIngresoAutorizado))" />
                         </MudTooltip>
                         <MudTooltip Text="Autorizar ingreso y poliza">
                             <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                           Visible="@(CanAuthorize && !item.EstaAutorizado)"
+                                           Visible="@(CanAuthorize && !context.Item.EstaAutorizado)"
                                            Disabled="@IsBusy"
                                            Color="Color.Success"
                                            Size="Size.Small"
-                                           OnClick="@(() => AutorizarAsync(item))" />
+                                           OnClick="@(() => AutorizarAsync(context.Item))" />
                         </MudTooltip>
                         <MudTooltip Text="Ver poliza">
                             <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
-                                           Disabled="@(!item.FkidPolizaConta.HasValue || IsBusy)"
+                                           Disabled="@(!context.Item.FkidPolizaConta.HasValue || IsBusy)"
                                            Color="Color.Info"
                                            Size="Size.Small"
-                                           OnClick="@(() => OpenPolizaAsync(item))" />
+                                           OnClick="@(() => OpenPolizaAsync(context.Item))" />
                         </MudTooltip>
                         <DocumentSupportButton Modulo="CuentasXCobrar"
                                                SubModulo="Ley_Ingresos_Estimados"
                                                Controlador="IngresoAutorizado"
-                                               EntidadId="@item.PkidIngresoAutorizado"
-                                               RegistroTitulo="@TextOrDash(item.ProgramaClaveNombre)"
-                                               RegistroDescripcion="@TextOrDash(item.Descripcion)" />
+                                               EntidadId="@context.Item.PkidIngresoAutorizado"
+                                               RegistroTitulo="@TextOrDash(context.Item.ProgramaClaveNombre)"
+                                               RegistroDescripcion="@TextOrDash(context.Item.Descripcion)" />
                         <MudTooltip Text="Eliminar">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@(CanDelete && !item.EstaAutorizado)"
+                                           Visible="@(CanDelete && !context.Item.EstaAutorizado)"
                                            Disabled="@IsBusy"
                                            Color="Color.Error"
                                            Size="Size.Small"
-                                           OnClick="@(() => DeleteIngresoAsync(item))" />
+                                           OnClick="@(() => DeleteIngresoAsync(context.Item))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
-                        <span>@TextOrDash(item.ProgramaDescripcion)</span>
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.OrigenClaveNombre)</MudTd>
-                    <MudTd>
-                        <span>FF: @TextOrDash(item.FuenteFinanciamientoClave)</span><br />
-                        <span>TG: @TextOrDash(item.TipoGastoClave?.ToString())</span><br />
-                        <span>DI: @TextOrDash(item.DigitoIdentificadorClave)</span> / <span>DG: @TextOrDash(item.DestinoGastoClave)</span>
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>@item.Fecha.ToString("dd/MM/yyyy", DateCulture)</MudTd>
-                    <MudTd>
+                        </div>
+                      </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Programa" Identifier="ProgramaClave" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.ProgramaClave)</div><span>@TextOrDash(context.Item.ProgramaDescripcion)</span></CellTemplate></TemplateColumn>
+                    <PropertyColumn T="IngresoAutorizadoResponse" TProperty="string" Property="x => x.OrigenClaveNombre" Title="Origen" Identifier="OrigenDescripcion" />
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Clasificación" Identifier="Clasificacion" Resizable="true"><CellTemplate><span>FF: @TextOrDash(context.Item.FuenteFinanciamientoClave)</span><br /><span>TG: @TextOrDash(context.Item.TipoGastoClave?.ToString())</span><br /><span>DI: @TextOrDash(context.Item.DigitoIdentificadorClave)</span> / <span>DG: @TextOrDash(context.Item.DestinoGastoClave)</span></CellTemplate></TemplateColumn>
+                    <PropertyColumn T="IngresoAutorizadoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@context.Item.Fecha.ToString("dd/MM/yyyy", DateCulture)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Meses" Identifier="Meses" Resizable="true" Sortable="false"><CellTemplate>
                         <div class="month-spark">
-                            @foreach (var month in GetMonths(item))
+                            @foreach (var month in GetMonths(context.Item))
                             {
                                 <span title="@($"{month.Label}: {Money(month.Amount)}")"
-                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
+                                      style="height:@GetMonthHeight(month.Amount, context.Item.Total ?? 0m)%"></span>
                             }
                         </div>
-                    </MudTd>
-                    <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                    <MudTd>
+                    </CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Total" Identifier="Total" Resizable="true"><CellTemplate><strong>@Money(context.Item.Total ?? 0m)</strong></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Póliza" Identifier="Poliza" Resizable="true" Sortable="false"><CellTemplate>
                         <MudButton Variant="Variant.Text"
                                    Size="Size.Small"
                                    Color="Color.Info"
-                                   Disabled="@(!item.FkidPolizaConta.HasValue)"
-                                   OnClick="@(() => OpenPolizaAsync(item))">
-                            #@(item.FkidPolizaConta?.ToString() ?? "-")
+                                   Disabled="@(!context.Item.FkidPolizaConta.HasValue)"
+                                   OnClick="@(() => OpenPolizaAsync(context.Item))">
+                            #@(context.Item.FkidPolizaConta?.ToString() ?? "-")
                         </MudButton>
-                    </MudTd>
-                    <MudTd>
-                        <MudChip T="string" Size="Size.Small" Color="@(item.EstaAutorizado ? Color.Success : Color.Warning)">
-                            @(item.EstaAutorizado ? "Autorizado" : "Pendiente")
+                    </CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoAutorizadoResponse" Title="Estatus" Identifier="Estatus" Resizable="true" Sortable="false"><CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.Item.EstaAutorizado ? Color.Success : Color.Warning)">
+                            @(context.Item.EstaAutorizado ? "Autorizado" : "Pendiente")
                         </MudChip>
-                    </MudTd>
-                </Row>
-            </GenericTable>
+                    </CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -153,7 +137,7 @@
 </style>
 
 @code {
-    private GenericTable<IngresoAutorizadoResponse> table = null!;
+    private GenericDataGrid<IngresoAutorizadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;

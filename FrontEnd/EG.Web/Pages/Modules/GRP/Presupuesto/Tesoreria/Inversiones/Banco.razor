@@ -13,7 +13,7 @@
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="BancoResponse"
+        <GenericDataGrid TItem="BancoResponse"
                       @ref="table"
                       Title="Bancos"
                       SearchPlaceholder="Buscar por clave o nombre..."
@@ -23,29 +23,19 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidBanco" T="BancoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="BancoResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="BancoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCorto" T="BancoResponse">Nombre corto</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidBanco))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidBanco))" />
-                </MudTd>
-                <MudTd>@item.PkidBanco</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Nombre</MudTd>
-                <MudTd>@item.NombreCorto</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="BancoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidBanco))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidBanco))" /></CellTemplate></TemplateColumn>
+                <PropertyColumn T="BancoResponse" TProperty="int" Property="x => x.PkidBanco" Title="ID" Identifier="PkidBanco" />
+                <PropertyColumn T="BancoResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="BancoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
+                <PropertyColumn T="BancoResponse" TProperty="string" Property="x => x.NombreCorto" Title="Nombre corto" Identifier="NombreCorto" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<BancoResponse> table = null!;
+    private GenericDataGrid<BancoResponse> table = null!;
     protected override string ModuleName => "Inversiones";
     protected override string SubModuleName => "Banco";
     protected override Type CreateDialogType => typeof(BancoDialog);

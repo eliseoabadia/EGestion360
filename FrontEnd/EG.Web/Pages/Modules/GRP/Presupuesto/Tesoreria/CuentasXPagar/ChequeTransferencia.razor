@@ -25,7 +25,7 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
+                    <GenericDataGrid TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
                                   SearchPlaceholder="Buscar cheque, CLC, contrato o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -33,28 +33,27 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header><MudTh>Acciones</MudTh><MudTh>Numero</MudTh><MudTh>CLC</MudTh><MudTh>Contrato</MudTh><MudTh>Fecha</MudTh><MudTh>Importe</MudTh><MudTh>Estatus</MudTh></Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(item))" />
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="ChequeResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(context.Item))" />
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="@SubModuleName"
                                                        Controlador="Cheque"
-                                                       EntidadId="@item.PkidCheque"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.NumeroCheque)"
-                                                       RegistroDescripcion="@TextOrDash(item.Concepto)" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidCheque))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidCheque))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.NumeroCheque)</MudTd>
-                            <MudTd>@TextOrDash(item.NumClc)</MudTd>
-                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
-                            <MudTd>@item.FechaEmision.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@Money(item.ImporteTotal)</MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                        </Row>
-                    </GenericTable>
+                                                       EntidadId="@context.Item.PkidCheque"
+                                                       FkidEmpresaSis="@context.Item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(context.Item.NumeroCheque)"
+                                                       RegistroDescripcion="@TextOrDash(context.Item.Concepto)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidCheque))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidCheque))" />
+                            </CellTemplate></TemplateColumn>
+                            <PropertyColumn T="ChequeResponse" TProperty="string" Property="x => x.NumeroCheque" Title="Número" Identifier="NumeroCheque" />
+                            <PropertyColumn T="ChequeResponse" TProperty="string" Property="x => x.NumClc" Title="CLC" Identifier="NumClc" />
+                            <PropertyColumn T="ChequeResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
+                            <TemplateColumn Resizable="true" T="ChequeResponse" Title="Fecha" Identifier="FechaEmision"><CellTemplate>@context.Item.FechaEmision.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="ChequeResponse" Title="Importe" Identifier="ImporteTotal"><CellTemplate>@Money(context.Item.ImporteTotal)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="ChequeResponse" Title="Estatus" Identifier="Estatus"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Estatus)">@TextOrDash(context.Item.EstatusDescripcion)</MudChip></CellTemplate></TemplateColumn>
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -72,24 +71,20 @@
                     <MudGrid><MudItem xs="4"><MudText Typo="Typo.caption">Importe</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedCheque.ImporteTotal)</MudText></MudItem><MudItem xs="8"><MudText Typo="Typo.caption">Poliza</MudText><MudText Typo="Typo.body2">@TextOrDash(SelectedCheque.ClavePoliza)</MudText></MudItem></MudGrid>
                 </MudPaper>
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="ChequePartidaResponse" @ref="partidaTable" Title="Partidas pagadas"
+                    <GenericDataGrid TItem="ChequePartidaResponse" @ref="partidaTable" Title="Partidas pagadas"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadPartidas"
                                   SearchString="@partidaSearch"
                                   SearchStringChanged="(s) => partidaSearch = s"
                                   OnSearch="ReloadPartidas">
-                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>CLC</MudTh><MudTh>Monto</MudTh><MudTh>Observaciones</MudTh></Header>
-                        <Row Context="p">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditPartida(p.PkidChequePartida))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeletePartida(p.PkidChequePartida))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(p.PartidaClaveNombre)</MudTd>
-                            <MudTd>@TextOrDash(p.NumClc)</MudTd>
-                            <MudTd>@Money(p.MontoPagado)</MudTd>
-                            <MudTd>@TextOrDash(p.Observaciones)</MudTd>
-                        </Row>
-                    </GenericTable>
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="ChequePartidaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditPartida(context.Item.PkidChequePartida))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedCheque)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeletePartida(context.Item.PkidChequePartida))" /></CellTemplate></TemplateColumn>
+                            <PropertyColumn T="ChequePartidaResponse" TProperty="string" Property="x => x.PartidaClaveNombre" Title="Partida" Identifier="PartidaClaveNombre" />
+                            <PropertyColumn T="ChequePartidaResponse" TProperty="string" Property="x => x.NumClc" Title="CLC" Identifier="NumClc" />
+                            <TemplateColumn Resizable="true" T="ChequePartidaResponse" Title="Monto" Identifier="MontoPagado"><CellTemplate>@Money(context.Item.MontoPagado)</CellTemplate></TemplateColumn>
+                            <PropertyColumn T="ChequePartidaResponse" TProperty="string" Property="x => x.Observaciones" Title="Observaciones" Identifier="Observaciones" />
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -97,8 +92,8 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<ChequeResponse> table = null!;
-    private GenericTable<ChequePartidaResponse> partidaTable = null!;
+    private GenericDataGrid<ChequeResponse> table = null!;
+    private GenericDataGrid<ChequePartidaResponse> partidaTable = null!;
     private ChequeResponse? SelectedCheque;
     private string partidaSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;

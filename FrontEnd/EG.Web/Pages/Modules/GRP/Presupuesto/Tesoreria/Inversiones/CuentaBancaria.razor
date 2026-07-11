@@ -14,7 +14,7 @@
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="CuentaBancariaResponse"
+        <GenericDataGrid TItem="CuentaBancariaResponse"
                       @ref="table"
                       Title="Cuentas bancarias"
                       SearchPlaceholder="Buscar cuenta, banco o titular..."
@@ -24,35 +24,22 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidCuentaBancaria" T="CuentaBancariaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NumeroCuenta" T="CuentaBancariaResponse">Cuenta</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="BancoNombre" T="CuentaBancariaResponse">Banco</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CuentaContable" T="CuentaBancariaResponse">Cuenta contable</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Titular" T="CuentaBancariaResponse">Titular</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MonedaDescripcion" T="CuentaBancariaResponse">Moneda</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SaldoActual" T="CuentaBancariaResponse">Saldo actual</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidCuentaBancaria))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidCuentaBancaria))" />
-                </MudTd>
-                <MudTd>@item.PkidCuentaBancaria</MudTd>
-                <MudTd>@item.NumeroCuenta</MudTd>
-                <MudTd>@item.BancoNombre</MudTd>
-                <MudTd>@(string.IsNullOrWhiteSpace(item.CuentaContable) ? "-" : $"{item.CuentaContable} - {item.CuentaContableDescripcion}")</MudTd>
-                <MudTd>@item.Titular</MudTd>
-                <MudTd>@($"{item.MonedaSimbolo} {item.MonedaDescripcion}")</MudTd>
-                <MudTd>@Money(item.SaldoActual, item.MonedaSimbolo)</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="CuentaBancariaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidCuentaBancaria))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidCuentaBancaria))" /></CellTemplate></TemplateColumn>
+                <PropertyColumn T="CuentaBancariaResponse" TProperty="int" Property="x => x.PkidCuentaBancaria" Title="ID" Identifier="PkidCuentaBancaria" />
+                <PropertyColumn T="CuentaBancariaResponse" TProperty="string" Property="x => x.NumeroCuenta" Title="Cuenta" Identifier="NumeroCuenta" />
+                <PropertyColumn T="CuentaBancariaResponse" TProperty="string" Property="x => x.BancoNombre" Title="Banco" Identifier="BancoNombre" />
+                <TemplateColumn Resizable="true" T="CuentaBancariaResponse" Title="Cuenta contable" Identifier="CuentaContable"><CellTemplate>@(string.IsNullOrWhiteSpace(context.Item.CuentaContable) ? "-" : $"{context.Item.CuentaContable} - {context.Item.CuentaContableDescripcion}")</CellTemplate></TemplateColumn>
+                <PropertyColumn T="CuentaBancariaResponse" TProperty="string" Property="x => x.Titular" Title="Titular" Identifier="Titular" />
+                <TemplateColumn Resizable="true" T="CuentaBancariaResponse" Title="Moneda" Identifier="MonedaDescripcion"><CellTemplate>@($"{context.Item.MonedaSimbolo} {context.Item.MonedaDescripcion}")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="CuentaBancariaResponse" Title="Saldo actual" Identifier="SaldoActual"><CellTemplate>@Money(context.Item.SaldoActual, context.Item.MonedaSimbolo)</CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<CuentaBancariaResponse> table = null!;
+    private GenericDataGrid<CuentaBancariaResponse> table = null!;
     protected override string ModuleName => "Inversiones";
     protected override string SubModuleName => "Cuenta_Bancaria";
     protected override Type CreateDialogType => typeof(CuentaBancariaDialog);

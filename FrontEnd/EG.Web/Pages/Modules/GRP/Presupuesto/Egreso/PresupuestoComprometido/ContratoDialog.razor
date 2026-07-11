@@ -1,11 +1,19 @@
 @using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<ContratoResponse> Service
 @inject IGenericCrudService<ContratoDetalleResponse> DetalleService
+@inject IGenericCrudService<ProveedorResponse> ProveedorService
+@inject IGenericCrudService<AutorizacionSuficienciaResponse> AutorizacionService
+@inject IGenericCrudService<PolizaResponse> PolizaService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -13,9 +21,29 @@
     <BaseEntityForm TEntity="ContratoResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando contrato..." LoadingSkeletonRows="9">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidAutorizacionSuficienciaPres" Label="Autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidProveedorSis" Label="Proveedor" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int?" @bind-Value="item.FkidPolizaConta" Label="Poliza" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3">
+                <PagedAutocomplete Value="@_selectedAutorizacion"
+                                   ValueChanged="value => _selectedAutorizacion = value"
+                                   Label="Autorización"
+                                   Required="true"
+                                   RequiredError="La autorización es requerida"
+                                   LoadPage="LoadAutorizacionesPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <PagedAutocomplete Value="@_selectedProveedor"
+                                   ValueChanged="value => _selectedProveedor = value"
+                                   Label="Proveedor"
+                                   Required="true"
+                                   RequiredError="El proveedor es requerido"
+                                   LoadPage="LoadProveedoresPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <PagedAutocomplete Value="@_selectedPoliza"
+                                   ValueChanged="value => _selectedPoliza = value"
+                                   Label="Póliza"
+                                   Clearable="true"
+                                   LoadPage="LoadPolizasPageAsync" />
+            </MudItem>
             <MudItem xs="12" md="4"><MudTextField @bind-Value="item.NumeroContrato" Label="Numero contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaContrato" Label="Fecha contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -67,6 +95,9 @@
     private DateTime? fechaContrato = DateTime.Today;
     private DateTime? fechaInicio;
     private DateTime? fechaFin;
+    private LookupItem? _selectedProveedor;
+    private LookupItem? _selectedAutorizacion;
+    private LookupItem? _selectedPoliza;
     private bool _formLoading = true;
     private string Title => Id.HasValue ? "Editar contrato" : "Nuevo contrato";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar contrato";
@@ -83,6 +114,7 @@
                 if (PrefillItem != null)
                 {
                     item = CloneHeader(PrefillItem);
+                    SetSelectedRelations();
                     fechaContrato = item.FechaContrato.ToDateTime(TimeOnly.MinValue);
                     fechaInicio = item.FechaInicioVigencia?.ToDateTime(TimeOnly.MinValue);
                     fechaFin = item.FechaFinVigencia?.ToDateTime(TimeOnly.MinValue);
@@ -96,6 +128,7 @@
             if (response?.Data != null)
             {
                 item = response.Data;
+                SetSelectedRelations();
                 fechaContrato = item.FechaContrato.ToDateTime(TimeOnly.MinValue);
                 fechaInicio = item.FechaInicioVigencia?.ToDateTime(TimeOnly.MinValue);
                 fechaFin = item.FechaFinVigencia?.ToDateTime(TimeOnly.MinValue);
@@ -122,6 +155,15 @@
             return;
         }
 
+        if (_selectedAutorizacion == null || _selectedProveedor == null)
+        {
+            Snackbar.Add("Selecciona la autorización y el proveedor.", Severity.Warning);
+            return;
+        }
+
+        item.FkidAutorizacionSuficienciaPres = _selectedAutorizacion.Id;
+        item.FkidProveedorSis = _selectedProveedor.Id;
+        item.FkidPolizaConta = _selectedPoliza?.Id;
         item.FechaContrato = DateOnly.FromDateTime(fechaContrato ?? DateTime.Today);
         item.FechaInicioVigencia = fechaInicio.HasValue ? DateOnly.FromDateTime(fechaInicio.Value) : null;
         item.FechaFinVigencia = fechaFin.HasValue ? DateOnly.FromDateTime(fechaFin.Value) : null;
@@ -239,6 +281,85 @@
         item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
         item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
         item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+
+    private void SetSelectedRelations()
+    {
+        _selectedAutorizacion = item.FkidAutorizacionSuficienciaPres > 0
+            ? new LookupItem
+            {
+                Id = item.FkidAutorizacionSuficienciaPres,
+                Text = $"Autorización {item.FkidAutorizacionSuficienciaPres}"
+            }
+            : null;
+        _selectedProveedor = item.FkidProveedorSis > 0
+            ? new LookupItem
+            {
+                Id = item.FkidProveedorSis,
+                Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre, item.FkidProveedorSis)
+            }
+            : null;
+        _selectedPoliza = item.FkidPolizaConta is > 0
+            ? new LookupItem
+            {
+                Id = item.FkidPolizaConta.Value,
+                Text = string.IsNullOrWhiteSpace(item.ClavePoliza) ? $"Póliza {item.FkidPolizaConta.Value}" : item.ClavePoliza
+            }
+            : null;
+    }
+
+    private async Task<ComboLookupResult> LoadAutorizacionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var additional = new Dictionary<string, object> { ["Estatus"] = 2 };
+        if (item.FkidEmpresaSis > 0)
+        {
+            additional["FkidEmpresaSis"] = item.FkidEmpresaSis;
+        }
+        var response = await AutorizacionService.GetAllPaginadoAsync(page, pageSize, filter, "FechaAutorizacion", SortDirection.Descending, additional);
+        return new ComboLookupResult
+        {
+            Items = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
+            {
+                Id = x.PkidAutorizacionSuficiencia,
+                Text = $"AUT-{x.PkidAutorizacionSuficiencia} - {TextOrDash(x.RequisicionDescripcion)}"
+            }).ToList() ?? new List<LookupItem>(),
+            TotalCount = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
+        return new ComboLookupResult
+        {
+            Items = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
+            {
+                Id = x.PkidProveedor,
+                Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
+            }).ToList() ?? new List<LookupItem>(),
+            TotalCount = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending);
+        return new ComboLookupResult
+        {
+            Items = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
+            {
+                Id = x.PkidPoliza,
+                Text = string.Join(" - ", new[] { x.ClavePoliza, x.NombrePoliza }.Where(v => !string.IsNullOrWhiteSpace(v)))
+            }).ToList() ?? new List<LookupItem>(),
+            TotalCount = response?.TotalCount ?? 0
+        };
+    }
+
+    private static string BuildProveedorText(string? clave, string? nombre, int id)
+    {
+        var text = string.Join(" - ", new[] { clave, nombre }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        return string.IsNullOrWhiteSpace(text) ? id.ToString(CultureInfo.InvariantCulture) : text;
+    }
+
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
             ? item.FkidEmpresaSis.ToString()

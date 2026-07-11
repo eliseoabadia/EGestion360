@@ -9,29 +9,21 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipo de Retiro" Subtitle="Catalogo de tipos de retiro para inversiones"
                     Icon="@Icons.Material.Filled.LockOpen" CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoRetiroResponse" @ref="table" Title="Tipos de retiro"
+        <GenericDataGrid TItem="TipoRetiroResponse" @ref="table" Title="Tipos de retiro"
                       SearchPlaceholder="Buscar descripcion..." ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel"
                       SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoRetiro" T="TipoRetiroResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoRetiroResponse">Descripcion</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidTipoRetiro))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidTipoRetiro))" />
-                </MudTd>
-                <MudTd>@item.PkidTipoRetiro</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoRetiroResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidTipoRetiro))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidTipoRetiro))" /></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoRetiroResponse" TProperty="int" Property="x => x.PkidTipoRetiro" Title="ID" Identifier="PkidTipoRetiro" />
+                <PropertyColumn T="TipoRetiroResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoRetiroResponse> table = null!;
+    private GenericDataGrid<TipoRetiroResponse> table = null!;
     protected override string ModuleName => "Inversiones";
     protected override string SubModuleName => "Tipo_Retiro";
     protected override Type CreateDialogType => typeof(TipoRetiroDialog);

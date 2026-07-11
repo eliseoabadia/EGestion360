@@ -16,203 +16,37 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="TipoBienResponse"
+        <GenericDataGrid TItem="TipoBienResponse"
                       @ref="table"
                       Title="Lista de Tipos de Bien"
                       SearchPlaceholder="Buscar por descripción, grupo o clave..."
                       ShowExportButton="@CanExport"
-                      EnableAutoColumnSelector="false"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <ToolbarActions>
-                <MudTooltip Text="Mostrar u ocultar columnas">
-                    <MudMenu Icon="@Icons.Material.Filled.ViewColumn"
-                             Color="Color.Primary"
-                             AnchorOrigin="Origin.BottomRight"
-                             TransformOrigin="Origin.TopRight"
-                             Class="mr-2">
-                        <div class="tipo-bien-column-menu" @onclick:stopPropagation="true">
-                            <MudText Typo="Typo.subtitle2" Class="column-menu-title">Columnas visibles</MudText>
-                            @foreach (var column in ColumnOptions)
-                            {
-                                <MudCheckBox T="bool"
-                                             Dense="true"
-                                             Label="@column.Label"
-                                             Value="@IsColumnVisible(column.Key)"
-                                             ValueChanged="@((bool visible) => SetColumnVisibility(column.Key, visible))" />
-                            }
-                            <MudDivider Class="my-1" />
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.Restore"
-                                       OnClick="ResetVisibleColumns">
-                                Restablecer
-                            </MudButton>
-                        </div>
-                    </MudMenu>
-                </MudTooltip>
-            </ToolbarActions>
-
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @if (IsColumnVisible(ColumnId))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="PkidTipoBien" T="TipoBienResponse">Id</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnGrupo))
-                {
-                    <MudTh Style="min-width: 180px;"><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="TipoBienResponse">Clave CUCOP</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnCodigo))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="CodigoClave" T="TipoBienResponse">Código o Clave</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnPartida))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="TipoBienResponse">Partida</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnDescripcion))
-                {
-                    <MudTh Style="min-width: 220px;"><MudTableSortLabel SortLabel="TipoBienDescripcion" T="TipoBienResponse">Descripción</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnDepreciacion))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="DepreciacionAnual" T="TipoBienResponse">Depreciación Anual</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnConsecutivo))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="Consecutivo" T="TipoBienResponse">Consecutivo</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnIdentificador))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="Identificador" T="TipoBienResponse">Identificador de Almacén</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnExistenciaMinima))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="ExistenciaMinima" T="TipoBienResponse">Existencia Mínima</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnExistenciaMaxima))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="ExistenciaMaxima" T="TipoBienResponse">Existencia Máxima</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnTiempoVida))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="TiempoVida" T="TipoBienResponse">Tiempo de Vida</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnUnidades))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="TipoBienResponse">Unidades</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnCatalogoBasico))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="CatalogoBasico" T="TipoBienResponse">Catálogo Básico</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnCucopPlus))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="CucopPlus" T="TipoBienResponse">Cucop Plus</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnCantidadEquivalente))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="CantidadEquivalente" T="TipoBienResponse">Cantidad Equivalente</MudTableSortLabel></MudTh>
-                }
-                @if (IsColumnVisible(ColumnUnidadEquivalente))
-                {
-                    <MudTh><MudTableSortLabel SortLabel="UnidadEquivalenteMedida" T="TipoBienResponse">Unidades Equivalente</MudTableSortLabel></MudTh>
-                }
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoBien))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoBien))" />
-                    </MudTooltip>
-                </MudTd>
-                @if (IsColumnVisible(ColumnId))
-                {
-                    <MudTd>@item.PkidTipoBien</MudTd>
-                }
-                @if (IsColumnVisible(ColumnGrupo))
-                {
-                    <MudTd>@item.GrupoBienDescripcion</MudTd>
-                }
-                @if (IsColumnVisible(ColumnCodigo))
-                {
-                    <MudTd>@item.CodigoClave</MudTd>
-                }
-                @if (IsColumnVisible(ColumnPartida))
-                {
-                    <MudTd>@item.PartidaDescripcion</MudTd>
-                }
-                @if (IsColumnVisible(ColumnDescripcion))
-                {
-                    <MudTd>@item.TipoBienDescripcion</MudTd>
-                }
-                @if (IsColumnVisible(ColumnDepreciacion))
-                {
-                    <MudTd>@item.DepreciacionAnual</MudTd>
-                }
-                @if (IsColumnVisible(ColumnConsecutivo))
-                {
-                    <MudTd>@item.Consecutivo</MudTd>
-                }
-                @if (IsColumnVisible(ColumnIdentificador))
-                {
-                    <MudTd>@item.Identificador</MudTd>
-                }
-                @if (IsColumnVisible(ColumnExistenciaMinima))
-                {
-                    <MudTd>@item.ExistenciaMinima</MudTd>
-                }
-                @if (IsColumnVisible(ColumnExistenciaMaxima))
-                {
-                    <MudTd>@item.ExistenciaMaxima</MudTd>
-                }
-                @if (IsColumnVisible(ColumnTiempoVida))
-                {
-                    <MudTd>@item.TiempoVida</MudTd>
-                }
-                @if (IsColumnVisible(ColumnUnidades))
-                {
-                    <MudTd>@item.UnidadMedida</MudTd>
-                }
-                @if (IsColumnVisible(ColumnCatalogoBasico))
-                {
-                    <MudTd>
-                        <MudChip T="string" Color="@(item.CatalogoBasico == true ? Color.Success : Color.Error)" Size="Size.Small">
-                            @(item.CatalogoBasico == true ? "Sí" : "No")
-                        </MudChip>
-                    </MudTd>
-                }
-                @if (IsColumnVisible(ColumnCucopPlus))
-                {
-                    <MudTd>@item.CucopPlus</MudTd>
-                }
-                @if (IsColumnVisible(ColumnCantidadEquivalente))
-                {
-                    <MudTd>@item.CantidadEquivalente</MudTd>
-                }
-                @if (IsColumnVisible(ColumnUnidadEquivalente))
-                {
-                    <MudTd>@item.UnidadEquivalenteMedida</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoBienResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoBien))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoBien))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoBienResponse" TProperty="int" Property="x => x.PkidTipoBien" Title="ID" Identifier="PkidTipoBien" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.GrupoBienDescripcion" Title="Clave CUCOP" Identifier="GrupoBienDescripcion" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.CodigoClave" Title="Código o Clave" Identifier="CodigoClave" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.PartidaDescripcion" Title="Partida" Identifier="PartidaDescripcion" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.TipoBienDescripcion" Title="Descripción" Identifier="TipoBienDescripcion" />
+                <PropertyColumn T="TipoBienResponse" TProperty="decimal?" Property="x => x.DepreciacionAnual" Title="Depreciación Anual" Identifier="DepreciacionAnual" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="int?" Property="x => x.Consecutivo" Title="Consecutivo" Identifier="Consecutivo" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.Identificador" Title="Identificador de Almacén" Identifier="Identificador" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="decimal?" Property="x => x.ExistenciaMinima" Title="Existencia Mínima" Identifier="ExistenciaMinima" />
+                <PropertyColumn T="TipoBienResponse" TProperty="decimal?" Property="x => x.ExistenciaMaxima" Title="Existencia Máxima" Identifier="ExistenciaMaxima" />
+                <PropertyColumn T="TipoBienResponse" TProperty="int?" Property="x => x.TiempoVida" Title="Tiempo de Vida" Identifier="TiempoVida" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.UnidadMedida" Title="Unidades" Identifier="UnidadMedida" Hidden="true" />
+                <TemplateColumn Resizable="true" T="TipoBienResponse" Title="Catálogo Básico" Identifier="CatalogoBasico" Hidden="true"><CellTemplate><MudChip T="string" Color="@(context.Item.CatalogoBasico == true ? Color.Success : Color.Error)" Size="Size.Small">@(context.Item.CatalogoBasico == true ? "Sí" : "No")</MudChip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.CucopPlus" Title="CUCOP Plus" Identifier="CucopPlus" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="int?" Property="x => x.CantidadEquivalente" Title="Cantidad Equivalente" Identifier="CantidadEquivalente" Hidden="true" />
+                <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.UnidadEquivalenteMedida" Title="Unidades Equivalente" Identifier="UnidadEquivalenteMedida" Hidden="true" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
@@ -237,7 +71,7 @@
 </style>
 
 @code {
-    private GenericTable<TipoBienResponse> table = null!;
+    private GenericDataGrid<TipoBienResponse> table = null!;
 
     private const string ColumnId = "Id";
     private const string ColumnGrupo = "Grupo";

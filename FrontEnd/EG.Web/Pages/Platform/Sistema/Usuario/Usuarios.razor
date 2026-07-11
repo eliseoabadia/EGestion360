@@ -23,7 +23,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table?.ReloadData()" />
 
-        <GenericTable TItem="UsuarioResponse"
+        <GenericDataGrid TItem="UsuarioResponse"
                       @ref="table"
                       Title="Lista de Usuarios"
                       SearchPlaceholder="Buscar por ID, persona, clave, email, telefono o empresa..."
@@ -34,57 +34,22 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkIdUsuario" T="UsuarioResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreCompletoPersona" T="UsuarioResponse">Persona</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EmailPersona" T="UsuarioResponse">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TelefonoMovil" T="UsuarioResponse">Teléfono</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ClavePersona" T="UsuarioResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PayrollId" T="UsuarioResponse">Payroll ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="UsuarioResponse">Empresa</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="usuario">
-                <MudTd>
-                    <MudTooltip Text="Editar usuario">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(usuario.PkIdUsuario))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar usuario">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(usuario.PkIdUsuario))" />
-
-                    </MudTooltip>
-                    <MudTooltip Text="Asignar Sucursal">
-                        <MudIconButton Icon="@Icons.Material.Filled.AssignmentInd"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => AssingSucursal(usuario.PkIdUsuario))" />
-
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@usuario.PkIdUsuario</MudTd>
-                <MudTd>@usuario.NombreCompletoPersona</MudTd>
-                <MudTd>@usuario.EmailPersona</MudTd>
-                <MudTd>@(usuario.TelefonoMovil ?? usuario.TelefonoParticular ?? "-")</MudTd>
-                <MudTd>@usuario.ClavePersona</MudTd>
-                <MudTd>@usuario.PayrollId</MudTd>
-                <MudTd>@usuario.NombreEmpresa</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="UsuarioResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar usuario"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkIdUsuario))" /></MudTooltip><MudTooltip Text="Eliminar usuario"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkIdUsuario))" /></MudTooltip><MudTooltip Text="Asignar Sucursal"><MudIconButton Icon="@Icons.Material.Filled.AssignmentInd" Visible="@CanUpdate" Color="Color.Error" Size="Size.Small" OnClick="@(() => AssingSucursal(context.Item.PkIdUsuario))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="UsuarioResponse" TProperty="int" Property="x => x.PkIdUsuario" Title="ID" Identifier="PkIdUsuario" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.NombreCompletoPersona" Title="Persona" Identifier="NombreCompletoPersona" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.EmailPersona" Title="Email" Identifier="EmailPersona" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.TelefonoMovil" Title="Teléfono" Identifier="TelefonoMovil" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.ClavePersona" Title="Clave" Identifier="ClavePersona" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.PayrollId" Title="Payroll ID" Identifier="PayrollId" />
+                <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.NombreEmpresa" Title="Empresa" Identifier="NombreEmpresa" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<UsuarioResponse> table = null!;
+    private GenericDataGrid<UsuarioResponse> table = null!;
     private string _pageError = string.Empty;
 
     protected override string ModuleName => "Sistema";

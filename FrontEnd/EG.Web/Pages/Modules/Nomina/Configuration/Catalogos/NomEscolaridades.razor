@@ -18,7 +18,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="NomEscolaridadResponse"
+        <GenericDataGrid TItem="NomEscolaridadResponse"
                       @ref="table"
                       Title="Lista de Escolaridad"
                       SearchPlaceholder="Buscar escolaridad..."
@@ -28,33 +28,18 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomEscolaridadResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidEscolaridad))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidEscolaridad))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="NomEscolaridadResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(context.Item.PkidEscolaridad))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(context.Item.PkidEscolaridad))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="NomEscolaridadResponse" TProperty="int" Property="x => x.PkidEscolaridad" Title="ID" Identifier="PkidEscolaridad" />
+                <PropertyColumn T="NomEscolaridadResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="NomEscolaridadResponse" TProperty="bool" Property="x => x.Activo" Title="Activo" Identifier="Activo" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NomEscolaridadResponse> table = null!;
+    private GenericDataGrid<NomEscolaridadResponse> table = null!;
     private static readonly string[] Columns =
     [
         nameof(NomEscolaridadResponse.PkidEscolaridad),

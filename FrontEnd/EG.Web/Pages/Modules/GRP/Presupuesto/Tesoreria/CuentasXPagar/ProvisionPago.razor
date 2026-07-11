@@ -29,7 +29,7 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="CLCResponse" @ref="table" Title="@TableTitle"
+                    <GenericDataGrid TItem="CLCResponse" @ref="table" Title="@TableTitle"
                                   SearchPlaceholder="Buscar CLC, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -37,37 +37,28 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumClc" T="CLCResponse">CLC</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="CLCResponse">Contrato</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="CLCResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="CLCResponse">Solicitud</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ImporteTotal" T="CLCResponse">Importe</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="CLCResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(item))" />
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="CLCResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(context.Item))" />
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="@SubModuleName"
                                                        Controlador="CLC"
-                                                       EntidadId="@item.PkidClc"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.NumClc)"
-                                                       RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(item))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidClc))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidClc))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.NumClc)</MudTd>
-                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
-                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
-                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@Money(item.ImporteTotal)</MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                        </Row>
-                    </GenericTable>
+                                                       EntidadId="@context.Item.PkidClc"
+                                                       FkidEmpresaSis="@context.Item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(context.Item.NumClc)"
+                                                       RegistroDescripcion="@($"{TextOrDash(context.Item.NumeroContrato)} | {TextOrDash(context.Item.ProveedorNombre)}")" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(context.Item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(context.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidClc))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidClc))" />
+                            </CellTemplate></TemplateColumn>
+                            <PropertyColumn T="CLCResponse" TProperty="string" Property="x => x.NumClc" Title="CLC" Identifier="NumClc" />
+                            <PropertyColumn T="CLCResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
+                            <PropertyColumn T="CLCResponse" TProperty="string" Property="x => x.ProveedorNombre" Title="Proveedor" Identifier="ProveedorNombre" />
+                            <TemplateColumn Resizable="true" T="CLCResponse" Title="Solicitud" Identifier="FechaSolicitud"><CellTemplate>@context.Item.FechaSolicitud.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="CLCResponse" Title="Importe" Identifier="ImporteTotal"><CellTemplate>@Money(context.Item.ImporteTotal)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="CLCResponse" Title="Estatus" Identifier="Estatus"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Estatus)">@TextOrDash(context.Item.EstatusDescripcion)</MudChip></CellTemplate></TemplateColumn>
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -89,42 +80,34 @@
 
                 <MudGrid Spacing="2" Style="min-height:0;flex-grow:1;overflow:visible;">
                     <MudItem xs="12" lg="7" Style="height:100%;overflow:visible;">
-                        <GenericTable TItem="CLCDetalleResponse" @ref="detalleTable" Title="Detalle presupuestal"
+                        <GenericDataGrid TItem="CLCDetalleResponse" @ref="detalleTable" Title="Detalle presupuestal"
                                       SearchPlaceholder="Buscar partida..."
                                       ServerDataFunc="LoadDetalles"
                                       SearchString="@detalleSearch"
                                       SearchStringChanged="(s) => detalleSearch = s"
                                       OnSearch="ReloadDetalles">
-                            <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
-                            <Row Context="d">
-                                <MudTd>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidClcdetalle))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidClcdetalle))" />
-                                </MudTd>
-                                <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
-                                <MudTd>@Money(d.Total ?? 0m)</MudTd>
-                                <MudTd>@TextOrDash(d.Observaciones)</MudTd>
-                            </Row>
-                        </GenericTable>
+                            <Columns>
+                                <TemplateColumn Resizable="false" T="CLCDetalleResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(context.Item.PkidClcdetalle))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(context.Item.PkidClcdetalle))" /></CellTemplate></TemplateColumn>
+                                <PropertyColumn T="CLCDetalleResponse" TProperty="string" Property="x => x.PartidaClaveNombre" Title="Partida" Identifier="PartidaClaveNombre" />
+                                <TemplateColumn Resizable="true" T="CLCDetalleResponse" Title="Total" Identifier="Total"><CellTemplate>@Money(context.Item.Total ?? 0m)</CellTemplate></TemplateColumn>
+                                <PropertyColumn T="CLCDetalleResponse" TProperty="string" Property="x => x.Observaciones" Title="Observaciones" Identifier="Observaciones" />
+                            </Columns>
+                        </GenericDataGrid>
                     </MudItem>
                     <MudItem xs="12" lg="5" Style="height:100%;overflow:visible;">
-                        <GenericTable TItem="CLCFacturaResponse" @ref="facturaTable" Title="Facturas en CLC"
+                        <GenericDataGrid TItem="CLCFacturaResponse" @ref="facturaTable" Title="Facturas en CLC"
                                       SearchPlaceholder="Buscar factura..."
                                       ServerDataFunc="LoadFacturas"
                                       SearchString="@facturaSearch"
                                       SearchStringChanged="(s) => facturaSearch = s"
                                       OnSearch="ReloadFacturas">
-                            <Header><MudTh>Acciones</MudTh><MudTh>Factura</MudTh><MudTh>Partida</MudTh><MudTh>Monto</MudTh></Header>
-                            <Row Context="f">
-                                <MudTd>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditFactura(f.PkidClcfactura))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteFactura(f.PkidClcfactura))" />
-                                </MudTd>
-                                <MudTd>@TextOrDash(f.NumFactura)</MudTd>
-                                <MudTd>@TextOrDash(f.PartidaClave)</MudTd>
-                                <MudTd>@Money(f.MontoAplicado)</MudTd>
-                            </Row>
-                        </GenericTable>
+                            <Columns>
+                                <TemplateColumn Resizable="false" T="CLCFacturaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditFactura(context.Item.PkidClcfactura))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedClc)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteFactura(context.Item.PkidClcfactura))" /></CellTemplate></TemplateColumn>
+                                <PropertyColumn T="CLCFacturaResponse" TProperty="string" Property="x => x.NumFactura" Title="Factura" Identifier="NumFactura" />
+                                <PropertyColumn T="CLCFacturaResponse" TProperty="string" Property="x => x.PartidaClave" Title="Partida" Identifier="PartidaClave" />
+                                <TemplateColumn Resizable="true" T="CLCFacturaResponse" Title="Monto" Identifier="MontoAplicado"><CellTemplate>@Money(context.Item.MontoAplicado)</CellTemplate></TemplateColumn>
+                            </Columns>
+                        </GenericDataGrid>
                     </MudItem>
                 </MudGrid>
             </div>
@@ -133,9 +116,9 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<CLCResponse> table = null!;
-    private GenericTable<CLCDetalleResponse> detalleTable = null!;
-    private GenericTable<CLCFacturaResponse> facturaTable = null!;
+    private GenericDataGrid<CLCResponse> table = null!;
+    private GenericDataGrid<CLCDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<CLCFacturaResponse> facturaTable = null!;
     private CLCResponse? SelectedClc;
     private string detalleSearch = string.Empty;
     private string facturaSearch = string.Empty;

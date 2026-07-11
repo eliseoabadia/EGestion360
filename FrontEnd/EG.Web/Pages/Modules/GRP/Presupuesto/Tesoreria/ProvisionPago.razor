@@ -33,7 +33,7 @@
         </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="VwClcfacturaImporteResponse"
+            <GenericDataGrid TItem="VwClcfacturaImporteResponse"
                           @ref="table"
                           Title="Provision del pago por factura"
                           SearchPlaceholder="Buscar factura, proveedor, poliza, contrato o concepto..."
@@ -46,48 +46,22 @@
                           PageSize="20"
                           PageSizeOptions="new[] { 10, 20, 50, 100 }"
                           TableHeight="calc(100vh - 320px)"
-                          Loading="@Loading">
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="PkidFactura" T="VwClcfacturaImporteResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="NumFactura" T="VwClcfacturaImporteResponse">Factura</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="VwClcfacturaImporteResponse">Fecha</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="VwClcfacturaImporteResponse">Proveedor</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ClavePoliza" T="VwClcfacturaImporteResponse">Poliza</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="VwClcfacturaImporteResponse">Contrato</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Concepto" T="VwClcfacturaImporteResponse">Concepto</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Importe" T="VwClcfacturaImporteResponse">Importe</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="DevengadoIngresos" T="VwClcfacturaImporteResponse">Dev. ingresos</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="DevengadoEgresos" T="VwClcfacturaImporteResponse">Dev. egresos</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="SaldoClc" T="VwClcfacturaImporteResponse">Saldo CLC</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="VwClcfacturaImporteResponse">Estatus</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@item.PkidFactura.ToString(NumberCulture)</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(item.NumFactura)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.SerieFactura)</MudText>
-                    </MudTd>
-                    <MudTd>@FormatDate(item.Fecha)</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(item.Nombre)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Rfc)</MudText>
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
-                    <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
-                    <MudTd>
-                        <MudTooltip Text="@TextOrDash(item.Concepto)">
-                            <MudText Typo="Typo.body2" Style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                @TextOrDash(item.Concepto)
-                            </MudText>
-                        </MudTooltip>
-                    </MudTd>
-                    <MudTd Class="text-right">@Money(item.Importe)</MudTd>
-                    <MudTd Class="text-right">@Money(item.DevengadoIngresos)</MudTd>
-                    <MudTd Class="text-right">@Money(item.DevengadoEgresos)</MudTd>
-                    <MudTd Class="text-right"><strong>@Money(item.SaldoClc ?? 0m)</strong></MudTd>
-                    <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                </Row>
-            </GenericTable>
+                          >
+                <Columns>
+                <PropertyColumn T="VwClcfacturaImporteResponse" TProperty="int" Property="x => x.PkidFactura" Title="ID" Identifier="PkidFactura" />
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Factura" Identifier="NumFactura"><CellTemplate><MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(context.Item.NumFactura)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.SerieFactura)</MudText></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Fecha" Identifier="Fecha"><CellTemplate>@FormatDate(context.Item.Fecha)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Proveedor" Identifier="Nombre"><CellTemplate><MudText Typo="Typo.body2">@TextOrDash(context.Item.Nombre)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.Rfc)</MudText></CellTemplate></TemplateColumn>
+                <PropertyColumn T="VwClcfacturaImporteResponse" TProperty="string" Property="x => x.ClavePoliza" Title="Póliza" Identifier="ClavePoliza" />
+                <PropertyColumn T="VwClcfacturaImporteResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
+                <PropertyColumn T="VwClcfacturaImporteResponse" TProperty="string" Property="x => x.Concepto" Title="Concepto" Identifier="Concepto" />
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Importe" Identifier="Importe"><CellTemplate>@Money(context.Item.Importe)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Dev. ingresos" Identifier="DevengadoIngresos"><CellTemplate>@Money(context.Item.DevengadoIngresos)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Dev. egresos" Identifier="DevengadoEgresos"><CellTemplate>@Money(context.Item.DevengadoEgresos)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Saldo CLC" Identifier="SaldoClc"><CellTemplate><strong>@Money(context.Item.SaldoClc ?? 0m)</strong></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Estatus" Identifier="EstatusDescripcion"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Estatus)">@TextOrDash(context.Item.EstatusDescripcion)</MudChip></CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -141,7 +115,7 @@
 </style>
 
 @code {
-    private GenericTable<VwClcfacturaImporteResponse> table = null!;
+    private GenericDataGrid<VwClcfacturaImporteResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
 

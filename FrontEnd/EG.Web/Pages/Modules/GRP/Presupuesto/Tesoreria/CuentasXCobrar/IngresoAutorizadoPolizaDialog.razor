@@ -43,34 +43,22 @@
             </div>
 
             <div class="policy-table">
-                <GenericTable TItem="IngresoAutorizadoPolizaDetalleResponse"
+                <GenericDataGrid TItem="IngresoAutorizadoPolizaDetalleResponse"
                               Title="Movimientos contables"
                               ShowExportButton="false"
                               PageSize="10"
-                              TotalCount="@_policy.Detalles.Count"
                               ServerDataFunc="LoadDetailsAsync"
                               SearchString="@_search"
                               SearchStringChanged="value => _search = value"
                               SearchPlaceholder="Buscar cuenta o descripcion...">
-                    <Header>
-                        <MudTh>Tipo</MudTh>
-                        <MudTh>Cuenta</MudTh>
-                        <MudTh>Descripcion</MudTh>
-                        <MudTh Class="text-right">Debe</MudTh>
-                        <MudTh Class="text-right">Haber</MudTh>
-                    </Header>
-                    <Row Context="detail">
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(detail.ImporteDebe > 0 ? Color.Primary : Color.Secondary)">
-                                @(detail.ImporteDebe > 0 ? "Debe" : "Haber")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd><strong>@Text(detail.Cuenta)</strong><br /><span>@Text(detail.CuentaDescripcion)</span></MudTd>
-                        <MudTd>@Text(detail.Descripcion)</MudTd>
-                        <MudTd Class="text-right">@Money(detail.ImporteDebe)</MudTd>
-                        <MudTd Class="text-right">@Money(detail.ImporteHaber)</MudTd>
-                    </Row>
-                </GenericTable>
+                    <Columns>
+                        <TemplateColumn Resizable="true" T="IngresoAutorizadoPolizaDetalleResponse" Title="Tipo" Sortable="false"><CellTemplate><MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(context.Item.ImporteDebe > 0 ? Color.Primary : Color.Secondary)">@(context.Item.ImporteDebe > 0 ? "Debe" : "Haber")</MudChip></CellTemplate></TemplateColumn>
+                        <TemplateColumn Resizable="true" T="IngresoAutorizadoPolizaDetalleResponse" Title="Cuenta" Identifier="Cuenta"><CellTemplate><strong>@Text(context.Item.Cuenta)</strong><br /><span>@Text(context.Item.CuentaDescripcion)</span></CellTemplate></TemplateColumn>
+                        <PropertyColumn T="IngresoAutorizadoPolizaDetalleResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                        <TemplateColumn Resizable="true" T="IngresoAutorizadoPolizaDetalleResponse" Title="Debe" Identifier="ImporteDebe"><CellTemplate>@Money(context.Item.ImporteDebe)</CellTemplate></TemplateColumn>
+                        <TemplateColumn Resizable="true" T="IngresoAutorizadoPolizaDetalleResponse" Title="Haber" Identifier="ImporteHaber"><CellTemplate>@Money(context.Item.ImporteHaber)</CellTemplate></TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             </div>
         }
     </DialogContent>

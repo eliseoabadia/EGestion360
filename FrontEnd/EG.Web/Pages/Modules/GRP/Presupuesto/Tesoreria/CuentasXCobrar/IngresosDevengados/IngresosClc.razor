@@ -31,91 +31,40 @@
         </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="IngresoCLCFacturaResponse"
+            <GenericDataGrid TItem="IngresoCLCFacturaResponse"
                           @ref="table"
                           Title="Ingresos (CLCs)"
                           SearchPlaceholder="Buscar CLC, factura, referencia, concepto o RFC..."
                           ShowExportButton="@CanExport"
-                          ShowAddButton="false"
                           ServerDataFunc="LoadServerData"
                           ExportFunc="ExportToExcel"
                           SearchString="@SearchString"
                           SearchStringChanged="value => SearchString = value"
-                          OnSearch="OnSearch"
-                          Loading="@Loading">
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="PkidClcfactura" T="IngresoCLCFacturaResponse">Num CLC</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FkIdIngresoAutorizado" T="IngresoCLCFacturaResponse">Origen</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="NumFactura" T="IngresoCLCFacturaResponse">Documento</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="IngresoCLCFacturaResponse">Fecha</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FkIdPolizaConta" T="IngresoCLCFacturaResponse">Poliza</MudTableSortLabel></MudTh>
-                    <MudTh>Concepto</MudTh>
-                    <MudTh>Meses</MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Ene" T="IngresoCLCFacturaResponse">Ene</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Feb" T="IngresoCLCFacturaResponse">Feb</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Mar" T="IngresoCLCFacturaResponse">Mar</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Abr" T="IngresoCLCFacturaResponse">Abr</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="May" T="IngresoCLCFacturaResponse">May</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Jun" T="IngresoCLCFacturaResponse">Jun</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Jul" T="IngresoCLCFacturaResponse">Jul</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Ago" T="IngresoCLCFacturaResponse">Ago</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Sep" T="IngresoCLCFacturaResponse">Sep</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Oct" T="IngresoCLCFacturaResponse">Oct</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Nov" T="IngresoCLCFacturaResponse">Nov</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Dic" T="IngresoCLCFacturaResponse">Dic</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Total" T="IngresoCLCFacturaResponse">Total</MudTableSortLabel></MudTh>
-                    <MudTh>Control</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
-                        <div class="main-cell">@item.PkidClcfactura</div>
-                        <span>@(item.Activo ? "Activo" : "Inactivo")</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.FkIdIngresoAutorizado?.ToString(NumberCulture))</div>
-                        <span>Anio @TextOrDash(item.FkIdAnioSis?.ToString(NumberCulture))</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(DocumentNumber(item))</div>
-                        <span>@TextOrDash(item.NumReferenciaDocto)</span>
-                    </MudTd>
-                    <MudTd>@FormatDate(item.Fecha)</MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.FkIdPolizaConta?.ToString(NumberCulture))</div>
-                        <span>Tipo @TextOrDash(item.FkIdTipoPoliza?.ToString(NumberCulture))</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.Concepto)</div>
-                        <span>@TextOrDash(item.Rfc) @TextOrDash(item.Nombre)</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="month-spark">
-                            @foreach (var month in GetMonths(item))
-                            {
-                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
-                                      style="height:@GetMonthHeight(month.Amount, GetAmount(item))%"></span>
-                            }
-                        </div>
-                    </MudTd>
-                    <MudTd Class="text-right">@Money(item.Ene ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Feb ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Mar ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Abr ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.May ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Jun ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Jul ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Ago ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Sep ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Oct ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Nov ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Dic ?? 0m)</MudTd>
-                    <MudTd Class="text-right"><strong>@Money(GetAmount(item))</strong></MudTd>
-                    <MudTd>
-                        <div class="main-cell">@FormatDate(item.FechaCreacion)</div>
-                        <span>Usuario @item.UsuarioCreacion</span>
-                    </MudTd>
-                </Row>
-            </GenericTable>
+                          OnSearch="OnSearch">
+                <Columns>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Núm. CLC" Identifier="PkidClcfactura" Resizable="true"><CellTemplate><div class="main-cell">@context.Item.PkidClcfactura</div><span>@(context.Item.Activo ? "Activo" : "Inactivo")</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Origen" Identifier="FkIdIngresoAutorizado" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.FkIdIngresoAutorizado?.ToString(NumberCulture))</div><span>Año @TextOrDash(context.Item.FkIdAnioSis?.ToString(NumberCulture))</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Documento" Identifier="NumFactura" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@TextOrDash(context.Item.NumReferenciaDocto)</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@FormatDate(context.Item.Fecha)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Póliza" Identifier="FkIdPolizaConta" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.FkIdPolizaConta?.ToString(NumberCulture))</div><span>Tipo @TextOrDash(context.Item.FkIdTipoPoliza?.ToString(NumberCulture))</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Concepto" Identifier="Concepto" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.Concepto)</div><span>@TextOrDash(context.Item.Rfc) @TextOrDash(context.Item.Nombre)</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Meses" Identifier="Meses" Resizable="true" Sortable="false"><CellTemplate><div class="month-spark">@foreach (var month in GetMonths(context.Item)) { <span title="@($"{month.Label}: {Money(month.Amount)}")" style="height:@GetMonthHeight(month.Amount, GetAmount(context.Item))%"></span> }</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Ene" Identifier="Ene" Resizable="true"><CellTemplate>@Money(context.Item.Ene ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Feb" Identifier="Feb" Resizable="true"><CellTemplate>@Money(context.Item.Feb ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Mar" Identifier="Mar" Resizable="true"><CellTemplate>@Money(context.Item.Mar ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Abr" Identifier="Abr" Resizable="true"><CellTemplate>@Money(context.Item.Abr ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="May" Identifier="May" Resizable="true"><CellTemplate>@Money(context.Item.May ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Jun" Identifier="Jun" Resizable="true"><CellTemplate>@Money(context.Item.Jun ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Jul" Identifier="Jul" Resizable="true"><CellTemplate>@Money(context.Item.Jul ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Ago" Identifier="Ago" Resizable="true"><CellTemplate>@Money(context.Item.Ago ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Sep" Identifier="Sep" Resizable="true"><CellTemplate>@Money(context.Item.Sep ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Oct" Identifier="Oct" Resizable="true"><CellTemplate>@Money(context.Item.Oct ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Nov" Identifier="Nov" Resizable="true"><CellTemplate>@Money(context.Item.Nov ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Dic" Identifier="Dic" Resizable="true"><CellTemplate>@Money(context.Item.Dic ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Total" Identifier="Total" Resizable="true"><CellTemplate><strong>@Money(GetAmount(context.Item))</strong></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Control" Identifier="Control" Resizable="true" Sortable="false"><CellTemplate><div class="main-cell">@FormatDate(context.Item.FechaCreacion)</div><span>Usuario @context.Item.UsuarioCreacion</span></CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -135,7 +84,7 @@
 </style>
 
 @code {
-    private GenericTable<IngresoCLCFacturaResponse> table = null!;
+    private GenericDataGrid<IngresoCLCFacturaResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;

@@ -1,12 +1,17 @@
 @using System.Globalization
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
+@using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<CLCResponse> Service
 @inject IGenericCrudService<CLCDetalleResponse> DetalleService
 @inject IGenericCrudService<CLCFacturaResponse> FacturaService
+@inject IGenericCrudService<ContratoResponse> ContratoService
+@inject IGenericCrudService<PolizaResponse> PolizaService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -14,8 +19,8 @@
     <BaseEntityForm TEntity="CLCResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidContratoPres" Label="Contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Value="@contrato" ValueChanged="value => contrato = value" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Value="@poliza" ValueChanged="value => poliza = value" Label="Póliza" Required="true" RequiredError="La póliza es requerida" LoadPage="LoadPolizasPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><MudTextField @bind-Value="item.NumClc" Label="Numero CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaSolicitud" Label="Fecha solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Variant="Variant.Outlined" /></MudItem>
@@ -62,6 +67,8 @@
     private List<CLCFacturaResponse> facturaItems = new();
     private DateTime? fechaSolicitud = DateTime.Today;
     private DateTime? fechaAutorizacion;
+    private LookupItem? contrato;
+    private LookupItem? poliza;
     private string Title => Id.HasValue ? "Editar CLC" : "Nueva CLC";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar CLC";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
@@ -75,6 +82,7 @@
             if (PrefillItem != null)
             {
                 item = CloneHeader(PrefillItem);
+                SetLookups();
                 fechaSolicitud = item.FechaSolicitud.ToDateTime(TimeOnly.MinValue);
                 fechaAutorizacion = item.FechaAutorizacion?.ToDateTime(TimeOnly.MinValue);
             }
@@ -88,6 +96,7 @@
         if (response?.Data != null)
         {
             item = response.Data;
+            SetLookups();
             fechaSolicitud = item.FechaSolicitud.ToDateTime(TimeOnly.MinValue);
             fechaAutorizacion = item.FechaAutorizacion?.ToDateTime(TimeOnly.MinValue);
         }
@@ -102,7 +111,14 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
+        if (contrato == null || poliza == null)
+        {
+            Snackbar.Add("Selecciona contrato y póliza.", Severity.Warning);
+            return;
+        }
 
+        item.FkidContratoPres = contrato.Id;
+        item.FkidPolizaConta = poliza.Id;
         item.FechaSolicitud = DateOnly.FromDateTime(fechaSolicitud ?? DateTime.Today);
         item.FechaAutorizacion = fechaAutorizacion.HasValue ? DateOnly.FromDateTime(fechaAutorizacion.Value) : null;
         if (item.ImporteTotal <= 0 && detalleItems.Count > 0)
@@ -238,6 +254,24 @@
         item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
         item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
         item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+    private void SetLookups()
+    {
+        contrato = item.FkidContratoPres > 0 ? new LookupItem { Id = item.FkidContratoPres, Text = TextOrDash(item.NumeroContrato) } : null;
+        poliza = item.FkidPolizaConta > 0 ? new LookupItem { Id = item.FkidPolizaConta, Text = TextOrDash(item.ClavePoliza) } : null;
+    }
+    private async Task<ComboLookupResult> LoadContratosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ContratoService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroContrato", SortDirection.Ascending, CompanyFilter());
+        var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidContrato, Text = $"{x.NumeroContrato} - {x.ProveedorNombre}" }).ToList() ?? new();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+    private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending, CompanyFilter());
+        var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidPoliza, Text = $"{x.ClavePoliza} - {x.NombrePoliza}" }).ToList() ?? new();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+    private Dictionary<string, object>? CompanyFilter() => item.FkidEmpresaSis > 0 ? new() { ["FkidEmpresaSis"] = item.FkidEmpresaSis } : null;
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
             ? item.FkidEmpresaSis.ToString()

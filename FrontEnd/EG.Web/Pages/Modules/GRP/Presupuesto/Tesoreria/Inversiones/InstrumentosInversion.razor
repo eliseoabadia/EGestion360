@@ -15,7 +15,7 @@
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="InstrumentoResponse"
+        <GenericDataGrid TItem="InstrumentoResponse"
                       @ref="table"
                       Title="Instrumentos"
                       SearchPlaceholder="Buscar por nombre, tipo o intermediario..."
@@ -25,35 +25,22 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidInstrumento" T="InstrumentoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="InstrumentoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoInversionDescripcion" T="InstrumentoResponse">Tipo inversion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="IntermediarioNombre" T="InstrumentoResponse">Intermediario</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoMonedaCodigo" T="InstrumentoResponse">Moneda</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TasaInteres" T="InstrumentoResponse">Tasa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MontoMinimo" T="InstrumentoResponse">Monto minimo</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidInstrumento))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidInstrumento))" />
-                </MudTd>
-                <MudTd>@item.PkidInstrumento</MudTd>
-                <MudTd>@item.Nombre</MudTd>
-                <MudTd>@item.TipoInversionDescripcion</MudTd>
-                <MudTd>@item.IntermediarioNombre</MudTd>
-                <MudTd>@($"{item.TipoMonedaSimbolo} {item.TipoMonedaCodigo}")</MudTd>
-                <MudTd>@($"{(item.TasaInteres ?? 0m).ToString("0.0000", NumberCulture)}%")</MudTd>
-                <MudTd>@Money(item.MontoMinimo ?? 0m, item.TipoMonedaSimbolo)</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="InstrumentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidInstrumento))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidInstrumento))" /></CellTemplate></TemplateColumn>
+                <PropertyColumn T="InstrumentoResponse" TProperty="int" Property="x => x.PkidInstrumento" Title="ID" Identifier="PkidInstrumento" />
+                <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
+                <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.TipoInversionDescripcion" Title="Tipo inversión" Identifier="TipoInversionDescripcion" />
+                <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.IntermediarioNombre" Title="Intermediario" Identifier="IntermediarioNombre" />
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Moneda" Identifier="TipoMonedaCodigo"><CellTemplate>@($"{context.Item.TipoMonedaSimbolo} {context.Item.TipoMonedaCodigo}")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Tasa" Identifier="TasaInteres"><CellTemplate>@($"{(context.Item.TasaInteres ?? 0m).ToString("0.0000", NumberCulture)}%")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Monto mínimo" Identifier="MontoMinimo"><CellTemplate>@Money(context.Item.MontoMinimo ?? 0m, context.Item.TipoMonedaSimbolo)</CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<InstrumentoResponse> table = null!;
+    private GenericDataGrid<InstrumentoResponse> table = null!;
     protected override string ModuleName => "Inversiones";
     protected override string SubModuleName => "Instrumentos_Inversion";
     protected override Type CreateDialogType => typeof(InstrumentoInversionDialog);

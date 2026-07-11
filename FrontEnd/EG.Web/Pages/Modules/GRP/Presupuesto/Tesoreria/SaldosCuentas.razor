@@ -33,7 +33,7 @@
         </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="InstrumentoResponse"
+            <GenericDataGrid TItem="InstrumentoResponse"
                           @ref="table"
                           Title="Instrumentos"
                           SearchPlaceholder="Buscar por nombre, tipo, intermediario o moneda..."
@@ -46,39 +46,19 @@
                           PageSize="20"
                           PageSizeOptions="new[] { 10, 20, 50, 100 }"
                           TableHeight="calc(100vh - 320px)"
-                          Loading="@Loading">
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="InstrumentoResponse">Instrumento</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoInversionDescripcion" T="InstrumentoResponse">Tipo inversion</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="IntermediarioNombre" T="InstrumentoResponse">Intermediario</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoPlazoDescripcion" T="InstrumentoResponse">Plazo</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoMonedaCodigo" T="InstrumentoResponse">Moneda</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="TasaInteres" T="InstrumentoResponse">Tasa</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="MontoMinimo" T="InstrumentoResponse">Monto minimo</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FechaEmision" T="InstrumentoResponse">Emision</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FechaVencimiento" T="InstrumentoResponse">Vencimiento</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
-                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(item.Nombre)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ClaveNombre)</MudText>
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.TipoInversionDescripcion)</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(item.IntermediarioNombre)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.IntermediarioClave)</MudText>
-                    </MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(item.TipoPlazoDescripcion)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@Days(item.TipoPlazoDias)</MudText>
-                    </MudTd>
-                    <MudTd>@CurrencyLabel(item)</MudTd>
-                    <MudTd Class="text-right">@Percent(item.TasaInteres)</MudTd>
-                    <MudTd Class="text-right">@Money(item.MontoMinimo ?? 0m, item.TipoMonedaSimbolo)</MudTd>
-                    <MudTd>@FormatDate(item.FechaEmision)</MudTd>
-                    <MudTd>@FormatDate(item.FechaVencimiento)</MudTd>
-                </Row>
-            </GenericTable>
+                          >
+                <Columns>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Instrumento" Identifier="Nombre"><CellTemplate><MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(context.Item.Nombre)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.ClaveNombre)</MudText></CellTemplate></TemplateColumn>
+                <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.TipoInversionDescripcion" Title="Tipo inversión" Identifier="TipoInversionDescripcion" />
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Intermediario" Identifier="IntermediarioNombre"><CellTemplate><MudText Typo="Typo.body2">@TextOrDash(context.Item.IntermediarioNombre)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.IntermediarioClave)</MudText></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Plazo" Identifier="TipoPlazoDescripcion"><CellTemplate><MudText Typo="Typo.body2">@TextOrDash(context.Item.TipoPlazoDescripcion)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@Days(context.Item.TipoPlazoDias)</MudText></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Moneda" Identifier="TipoMonedaCodigo"><CellTemplate>@CurrencyLabel(context.Item)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Tasa" Identifier="TasaInteres"><CellTemplate>@Percent(context.Item.TasaInteres)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Monto mínimo" Identifier="MontoMinimo"><CellTemplate>@Money(context.Item.MontoMinimo ?? 0m, context.Item.TipoMonedaSimbolo)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Emisión" Identifier="FechaEmision"><CellTemplate>@FormatDate(context.Item.FechaEmision)</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="InstrumentoResponse" Title="Vencimiento" Identifier="FechaVencimiento"><CellTemplate>@FormatDate(context.Item.FechaVencimiento)</CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -132,7 +112,7 @@
 </style>
 
 @code {
-    private GenericTable<InstrumentoResponse> table = null!;
+    private GenericDataGrid<InstrumentoResponse> table = null!;
     private const string DefaultCurrencySymbol = "$";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");

@@ -29,7 +29,7 @@
                             OnRefresh="() => table.ReloadData()" />
 
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="FacturaResponse" @ref="table" Title="Facturas recibidas"
+                    <GenericDataGrid TItem="FacturaResponse" @ref="table" Title="Facturas recibidas"
                                   SearchPlaceholder="Buscar factura, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -37,39 +37,29 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidFactura" T="FacturaResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumFactura" T="FacturaResponse">Factura</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="FacturaResponse">Contrato</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="FacturaResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaEmision" T="FacturaResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Total" T="FacturaResponse">Total</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="FacturaResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(item))" /></MudTooltip>
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="FacturaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
+                                <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(context.Item))" /></MudTooltip>
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="Solicitud_Reintegros"
                                                        Controlador="Factura"
-                                                       EntidadId="@item.PkidFactura"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.NumFactura)"
-                                                       RegistroDescripcion="@($"{TextOrDash(item.NumeroContrato)} | {TextOrDash(item.ProveedorNombre)}")" />
-                                <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(item))" /></MudTooltip>
-                                <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidFactura))" /></MudTooltip>
-                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidFactura))" /></MudTooltip>
-                            </MudTd>
-                            <MudTd>@item.PkidFactura</MudTd>
-                            <MudTd>@TextOrDash(item.NumFactura)</MudTd>
-                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
-                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
-                            <MudTd>@item.FechaEmision.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@Money(item.Total)</MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                        </Row>
-                    </GenericTable>
+                                                       EntidadId="@context.Item.PkidFactura"
+                                                       FkidEmpresaSis="@context.Item.FkidEmpresaSis"
+                                                       RegistroTitulo="@TextOrDash(context.Item.NumFactura)"
+                                                       RegistroDescripcion="@($"{TextOrDash(context.Item.NumeroContrato)} | {TextOrDash(context.Item.ProveedorNombre)}")" />
+                                <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(context.Item))" /></MudTooltip>
+                                <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidFactura))" /></MudTooltip>
+                            </CellTemplate></TemplateColumn>
+                            <PropertyColumn T="FacturaResponse" TProperty="int" Property="x => x.PkidFactura" Title="ID" Identifier="PkidFactura" />
+                            <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.NumFactura" Title="Factura" Identifier="NumFactura" />
+                            <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
+                            <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.ProveedorNombre" Title="Proveedor" Identifier="ProveedorNombre" />
+                            <TemplateColumn Resizable="true" T="FacturaResponse" Title="Fecha" Identifier="FechaEmision"><CellTemplate>@context.Item.FechaEmision.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="FacturaResponse" Title="Total" Identifier="Total"><CellTemplate>@Money(context.Item.Total)</CellTemplate></TemplateColumn>
+                            <TemplateColumn Resizable="true" T="FacturaResponse" Title="Estatus" Identifier="Estatus"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Estatus)">@TextOrDash(context.Item.EstatusDescripcion)</MudChip></CellTemplate></TemplateColumn>
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -99,30 +89,20 @@
                 </MudPaper>
 
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericTable TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
+                    <GenericDataGrid TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetallesServerData"
                                   SearchString="@detalleSearch"
                                   SearchStringChanged="(s) => detalleSearch = s"
                                   OnSearch="ReloadDetalles">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh>Partida</MudTh>
-                            <MudTh>Contrato</MudTh>
-                            <MudTh>Monto</MudTh>
-                            <MudTh>Observaciones</MudTh>
-                        </Header>
-                        <Row Context="detalle">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(detalle.PkidFacturaDetalle))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(detalle.PkidFacturaDetalle))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(detalle.PartidaClaveNombre)</MudTd>
-                            <MudTd>@TextOrDash(detalle.NumeroContrato)</MudTd>
-                            <MudTd>@Money(detalle.MontoAplicado)</MudTd>
-                            <MudTd>@TextOrDash(detalle.Observaciones)</MudTd>
-                        </Row>
-                    </GenericTable>
+                        <Columns>
+                            <TemplateColumn Resizable="false" T="FacturaDetalleResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(context.Item.PkidFacturaDetalle))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedFactura)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(context.Item.PkidFacturaDetalle))" /></CellTemplate></TemplateColumn>
+                            <PropertyColumn T="FacturaDetalleResponse" TProperty="string" Property="x => x.PartidaClaveNombre" Title="Partida" Identifier="PartidaClaveNombre" />
+                            <PropertyColumn T="FacturaDetalleResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
+                            <TemplateColumn Resizable="true" T="FacturaDetalleResponse" Title="Monto" Identifier="MontoAplicado"><CellTemplate>@Money(context.Item.MontoAplicado)</CellTemplate></TemplateColumn>
+                            <PropertyColumn T="FacturaDetalleResponse" TProperty="string" Property="x => x.Observaciones" Title="Observaciones" Identifier="Observaciones" />
+                        </Columns>
+                    </GenericDataGrid>
                 </div>
             </div>
         }
@@ -130,8 +110,8 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<FacturaResponse> table = null!;
-    private GenericTable<FacturaDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<FacturaResponse> table = null!;
+    private GenericDataGrid<FacturaDetalleResponse> detalleTable = null!;
     private FacturaResponse? SelectedFactura;
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;

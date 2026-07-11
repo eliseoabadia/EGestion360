@@ -31,7 +31,7 @@
         </section>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="IngreXEjerResponse"
+            <GenericDataGrid TItem="IngreXEjerResponse"
                           @ref="table"
                           Title="Ingresos por recaudar"
                           SearchPlaceholder="Buscar origen, programa, area funcional o descripcion..."
@@ -41,62 +41,28 @@
                           SearchString="@SearchString"
                           SearchStringChanged="value => SearchString = value"
                           OnSearch="OnSearch"
-                          Loading="@Loading">
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="PkIdIngresoAutorizado" T="IngreXEjerResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="AreaFuncional" T="IngreXEjerResponse">Area funcional</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Origen" T="IngreXEjerResponse">Origen</MudTableSortLabel></MudTh>
-                    <MudTh>Descripcion</MudTh>
-                    <MudTh>Meses</MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Ene" T="IngreXEjerResponse">Enero</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Feb" T="IngreXEjerResponse">Febrero</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Mar" T="IngreXEjerResponse">Marzo</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Abr" T="IngreXEjerResponse">Abril</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="May" T="IngreXEjerResponse">Mayo</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Jun" T="IngreXEjerResponse">Junio</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Jul" T="IngreXEjerResponse">Julio</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Ago" T="IngreXEjerResponse">Agosto</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Sep" T="IngreXEjerResponse">Septiembre</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Oct" T="IngreXEjerResponse">Octubre</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Nov" T="IngreXEjerResponse">Noviembre</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Dic" T="IngreXEjerResponse">Diciembre</MudTableSortLabel></MudTh>
-                    <MudTh Class="text-right"><MudTableSortLabel SortLabel="Total" T="IngreXEjerResponse">Total</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@item.PkIdIngresoAutorizado</MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.AreaFuncional)</div>
-                        <span>Programa @item.FkIdProgramaPres</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.Origen)</div>
-                        <span>Origen @item.FkIdOrigenPres</span>
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>
-                        <div class="month-spark">
-                            @foreach (var month in GetMonths(item))
-                            {
-                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
-                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
-                            }
-                        </div>
-                    </MudTd>
-                    <MudTd Class="text-right">@Money(item.Ene ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Feb ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Mar ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Abr ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.May ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Jun ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Jul ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Ago ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Sep ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Oct ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Nov ?? 0m)</MudTd>
-                    <MudTd Class="text-right">@Money(item.Dic ?? 0m)</MudTd>
-                    <MudTd Class="text-right"><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                </Row>
-            </GenericTable>
+                          >
+                <Columns>
+                    <PropertyColumn T="IngreXEjerResponse" TProperty="int" Property="x => x.PkIdIngresoAutorizado" Title="ID" Identifier="PkIdIngresoAutorizado" />
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Área funcional" Identifier="AreaFuncional"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.AreaFuncional)</div><span>Programa @context.Item.FkIdProgramaPres</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Origen" Identifier="Origen"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.Origen)</div><span>Origen @context.Item.FkIdOrigenPres</span></CellTemplate></TemplateColumn>
+                    <PropertyColumn T="IngreXEjerResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Meses" Sortable="false"><CellTemplate><div class="month-spark">@foreach (var month in GetMonths(context.Item)) { <span title="@($"{month.Label}: {Money(month.Amount)}")" style="height:@GetMonthHeight(month.Amount, context.Item.Total ?? 0m)%"></span> }</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Ene" Identifier="Ene"><CellTemplate>@Money(context.Item.Ene ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Feb" Identifier="Feb"><CellTemplate>@Money(context.Item.Feb ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Mar" Identifier="Mar"><CellTemplate>@Money(context.Item.Mar ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Abr" Identifier="Abr"><CellTemplate>@Money(context.Item.Abr ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="May" Identifier="May"><CellTemplate>@Money(context.Item.May ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Jun" Identifier="Jun"><CellTemplate>@Money(context.Item.Jun ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Jul" Identifier="Jul"><CellTemplate>@Money(context.Item.Jul ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Ago" Identifier="Ago"><CellTemplate>@Money(context.Item.Ago ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Sep" Identifier="Sep"><CellTemplate>@Money(context.Item.Sep ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Oct" Identifier="Oct"><CellTemplate>@Money(context.Item.Oct ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Nov" Identifier="Nov"><CellTemplate>@Money(context.Item.Nov ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Dic" Identifier="Dic"><CellTemplate>@Money(context.Item.Dic ?? 0m)</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Total" Identifier="Total"><CellTemplate><strong>@Money(context.Item.Total ?? 0m)</strong></CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -116,7 +82,7 @@
 </style>
 
 @code {
-    private GenericTable<IngreXEjerResponse> table = null!;
+    private GenericDataGrid<IngreXEjerResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;

@@ -1,5 +1,6 @@
 @using System.Globalization
 @using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Domain.DTOs.Responses.Tesoreria
 @using EG.Web.Contracts
@@ -10,6 +11,8 @@
 @inject IGenericCrudService<ChequeResponse> Service
 @inject IGenericCrudService<ChequePartidaResponse> PartidaService
 @inject IGenericCrudService<CuentaBancariaResponse> CuentaBancariaService
+@inject IGenericCrudService<CLCResponse> ClcService
+@inject IGenericCrudService<PolizaResponse> PolizaService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -17,9 +20,9 @@
     <BaseEntityForm TEntity="ChequeResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidClcPres" Label="CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Value="@clc" ValueChanged="value => clc = value" Label="CLC" Required="true" RequiredError="La CLC es requerida" LoadPage="LoadClcsPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><PagedAutocomplete Value="@cuentaBancaria" ValueChanged="value => cuentaBancaria = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasBancariasPageAsync" /></MudItem>
-            <MudItem xs="12" md="3"><MudNumericField T="int" @bind-Value="item.FkidPolizaConta" Label="Poliza" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Value="@poliza" ValueChanged="value => poliza = value" Label="Póliza" Required="true" RequiredError="La póliza es requerida" LoadPage="LoadPolizasPageAsync" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudTextField @bind-Value="item.NumeroCheque" Label="Cheque / transferencia" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12"><MudTextField @bind-Value="item.Concepto" Label="Concepto" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -62,6 +65,8 @@
     private ChequeResponse item = new() { Activo = true, Estatus = 1 };
     private List<ChequePartidaResponse> partidaItems = new();
     private LookupItem? cuentaBancaria;
+    private LookupItem? clc;
+    private LookupItem? poliza;
     private DateTime? fechaEmision = DateTime.Today;
     private string Title => Id.HasValue ? "Editar cheque o transferencia" : "Nuevo cheque o transferencia";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar pago";
@@ -78,6 +83,7 @@
                 item = CloneHeader(PrefillItem);
                 fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
                 SetCuentaBancariaLookup();
+                SetEntityLookups();
             }
 
             partidaItems = PrefillPartidas?.Select(ClonePartida).ToList() ?? new List<ChequePartidaResponse>();
@@ -90,6 +96,7 @@
             item = response.Data;
             fechaEmision = item.FechaEmision.ToDateTime(TimeOnly.MinValue);
             SetCuentaBancariaLookup();
+            SetEntityLookups();
         }
     }
 
@@ -103,13 +110,15 @@
             return;
         }
 
-        if (cuentaBancaria == null)
+        if (cuentaBancaria == null || clc == null || poliza == null)
         {
-            Snackbar.Add("Selecciona la cuenta bancaria.", Severity.Warning);
+            Snackbar.Add("Selecciona CLC, cuenta bancaria y póliza.", Severity.Warning);
             return;
         }
 
+        item.FkidClcPres = clc.Id;
         item.FkidCuentaBancariaTes = cuentaBancaria.Id;
+        item.FkidPolizaConta = poliza.Id;
         item.FechaEmision = DateOnly.FromDateTime(fechaEmision ?? DateTime.Today);
         if (item.ImporteTotal <= 0 && partidaItems.Count > 0)
         {
@@ -237,5 +246,23 @@
             item.FkidEmpresaSis = empresaId.Value;
         }
     }
+    private void SetEntityLookups()
+    {
+        clc = item.FkidClcPres > 0 ? new LookupItem { Id = item.FkidClcPres, Text = TextOrDash(item.NumClc) } : null;
+        poliza = item.FkidPolizaConta > 0 ? new LookupItem { Id = item.FkidPolizaConta, Text = TextOrDash(item.ClavePoliza) } : null;
+    }
+    private async Task<ComboLookupResult> LoadClcsPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await ClcService.GetAllPaginadoAsync(page, pageSize, filter, "NumClc", SortDirection.Descending, CompanyFilter());
+        var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidClc, Text = $"{x.NumClc} - {x.ProveedorNombre}" }).ToList() ?? new();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+    private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending, CompanyFilter());
+        var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidPoliza, Text = $"{x.ClavePoliza} - {x.NombrePoliza}" }).ToList() ?? new();
+        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
+    }
+    private Dictionary<string, object>? CompanyFilter() => item.FkidEmpresaSis > 0 ? new() { ["FkidEmpresaSis"] = item.FkidEmpresaSis } : null;
 
 }
