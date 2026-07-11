@@ -16,7 +16,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="FamiliaResponse"
+        <GenericDataGrid TItem="FamiliaResponse"
                   @ref="table"
                   Title="Lista de Familias"
                   SearchPlaceholder="Buscar por descripción o clave..."
@@ -27,40 +27,17 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidFamilia" T="FamiliaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="FamiliaResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="FamiliaResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                   Visible="@CanUpdate"
-                                   Color="Color.Primary"
-                                   Size="Size.Small"
-                                    OnClick="@(() => EditItem(item.PkidFamilia))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                   Visible="@CanDelete"
-                                   Color="Color.Error"
-                                   Size="Size.Small"
-                                    OnClick="@(() => DeleteItem(item.PkidFamilia))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidFamilia</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="FamiliaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidFamilia))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidFamilia))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="FamiliaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="FamiliaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<FamiliaResponse> table = null!;
+    private GenericDataGrid<FamiliaResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Familia";

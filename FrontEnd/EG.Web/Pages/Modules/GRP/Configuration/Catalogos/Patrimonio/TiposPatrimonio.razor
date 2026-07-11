@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="TipoPatrimonioResponse"
+        <GenericDataGrid TItem="TipoPatrimonioResponse"
                   @ref="table"
                   Title="Lista de Tipos de Patrimonio"
                   SearchPlaceholder="Buscar por descripción..."
@@ -26,38 +26,17 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoPatrimonio" T="TipoPatrimonioResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPatrimonioResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoPatrimonio))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoPatrimonio))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoPatrimonio</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoPatrimonioResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoPatrimonio))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoPatrimonio))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoPatrimonioResponse" TProperty="int" Property="x => x.PkidTipoPatrimonio" Title="ID" Identifier="PkidTipoPatrimonio" />
+                <PropertyColumn T="TipoPatrimonioResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoPatrimonioResponse> table = null!;
+    private GenericDataGrid<TipoPatrimonioResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Tipo_Patrimonio";

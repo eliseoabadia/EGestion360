@@ -16,91 +16,38 @@
             OnRefresh="() => table.ReloadData()" />
 
         <div class="custom-matriz-table">
-            <GenericTable TItem="MatrizConversionResponse"
+            <GenericDataGrid TItem="MatrizConversionResponse"
                 @ref="table"
                 Title="Lista de Matriz de Conversión"
                 SearchPlaceholder="Buscar por programa o partida..."
                 ShowExportButton="@CanExport"
-                EnableColumnInteractions="false"
                 ServerDataFunc="LoadServerData"
                 ExportFunc="ExportToExcel"
                 SearchString="@SearchString"
                 SearchStringChanged="(s) => SearchString = s"
                 OnSearch="OnSearch">
 
-                <Header>
-                    <MudTh Class="col-acciones">Acciones</MudTh>
-                    <MudTh Class="col-id">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="PkidMatrizConversion">ID</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-programa">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="ProgramaClave">Programa</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-partida">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="PartidaDescripcion">Partida</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaAprobadoNombre">Aprobado</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaPorEjercerNombre">Por Ejercer</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaModificadoNombre">Modificado</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaComprometidoNombre">Comprometido</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaDevengadoNombre">Devengado</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaEjercidoNombre">Ejercido</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaPagadoNombre">Pagado</MudTableSortLabel>
-                    </MudTh>
-                    <MudTh Class="col-cuenta">
-                        <MudTableSortLabel T="MatrizConversionResponse" SortLabel="CuentaGastoNombre">Gasto</MudTableSortLabel>
-                    </MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd Class="col-acciones" @ondblclick="@(() => OpenDetail(item))">
-                        <MudTooltip Text="Editar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                Visible="@CanUpdate"
-                                Color="Color.Primary"
-                                Size="Size.Small"
-                                OnClick="@(() => EditItem(item.PkidMatrizConversion))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                Visible="@CanDelete"
-                                Color="Color.Error"
-                                Size="Size.Small"
-                                OnClick="@(() => DeleteItem(item.PkidMatrizConversion))" />
-                        </MudTooltip>
-                    </MudTd>
-                    <MudTd Class="col-id" @ondblclick="@(() => OpenDetail(item))">@item.PkidMatrizConversion</MudTd>
-                    <MudTd Class="col-programa" @ondblclick="@(() => OpenDetail(item))">@item.ProgramaClave</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.PartidaDescripcion</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaAprobadoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaPorEjercerNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaModificadoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaComprometidoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaDevengadoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaEjercidoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaPagadoNombre</MudTd>
-                    <MudTd Class="col-cuenta" @ondblclick="@(() => OpenDetail(item))">@item.CuentaGastoNombre</MudTd>
-                </Row>
-            </GenericTable>
+                <Columns>
+                    <TemplateColumn Resizable="false" T="MatrizConversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))"><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizConversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizConversion))" /></MudTooltip></div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="ID" Identifier="PkidMatrizConversion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PkidMatrizConversion</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.ProgramaClave</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Partida" Identifier="PartidaDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PartidaDescripcion</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Aprobado" Identifier="CuentaAprobadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaAprobadoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Por Ejercer" Identifier="CuentaPorEjercerNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPorEjercerNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Modificado" Identifier="CuentaModificadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaModificadoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Comprometido" Identifier="CuentaComprometidoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaComprometidoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Devengado" Identifier="CuentaDevengadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaDevengadoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Ejercido" Identifier="CuentaEjercidoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaEjercidoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Pagado" Identifier="CuentaPagadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPagadoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Gasto" Identifier="CuentaGastoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaGastoNombre</div></CellTemplate></TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<MatrizConversionResponse> table = null!;
+    private GenericDataGrid<MatrizConversionResponse> table = null!;
 
     protected override string ModuleName => "Contabilidad";
     protected override string SubModuleName => "Matriz_Conversion";

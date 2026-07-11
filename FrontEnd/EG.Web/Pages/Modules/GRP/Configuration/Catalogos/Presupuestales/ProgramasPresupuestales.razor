@@ -20,7 +20,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ProgramaResponse"
+        <GenericDataGrid TItem="ProgramaResponse"
                       @ref="table"
                       Title="Lista de Programas Presupuestales"
                       SearchPlaceholder="Buscar por clave, descripcion o catalogos..."
@@ -31,52 +31,23 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidPrograma" T="ProgramaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProgramaResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProgramaResponse">Descripcion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="UrclaveNombre" T="ProgramaResponse">UR</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="GfclaveNombre" T="ProgramaResponse">GF</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FnclaveNombre" T="ProgramaResponse">FN</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="SfclaveNombre" T="ProgramaResponse">SF</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ActividadInstitucionalClaveNombre" T="ProgramaResponse">Actividad</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="AnioClave" T="ProgramaResponse">Anio</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidPrograma))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidPrograma))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidPrograma</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@TextOrDash(item.UrclaveNombre)</MudTd>
-                <MudTd>@TextOrDash(item.GfclaveNombre)</MudTd>
-                <MudTd>@TextOrDash(item.FnclaveNombre)</MudTd>
-                <MudTd>@TextOrDash(item.SfclaveNombre)</MudTd>
-                <MudTd>@TextOrDash(item.ActividadInstitucionalClaveNombre)</MudTd>
-                <MudTd>@(item.AnioClave?.ToString() ?? "-")</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="ProgramaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPrograma))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPrograma))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProgramaResponse" TProperty="int" Property="x => x.PkidPrograma" Title="ID" Identifier="PkidPrograma" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.UrclaveNombre" Title="UR" Identifier="UrclaveNombre" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.GfclaveNombre" Title="GF" Identifier="GfclaveNombre" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.FnclaveNombre" Title="FN" Identifier="FnclaveNombre" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.SfclaveNombre" Title="SF" Identifier="SfclaveNombre" />
+                <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.ActividadInstitucionalClaveNombre" Title="Actividad" Identifier="ActividadInstitucionalClaveNombre" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ProgramaResponse> table = null!;
+    private GenericDataGrid<ProgramaResponse> table = null!;
 
     protected override string ModuleName => "Catalogos_presupuestales";
     protected override string SubModuleName => "Programas_Presupuestales";

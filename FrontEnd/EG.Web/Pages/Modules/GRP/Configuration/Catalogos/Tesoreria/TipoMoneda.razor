@@ -8,7 +8,7 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Moneda" Subtitle="Gestion del catalogo de monedas" Icon="@Icons.Material.Filled.AttachMoney"
             CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoMonedaResponse"
+        <GenericDataGrid TItem="TipoMonedaResponse"
                       @ref="table"
                       Title="Lista de Monedas"
                       SearchPlaceholder="Buscar por codigo ISO, descripcion o pais..."
@@ -18,45 +18,21 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoMoneda" T="TipoMonedaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CodigoIso4217" T="TipoMonedaResponse">Codigo ISO</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Simbolo" T="TipoMonedaResponse">Simbolo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoMonedaResponse">Descripcion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PaisNombre" T="TipoMonedaResponse">Pais</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Decimales" T="TipoMonedaResponse">Decimales</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoMoneda))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoMoneda))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoMoneda</MudTd>
-                <MudTd>@item.CodigoIso4217</MudTd>
-                <MudTd>@item.Simbolo</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@(string.IsNullOrWhiteSpace(item.PaisNombre) ? "-" : item.PaisNombre)</MudTd>
-                <MudTd>@item.Decimales</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoMonedaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoMoneda))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoMoneda))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoMonedaResponse" TProperty="int" Property="x => x.PkidTipoMoneda" Title="ID" Identifier="PkidTipoMoneda" />
+                <PropertyColumn T="TipoMonedaResponse" TProperty="string" Property="x => x.CodigoIso4217" Title="Código ISO" Identifier="CodigoIso4217" />
+                <PropertyColumn T="TipoMonedaResponse" TProperty="string" Property="x => x.Simbolo" Title="Símbolo" Identifier="Simbolo" />
+                <PropertyColumn T="TipoMonedaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <TemplateColumn Resizable="true" T="TipoMonedaResponse" Title="País" Identifier="PaisNombre"><CellTemplate>@(string.IsNullOrWhiteSpace(context.Item.PaisNombre) ? "-" : context.Item.PaisNombre)</CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoMonedaResponse" TProperty="int" Property="x => x.Decimales" Title="Decimales" Identifier="Decimales" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoMonedaResponse> table = null!;
+    private GenericDataGrid<TipoMonedaResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_Moneda";
     protected override Type CreateDialogType => typeof(TipoMonedaDialog);

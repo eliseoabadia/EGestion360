@@ -7,7 +7,7 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Pago SF" Subtitle="Gestión del catálogo de tipos de pago SF" Icon="@Icons.Material.Filled.Receipt"
             CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoPagoSFResponse"
+        <GenericDataGrid TItem="TipoPagoSFResponse"
                       @ref="table"
                       Title="Lista de Tipos de Pago SF"
                       SearchPlaceholder="Buscar por descripción..."
@@ -17,36 +17,16 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoPagoSf" T="TipoPagoSFResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPagoSFResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoPagoSf))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoPagoSf))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoPagoSf</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoPagoSFResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoPagoSf))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoPagoSf))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoPagoSFResponse" TProperty="int" Property="x => x.PkidTipoPagoSf" Title="ID" Identifier="PkidTipoPagoSf" />
+                <PropertyColumn T="TipoPagoSFResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 @code {
-    private GenericTable<TipoPagoSFResponse> table = null!;
+    private GenericDataGrid<TipoPagoSFResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_PagoSF";
     protected override Type CreateDialogType => typeof(TipoPagoSFDialog);

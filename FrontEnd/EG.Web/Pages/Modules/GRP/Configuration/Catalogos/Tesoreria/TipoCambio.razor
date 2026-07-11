@@ -13,7 +13,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="TipoCambioResponse"
+        <GenericDataGrid TItem="TipoCambioResponse"
                       @ref="table"
                       Title="Lista de Tipos de Cambio"
                       SearchPlaceholder="Buscar por moneda..."
@@ -23,43 +23,20 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoCambio" T="TipoCambioResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MonedaCodigo" T="TipoCambioResponse">Moneda</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MonedaDescripcion" T="TipoCambioResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="TipoCambioResponse">Cantidad</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Fecha" T="TipoCambioResponse">Fecha</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoCambio))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoCambio))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoCambio</MudTd>
-                <MudTd>@item.MonedaCodigo</MudTd>
-                <MudTd>@item.MonedaDescripcion</MudTd>
-                <MudTd>@item.Cantidad.ToString("N4")</MudTd>
-                <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoCambioResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoCambio))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoCambio))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoCambioResponse" TProperty="int" Property="x => x.PkidTipoCambio" Title="ID" Identifier="PkidTipoCambio" />
+                <PropertyColumn T="TipoCambioResponse" TProperty="string" Property="x => x.MonedaCodigo" Title="Moneda" Identifier="MonedaCodigo" />
+                <PropertyColumn T="TipoCambioResponse" TProperty="string" Property="x => x.MonedaDescripcion" Title="Descripción" Identifier="MonedaDescripcion" />
+                <TemplateColumn Resizable="true" T="TipoCambioResponse" Title="Cantidad" Identifier="Cantidad"><CellTemplate>@context.Item.Cantidad.ToString("N4")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="TipoCambioResponse" Title="Fecha" Identifier="Fecha"><CellTemplate>@context.Item.Fecha.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoCambioResponse> table = null!;
+    private GenericDataGrid<TipoCambioResponse> table = null!;
 
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_Cambio";

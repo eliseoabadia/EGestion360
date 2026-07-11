@@ -27,10 +27,10 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn T="EstatusRequisicionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="EstatusRequisicionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEstatusRequisicion))" /></MudTooltip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="EstatusRequisicionResponse" TProperty="int" Property="x => x.PkidEstatusRequisicion" Title="ID" Identifier="PkidEstatusRequisicion" />
                 <PropertyColumn T="EstatusRequisicionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
-                <TemplateColumn T="EstatusRequisicionResponse" Title="Color" Identifier="Color"><CellTemplate><MudChip T="string" Color="@Color.Primary" Style="@($"background-color: {context.Item.Color}; color: white;")" Size="Size.Small">@context.Item.Color</MudChip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="EstatusRequisicionResponse" Title="Color" Identifier="Color"><CellTemplate><MudChip T="string" Color="@Color.Primary" Style="@($"background-color: {context.Item.Color}; color: white;")" Size="Size.Small">@context.Item.Color</MudChip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="EstatusRequisicionResponse" TProperty="int" Property="x => x.Orden" Title="Orden" Identifier="Orden" />
             </Columns>
         </GenericDataGrid>

@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ProgramaPresupuestalResponse"
+        <GenericDataGrid TItem="ProgramaPresupuestalResponse"
                       @ref="table"
                       Title="Lista de Programas Presupuestales"
                       SearchPlaceholder="Buscar por clave o descripcion..."
@@ -26,54 +26,18 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidPp" T="ProgramaPresupuestalResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProgramaPresupuestalResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProgramaPresupuestalResponse">Descripcion</MudTableSortLabel></MudTh>
-               @*  <MudTh><MudTableSortLabel SortLabel="Activo" T="ProgramaPresupuestalResponse">Estatus</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaCreacion" T="ProgramaPresupuestalResponse">Creacion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaModificacion" T="ProgramaPresupuestalResponse">Modificacion</MudTableSortLabel></MudTh> *@
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar programa presupuestal">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidPp))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar programa presupuestal">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidPp))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidPp</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
-                        @item.Clave
-                    </MudChip>
-                </MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                @* <MudTd>
-                    <MudChip T="string" Color="@(item.Activo ? Color.Success : Color.Error)" Size="Size.Small">
-                        @(item.Activo ? "Activo" : "Inactivo")
-                    </MudChip>
-                </MudTd>
-                <MudTd>@DateOrDash(item.FechaCreacion)</MudTd>
-                <MudTd>@DateOrDash(item.FechaModificacion)</MudTd> *@
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="ProgramaPresupuestalResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar programa presupuestal"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPp))" /></MudTooltip><MudTooltip Text="Eliminar programa presupuestal"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPp))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProgramaPresupuestalResponse" TProperty="int" Property="x => x.PkidPp" Title="ID" Identifier="PkidPp" />
+                <TemplateColumn Resizable="true" T="ProgramaPresupuestalResponse" Title="Clave" Identifier="Clave"><CellTemplate><MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">@context.Item.Clave</MudChip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProgramaPresupuestalResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ProgramaPresupuestalResponse> table = null!;
+    private GenericDataGrid<ProgramaPresupuestalResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
     protected override string SubModuleName => "Programa_Presupuestal";

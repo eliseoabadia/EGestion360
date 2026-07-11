@@ -16,7 +16,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="PeriodoConteoResponse"
+        <GenericDataGrid TItem="PeriodoConteoResponse"
                       @ref="table"
                       Title="Lista de Períodos de Conteo"
                       SearchPlaceholder="Buscar por código, nombre o sucursal..."
@@ -27,38 +27,22 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidPeriodoConteo" T="PeriodoConteoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CodigoPeriodo" T="PeriodoConteoResponse">Código</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PeriodoConteoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Sucursal" T="PeriodoConteoResponse">Sucursal</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoConteo" T="PeriodoConteoResponse">Tipo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="PeriodoConteoResponse">Inicio</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EstatusPeriodo" T="PeriodoConteoResponse">Estatus</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="periodo">
-                <MudTd>@periodo.PkidPeriodoConteo</MudTd>
-                <MudTd>@periodo.CodigoPeriodo</MudTd>
-                <MudTd>@periodo.Nombre</MudTd>
-                <MudTd>@periodo.Sucursal</MudTd>
-                <MudTd>@periodo.TipoConteo</MudTd>
-                <MudTd>@periodo.FechaInicio.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>
-                    <MudChip T="string" 
-                             Color="@GetEstatusColor(periodo.EstatusPeriodo)" 
-                             Size="Size.Small">
-                        @periodo.EstatusPeriodo
-                    </MudChip>
-                </MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="PeriodoConteoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPeriodoConteo))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPeriodoConteo))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="int" Property="x => x.PkidPeriodoConteo" Title="ID" Identifier="PkidPeriodoConteo" />
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.CodigoPeriodo" Title="Código" Identifier="CodigoPeriodo" />
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.Sucursal" Title="Sucursal" Identifier="Sucursal" />
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.TipoConteo" Title="Tipo" Identifier="TipoConteo" />
+                <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Inicio" Identifier="FechaInicio"><CellTemplate>@context.Item.FechaInicio.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Estatus" Identifier="EstatusPeriodo"><CellTemplate><MudChip T="string" Color="@GetEstatusColor(context.Item.EstatusPeriodo)" Size="Size.Small">@context.Item.EstatusPeriodo</MudChip></CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<PeriodoConteoResponse> table = null!;
+    private GenericDataGrid<PeriodoConteoResponse> table = null!;
 
     protected override string ModuleName => "Almacen";
     protected override string SubModuleName => "Conteo_Periodo";

@@ -7,7 +7,7 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Solicitud CLC" Subtitle="Gestión del catálogo de solicitudes CLC" Icon="@Icons.Material.Filled.Description"
             CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoSolicitudCLCResponse"
+        <GenericDataGrid TItem="TipoSolicitudCLCResponse"
                       @ref="table"
                       Title="Lista de Solicitudes CLC"
                       SearchPlaceholder="Buscar por descripción..."
@@ -17,36 +17,16 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoSolicitudClc" T="TipoSolicitudCLCResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoSolicitudCLCResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoSolicitudClc))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoSolicitudClc))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoSolicitudClc</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoSolicitudCLCResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoSolicitudClc))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoSolicitudClc))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoSolicitudCLCResponse" TProperty="int" Property="x => x.PkidTipoSolicitudClc" Title="ID" Identifier="PkidTipoSolicitudClc" />
+                <PropertyColumn T="TipoSolicitudCLCResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 @code {
-    private GenericTable<TipoSolicitudCLCResponse> table = null!;
+    private GenericDataGrid<TipoSolicitudCLCResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_SolicitudCLC";
     protected override Type CreateDialogType => typeof(TipoSolicitudCLCDialog);

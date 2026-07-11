@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="CuentaContableResponse"
+        <GenericDataGrid TItem="CuentaContableResponse"
                   @ref="table"
                   Title="Lista de Cuentas Contables"
                   SearchPlaceholder="Buscar por cuenta o descripción..."
@@ -26,40 +26,18 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidCuentaContable" T="CuentaContableResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Cuenta" T="CuentaContableResponse">Cuenta</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="CuentaContableResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidCuentaContable))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidCuentaContable))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidCuentaContable</MudTd>
-                <MudTd>@item.Cuenta</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="CuentaContableResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidCuentaContable))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidCuentaContable))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="CuentaContableResponse" TProperty="int" Property="x => x.PkidCuentaContable" Title="ID" Identifier="PkidCuentaContable" />
+                <PropertyColumn T="CuentaContableResponse" TProperty="string" Property="x => x.Cuenta" Title="Cuenta" Identifier="Cuenta" />
+                <PropertyColumn T="CuentaContableResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<CuentaContableResponse> table = null!;
+    private GenericDataGrid<CuentaContableResponse> table = null!;
 
     protected override string ModuleName => "Contabilidad";
     protected override string SubModuleName => "Cuentas_Contables";

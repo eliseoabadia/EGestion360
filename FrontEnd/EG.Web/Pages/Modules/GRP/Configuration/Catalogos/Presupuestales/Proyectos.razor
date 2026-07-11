@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="ProyectoResponse"
+        <GenericDataGrid TItem="ProyectoResponse"
                       @ref="table"
                       Title="Lista de Proyectos"
                       SearchPlaceholder="Buscar por clave o descripcion..."
@@ -26,44 +26,18 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidPy" T="ProyectoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="ProyectoResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ProyectoResponse">Descripcion</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar proyecto">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidPy))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar proyecto">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidPy))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidPy</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
-                        @item.Clave
-                    </MudChip>
-                </MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="ProyectoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar proyecto"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPy))" /></MudTooltip><MudTooltip Text="Eliminar proyecto"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPy))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProyectoResponse" TProperty="int" Property="x => x.PkidPy" Title="ID" Identifier="PkidPy" />
+                <TemplateColumn Resizable="true" T="ProyectoResponse" Title="Clave" Identifier="Clave"><CellTemplate><MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">@context.Item.Clave</MudChip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="ProyectoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<ProyectoResponse> table = null!;
+    private GenericDataGrid<ProyectoResponse> table = null!;
 
     protected override string ModuleName => "ClavePrograma";
     protected override string SubModuleName => "Proyecto";

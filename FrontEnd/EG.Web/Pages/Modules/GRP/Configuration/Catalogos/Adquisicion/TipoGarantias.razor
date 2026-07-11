@@ -27,7 +27,7 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn T="TipoGarantiaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoGarantia))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoGarantia))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="TipoGarantiaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoGarantia))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoGarantia))" /></MudTooltip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="TipoGarantiaResponse" TProperty="int" Property="x => x.PkidTipoGarantia" Title="ID" Identifier="PkidTipoGarantia" />
                 <PropertyColumn T="TipoGarantiaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>

@@ -7,7 +7,7 @@
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Tipos de Documento CLC" Subtitle="Gestión del catálogo de documentos CLC" Icon="@Icons.Material.Filled.Description"
             CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoDoctoClcResponse"
+        <GenericDataGrid TItem="TipoDoctoClcResponse"
                       @ref="table"
                       Title="Lista de Documentos CLC"
                       SearchPlaceholder="Buscar por clave o nombre..."
@@ -17,40 +17,18 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoDoctoClc" T="TipoDoctoClcResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoDoctoClcResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="TipoDoctoClcResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoRecurso" T="TipoDoctoClcResponse">Tipo Recurso</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoDoctoClc))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoDoctoClc))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoDoctoClc</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Nombre</MudTd>
-                <MudTd>@item.TipoRecurso</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoDoctoClcResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDoctoClc))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDoctoClc))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoDoctoClcResponse" TProperty="int" Property="x => x.PkidTipoDoctoClc" Title="ID" Identifier="PkidTipoDoctoClc" />
+                <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
+                <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.TipoRecurso" Title="Tipo Recurso" Identifier="TipoRecurso" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 @code {
-    private GenericTable<TipoDoctoClcResponse> table = null!;
+    private GenericDataGrid<TipoDoctoClcResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_DoctoCLC";
     protected override Type CreateDialogType => typeof(TipoDoctoClcDialog);

@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="SucursalResponse"
+        <GenericDataGrid TItem="SucursalResponse"
                       @ref="table"
                       Title="Lista de Sucursales"
                       SearchPlaceholder="Buscar por nombre, codigo, empresa, ciudad o estado..."
@@ -26,59 +26,23 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidSucursal" T="SucursalResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="CodigoSucursal" T="SucursalResponse">Codigo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="SucursalResponse">Sucursal</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreEmpresa" T="SucursalResponse">Empresa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Ciudad" T="SucursalResponse">Ciudad</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NombreEstado" T="SucursalResponse">Estado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EsMatriz" T="SucursalResponse">Matriz</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EsActiva" T="SucursalResponse">Activa</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="sucursal">
-                <MudTd>
-                    <MudTooltip Text="Editar sucursal">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(sucursal.PkidSucursal))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar sucursal">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Disabled="@sucursal.EsMatriz"
-                                       OnClick="@(() => DeleteItem(sucursal.PkidSucursal))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@sucursal.PkidSucursal</MudTd>
-                <MudTd>@sucursal.CodigoSucursal</MudTd>
-                <MudTd>@sucursal.Nombre</MudTd>
-                <MudTd>@sucursal.NombreEmpresa</MudTd>
-                <MudTd>@sucursal.Ciudad</MudTd>
-                <MudTd>@sucursal.NombreEstado</MudTd>
-                <MudTd>
-                    <MudChip T="string" Size="Size.Small" Color="@(sucursal.EsMatriz ? Color.Info : Color.Default)">
-                        @(sucursal.EsMatriz ? "Si" : "No")
-                    </MudChip>
-                </MudTd>
-                <MudTd>
-                    <MudChip T="string" Size="Size.Small" Color="@(sucursal.EsActiva && sucursal.Activo ? Color.Success : Color.Default)">
-                        @(sucursal.EsActiva && sucursal.Activo ? "Activa" : "Inactiva")
-                    </MudChip>
-                </MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="SucursalResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar sucursal"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidSucursal))" /></MudTooltip><MudTooltip Text="Eliminar sucursal"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@context.Item.EsMatriz" OnClick="@(() => DeleteItem(context.Item.PkidSucursal))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="SucursalResponse" TProperty="int" Property="x => x.PkidSucursal" Title="ID" Identifier="PkidSucursal" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.CodigoSucursal" Title="Código" Identifier="CodigoSucursal" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.Nombre" Title="Sucursal" Identifier="Nombre" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEmpresa" Title="Empresa" Identifier="NombreEmpresa" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.Ciudad" Title="Ciudad" Identifier="Ciudad" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEstado" Title="Estado" Identifier="NombreEstado" />
+                <TemplateColumn Resizable="true" T="SucursalResponse" Title="Matriz" Identifier="EsMatriz"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@(context.Item.EsMatriz ? Color.Info : Color.Default)">@(context.Item.EsMatriz ? "Sí" : "No")</MudChip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="SucursalResponse" Title="Activa" Identifier="EsActiva"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@(context.Item.EsActiva && context.Item.Activo ? Color.Success : Color.Default)">@(context.Item.EsActiva && context.Item.Activo ? "Activa" : "Inactiva")</MudChip></CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<SucursalResponse> table = null!;
+    private GenericDataGrid<SucursalResponse> table = null!;
 
     protected override string ModuleName => "Sistema";
     protected override string SubModuleName => "Sucursal";

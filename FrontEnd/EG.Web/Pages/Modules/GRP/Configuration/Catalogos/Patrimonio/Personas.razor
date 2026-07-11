@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="PersonaResponse"
+        <GenericDataGrid TItem="PersonaResponse"
                   @ref="table"
                   Title="Lista de Personas"
                   SearchPlaceholder="Buscar por nombre, RFC o CURP..."
@@ -26,46 +26,21 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidPersona" T="PersonaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="PersonaResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Nombre" T="PersonaResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Paterno" T="PersonaResponse">Paterno</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Materno" T="PersonaResponse">Materno</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Rfc" T="PersonaResponse">RFC</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidPersona))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidPersona))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidPersona</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Nombre</MudTd>
-                <MudTd>@item.Paterno</MudTd>
-                <MudTd>@item.Materno</MudTd>
-                <MudTd>@item.Rfc</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="PersonaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPersona))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPersona))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="PersonaResponse" TProperty="int" Property="x => x.PkidPersona" Title="ID" Identifier="PkidPersona" />
+                <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
+                <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Paterno" Title="Paterno" Identifier="Paterno" />
+                <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Materno" Title="Materno" Identifier="Materno" />
+                <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Rfc" Title="RFC" Identifier="Rfc" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<PersonaResponse> table = null!;
+    private GenericDataGrid<PersonaResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Personas";

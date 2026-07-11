@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="GrupoBienResponse"
+        <GenericDataGrid TItem="GrupoBienResponse"
                       @ref="table"
                       Title="Lista de Grupos de Bien"
                       SearchPlaceholder="Buscar por descripción, familia o clave..."
@@ -26,44 +26,20 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FamiliaClave" T="GrupoBienResponse">Clave Familia</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FamiliaDescripcion" T="GrupoBienResponse">Familia</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="GrupoBienClave" T="GrupoBienResponse">Clave Grupo</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="GrupoBienDescripcion" T="GrupoBienResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ClaveCucop" T="GrupoBienResponse">CUCOP</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidGrupoBien))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidGrupoBien))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.FamiliaClave</MudTd>
-                <MudTd>@item.FamiliaDescripcion</MudTd>
-                <MudTd>@item.GrupoBienClave</MudTd>
-                <MudTd>@item.GrupoBienDescripcion</MudTd>
-                <MudTd>@item.ClaveCucop</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="GrupoBienResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidGrupoBien))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidGrupoBien))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="GrupoBienResponse" TProperty="string" Property="x => x.FamiliaClave" Title="Clave Familia" Identifier="FamiliaClave" />
+                <PropertyColumn T="GrupoBienResponse" TProperty="string" Property="x => x.FamiliaDescripcion" Title="Familia" Identifier="FamiliaDescripcion" />
+                <PropertyColumn T="GrupoBienResponse" TProperty="int?" Property="x => x.GrupoBienClave" Title="Clave Grupo" Identifier="GrupoBienClave" />
+                <PropertyColumn T="GrupoBienResponse" TProperty="string" Property="x => x.GrupoBienDescripcion" Title="Descripción" Identifier="GrupoBienDescripcion" />
+                <PropertyColumn T="GrupoBienResponse" TProperty="string" Property="x => x.ClaveCucop" Title="CUCOP" Identifier="ClaveCucop" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<GrupoBienResponse> table = null!;
+    private GenericDataGrid<GrupoBienResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Grupo_Bien";

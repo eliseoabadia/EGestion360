@@ -27,7 +27,7 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn T="ModalidadResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
+                <TemplateColumn Resizable="false" T="ModalidadResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
                     <CellTemplate>
                         <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidModalidad))" /></MudTooltip>
                         <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidModalidad))" /></MudTooltip>

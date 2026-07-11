@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="TipoAdquisicionResponse"
+        <GenericDataGrid TItem="TipoAdquisicionResponse"
                   @ref="table"
                   Title="Lista de Tipos de Adquisición"
                   SearchPlaceholder="Buscar por clave o descripción..."
@@ -26,42 +26,19 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoAdq" T="TipoAdquisicionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Clave" T="TipoAdquisicionResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoAdquisicionResponse">Descripción</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripmovto" T="TipoAdquisicionResponse">Descripción Movto</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoAdq))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoAdq))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoAdq</MudTd>
-                <MudTd>@item.Clave</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-                <MudTd>@item.Descripmovto</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoAdquisicionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoAdq))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoAdq))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoAdquisicionResponse" TProperty="int" Property="x => x.PkidTipoAdq" Title="ID" Identifier="PkidTipoAdq" />
+                <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
+                <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Descripmovto" Title="Descripción Movto" Identifier="Descripmovto" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoAdquisicionResponse> table = null!;
+    private GenericDataGrid<TipoAdquisicionResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Tipo_Adquisicion";

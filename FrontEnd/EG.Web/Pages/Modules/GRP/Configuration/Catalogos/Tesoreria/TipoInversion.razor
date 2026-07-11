@@ -13,7 +13,7 @@
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericTable TItem="TipoInversionResponse"
+        <GenericDataGrid TItem="TipoInversionResponse"
                       @ref="table"
                       Title="Lista de Tipos de Inversión"
                       SearchPlaceholder="Buscar por descripción..."
@@ -23,37 +23,17 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidTipoInversion" T="TipoInversionResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoInversionResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoInversion))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoInversion))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoInversion</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoInversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoInversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoInversion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoInversionResponse" TProperty="int" Property="x => x.PkidTipoInversion" Title="ID" Identifier="PkidTipoInversion" />
+                <PropertyColumn T="TipoInversionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoInversionResponse> table = null!;
+    private GenericDataGrid<TipoInversionResponse> table = null!;
     protected override string ModuleName => "Tesoreria";
     protected override string SubModuleName => "Tipo_Inversion";
     protected override Type CreateDialogType => typeof(TipoInversionDialog);

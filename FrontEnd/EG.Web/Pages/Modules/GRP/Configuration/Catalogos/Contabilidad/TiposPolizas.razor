@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="TipoPolizaResponse"
+        <GenericDataGrid TItem="TipoPolizaResponse"
                       @ref="table"
                       Title="Lista de Tipos de Pólizas"
                       SearchPlaceholder="Buscar por descripción..."
@@ -26,38 +26,17 @@
                   SearchStringChanged="(s) => SearchString = s"
                   OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-        <MudTh><MudTableSortLabel SortLabel="PkidTipoPoliza" T="TipoPolizaResponse">ID</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Descripcion" T="TipoPolizaResponse">Descripción</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidTipoPoliza))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidTipoPoliza))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidTipoPoliza</MudTd>
-                <MudTd>@item.Descripcion</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="TipoPolizaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoPoliza))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoPoliza))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="TipoPolizaResponse" TProperty="int" Property="x => x.PkidTipoPoliza" Title="ID" Identifier="PkidTipoPoliza" />
+                <PropertyColumn T="TipoPolizaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<TipoPolizaResponse> table = null!;
+    private GenericDataGrid<TipoPolizaResponse> table = null!;
 
     protected override string ModuleName => "Contabilidad";
     protected override string SubModuleName => "Tipo_Polizas";

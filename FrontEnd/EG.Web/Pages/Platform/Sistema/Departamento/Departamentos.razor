@@ -15,7 +15,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="DepartamentoResponse"
+        <GenericDataGrid TItem="DepartamentoResponse"
                       @ref="table"
                       Title="Lista de Departamentos"
                       SearchPlaceholder="Buscar por nombre..."
@@ -24,44 +24,20 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      CurrentPage="@CurrentPage"
-                      PageSize="@PageSize"
                       OnSearch="OnSearch">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidDepartamento" T="DepartamentoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="DepartamentoNombre" T="DepartamentoResponse">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EmpresaNombre" T="DepartamentoResponse">Empresa</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="departamento">
-                <MudTd>
-                    <MudTooltip Text="Editar departamento">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(departamento.PkidDepartamento))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar departamento">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(departamento.PkidDepartamento))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@departamento.PkidDepartamento</MudTd>
-                <MudTd>@departamento.DepartamentoNombre</MudTd>
-                <MudTd>@departamento.EmpresaNombre</MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn Resizable="false" T="DepartamentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar departamento"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidDepartamento))" /></MudTooltip><MudTooltip Text="Eliminar departamento"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidDepartamento))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <PropertyColumn T="DepartamentoResponse" TProperty="int" Property="x => x.PkidDepartamento" Title="ID" Identifier="PkidDepartamento" />
+                <PropertyColumn T="DepartamentoResponse" TProperty="string" Property="x => x.DepartamentoNombre" Title="Nombre" Identifier="DepartamentoNombre" />
+                <PropertyColumn T="DepartamentoResponse" TProperty="string" Property="x => x.EmpresaNombre" Title="Empresa" Identifier="EmpresaNombre" />
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<DepartamentoResponse> table = null!;
+    private GenericDataGrid<DepartamentoResponse> table = null!;
 
     protected override string ModuleName => "Sistema";
     protected override string SubModuleName => "Departamento";
