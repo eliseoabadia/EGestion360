@@ -15,6 +15,8 @@ public partial class MatrizConversion
 
     public int FkidPartidaSis { get; set; }
 
+    public int FkidTipoGastoPres { get; set; }
+
     public int FkidCuentaContableAprobado { get; set; }
 
     public int FkidCuentaContablePorEjercer { get; set; }
@@ -62,6 +64,8 @@ public partial class MatrizConversion
     public virtual Partidum1 FkidPartidaSisNavigation { get; set; }
 
     public virtual Programa FkidProgramaPresNavigation { get; set; }
+
+    public virtual TipoGasto FkidTipoGastoPresNavigation { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

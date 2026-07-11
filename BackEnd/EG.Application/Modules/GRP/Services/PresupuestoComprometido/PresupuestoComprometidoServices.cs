@@ -6,6 +6,7 @@ using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EG.Application.Services.PresupuestoComprometido
 {
@@ -31,7 +32,67 @@ namespace EG.Application.Services.PresupuestoComprometido
             int usuarioActual)
         {
             var validation = await NormalizeAndValidateAsync(response, null);
-            return validation ?? await base.CreateAsync(response, usuarioActual);
+            if (validation != null)
+                return validation;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                var budgetValidation = await ValidateBudgetAvailabilityAsync(response.FkidSolicitudSuficienciaPres);
+                if (budgetValidation != null)
+                    return budgetValidation;
+
+                var result = await base.CreateAsync(response, usuarioActual);
+                if (!result.Success)
+                    return result;
+
+                var authorizationId = result.Data?.PkidAutorizacionSuficiencia
+                    ?? result.Items?.FirstOrDefault()?.PkidAutorizacionSuficiencia
+                    ?? 0;
+                if (authorizationId <= 0)
+                    throw new InvalidOperationException("No se recupero el identificador de la autorizacion.");
+
+                var requestedDetails = await _context.SolicitudSuficienciaDetalles.AsNoTracking()
+                    .Where(x => x.FkidSolicitudSuficienciaPres == response.FkidSolicitudSuficienciaPres && x.Activo)
+                    .ToListAsync();
+
+                foreach (var detail in requestedDetails)
+                {
+                    _context.AutorizacionSuficienciaDetalles.Add(new AutorizacionSuficienciaDetalle
+                    {
+                        FkidEmpresaSis = response.FkidEmpresaSis,
+                        FkidAutorizacionSuficienciaPres = authorizationId,
+                        FkidSolicitudSuficienciaDetallePres = detail.PkidSolicitudSuficienciaDetalle,
+                        FkidPartidaConta = detail.FkidPartidaConta,
+                        Enero = detail.Enero,
+                        Febrero = detail.Febrero,
+                        Marzo = detail.Marzo,
+                        Abril = detail.Abril,
+                        Mayo = detail.Mayo,
+                        Junio = detail.Junio,
+                        Julio = detail.Julio,
+                        Agosto = detail.Agosto,
+                        Septiembre = detail.Septiembre,
+                        Octubre = detail.Octubre,
+                        Noviembre = detail.Noviembre,
+                        Diciembre = detail.Diciembre,
+                        Observaciones = detail.Observaciones ?? string.Empty,
+                        Activo = true,
+                        FechaCreacion = DateTime.UtcNow,
+                        UsuarioCreacion = usuarioActual
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                result.Message = "Suficiencia autorizada y reservada en una sola transaccion.";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Failure<AutorizacionSuficienciaResponse>($"No fue posible reservar la suficiencia: {ex.Message}", "BUDGET_ERROR");
+            }
         }
 
         public override async Task<PagedResult<AutorizacionSuficienciaResponse>> UpdateAsync(
@@ -125,6 +186,73 @@ namespace EG.Application.Services.PresupuestoComprometido
             response.Observaciones ??= string.Empty;
             response.Estatus = response.Estatus <= 0 ? 2 : response.Estatus;
             response.Activo = true;
+
+            return null;
+        }
+
+        private async Task<PagedResult<AutorizacionSuficienciaResponse>?> ValidateBudgetAvailabilityAsync(int solicitudId)
+        {
+            var solicitud = await _context.SolicitudSuficiencia.AsNoTracking()
+                .FirstAsync(x => x.PkidSolicitudSuficiencia == solicitudId && x.Activo);
+            var requisicion = await _context.Requisicions.AsNoTracking()
+                .FirstAsync(x => x.PkidRequisicion == solicitud.FkidRequisicionOrco && x.Activo);
+
+            if (!requisicion.FkidAnioSis.HasValue || !requisicion.FkidProgramaPres.HasValue ||
+                !requisicion.FkidFuenteFinanciamientoPres.HasValue || !requisicion.FkidTipoGastoPres.HasValue ||
+                !requisicion.FkidDigitoIdentificadorPres.HasValue || !requisicion.FkidDestinoGastoPres.HasValue)
+            {
+                return Failure<AutorizacionSuficienciaResponse>(
+                    "La requisicion no tiene clasificacion completa: ejercicio, programa, FF, TG, DI y DG.");
+            }
+
+            var requested = await _context.SolicitudSuficienciaDetalles.AsNoTracking()
+                .Where(x => x.FkidSolicitudSuficienciaPres == solicitudId && x.Activo)
+                .GroupBy(x => x.FkidPartidaConta)
+                .Select(g => new { PartidaId = g.Key, Total = g.Sum(x => x.Total ?? 0m) })
+                .ToListAsync();
+
+            foreach (var item in requested)
+            {
+                var available = await _context.VwEgresoDisponibles.AsNoTracking()
+                    .Where(x => x.FkidAnioSis == requisicion.FkidAnioSis &&
+                                x.FkidProgramaPres == requisicion.FkidProgramaPres &&
+                                x.FkidPartidaConta == item.PartidaId &&
+                                x.FkidAreaSis == requisicion.FkidAreaSis &&
+                                x.FkidFuenteFinanciamientoPres == requisicion.FkidFuenteFinanciamientoPres &&
+                                x.FkidTipoGastoPres == requisicion.FkidTipoGastoPres &&
+                                x.FkidDigitoIdentificadorPres == requisicion.FkidDigitoIdentificadorPres &&
+                                x.FkidDestinoGastoPres == requisicion.FkidDestinoGastoPres)
+                    .SumAsync(x => x.Total ?? 0m);
+
+                var reservations = await (
+                    from detail in _context.AutorizacionSuficienciaDetalles.AsNoTracking()
+                    join authorization in _context.AutorizacionSuficiencia.AsNoTracking()
+                        on detail.FkidAutorizacionSuficienciaPres equals authorization.PkidAutorizacionSuficiencia
+                    join otherRequest in _context.SolicitudSuficiencia.AsNoTracking()
+                        on authorization.FkidSolicitudSuficienciaPres equals otherRequest.PkidSolicitudSuficiencia
+                    join otherRequisition in _context.Requisicions.AsNoTracking()
+                        on otherRequest.FkidRequisicionOrco equals otherRequisition.PkidRequisicion
+                    where detail.Activo && authorization.Activo && authorization.Estatus != 3 &&
+                          otherRequest.Activo && otherRequisition.Activo &&
+                          detail.FkidPartidaConta == item.PartidaId &&
+                          otherRequisition.FkidAnioSis == requisicion.FkidAnioSis &&
+                          otherRequisition.FkidProgramaPres == requisicion.FkidProgramaPres &&
+                          otherRequisition.FkidAreaSis == requisicion.FkidAreaSis &&
+                          otherRequisition.FkidFuenteFinanciamientoPres == requisicion.FkidFuenteFinanciamientoPres &&
+                          otherRequisition.FkidTipoGastoPres == requisicion.FkidTipoGastoPres &&
+                          otherRequisition.FkidDigitoIdentificadorPres == requisicion.FkidDigitoIdentificadorPres &&
+                          otherRequisition.FkidDestinoGastoPres == requisicion.FkidDestinoGastoPres &&
+                          !_context.Contratos1.Any(c => c.Activo && c.FkidAutorizacionSuficienciaPres == authorization.PkidAutorizacionSuficiencia)
+                    select detail.Total ?? 0m).SumAsync();
+
+                var netAvailable = available - reservations;
+                if (item.Total > netAvailable)
+                {
+                    return Failure<AutorizacionSuficienciaResponse>(
+                        $"Saldo insuficiente para la partida {item.PartidaId}. Solicitado: {item.Total:N2}; disponible: {netAvailable:N2}.",
+                        "INSUFFICIENT_BUDGET");
+                }
+            }
 
             return null;
         }

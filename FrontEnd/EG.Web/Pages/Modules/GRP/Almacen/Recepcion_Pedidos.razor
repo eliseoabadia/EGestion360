@@ -207,6 +207,19 @@
     .recepcion-page .main-cell {
         font-weight: 700;
     }
+
+    @@media (max-width: 1500px) {
+        .recepcion-page .split-shell {
+            grid-template-columns: minmax(0, 1fr);
+            overflow-y: auto;
+        }
+
+        .recepcion-page .orders-panel,
+        .recepcion-page .detail-panel {
+            min-height: 420px;
+            overflow: visible;
+        }
+    }
 </style>
 
 @code {

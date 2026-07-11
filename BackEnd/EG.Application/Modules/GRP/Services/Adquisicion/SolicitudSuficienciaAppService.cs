@@ -215,6 +215,14 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<SolicitudSuficienciaResponse>("La requisicion no existe o esta inactiva.");
             }
 
+            if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidFuenteFinanciamientoPres.HasValue ||
+                !requisicion.FkidTipoGastoPres.HasValue || !requisicion.FkidDigitoIdentificadorPres.HasValue ||
+                !requisicion.FkidDestinoGastoPres.HasValue)
+            {
+                return Failure<SolicitudSuficienciaResponse>(
+                    "No se puede solicitar suficiencia: completa programa, fuente de financiamiento, TG, DI y DG.");
+            }
+
             var duplicate = await _context.SolicitudSuficiencia
                 .AsNoTracking()
                 .AnyAsync(x =>

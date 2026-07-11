@@ -7017,6 +7017,8 @@ public partial class EGestionContext : DbContext
 
             entity.HasIndex(e => e.FkidProgramaPres, "IX_MatrizConversion_FKIdPrograma_PRES_1781581385");
 
+            entity.HasIndex(e => e.FkidTipoGastoPres, "IX_MatrizConversion_FKIdTipoGasto_PRES");
+
             entity.HasIndex(e => e.UsuarioCreacion, "IX_MatrizConversion_UsuarioCreacion_1781581385");
 
             entity.HasIndex(e => e.UsuarioModificacion, "IX_MatrizConversion_UsuarioModificacion_1781581385");
@@ -7035,6 +7037,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FkidCuentaContablePorEjercer).HasColumnName("FKIdCuentaContablePorEjercer");
             entity.Property(e => e.FkidPartidaSis).HasColumnName("FKIdPartida_SIS");
             entity.Property(e => e.FkidProgramaPres).HasColumnName("FKIdPrograma_PRES");
+            entity.Property(e => e.FkidTipoGastoPres).HasColumnName("FKIdTipoGasto_PRES");
 
             entity.HasOne(d => d.FkidAnioSisNavigation).WithMany(p => p.MatrizConversions)
                 .HasForeignKey(d => d.FkidAnioSis)
@@ -7090,6 +7093,11 @@ public partial class EGestionContext : DbContext
                 .HasForeignKey(d => d.FkidProgramaPres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MatrizConversion_Programa");
+
+            entity.HasOne(d => d.FkidTipoGastoPresNavigation).WithMany(p => p.MatrizConversions)
+                .HasForeignKey(d => d.FkidTipoGastoPres)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MatrizConversion_TipoGasto");
 
             entity.HasOne(d => d.UsuarioCreacionNavigation).WithMany(p => p.MatrizConversionUsuarioCreacionNavigations)
                 .HasForeignKey(d => d.UsuarioCreacion)

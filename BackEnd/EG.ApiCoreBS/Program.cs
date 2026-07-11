@@ -181,6 +181,14 @@ try
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.MapMethods("/api/Navigate/ping", ["GET", "POST"], () =>
+        Results.Ok(new { success = true, message = "pong" })).AllowAnonymous();
+    app.MapGet("/api/Navigate/version", (IConfiguration configuration) =>
+        Results.Ok(new
+        {
+            success = true,
+            version = configuration["ApplicationVersion"] ?? "1.0.0"
+        })).AllowAnonymous();
     app.MapControllers();
 
     logger.LogInformation("Aplicacion iniciada correctamente en {Urls}", string.Join(", ", app.Urls));

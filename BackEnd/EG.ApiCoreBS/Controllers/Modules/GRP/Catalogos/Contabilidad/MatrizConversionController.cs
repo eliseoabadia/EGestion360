@@ -91,7 +91,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 
             var dto = request.Adapt<MatrizConversionDto>();
 
-            var existe = await _service.ExisteRegistroAsync(dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);
+            var existe = await _service.ExisteRegistroAsync(dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis, dto.FkidTipoGastoPres);
             if (existe)
             {
                 return Conflict(new PagedResult<MatrizConversionResponse>
@@ -134,7 +134,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             var dto = request.Adapt<MatrizConversionDto>();
             dto.PkidMatrizConversion = id;
 
-            var existe = await _service.ExisteRegistroUpdateAsync(id, dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis);
+            var existe = await _service.ExisteRegistroUpdateAsync(id, dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis, dto.FkidTipoGastoPres);
             if (existe)
             {
                 return Conflict(new PagedResult<MatrizConversionResponse>
@@ -313,6 +313,16 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                     Text = p.Descripcion ?? ""
                 });
 
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
+        [HttpGet("GetTipoGastoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetTipoGastoLookupPaginado(
+            int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.TipoGastos.AsNoTracking().Where(x => x.Activo)
+                .OrderBy(x => x.Clave)
+                .Select(x => new LookupItem { Id = x.PkidTipoGasto, Text = x.Clave + " - " + x.Descripcion });
             return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
 

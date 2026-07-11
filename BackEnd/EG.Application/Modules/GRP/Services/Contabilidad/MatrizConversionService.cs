@@ -32,6 +32,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             _service.AddInclude(mc => mc.FkidProgramaPresNavigation);
             _service.AddInclude(mc => mc.FkidPartidaSisNavigation);
+            _service.AddInclude(mc => mc.FkidTipoGastoPresNavigation);
             _service.AddInclude(mc => mc.UsuarioCreacionNavigation);
             _service.AddInclude(mc => mc.FkidCuentaContableAprobadoNavigation);
             _service.AddInclude(mc => mc.FkidCuentaContablePorEjercerNavigation);
@@ -54,6 +55,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 .Any(e => e.FkidAnioSis == mcDto.FkidAnioSis &&
                 e.FkidProgramaPres == mcDto.FkidProgramaPres &&
                 e.FkidPartidaSis == mcDto.FkidPartidaSis &&
+                e.FkidTipoGastoPres == mcDto.FkidTipoGastoPres &&
                 e.Activo);
             });
 
@@ -66,6 +68,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 .Any(e => e.FkidAnioSis == mcDto.FkidAnioSis &&
                 e.FkidProgramaPres == mcDto.FkidProgramaPres &&
                 e.FkidPartidaSis == mcDto.FkidPartidaSis &&
+                e.FkidTipoGastoPres == mcDto.FkidTipoGastoPres &&
                 e.PkidMatrizConversion != id.Value &&
                 e.Activo);
             });
@@ -112,6 +115,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 FkidAnioSis = existing.FkidAnioSis,
                 FkidProgramaPres = existing.FkidProgramaPres,
                 FkidPartidaSis = existing.FkidPartidaSis,
+                FkidTipoGastoPres = existing.FkidTipoGastoPres,
                 FkidCuentaContableAprobado = existing.FkidCuentaContableAprobado,
                 FkidCuentaContablePorEjercer = existing.FkidCuentaContablePorEjercer,
                 FkidCuentaContableModificado = existing.FkidCuentaContableModificado,
@@ -166,11 +170,26 @@ public async Task<PagedResult<MatrizConversionResponse>> GetAllPaginadoAsync(Pag
         .Take(request.PageSize)
         .ToListAsync();
 
+    var ids = items.Select(e => e.PkidMatrizConversion).ToList();
+    var tiposGasto = await _context.MatrizConversions.AsNoTracking()
+        .Where(e => ids.Contains(e.PkidMatrizConversion))
+        .Select(e => new
+        {
+            e.PkidMatrizConversion,
+            e.FkidTipoGastoPres,
+            e.FkidTipoGastoPresNavigation.Clave,
+            e.FkidTipoGastoPresNavigation.Descripcion
+        })
+        .ToDictionaryAsync(e => e.PkidMatrizConversion);
+
     // Mapear a MatrizConversionResponse
     var responseItems = items.Select(e => new MatrizConversionResponse
     {
         PkidMatrizConversion = e.PkidMatrizConversion,
         FkidAnioSis = e.AnioClave,
+        FkidTipoGastoPres = tiposGasto.TryGetValue(e.PkidMatrizConversion, out var tipo) ? tipo.FkidTipoGastoPres : 0,
+        TipoGastoClave = tiposGasto.TryGetValue(e.PkidMatrizConversion, out var tipoClave) ? tipoClave.Clave : 0,
+        TipoGastoDescripcion = tiposGasto.TryGetValue(e.PkidMatrizConversion, out var tipoDescripcion) ? tipoDescripcion.Descripcion : string.Empty,
         ProgramaClave = e.ProgramaClave,
         PartidaDescripcion = e.PartidaDescripcion,
         CuentaAprobadoNombre = e.CuentaAprobado,
@@ -206,21 +225,23 @@ public async Task<PagedResult<MatrizConversionResponse>> GetAllPaginadoAsync(Pag
             return await _service.CanUpdateAsync(id, dto);
         }
 
-        public async Task<bool> ExisteRegistroAsync(int anioSis, int programaPres, int partidaSis)
+        public async Task<bool> ExisteRegistroAsync(int anioSis, int programaPres, int partidaSis, int tipoGastoPres)
         {
             return await _service.GetQueryWithIncludes()
             .AnyAsync(e => e.FkidAnioSis == anioSis &&
             e.FkidProgramaPres == programaPres &&
             e.FkidPartidaSis == partidaSis &&
+            e.FkidTipoGastoPres == tipoGastoPres &&
             e.Activo);
         }
 
-        public async Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis)
+        public async Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis, int tipoGastoPres)
         {
             return await _service.GetQueryWithIncludes()
             .AnyAsync(e => e.FkidAnioSis == anioSis &&
             e.FkidProgramaPres == programaPres &&
             e.FkidPartidaSis == partidaSis &&
+            e.FkidTipoGastoPres == tipoGastoPres &&
             e.PkidMatrizConversion != id &&
             e.Activo);
         }

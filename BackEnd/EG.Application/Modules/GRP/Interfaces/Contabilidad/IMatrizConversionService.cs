@@ -14,8 +14,8 @@ namespace EG.Application.Interfaces.Contabilidad
         Task<PagedResult<MatrizConversionResponse>> GetAllPaginadoAsync(PagedRequest request, Dictionary<string, object>? additionalFilters = null);
         Task<bool> CanAddAsync(MatrizConversionDto dto);
         Task<bool> CanUpdateAsync(int id, MatrizConversionDto dto);
-        Task<bool> ExisteRegistroAsync(int anioSis, int programaPres, int partidaSis);
-        Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis);
+        Task<bool> ExisteRegistroAsync(int anioSis, int programaPres, int partidaSis, int tipoGastoPres);
+        Task<bool> ExisteRegistroUpdateAsync(int id, int anioSis, int programaPres, int partidaSis, int tipoGastoPres);
         Task<IEnumerable<dynamic>> GetProgramasAsync(int? idAnio = null);
     }
 }

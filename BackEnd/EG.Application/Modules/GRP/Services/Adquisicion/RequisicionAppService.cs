@@ -37,6 +37,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                await ValidateClasificacionAsync(response);
                 if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
                 {
                     return InvalidProyectoResult(response.FkidProyectoOrco);
@@ -47,6 +48,10 @@ namespace EG.Application.Services.Adquisicion
                 var result = await GetByIdAsync(response.PkidRequisicion);
                 result.Message = spResult.Mensaje;
                 return result;
+            }
+            catch (ArgumentException ex)
+            {
+                return ValidationResult(ex.Message);
             }
             catch (Exception ex)
             {
@@ -101,6 +106,7 @@ namespace EG.Application.Services.Adquisicion
 
             try
             {
+                await ValidateClasificacionAsync(response);
                 if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
                 {
                     return InvalidProyectoResult(response.FkidProyectoOrco);
@@ -110,6 +116,10 @@ namespace EG.Application.Services.Adquisicion
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
                 return result;
+            }
+            catch (ArgumentException ex)
+            {
+                return ValidationResult(ex.Message);
             }
             catch (Exception ex)
             {
@@ -124,6 +134,9 @@ namespace EG.Application.Services.Adquisicion
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
+            => await DeleteAsync(id, 0);
+
+        public async Task<PagedResult<bool>> DeleteAsync(int id, int usuarioActual)
         {
             if (IsLocked(id))
             {
@@ -145,7 +158,7 @@ namespace EG.Application.Services.Adquisicion
                     "[ORCO].[SP_MantenimientoRequisicion]",
                     StoredProcedureExecutor.Param("@Action", 3),
                     StoredProcedureExecutor.Param("@PKIdRequisicion", id),
-                    StoredProcedureExecutor.Param("@IdUser", null));
+                    StoredProcedureExecutor.Param("@IdUser", usuarioActual > 0 ? usuarioActual : null));
 
                 return new PagedResult<bool>
                 {
@@ -217,6 +230,29 @@ namespace EG.Application.Services.Adquisicion
 
         private bool IsLocked(int requisicionId) => CountActiveCotizaciones(requisicionId) > 0;
 
+        private async Task ValidateClasificacionAsync(RequisicionResponse response)
+        {
+            if (!response.FkidAnioSis.HasValue || response.FkidAnioSis.Value <= 0)
+                throw new ArgumentException("El anio presupuestal es requerido.");
+            if (!response.FkidProgramaPres.HasValue ||
+                !await _context.Programas.AsNoTracking().AnyAsync(x => x.PkidPrograma == response.FkidProgramaPres.Value && x.Activo))
+                throw new ArgumentException("El programa presupuestario es requerido y debe estar activo.");
+            if (!response.FkidFuenteFinanciamientoPres.HasValue ||
+                !await _context.FuenteFinanciamientos.AsNoTracking().AnyAsync(x => x.PkidFuenteFinanciamiento == response.FkidFuenteFinanciamientoPres.Value && x.Activo))
+                throw new ArgumentException("La fuente de financiamiento es requerida y debe estar activa.");
+            if (!response.FkidTipoGastoPres.HasValue ||
+                !await _context.TipoGastos.AsNoTracking().AnyAsync(x => x.PkidTipoGasto == response.FkidTipoGastoPres.Value && x.Activo))
+                throw new ArgumentException("El tipo de gasto es requerido y debe estar activo.");
+            if (!response.FkidDigitoIdentificadorPres.HasValue ||
+                !await _context.DigitoIdentificadors.AsNoTracking().AnyAsync(x => x.PkidDigitoIdentificador == response.FkidDigitoIdentificadorPres.Value && x.Activo))
+                throw new ArgumentException("El digito identificador es requerido y debe estar activo.");
+            if (!response.FkidDestinoGastoPres.HasValue ||
+                !await _context.DestinoGastos.AsNoTracking().AnyAsync(x => x.PkidDestinoGasto == response.FkidDestinoGastoPres.Value && x.Activo))
+                throw new ArgumentException("El destino del gasto es requerido y debe estar activo.");
+            if (!response.Importe.HasValue || response.Importe.Value <= 0)
+                throw new ArgumentException("El importe de la requisicion debe ser mayor a cero.");
+        }
+
         private int CountActiveCotizaciones(int requisicionId)
         {
             return _cotizacionService.GetQueryWithIncludes()
@@ -249,6 +285,17 @@ namespace EG.Application.Services.Adquisicion
                 Success = false,
                 Message = message,
                 Code = "LOCKED",
+                TotalCount = 0
+            };
+        }
+
+        private static PagedResult<RequisicionResponse> ValidationResult(string message)
+        {
+            return new PagedResult<RequisicionResponse>
+            {
+                Success = false,
+                Message = message,
+                Code = "VALIDATION",
                 TotalCount = 0
             };
         }

@@ -54,6 +54,7 @@
                             <MudTh><MudTableSortLabel SortLabel="FechaRequisicion" T="RequisicionResponse">Fecha</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Importe" T="RequisicionResponse">Importe</MudTableSortLabel></MudTh>
                             <MudTh><MudTableSortLabel SortLabel="Servicio" T="RequisicionResponse">Tipo</MudTableSortLabel></MudTh>
+                            <MudTh>Clasificacion</MudTh>
                             <MudTh>Flujo</MudTh>
                         </Header>
 
@@ -61,6 +62,7 @@
                             <MudTd>
                                 <MudTooltip Text="Ver detalle">
                                     <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                                   aria-label="Ver detalle de la requisicion"
                                                    Color="Color.Info"
                                                    Size="Size.Small"
                                                    OnClick="@(() => SelectRequisicion(item))" />
@@ -74,6 +76,7 @@
                                                        RegistroDescripcion="@($"Requisicion {item.PkidRequisicion} | {TextOrDash(item.AreaNombre)}")" />
                                 <MudTooltip Text="Editar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   aria-label="Editar requisicion"
                                                    Visible="@CanUpdate"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
@@ -82,6 +85,7 @@
                                 </MudTooltip>
                                 <MudTooltip Text="Eliminar">
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   aria-label="Eliminar requisicion"
                                                    Visible="@CanDelete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
@@ -90,13 +94,15 @@
                                 </MudTooltip>
                                 <MudTooltip Text="Generar cotizacion">
                                     <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
+                                                   aria-label="Generar cotizacion"
                                                    Visible="@CanCreate"
                                                    Color="Color.Success"
                                                    Size="Size.Small"
                                                    OnClick="@(() => OpenCotizacionFromRequisicion(item))" />
                                 </MudTooltip>
-                                <MudTooltip Text="Generar solicitud de suficiencia">
+                                <MudTooltip Text="Enviar a suficiencia y autorizacion">
                                     <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
+                                                   aria-label="Enviar a suficiencia y autorizacion"
                                                    Visible="@CanCreate"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
@@ -113,6 +119,12 @@
                                 <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
                                     @(item.Servicio ? "Servicio" : "Bien")
                                 </MudChip>
+                            </MudTd>
+                            <MudTd>
+                                <div>FF: @ClassificationText(item.FuenteFinanciamientoClave, item.FuenteFinanciamientoDescripcion)</div>
+                                <div>TG: @ClassificationText(item.TipoGastoClave?.ToString(), item.TipoGastoDescripcion)</div>
+                                <div>DI: @ClassificationText(item.DigitoIdentificadorClave, item.DigitoIdentificadorDescripcion)</div>
+                                <div>DG: @ClassificationText(item.DestinoGastoClave, item.DestinoGastoDescripcion)</div>
                             </MudTd>
                             <MudTd>
                                 <MudChip T="string"
@@ -192,8 +204,9 @@
                                        OnClick="@(() => OpenCotizacionFromRequisicion(SelectedRequisicion))"
                                        Class="ml-1" />
                     </MudTooltip>
-                    <MudTooltip Text="Generar solicitud de suficiencia">
+                    <MudTooltip Text="Enviar a suficiencia y autorizacion">
                         <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
+                                       aria-label="Enviar a suficiencia y autorizacion"
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanCreate"
@@ -234,6 +247,14 @@
                             <MudItem xs="12" md="4">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Fuente financiamiento</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.FuenteFinanciamientoDescripcion)</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Clasificacion presupuestal</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">
+                                    TG @ClassificationText(SelectedRequisicion.TipoGastoClave?.ToString(), SelectedRequisicion.TipoGastoDescripcion) ·
+                                    DI @ClassificationText(SelectedRequisicion.DigitoIdentificadorClave, SelectedRequisicion.DigitoIdentificadorDescripcion) ·
+                                    DG @ClassificationText(SelectedRequisicion.DestinoGastoClave, SelectedRequisicion.DestinoGastoDescripcion)
+                                </MudText>
                             </MudItem>
                             <MudItem xs="12" md="4">
                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Oficio</MudText>
@@ -516,6 +537,10 @@
             Fecha = item.FechaRequisicion.ToString("dd/MM/yyyy"),
             item.Importe,
             Tipo = item.Servicio ? "Servicio" : "Bien",
+            FuenteFinanciamiento = ClassificationText(item.FuenteFinanciamientoClave, item.FuenteFinanciamientoDescripcion),
+            TipoGasto = ClassificationText(item.TipoGastoClave?.ToString(), item.TipoGastoDescripcion),
+            DigitoIdentificador = ClassificationText(item.DigitoIdentificadorClave, item.DigitoIdentificadorDescripcion),
+            DestinoGasto = ClassificationText(item.DestinoGastoClave, item.DestinoGastoDescripcion),
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,
@@ -882,6 +907,12 @@
             return;
         }
 
+        if (!HasCompleteBudgetClassification(requisicion))
+        {
+            Snackbar.Add("Completa programa, fuente de financiamiento, TG, DI y DG antes de generar la cotizacion.", Severity.Error);
+            return;
+        }
+
         if (!HasSelectedAnio())
         {
             Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
@@ -920,6 +951,19 @@
         }
     }
 
+    private static bool HasCompleteBudgetClassification(RequisicionResponse item) =>
+        item.FkidProgramaPres.HasValue && item.FkidProgramaPres.Value > 0 &&
+        item.FkidFuenteFinanciamientoPres.HasValue && item.FkidFuenteFinanciamientoPres.Value > 0 &&
+        item.FkidTipoGastoPres.HasValue && item.FkidTipoGastoPres.Value > 0 &&
+        item.FkidDigitoIdentificadorPres.HasValue && item.FkidDigitoIdentificadorPres.Value > 0 &&
+        item.FkidDestinoGastoPres.HasValue && item.FkidDestinoGastoPres.Value > 0;
+
+    private static string ClassificationText(string? clave, string? descripcion)
+    {
+        if (string.IsNullOrWhiteSpace(clave) && string.IsNullOrWhiteSpace(descripcion)) return "FALTA";
+        return string.IsNullOrWhiteSpace(descripcion) ? clave! : $"{clave} - {descripcion}".Trim(' ', '-');
+    }
+
     private async Task OpenSolicitudSuficienciaFromRequisicion(RequisicionResponse? requisicion)
     {
         if (!CanCreate)
@@ -931,6 +975,12 @@
         if (requisicion == null)
         {
             Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        if (!HasCompleteBudgetClassification(requisicion))
+        {
+            Snackbar.Add("No se puede enviar a suficiencia: completa programa, fuente de financiamiento, TG, DI y DG.", Severity.Error);
             return;
         }
 

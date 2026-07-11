@@ -16,6 +16,7 @@
 @inject IGenericCrudService<OrcoProyectoResponse> ProyectoService
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteService
+@inject HttpClient Http
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
@@ -99,13 +100,46 @@
                                    LoadPage="LoadProgramasPageAsync" />
             </MudItem>
 
-            <MudItem xs="12">
+            <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedFuente"
                                    ValueChanged="value => _selectedFuente = value"
                                    Label="Fuente de financiamiento"
-                                   Clearable="true"
+                                   Required="true"
                                    LoadPage="LoadFuentesPageAsync" />
             </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedTipoGasto"
+                                   ValueChanged="value => _selectedTipoGasto = value"
+                                   Label="Tipo de gasto (TG)"
+                                   Required="true"
+                                   LoadPage="LoadTiposGastoPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedDigito"
+                                   ValueChanged="value => _selectedDigito = value"
+                                   Label="Digito identificador (DI)"
+                                   Required="true"
+                                   LoadPage="LoadDigitosPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedDestino"
+                                   ValueChanged="value => _selectedDestino = value"
+                                   Label="Destino del gasto (DG)"
+                                   Required="true"
+                                   LoadPage="LoadDestinosPageAsync" />
+            </MudItem>
+
+            @if (_selectedTipoGasto?.Text.StartsWith("1", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        TG 1 es gasto corriente y se atendera en la cola prioritaria. La prioridad no modifica su clasificacion contable.
+                    </MudAlert>
+                </MudItem>
+            }
 
             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="item.Oficio"
@@ -156,6 +190,9 @@
     private LookupItem? _selectedProyecto;
     private LookupItem? _selectedPrograma;
     private LookupItem? _selectedFuente;
+    private LookupItem? _selectedTipoGasto;
+    private LookupItem? _selectedDigito;
+    private LookupItem? _selectedDestino;
 
     private string dialogTitle => Id.HasValue ? "Editar Requisicion" : "Nueva Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -198,6 +235,10 @@
                 {
                     _selectedFuente = new LookupItem { Id = item.FkidFuenteFinanciamientoPres.Value, Text = $"{item.FuenteFinanciamientoClave} - {item.FuenteFinanciamientoDescripcion}".Trim(' ', '-') };
                 }
+
+                _selectedTipoGasto = BuildLookup(item.FkidTipoGastoPres, $"{item.TipoGastoClave} - {item.TipoGastoDescripcion}");
+                _selectedDigito = BuildLookup(item.FkidDigitoIdentificadorPres, $"{item.DigitoIdentificadorClave} - {item.DigitoIdentificadorDescripcion}");
+                _selectedDestino = BuildLookup(item.FkidDestinoGastoPres, $"{item.DestinoGastoClave} - {item.DestinoGastoDescripcion}");
             }
         }
         catch (Exception ex)
@@ -233,6 +274,13 @@
             return;
         }
 
+        if (_selectedPrograma == null || _selectedFuente == null || _selectedTipoGasto == null ||
+            _selectedDigito == null || _selectedDestino == null)
+        {
+            Snackbar.Add("Selecciona la clasificacion presupuestaria completa: programa, FF, TG, DI y DG.", Severity.Warning);
+            return;
+        }
+
         item.FkidEmpresaSis = empresaId.Value;
         if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
         {
@@ -246,6 +294,9 @@
         item.FkidProyectoOrco = _selectedProyecto?.Id;
         item.FkidProgramaPres = _selectedPrograma?.Id;
         item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
+        item.FkidTipoGastoPres = _selectedTipoGasto.Id;
+        item.FkidDigitoIdentificadorPres = _selectedDigito.Id;
+        item.FkidDestinoGastoPres = _selectedDestino.Id;
         item.FechaRequisicion = _fechaRequisicion ?? DateTime.Today;
         item.Observaciones ??= string.Empty;
         item.FlFoto ??= string.Empty;
@@ -311,6 +362,22 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidFuenteFinanciamiento, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
     }
 
+    private Task<ComboLookupResult> LoadTiposGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadHttpLookupPageAsync("api/EgresoProyectado/GetTipoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDigitosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadHttpLookupPageAsync("api/EgresoProyectado/GetDigitoIdentificadorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadDestinosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadHttpLookupPageAsync("api/EgresoProyectado/GetDestinoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadHttpLookupPageAsync(
+        string url, int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
     {
         var list = items?.ToList() ?? new List<LookupItem>();
@@ -353,6 +420,15 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private static LookupItem? BuildLookup(int? id, string? text)
+    {
+        if (!id.HasValue || id.Value <= 0)
+            return null;
+
+        var normalizedText = (text ?? string.Empty).Trim(' ', '-');
+        return new LookupItem { Id = id.Value, Text = string.IsNullOrWhiteSpace(normalizedText) ? id.Value.ToString() : normalizedText };
+    }
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

@@ -574,7 +574,21 @@ namespace EG.Application.Services.Contratos
             }
 
             var releaseDetails = BuildReleaseDetails(current, positiveDetails, remanente, usuarioActual);
-            var matrizValidation = await ValidateMatrizAsync(saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, releaseDetails);
+            var tipoGastoId = await (
+                from authorization in _context.AutorizacionSuficiencia.AsNoTracking()
+                join request in _context.SolicitudSuficiencia.AsNoTracking()
+                    on authorization.FkidSolicitudSuficienciaPres equals request.PkidSolicitudSuficiencia
+                join requisition in _context.Requisicions.AsNoTracking()
+                    on request.FkidRequisicionOrco equals requisition.PkidRequisicion
+                where authorization.PkidAutorizacionSuficiencia == current.FkidAutorizacionSuficienciaPres
+                select requisition.FkidTipoGastoPres).FirstOrDefaultAsync();
+            if (!tipoGastoId.HasValue || tipoGastoId.Value <= 0)
+            {
+                return Failure<EstadoContratoResponse>("No se pudo resolver el Tipo de Gasto del contrato.");
+            }
+
+            var matrizValidation = await ValidateMatrizAsync(
+                saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, tipoGastoId.Value, releaseDetails);
             if (matrizValidation != null)
             {
                 return matrizValidation;
@@ -616,7 +630,8 @@ namespace EG.Application.Services.Contratos
                         _context.ContratoDetalles.Add(detail);
                     }
 
-                    var matrices = await GetMatricesAsync(saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, releaseDetails);
+                    var matrices = await GetMatricesAsync(
+                        saldo.FkidAnioSis.Value, saldo.FkidProgramaPres, tipoGastoId.Value, releaseDetails);
                     foreach (var group in releaseDetails.GroupBy(x => x.FkidPartidaConta))
                     {
                         var importe = decimal.Round(Math.Abs(group.Sum(DetailTotal)), 2);
@@ -747,6 +762,7 @@ namespace EG.Application.Services.Contratos
         private async Task<PagedResult<EstadoContratoResponse>?> ValidateMatrizAsync(
             int anioId,
             int programaId,
+            int tipoGastoId,
             IReadOnlyCollection<ContratoDetalle> releaseDetails)
         {
             var tipoPolizaExists = await _context.TipoPolizas
@@ -758,7 +774,7 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("No existe el tipo de poliza para liberacion de remanentes.");
             }
 
-            var matrices = await GetMatricesAsync(anioId, programaId, releaseDetails);
+            var matrices = await GetMatricesAsync(anioId, programaId, tipoGastoId, releaseDetails);
             var missing = releaseDetails
                 .Select(x => x.FkidPartidaConta)
                 .Distinct()
@@ -776,6 +792,7 @@ namespace EG.Application.Services.Contratos
         private async Task<Dictionary<int, MatrizConversion>> GetMatricesAsync(
             int anioId,
             int programaId,
+            int tipoGastoId,
             IReadOnlyCollection<ContratoDetalle> details)
         {
             var partidas = details
@@ -789,9 +806,8 @@ namespace EG.Application.Services.Contratos
                     x.Activo &&
                     x.FkidAnioSis == anioId &&
                     x.FkidProgramaPres == programaId &&
+                    x.FkidTipoGastoPres == tipoGastoId &&
                     partidas.Contains(x.FkidPartidaSis))
-                .GroupBy(x => x.FkidPartidaSis)
-                .Select(x => x.First())
                 .ToDictionaryAsync(x => x.FkidPartidaSis);
         }
 

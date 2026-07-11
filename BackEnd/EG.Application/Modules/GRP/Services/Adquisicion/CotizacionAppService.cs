@@ -311,6 +311,14 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<CotizacionResponse>("La requisicion no existe o esta inactiva.");
             }
 
+            if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidFuenteFinanciamientoPres.HasValue ||
+                !requisicion.FkidTipoGastoPres.HasValue || !requisicion.FkidDigitoIdentificadorPres.HasValue ||
+                !requisicion.FkidDestinoGastoPres.HasValue)
+            {
+                return Failure<CotizacionResponse>(
+                    "La requisicion debe tener programa, fuente de financiamiento, TG, DI y DG antes de cotizar.");
+            }
+
             var proveedorExists = await _context.Proveedors
                 .AsNoTracking()
                 .AnyAsync(x => x.PkidProveedor == response.FkidProveedorSis && x.Activo);

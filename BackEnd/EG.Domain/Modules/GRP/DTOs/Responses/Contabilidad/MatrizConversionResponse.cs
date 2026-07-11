@@ -8,6 +8,7 @@ public class MatrizConversionResponse
     public int FkidAnioSis { get; set; }
     public int FkidProgramaPres { get; set; }
     public int FkidPartidaSis { get; set; }
+    public int FkidTipoGastoPres { get; set; }
     public int FkidCuentaContableAprobado { get; set; }
     public int FkidCuentaContablePorEjercer { get; set; }
     public int FkidCuentaContableModificado { get; set; }
@@ -23,6 +24,8 @@ public class MatrizConversionResponse
     // Navegación (opcional para mostrar en UI)
     public string ProgramaClave { get; set; }
     public string PartidaDescripcion { get; set; }
+    public int TipoGastoClave { get; set; }
+    public string TipoGastoDescripcion { get; set; }
     
     // Navegación para cuentas contables
     public string CuentaAprobadoNombre { get; set; }

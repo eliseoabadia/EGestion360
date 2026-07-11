@@ -117,32 +117,6 @@
         var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (result?.Success == true)
         {
-            if (!Id.HasValue && detalleItems.Count > 0)
-            {
-                var authId = await ResolveCreatedId(result);
-                if (authId <= 0)
-                {
-                    Snackbar.Add("La autorizacion se creo, pero no se pudo recuperar su identificador para generar el detalle.", Severity.Error);
-                    return;
-                }
-
-                foreach (var detail in detalleItems)
-                {
-                    detail.FkidAutorizacionSuficienciaPres = authId;
-                    if (detail.FkidEmpresaSis == 0)
-                    {
-                        detail.FkidEmpresaSis = item.FkidEmpresaSis;
-                    }
-
-                    var detailResult = await DetalleService.CreateAsync(detail);
-                    if (detailResult?.Success != true)
-                    {
-                        Snackbar.Add(detailResult?.Message ?? "La autorizacion se creo, pero fallo al generar un detalle.", Severity.Error);
-                        return;
-                    }
-                }
-            }
-
             Snackbar.Add(Id.HasValue ? "Autorizacion actualizada correctamente." : "Autorizacion y detalle guardados correctamente.", Severity.Success);
             MudDialog.Close(DialogResult.Ok(result.Data ?? item));
             return;

@@ -12,6 +12,8 @@ config.NewConfig<MatrizConversion, MatrizConversionDto>().TwoWays();
 config.NewConfig<MatrizConversion, MatrizConversionResponse>()
     .Map(dest => dest.ProgramaClave, src => src.FkidProgramaPresNavigation.Clave)
     .Map(dest => dest.PartidaDescripcion, src => src.FkidPartidaSisNavigation.Descripcion)
+    .Map(dest => dest.TipoGastoClave, src => src.FkidTipoGastoPresNavigation.Clave)
+    .Map(dest => dest.TipoGastoDescripcion, src => src.FkidTipoGastoPresNavigation.Descripcion)
     .Map(dest => dest.CuentaAprobadoNombre, src => src.FkidCuentaContableAprobadoNavigation.Cuenta + " - " + src.FkidCuentaContableAprobadoNavigation.Descripcion)
     .Map(dest => dest.CuentaPorEjercerNombre, src => src.FkidCuentaContablePorEjercerNavigation.Cuenta + " - " + src.FkidCuentaContablePorEjercerNavigation.Descripcion)
     .Map(dest => dest.CuentaModificadoNombre, src => src.FkidCuentaContableModificadoNavigation.Cuenta + " - " + src.FkidCuentaContableModificadoNavigation.Descripcion)

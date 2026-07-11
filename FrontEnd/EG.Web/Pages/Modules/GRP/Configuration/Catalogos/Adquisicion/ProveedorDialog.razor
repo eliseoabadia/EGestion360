@@ -2,8 +2,11 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Common.GenericModel
+@using EG.Web.Models
 @inject IGenericCrudService<ProveedorResponse> Service
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <BaseCrudDialog TItem="ProveedorResponse"
                 Title="@dialogTitle"
@@ -43,6 +46,32 @@
                               RequiredError="El nombre es requerido"
                               MaxLength="500" />
             </MudItem>
+            <MudItem xs="12" sm="6">
+                <PagedAutocomplete Value="@_selectedTipo"
+                                   ValueChanged="value => _selectedTipo = value"
+                                   Label="Tipo de proveedor"
+                                   Required="true"
+                                   RequiredError="El tipo de proveedor es requerido"
+                                   LoadPage="LoadTiposPageAsync" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <PagedAutocomplete Value="@_selectedEstatus"
+                                   ValueChanged="value => _selectedEstatus = value"
+                                   Label="Estatus"
+                                   Required="true"
+                                   RequiredError="El estatus es requerido"
+                                   LoadPage="LoadEstatusPageAsync" />
+            </MudItem>
+            <MudItem xs="12">
+                <PagedAutocomplete Value="@_selectedCuentaAuxiliar"
+                                   ValueChanged="value => _selectedCuentaAuxiliar = value"
+                                   Label="Auxiliar contable de proveedores por pagar (2.1.1.2)"
+                                   Clearable="true"
+                                   LoadPage="LoadCuentasAuxiliaresPageAsync" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Esta cuenta controla el saldo por proveedor; la cuenta de gasto o activo se obtiene de la matriz COG + TG.
+                </MudText>
+            </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Calle"
                               Label="Calle"
@@ -78,6 +107,27 @@
                               Label="Ciudad"
                               Variant="Variant.Outlined"
                               MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <PagedAutocomplete Value="@_selectedPais"
+                                   ValueChanged="OnPaisChanged"
+                                   Label="Pais"
+                                   Required="true"
+                                   LoadPage="LoadPaisesPageAsync" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <PagedAutocomplete Value="@_selectedEstado"
+                                   ValueChanged="OnEstadoChanged"
+                                   Label="Estado"
+                                   Required="true"
+                                   LoadPage="LoadEstadosPageAsync" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <PagedAutocomplete Value="@_selectedMunicipio"
+                                   ValueChanged="value => _selectedMunicipio = value"
+                                   Label="Municipio"
+                                   Required="true"
+                                   LoadPage="LoadMunicipiosPageAsync" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Email"
@@ -117,6 +167,12 @@
 
     private BaseEntityForm<ProveedorResponse> form = null!;
     private ProveedorResponse item = new() { Activo = true };
+    private LookupItem? _selectedTipo;
+    private LookupItem? _selectedEstatus;
+    private LookupItem? _selectedCuentaAuxiliar;
+    private LookupItem? _selectedPais;
+    private LookupItem? _selectedEstado;
+    private LookupItem? _selectedMunicipio;
 
     private string dialogTitle => Id.HasValue ? "Editar Proveedor" : "Nuevo Proveedor";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -139,6 +195,12 @@
             {
                 item = response.Data;
                 item.Activo = true;
+                _selectedTipo = BuildLookup(item.FkIdTipoProveedorSis, item.TipoProveedorNombre);
+                _selectedEstatus = BuildLookup(item.FkidEstatusProveedorSis, item.EstatusProveedorNombre);
+                _selectedCuentaAuxiliar = BuildLookup(item.FkidCuentaContableSis, item.CuentaContableNombre);
+                _selectedPais = BuildLookup(item.FkidPaisSis, item.PaisNombre);
+                _selectedEstado = BuildLookup(item.FkidEstadoSis, item.EstadoNombre);
+                _selectedMunicipio = BuildLookup(item.FkidMunicipioSis, item.MunicipioNombre);
             }
             else
             {
@@ -160,6 +222,19 @@
         }
 
         NormalizeItem();
+        if (_selectedTipo == null || _selectedEstatus == null || _selectedPais == null ||
+            _selectedEstado == null || _selectedMunicipio == null)
+        {
+            Snackbar.Add("Selecciona tipo, estatus, pais, estado y municipio.", Severity.Warning);
+            return;
+        }
+
+        item.FkIdTipoProveedorSis = _selectedTipo.Id;
+        item.FkidEstatusProveedorSis = _selectedEstatus.Id;
+        item.FkidCuentaContableSis = _selectedCuentaAuxiliar?.Id;
+        item.FkidPaisSis = _selectedPais.Id;
+        item.FkidEstadoSis = _selectedEstado.Id;
+        item.FkidMunicipioSis = _selectedMunicipio.Id;
 
         try
         {
@@ -208,4 +283,53 @@
     }
 
     private static string Trim(string? value) => (value ?? string.Empty).Trim();
+
+    private Task<ComboLookupResult> LoadTiposPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetTipoProveedorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadEstatusPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetEstatusProveedorLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadCuentasAuxiliaresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetCuentaAuxiliarLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadPaisesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetPaisLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadEstadosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetEstadoLookupPaginado", page, pageSize, filter, ct,
+            _selectedPais == null ? null : $"paisId={_selectedPais.Id}");
+
+    private Task<ComboLookupResult> LoadMunicipiosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/Proveedor/GetMunicipioLookupPaginado", page, pageSize, filter, ct,
+            _selectedEstado == null ? null : $"estadoId={_selectedEstado.Id}");
+
+    private async Task<ComboLookupResult> LoadLookupPageAsync(
+        string url, int page, int pageSize, string filter, CancellationToken ct, string? extra = null)
+    {
+        var requestUrl = $"{url}?page={page}&pageSize={pageSize}&filter={Uri.EscapeDataString(filter ?? string.Empty)}";
+        if (!string.IsNullOrWhiteSpace(extra))
+            requestUrl += $"&{extra}";
+        return await Http.GetFromJsonAsync<ComboLookupResult>(requestUrl, ct) ?? new ComboLookupResult();
+    }
+
+    private void OnPaisChanged(LookupItem? value)
+    {
+        if (_selectedPais?.Id == value?.Id)
+            return;
+        _selectedPais = value;
+        _selectedEstado = null;
+        _selectedMunicipio = null;
+    }
+
+    private void OnEstadoChanged(LookupItem? value)
+    {
+        if (_selectedEstado?.Id == value?.Id)
+            return;
+        _selectedEstado = value;
+        _selectedMunicipio = null;
+    }
+
+    private static LookupItem? BuildLookup(int? id, string? text) =>
+        id.GetValueOrDefault() > 0 ? new LookupItem { Id = id!.Value, Text = string.IsNullOrWhiteSpace(text) ? id.Value.ToString() : text } : null;
 }

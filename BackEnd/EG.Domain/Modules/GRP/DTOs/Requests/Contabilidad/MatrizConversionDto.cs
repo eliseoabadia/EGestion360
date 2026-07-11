@@ -8,6 +8,7 @@ namespace EG.Domain.DTOs.Requests.Contabilidad
         public int FkidAnioSis { get; set; }
         public int FkidProgramaPres { get; set; }
         public int FkidPartidaSis { get; set; }
+        public int FkidTipoGastoPres { get; set; }
         public int FkidCuentaContableAprobado { get; set; }
         public int FkidCuentaContablePorEjercer { get; set; }
         public int FkidCuentaContableModificado { get; set; }

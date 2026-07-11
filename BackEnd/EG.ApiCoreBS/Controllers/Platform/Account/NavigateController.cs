@@ -2,7 +2,6 @@ using EG.Application.Interfaces.Account;
 using EG.Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace EG.ApiCoreBS.Controllers.Account
 {
@@ -13,16 +12,14 @@ namespace EG.ApiCoreBS.Controllers.Account
     {
         private readonly INavigateAppService _navigateAppService;
         private readonly ILogger<NavigateController> _logger;
-        private readonly IConfiguration _configuration;
 
-        public NavigateController(INavigateAppService navigateAppService, ILogger<NavigateController> logger, IConfiguration configuration)
+        public NavigateController(INavigateAppService navigateAppService, ILogger<NavigateController> logger)
         {
             _navigateAppService = navigateAppService;
             _logger = logger;
-            _configuration = configuration;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetMenu(int id)
         {
             try
@@ -71,22 +68,6 @@ namespace EG.ApiCoreBS.Controllers.Account
                 _logger.LogError(ex, "Error inesperado obteniendo claims para usuario {UserId}", userId);
                 return StatusCode(500, Error("Error interno"));
             }
-        }
-
-        [HttpPost("ping")]
-        [HttpGet("ping")]
-        [AllowAnonymous]
-        public IActionResult Ping()
-        {
-            return Ok(new { success = true, message = "pong" });
-        }
-        
-        [HttpGet("version")]
-        [AllowAnonymous]
-        public IActionResult GetVersion()
-        {
-            var version = _configuration["ApplicationVersion"] ?? "1.0.0";
-            return Ok(new { success = true, version = version });
         }
 
         private static object Error(string message, ApiResponseCode code = ApiResponseCode.Error) =>

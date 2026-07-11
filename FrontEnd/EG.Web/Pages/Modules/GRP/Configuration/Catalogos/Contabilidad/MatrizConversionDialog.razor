@@ -31,7 +31,7 @@
                     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="section-title">Referencia Principal</MudText>
                 </MudItem>
 
-                <MudItem xs="12" md="6">
+                <MudItem xs="12" md="4">
                     <PagedAutocomplete Value="@_selectedPrograma"
                                        ValueChanged="value => _selectedPrograma = value"
                                        Label="Programa"
@@ -39,12 +39,20 @@
                                        LoadPage="LoadProgramasPageAsync" />
                 </MudItem>
 
-                <MudItem xs="12" md="6">
+                <MudItem xs="12" md="4">
                     <PagedAutocomplete Value="@_selectedPartida"
                                        ValueChanged="value => _selectedPartida = value"
                                        Label="Partida SIS"
                                        Required="true"
                                        LoadPage="LoadPartidasPageAsync" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <PagedAutocomplete Value="@_selectedTipoGasto"
+                                       ValueChanged="value => _selectedTipoGasto = value"
+                                       Label="Tipo de gasto (TG)"
+                                       Required="true"
+                                       LoadPage="LoadTiposGastoPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" class="mt-2">
@@ -140,6 +148,7 @@
 
     private LookupItem? _selectedPrograma;
     private LookupItem? _selectedPartida;
+    private LookupItem? _selectedTipoGasto;
     private LookupItem? _selectedAprobado;
     private LookupItem? _selectedPorEjercer;
     private LookupItem? _selectedModificado;
@@ -166,6 +175,9 @@
 
     private Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
         => LoadLookupPageAsync("api/MatrizConversion/GetPartidaLookupPaginado", page, pageSize, filter, ct);
+
+    private Task<ComboLookupResult> LoadTiposGastoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+        => LoadLookupPageAsync("api/MatrizConversion/GetTipoGastoLookupPaginado", page, pageSize, filter, ct);
 
     private Task<ComboLookupResult> LoadAprobadoPageAsync(int page, int pageSize, string filter, CancellationToken ct)
         => LoadLookupPageAsync("api/MatrizConversion/GetCuentaContableAprobadoLookupPaginado", page, pageSize, filter, ct);
@@ -218,6 +230,7 @@
                 _item = response.Data;
                 _selectedPrograma = CreateLookup(_item.FkidProgramaPres, _item.ProgramaClave);
                 _selectedPartida = CreateLookup(_item.FkidPartidaSis, _item.PartidaDescripcion);
+                _selectedTipoGasto = CreateLookup(_item.FkidTipoGastoPres, $"{_item.TipoGastoClave} - {_item.TipoGastoDescripcion}");
                 _selectedAprobado = CreateLookup(_item.FkidCuentaContableAprobado, _item.CuentaAprobadoNombre);
                 _selectedPorEjercer = CreateLookup(_item.FkidCuentaContablePorEjercer, _item.CuentaPorEjercerNombre);
                 _selectedModificado = CreateLookup(_item.FkidCuentaContableModificado, _item.CuentaModificadoNombre);
@@ -252,6 +265,7 @@
             _item.FkidAnioSis = AnioStateService.AnioId.Value;
             _item.FkidProgramaPres = _selectedPrograma!.Id;
             _item.FkidPartidaSis = _selectedPartida!.Id;
+            _item.FkidTipoGastoPres = _selectedTipoGasto!.Id;
             _item.FkidCuentaContableAprobado = _selectedAprobado!.Id;
             _item.FkidCuentaContablePorEjercer = _selectedPorEjercer!.Id;
             _item.FkidCuentaContableModificado = _selectedModificado!.Id;
@@ -283,7 +297,7 @@
 
     private bool ValidateRequiredSelections()
     {
-        if (_selectedPrograma == null || _selectedPartida == null || _selectedAprobado == null ||
+        if (_selectedPrograma == null || _selectedPartida == null || _selectedTipoGasto == null || _selectedAprobado == null ||
             _selectedPorEjercer == null || _selectedModificado == null || _selectedComprometido == null ||
             _selectedDevengado == null || _selectedEjercido == null || _selectedPagado == null ||
             _selectedGasto == null)

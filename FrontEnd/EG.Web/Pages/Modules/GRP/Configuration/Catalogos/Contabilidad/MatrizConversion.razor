@@ -32,6 +32,7 @@
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="ID" Identifier="PkidMatrizConversion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PkidMatrizConversion</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.ProgramaClave</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Partida" Identifier="PartidaDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PartidaDescripcion</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="TG" Identifier="TipoGastoDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@($"{context.Item.TipoGastoClave} - {context.Item.TipoGastoDescripcion}".Trim(' ', '-'))</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Aprobado" Identifier="CuentaAprobadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaAprobadoNombre</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Por Ejercer" Identifier="CuentaPorEjercerNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPorEjercerNombre</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Modificado" Identifier="CuentaModificadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaModificadoNombre</div></CellTemplate></TemplateColumn>
@@ -73,6 +74,7 @@
             ID = u.PkidMatrizConversion,
             Programa = u.ProgramaClave,
             Partida = u.PartidaDescripcion,
+            TipoGasto = $"{u.TipoGastoClave} - {u.TipoGastoDescripcion}".Trim(' ', '-'),
             CuentaAprobado = u.CuentaAprobadoNombre,
             CuentaPorEjercer = u.CuentaPorEjercerNombre,
             CuentaModificado = u.CuentaModificadoNombre,

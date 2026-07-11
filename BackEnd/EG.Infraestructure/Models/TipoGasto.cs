@@ -9,6 +9,8 @@ public partial class TipoGasto
 {
     public int PkidTipoGasto { get; set; }
 
+    public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
+
     public int Clave { get; set; }
 
     public string Descripcion { get; set; }

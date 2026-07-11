@@ -225,7 +225,7 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        public async Task<PagedResult<bool>> DeleteAsync(int id)
+        public async Task<PagedResult<bool>> DeleteAsync(int id, int usuarioActual)
         {
             try
             {
@@ -254,6 +254,7 @@ namespace EG.Application.Services.Adquisicion
 
                 entity.Activo = false;
                 entity.FechaModificacion = DateTime.UtcNow;
+                entity.UsuarioModificacion = usuarioActual;
                 await _context.SaveChangesAsync();
 
                 var stillActive = await _context.Proveedors
@@ -367,17 +368,22 @@ namespace EG.Application.Services.Adquisicion
                 clave = GenerateClave(rfc, nombre);
 
             var location = await ResolveLocationAsync(response);
+            var tipoProveedorId = await RequireActiveIdAsync(
+                response.FkIdTipoProveedorSis,
+                _context.TipoProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkIdTipoProveedor),
+                "Tipo de proveedor");
+            var estatusProveedorId = await RequireActiveIdAsync(
+                response.FkidEstatusProveedorSis,
+                _context.EstatusProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkidEstatusProveedor),
+                "Estatus del proveedor");
+            var cuentaAuxiliarId = await ValidateCuentaAuxiliarAsync(response.FkidCuentaContableSis);
 
             return new ProveedorDto
             {
                 PkidProveedor = response.PkidProveedor,
-                FkIdTipoProveedorSis = await ResolveOptionalIdAsync(
-                    response.FkIdTipoProveedorSis,
-                    _context.TipoProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkIdTipoProveedor)),
-                FkidEstatusProveedorSis = await ResolveOptionalIdAsync(
-                    response.FkidEstatusProveedorSis,
-                    _context.EstatusProveedors.AsNoTracking().Where(item => item.Activo).Select(item => item.PkidEstatusProveedor)),
-                FkidCuentaContableSis = response.FkidCuentaContableSis > 0 ? response.FkidCuentaContableSis : null,
+                FkIdTipoProveedorSis = tipoProveedorId,
+                FkidEstatusProveedorSis = estatusProveedorId,
+                FkidCuentaContableSis = cuentaAuxiliarId,
                 FkidPaisSis = location.PaisId,
                 FkidEstadoSis = location.EstadoId,
                 FkidMunicipioSis = location.MunicipioId,
@@ -438,29 +444,18 @@ namespace EG.Application.Services.Adquisicion
 
         private async Task<ProviderLocation> ResolveLocationAsync(ProveedorResponse response)
         {
-            if (response.FkidMunicipioSis > 0)
-            {
-                var byMunicipio = await FindLocationAsync(municipioId: response.FkidMunicipioSis);
-                if (byMunicipio != null)
-                    return byMunicipio;
-            }
+            if (response.FkidMunicipioSis <= 0)
+                throw new ArgumentException("Municipio es requerido.");
 
-            if (response.FkidEstadoSis > 0)
-            {
-                var byEstado = await FindLocationAsync(estadoId: response.FkidEstadoSis);
-                if (byEstado != null)
-                    return byEstado;
-            }
+            var location = await FindLocationAsync(municipioId: response.FkidMunicipioSis)
+                ?? throw new ArgumentException("El municipio seleccionado no existe o no esta activo.");
 
-            if (response.FkidPaisSis > 0)
-            {
-                var byPais = await FindLocationAsync(paisId: response.FkidPaisSis);
-                if (byPais != null)
-                    return byPais;
-            }
+            if (response.FkidEstadoSis > 0 && response.FkidEstadoSis != location.EstadoId)
+                throw new ArgumentException("El municipio no pertenece al estado seleccionado.");
+            if (response.FkidPaisSis > 0 && response.FkidPaisSis != location.PaisId)
+                throw new ArgumentException("El estado no pertenece al pais seleccionado.");
 
-            var fallback = await FindLocationAsync();
-            return fallback ?? throw new ArgumentException("No hay pais, estado y municipio activos para registrar proveedores.");
+            return location;
         }
 
         private async Task<ProviderLocation?> FindLocationAsync(int? municipioId = null, int? estadoId = null, int? paisId = null)
@@ -497,13 +492,29 @@ namespace EG.Application.Services.Adquisicion
                 : new ProviderLocation(row.PaisId, row.EstadoId, row.MunicipioId);
         }
 
-        private static async Task<int?> ResolveOptionalIdAsync(int? requestedId, IQueryable<int> activeIds)
+        private static async Task<int> RequireActiveIdAsync(int? requestedId, IQueryable<int> activeIds, string label)
         {
             if (requestedId.HasValue && requestedId.Value > 0 && await activeIds.AnyAsync(id => id == requestedId.Value))
                 return requestedId.Value;
 
-            var first = await activeIds.OrderBy(id => id).FirstOrDefaultAsync();
-            return first > 0 ? first : null;
+            throw new ArgumentException($"{label} es requerido y debe estar activo.");
+        }
+
+        private async Task<int?> ValidateCuentaAuxiliarAsync(int? cuentaId)
+        {
+            if (!cuentaId.HasValue || cuentaId.Value <= 0)
+                return null;
+
+            var valid = await _context.CuentaContables.AsNoTracking().AnyAsync(cuenta =>
+                cuenta.PkidCuentaContable == cuentaId.Value &&
+                cuenta.Activo &&
+                cuenta.IsCuentaDetalle == 1 &&
+                cuenta.ClaveOrd.Replace(" ", "").StartsWith("2112"));
+
+            if (!valid)
+                throw new ArgumentException("La cuenta seleccionada debe ser una cuenta activa de detalle bajo 2.1.1.2 Proveedores por pagar a corto plazo.");
+
+            return cuentaId.Value;
         }
 
         private static string Required(string? value, string label, int maxLength)

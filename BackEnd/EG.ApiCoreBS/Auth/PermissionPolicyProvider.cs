@@ -38,6 +38,15 @@ namespace EG.ApiCoreBS.Auth
             subGroup = string.Empty;
             action = string.Empty;
 
+            var explicitParts = policyName.Split('|', StringSplitOptions.TrimEntries);
+            if (explicitParts.Length == 3 && KnownActions.Any(x => string.Equals(x, explicitParts[2], StringComparison.OrdinalIgnoreCase)))
+            {
+                group = explicitParts[0];
+                subGroup = explicitParts[1];
+                action = explicitParts[2];
+                return !string.IsNullOrWhiteSpace(group) && !string.IsNullOrWhiteSpace(subGroup);
+            }
+
             foreach (var knownAction in KnownActions)
             {
                 var suffix = "_" + knownAction;
