@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -32,20 +32,36 @@
         {
             <MudDivider Class="my-3" />
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Detalle que se generara al guardar</MudText>
-            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
-                <HeaderContent>
-                    <MudTh>Partida</MudTh>
-                    <MudTh>Bien</MudTh>
-                    <MudTh>Cantidad</MudTh>
-                    <MudTh>Total</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
-                    <MudTd>@TextOrDash(context.TipoBienDescripcion)</MudTd>
-                    <MudTd>@Quantity(context.Cantidad)</MudTd>
-                    <MudTd><strong>@Money(DetailTotal(context))</strong></MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="AutorizacionSuficienciaDetalleResponse" @key="detalleItems"
+                                 Items="@detalleItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Partida" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.PartidaClaveNombre)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Bien" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.TipoBienDescripcion)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Cantidad" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Quantity(cell.Item.Cantidad)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Total" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@Money(DetailTotal(cell.Item))</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </BaseEntityForm>
 </BaseCrudDialog>

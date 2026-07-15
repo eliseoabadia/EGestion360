@@ -1,4 +1,4 @@
-@page "/Almacen/Suministros_Salida"
+﻿@page "/Almacen/Suministros_Salida"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Pages.Shared
@@ -31,7 +31,7 @@
 
         <div class="split-shell">
             <div class="master-panel">
-                <GenericTable TItem="SolicitudSalidaResponse"
+                <GenericDataGrid TItem="SolicitudSalidaResponse"
                               @ref="table"
                               Title="Solicitudes para suministro"
                               SearchPlaceholder="Buscar por folio, solicitante o area..."
@@ -41,47 +41,51 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Folio" T="SolicitudSalidaResponse">Folio</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Solicitante" T="SolicitudSalidaResponse">Solicitante</MudTableSortLabel></MudTh>
-                        <MudTh>Areas</MudTh>
-                        <MudTh>Avance</MudTh>
-                        <MudTh>Estatus</MudTh>
-                    </Header>
-                    <Row Context="item">
-                        <MudTd>
-                            <MudTooltip Text="Ver detalle">
-                                <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
-                                               Color="Color.Info"
-                                               Size="Size.Small"
-                                               OnClick="@(() => SelectSolicitud(item))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Folio)</div>
-                            <span>@item.FechaSolicitud.ToString("dd/MM/yyyy")</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Solicitante)</div>
-                            <span>@TextOrDash(item.Justificacion)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.AreaSolicitaNombre)</div>
-                            <span>Entrega: @TextOrDash(item.AreaEntregaNombre)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">Ent @Qty(item.TotalEntregado)</div>
-                            <span>Pend @Qty(item.TotalPendiente)</span>
-                        </MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Style="@StatusStyle(item)">
-                                @TextOrDash(item.EstatusDescripcion)
-                            </MudChip>
-                            <span>@(item.Autorizado ? "Autorizada" : "Abierta")</span>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectSolicitud(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
+                        <span>@cell.Item.FechaSolicitud.ToString("dd/MM/yyyy")</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Solicitante" Identifier="Solicitante" PropertyName="Solicitante" SortBy="x => x.Solicitante">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Solicitante)</div>
+                        <span>@TextOrDash(cell.Item.Justificacion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Areas" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.AreaSolicitaNombre)</div>
+                        <span>Entrega: @TextOrDash(cell.Item.AreaEntregaNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Avance" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">Ent @Qty(cell.Item.TotalEntregado)</div>
+                        <span>Pend @Qty(cell.Item.TotalPendiente)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSalidaResponse" Title="Estatus" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Style="@StatusStyle(cell.Item)">
+                        @TextOrDash(cell.Item.EstatusDescripcion)
+                        </MudChip>
+                        <span>@(cell.Item.Autorizado ? "Autorizada" : "Abierta")</span>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
 
             <div class="detail-panel">
@@ -91,7 +95,7 @@
                         <strong>@(selectedSolicitud == null ? "Selecciona una solicitud" : selectedSolicitud.Folio)</strong>
                     </div>
                 </div>
-                <GenericTable TItem="DetalleSolicitudSalidaResponse"
+                <GenericDataGrid TItem="DetalleSolicitudSalidaResponse"
                               @ref="detailTable"
                               Title="Detalle de entrega"
                               SearchPlaceholder="Buscar bien..."
@@ -101,37 +105,44 @@
                               SearchString="@detailSearch"
                               SearchStringChanged="(s) => detailSearch = s"
                               OnSearch="OnDetailSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="DetalleSolicitudSalidaResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh>Autorizada</MudTh>
-                        <MudTh>Entregada</MudTh>
-                        <MudTh>Pendiente</MudTh>
-                    </Header>
-                    <Row Context="detail">
-                        <MudTd>
-                            <MudTooltip Text="Actualizar entrega">
-                                <MudIconButton Icon="@Icons.Material.Filled.EditNote"
-                                               Visible="@CanUpdate"
-                                               Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditarDetalle(detail))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detail.TipoBienDescripcion)</div>
-                            <span>@TextOrDash(detail.AlmacenClave)</span>
-                        </MudTd>
-                        <MudTd>@Qty(detail.CantidadAutorizada ?? 0m)</MudTd>
-                        <MudTd>@Qty(detail.CantidadEntregada ?? 0m)</MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="@(detail.CantidadPendiente <= 0 ? Color.Success : Color.Warning)">
-                                @Qty(detail.CantidadPendiente)
-                            </MudChip>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Actualizar entrega">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote"
+                        Visible="@CanUpdate"
+                        Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditarDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.AlmacenClave)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Autorizada" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Qty(cell.Item.CantidadAutorizada ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Entregada" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Qty(cell.Item.CantidadEntregada ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Pendiente" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@(cell.Item.CantidadPendiente <= 0 ? Color.Success : Color.Warning)">
+                        @Qty(cell.Item.CantidadPendiente)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         </div>
     </MudContainer>
@@ -190,8 +201,8 @@
 </style>
 
 @code {
-    private GenericTable<SolicitudSalidaResponse> table = null!;
-    private GenericTable<DetalleSolicitudSalidaResponse> detailTable = null!;
+    private GenericDataGrid<SolicitudSalidaResponse> table = null!;
+    private GenericDataGrid<DetalleSolicitudSalidaResponse> detailTable = null!;
     private SolicitudSalidaResponse? selectedSolicitud;
     private List<DetalleSolicitudSalidaResponse> detailElements = new();
     private string detailSearch = string.Empty;

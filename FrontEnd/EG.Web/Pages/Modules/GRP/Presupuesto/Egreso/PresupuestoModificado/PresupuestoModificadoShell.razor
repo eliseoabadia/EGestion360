@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.PresupuestoModificado
@@ -35,7 +35,7 @@
             </div>
 
             <div class="mod-table-wrap">
-                <GenericTable TItem="EgreAdecuacionResponse"
+                <GenericDataGrid TItem="EgreAdecuacionResponse"
                               @ref="table"
                               Title="@Title"
                               SearchPlaceholder="Buscar clave, justificacion o poliza..."
@@ -45,37 +45,54 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Clave" T="EgreAdecuacionResponse">Clave</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Fecha" T="EgreAdecuacionResponse">Fecha</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Justificacion" T="EgreAdecuacionResponse">Justificacion</MudTableSortLabel></MudTh>
-                        <MudTh>Poliza</MudTh>
-                        <MudTh>Flujo</MudTh>
-                        <MudTh>Estado</MudTh>
-                    </Header>
-                    <Row Context="item">
-                        <MudTd>
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(item))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(item))" Title="@RequestTooltip(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(item, "enviar-solicitud"))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(item))" Title="@AuthorizeTooltip(item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(item, "autorizar"))" />
-                            <DocumentSupportButton Modulo="Presupuesto_Modificado"
-                                                   SubModulo="@SubModuleNameValue"
-                                                   Controlador="EgreAdecuacion"
-                                                   EntidadId="@item.PkidEgreAdecuacion"
-                                                   RegistroTitulo="@TextOrDash(item.Clave)"
-                                                   RegistroDescripcion="@TextOrDash(item.Justificacion)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(item.PkidEgreAdecuacion))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(item.PkidEgreAdecuacion))" />
-                        </MudTd>
-                        <MudTd><strong>@TextOrDash(item.Clave)</strong><br /><span>@TextOrDash(item.TipoAdecuacionDescripcion)</span></MudTd>
-                        <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd>@TextOrDash(item.Justificacion)</MudTd>
-                        <MudTd>@TextOrDash(item.ClavePoliza)</MudTd>
-                        <MudTd>@Money(DetailTotalCache.GetValueOrDefault(item.PkidEgreAdecuacion))</MudTd>
-                        <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item)">@StatusText(item)</MudChip></MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(cell.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(cell.Item))" Title="@RequestTooltip(cell.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(cell.Item, "enviar-solicitud"))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(cell.Item))" Title="@AuthorizeTooltip(cell.Item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(cell.Item, "autorizar"))" />
+                        <DocumentSupportButton Modulo="Presupuesto_Modificado"
+                        SubModulo="@SubModuleNameValue"
+                        Controlador="EgreAdecuacion"
+                        EntidadId="@cell.Item.PkidEgreAdecuacion"
+                        RegistroTitulo="@TextOrDash(cell.Item.Clave)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.Justificacion)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(cell.Item.PkidEgreAdecuacion))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(cell.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(cell.Item.PkidEgreAdecuacion))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
+                    <CellTemplate Context="cell">
+                        <strong>@TextOrDash(cell.Item.Clave)</strong><br /><span>@TextOrDash(cell.Item.TipoAdecuacionDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Fecha" Identifier="Fecha" PropertyName="Fecha" SortBy="x => x.Fecha">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Fecha.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Justificacion" Identifier="Justificacion" PropertyName="Justificacion" SortBy="x => x.Justificacion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Justificacion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Poliza" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ClavePoliza)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Flujo" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Money(DetailTotalCache.GetValueOrDefault(cell.Item.PkidEgreAdecuacion))
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionResponse" Title="Estado" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(cell.Item)">@StatusText(cell.Item)</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         }
         else
@@ -131,15 +148,32 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(1))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="aumentosTable" Title="Ampliaciones" ServerDataFunc="LoadAumentosData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
-                                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
-                                        <Row Context="d">
-                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, 1))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
-                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
-                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
-                                        </Row>
-                                    </GenericTable>
+                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="aumentosTable" Title="Ampliaciones" ServerDataFunc="LoadAumentosData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+            <Columns>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidEgreAdecuacionDetalle, 1))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidEgreAdecuacionDetalle))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Partida" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.EgresoAutorizadoDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Fecha" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Fecha.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Total" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="money-cell">
+                        @Money(Math.Abs(cell.Item.Total ?? 0m))
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                                 </div>
                             </section>
                             <section class="board-panel board-panel-reduccion">
@@ -149,15 +183,32 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Warning" OnClick="@(() => AddDetalle(2))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="reduccionesTable" Title="Reducciones" ServerDataFunc="LoadReduccionesData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
-                                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
-                                        <Row Context="d">
-                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, 2))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
-                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
-                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
-                                        </Row>
-                                    </GenericTable>
+                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="reduccionesTable" Title="Reducciones" ServerDataFunc="LoadReduccionesData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+            <Columns>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidEgreAdecuacionDetalle, 2))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidEgreAdecuacionDetalle))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Partida" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.EgresoAutorizadoDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Fecha" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Fecha.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Total" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="money-cell">
+                        @Money(Math.Abs(cell.Item.Total ?? 0m))
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                                 </div>
                             </section>
                         </div>
@@ -172,16 +223,37 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(DefaultMovimientoId))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericTable TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
-                                        <Header><MudTh>Acciones</MudTh><MudTh>Tipo</MudTh><MudTh>Partida</MudTh><MudTh>Fecha</MudTh><MudTh>Total</MudTh></Header>
-                                        <Row Context="d">
-                                            <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidEgreAdecuacionDetalle, DefaultMovimientoId))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidEgreAdecuacionDetalle))" /></MudTd>
-                                            <MudTd>@TextOrDash(d.TipoMovimientoDescripcion)</MudTd>
-                                            <MudTd>@TextOrDash(d.EgresoAutorizadoDescripcion)</MudTd>
-                                            <MudTd>@d.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                                            <MudTd class="money-cell">@Money(Math.Abs(d.Total ?? 0m))</MudTd>
-                                        </Row>
-                                    </GenericTable>
+                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+            <Columns>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidEgreAdecuacionDetalle, DefaultMovimientoId))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidEgreAdecuacionDetalle))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Tipo" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoMovimientoDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Partida" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.EgresoAutorizadoDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Fecha" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Fecha.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Total" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="money-cell">
+                        @Money(Math.Abs(cell.Item.Total ?? 0m))
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                                 </div>
                             </section>
                             <section class="board-panel board-panel-conta">
@@ -262,10 +334,10 @@
     [Parameter] public int DefaultMovimientoId { get; set; }
     [Parameter] public bool AllowBothMovements { get; set; }
 
-    private GenericTable<EgreAdecuacionResponse> table = null!;
-    private GenericTable<EgreAdecuacionDetalleResponse>? detalleTable;
-    private GenericTable<EgreAdecuacionDetalleResponse>? aumentosTable;
-    private GenericTable<EgreAdecuacionDetalleResponse>? reduccionesTable;
+    private GenericDataGrid<EgreAdecuacionResponse> table = null!;
+    private GenericDataGrid<EgreAdecuacionDetalleResponse>? detalleTable;
+    private GenericDataGrid<EgreAdecuacionDetalleResponse>? aumentosTable;
+    private GenericDataGrid<EgreAdecuacionDetalleResponse>? reduccionesTable;
     private EgreAdecuacionResponse? Selected;
     private bool SelectedLocked;
     private string detalleSearch = string.Empty;

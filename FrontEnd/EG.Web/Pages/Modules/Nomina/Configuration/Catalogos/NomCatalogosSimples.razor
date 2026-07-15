@@ -1,4 +1,4 @@
-@page "/rh/configuracion/sexo"
+﻿@page "/rh/configuracion/sexo"
 @page "/sis/sexo"
 @page "/rh/configuracion/tipo-sangre"
 @page "/sis/tiposangre"
@@ -75,7 +75,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="ReloadData" />
 
-        <GenericTable TItem="NomCatalogoSimpleResponse"
+        <GenericDataGrid TItem="NomCatalogoSimpleResponse"
                       @ref="table"
                       @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"
@@ -85,29 +85,19 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomCatalogoSimpleResponse">@GetColumnLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidCatalogoSimple))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidCatalogoSimple))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="@(column => GetColumnLabel(column))"
+                      CellValueFunc="@((item, column) => NominaCatalogUi.FormatValue(column.GetValue(item)))">
+            <RowActions Context="item">
+                <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidCatalogoSimple))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidCatalogoSimple))" />
+                </MudTooltip>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
@@ -433,7 +423,7 @@
             ["/sis/capitulos"] = Nom("Capitulos", "Capitulos", KeyDescriptionFields, DefaultColumns, Icons.Material.Filled.FormatListNumbered)
         };
 
-    private GenericTable<NomCatalogoSimpleResponse> table = null!;
+    private GenericDataGrid<NomCatalogoSimpleResponse> table = null!;
     private string loadedPath = string.Empty;
     private bool pendingRouteReload;
     private bool disposed;

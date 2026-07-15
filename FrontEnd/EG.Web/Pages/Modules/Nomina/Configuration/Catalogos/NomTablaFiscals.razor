@@ -47,7 +47,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="ReloadData" />
 
-        <GenericTable TItem="NomTablaFiscalResponse"
+        <GenericDataGrid TItem="NomTablaFiscalResponse"
                       @ref="table"
                       @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"
@@ -57,33 +57,19 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh>
-                        <MudTableSortLabel SortLabel="@column.Name" T="NomTablaFiscalResponse">
-                            @GetColumnLabel(column)
-                        </MudTableSortLabel>
-                    </MudTh>
-                }
-            </Header>
-            <Row Context="item">
-                <MudTd>
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="GetColumnLabel"
+                      CellValueFunc="@((item, column) => FormatValue(column.GetValue(item)))">
+            <RowActions Context="item">
                     <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidTablaFiscal))" />
                     </MudTooltip>
                     <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidTablaFiscal))" />
                     </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
@@ -197,7 +183,7 @@
             ["/sis/basegravableimss"] = Fiscal("Base Gravable IMSS", "Base_Gravable_IMSS", "Base_Gravable_IMSS", BaseLabels, ParentFiscalFields, ParentFiscalColumns)
         };
 
-    private GenericTable<NomTablaFiscalResponse> table = null!;
+    private GenericDataGrid<NomTablaFiscalResponse> table = null!;
     private string loadedPath = string.Empty;
     private bool pendingRouteReload;
     private bool disposed;

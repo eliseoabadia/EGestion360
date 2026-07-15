@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
@@ -44,18 +44,31 @@
         {
             <MudDivider Class="my-3" />
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Partidas de factura</MudText>
-            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
-                <HeaderContent>
-                    <MudTh>Partida</MudTh>
-                    <MudTh>Monto aplicado</MudTh>
-                    <MudTh>Observaciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
-                    <MudTd><MudNumericField T="decimal" @bind-Value="context.MontoAplicado" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" Margin="Margin.Dense" /></MudTd>
-                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="FacturaDetalleResponse" @key="detalleItems"
+                                 Items="@detalleItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="FacturaDetalleResponse" Title="Partida" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.PartidaClaveNombre)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="FacturaDetalleResponse" Title="Monto aplicado" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudNumericField T="decimal" @bind-Value="cell.Item.MontoAplicado" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="FacturaDetalleResponse" Title="Observaciones" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.Observaciones)
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </BaseEntityForm>
 </BaseCrudDialog>

@@ -1,4 +1,4 @@
-@page "/rh/configuracion/plazas"
+﻿@page "/rh/configuracion/plazas"
 @page "/emp/plazasautorizadas"
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -18,7 +18,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="NomPlazaAutorizadaResponse"
+        <GenericDataGrid TItem="NomPlazaAutorizadaResponse"
                       @ref="table"
                       Title="Lista de plazas autorizadas"
                       SearchPlaceholder="Buscar plaza, puesto, área, situación o documento..."
@@ -27,34 +27,24 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomPlazaAutorizadaResponse">@NominaCatalogUi.GetLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidPlazaAutorizada))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidPlazaAutorizada))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@NominaCatalogUi.FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="@(column => NominaCatalogUi.GetLabel(column))"
+                      CellValueFunc="@((item, column) => NominaCatalogUi.FormatValue(column.GetValue(item)))">
+            <RowActions Context="item">
+                <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidPlazaAutorizada))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidPlazaAutorizada))" />
+                </MudTooltip>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NomPlazaAutorizadaResponse> table = null!;
+    private GenericDataGrid<NomPlazaAutorizadaResponse> table = null!;
     private static readonly string[] Columns =
     [
         nameof(NomPlazaAutorizadaResponse.Plaza),

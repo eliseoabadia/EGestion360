@@ -1,4 +1,4 @@
-@page "/rh/incidencia"
+﻿@page "/rh/incidencia"
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -37,7 +37,7 @@
 		</div>
 
 		<div class="eg-table-shell">
-			<GenericTable TItem="VwRhIncidenciaResponse"
+			<GenericDataGrid TItem="VwRhIncidenciaResponse"
 						  @ref="table"
 						  Title="Incidencias de nómina"
 						  SearchPlaceholder="Buscar empleado, tipo de incidencia, periodo..."
@@ -47,84 +47,108 @@
 						  SearchString="@SearchString"
 						  SearchStringChanged="(s) => SearchString = s"
 						  OnSearch="OnSearch">
-
-				<Header>
-					<MudTh>Acciones</MudTh>
-					<MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="VwRhIncidenciaResponse">Empleado</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="TipoIncidenciaDescripcion" T="VwRhIncidenciaResponse">Tipo</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="Fecha" T="VwRhIncidenciaResponse">Fecha</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="FechaFin" T="VwRhIncidenciaResponse">Periodo</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="Comentario" T="VwRhIncidenciaResponse">Comentario</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="AplicaDescuento" T="VwRhIncidenciaResponse">Aplica Descuento</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="Activo" T="VwRhIncidenciaResponse">Estado</MudTableSortLabel></MudTh>
-				</Header>
-
-				<Row Context="item">
-					<MudTd>
-						<MudTooltip Text="@(item.Activo == true ? "Ver incidencia" : "Editar")">
-							<MudIconButton Icon="@Icons.Material.Filled.Edit"
-										   Visible="@CanUpdate"
-										   Color="@(item.Activo == true ? Color.Info : Color.Primary)"
-										   Size="Size.Small"
-										   OnClick="@(() => EditItem(item.PkidIncidencia))" />
-						</MudTooltip>
-						<DocumentSupportButton Modulo="Incidencias"
-											   SubModulo="Captura_Incidencias"
-											   Controlador="Incidencia"
-											   EntidadId="@item.PkidIncidencia"
-											   RegistroTitulo="@TextOrDash(item.NombreCompleto)"
-											   RegistroDescripcion="@TextOrDash(item.TipoIncidenciaDescripcion)" />
-						<MudTooltip Text="Eliminar">
-							<MudIconButton Icon="@Icons.Material.Filled.Delete"
-										   Visible="@(CanDelete && item.Activo != true)"
-										   Color="Color.Error"
-										   Size="Size.Small"
-										   OnClick="@(() => DeleteItem(item.PkidIncidencia))" />
-						</MudTooltip>
-					</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
-						<div class="eg-main-cell">@TextOrDash(item.NombreCompleto)</div>
-						<span>@TextOrDash(item.ClavePersona)</span>
-					</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
-						@if (item.FechaInicio.HasValue && item.FechaFin.HasValue)
-						{
-							<span>@item.FechaInicio.Value.ToString("dd/MM/yyyy") - @item.FechaFin.Value.ToString("dd/MM/yyyy")</span>
-						}
-						else
-						{
-							<span>-</span>
-						}
-					</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">@TextOrDash(item.Comentario)</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
-						<!-- FIX: Se agregó T="string" -->
-						<MudChip T="string"
-								 Size="Size.Small"
-								 Color="@(item.AplicaDescuento == true ? Color.Warning : Color.Default)"
-								 Icon="@(item.AplicaDescuento == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
-							@(item.AplicaDescuento == true ? "Aplica" : "No aplica")
-						</MudChip>
-					</MudTd>
-					<MudTd @ondblclick="@(() => EditItem(item.PkidIncidencia))">
-						<!-- FIX: Se agregó T="string" -->
-						<MudChip T="string"
-								 Size="Size.Small"
-								 Color="@(item.Activo == true ? Color.Success : Color.Error)"
-								 Variant="Variant.Text">
-							@(item.Activo == true ? "Activa" : "Inactiva")
-						</MudChip>
-					</MudTd>
-				</Row>
-			</GenericTable>
+            <Columns>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="@(cell.Item.Activo == true ? "Ver incidencia" : "Editar")">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="@(cell.Item.Activo == true ? Color.Info : Color.Primary)"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidIncidencia))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Incidencias"
+                        SubModulo="Captura_Incidencias"
+                        Controlador="Incidencia"
+                        EntidadId="@cell.Item.PkidIncidencia"
+                        RegistroTitulo="@TextOrDash(cell.Item.NombreCompleto)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.TipoIncidenciaDescripcion)" />
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@(CanDelete && cell.Item.Activo != true)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidIncidencia))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Empleado" Identifier="NombreCompleto" PropertyName="NombreCompleto" SortBy="x => x.NombreCompleto">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        <div class="eg-main-cell">@TextOrDash(cell.Item.NombreCompleto)</div>
+                        <span>@TextOrDash(cell.Item.ClavePersona)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Tipo" Identifier="TipoIncidenciaDescripcion" PropertyName="TipoIncidenciaDescripcion" SortBy="x => x.TipoIncidenciaDescripcion">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        @TextOrDash(cell.Item.TipoIncidenciaDescripcion)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Fecha" Identifier="Fecha" PropertyName="Fecha" SortBy="x => x.Fecha">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        @(cell.Item.Fecha?.ToString("dd/MM/yyyy") ?? "-")
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Periodo" Identifier="FechaFin" PropertyName="FechaFin" SortBy="x => x.FechaFin">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        @if (cell.Item.FechaInicio.HasValue && cell.Item.FechaFin.HasValue)
+                        {
+                        <span>@cell.Item.FechaInicio.Value.ToString("dd/MM/yyyy") - @cell.Item.FechaFin.Value.ToString("dd/MM/yyyy")</span>
+                        }
+                        else
+                        {
+                        <span>-</span>
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Comentario" Identifier="Comentario" PropertyName="Comentario" SortBy="x => x.Comentario">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        @TextOrDash(cell.Item.Comentario)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Aplica Descuento" Identifier="AplicaDescuento" PropertyName="AplicaDescuento" SortBy="x => x.AplicaDescuento">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        <!-- FIX: Se agregó T="string" -->
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.AplicaDescuento == true ? Color.Warning : Color.Default)"
+                        Icon="@(cell.Item.AplicaDescuento == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                        @(cell.Item.AplicaDescuento == true ? "Aplica" : "No aplica")
+                        </MudChip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
+                        <!-- FIX: Se agregó T="string" -->
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.Activo == true ? Color.Success : Color.Error)"
+                        Variant="Variant.Text">
+                        @(cell.Item.Activo == true ? "Activa" : "Inactiva")
+                        </MudChip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
 		</div>
 	</MudContainer>
 </AccessVerification>
 
 @code {
-	private GenericTable<VwRhIncidenciaResponse> table = null!;
+	private GenericDataGrid<VwRhIncidenciaResponse> table = null!;
 
 	protected override string ModuleName => "Incidencias";
 	protected override string SubModuleName => "Captura_Incidencias";

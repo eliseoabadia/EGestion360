@@ -1,4 +1,4 @@
-@using EG.Web.Contracts
+﻿@using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Models.ConteoCiclico
 @using MudBlazor
@@ -120,70 +120,66 @@
                 }
                 else
                 {
-                    <MudTable Items="@bienesEncontrados"
-                              Hover="true"
-                              Dense="true"
-                              Striped="true"
-                              Class="result-table"
-                              HeaderClass="table-header">
-                        <HeaderContent>
-                            <MudTh Style="width: 50px;">
-                                <MudCheckBox @bind-Value="seleccionarTodos"
-                                            Size="Size.Small"
-                                            Changed="ToggleSelectAll" />
-                            </MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Clave" T="BienBusquedaResponse">Clave</MudTableSortLabel></MudTh>
-                            <MudTh>Descripción</MudTh>
-                            <MudTh>Serie</MudTh>
-                            <MudTh>Modelo</MudTh>
-                            <MudTh>Ubicación</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>
-                                <MudCheckBox @bind-Value="context.Seleccionado"
-                                            Size="Size.Small"
-                                            Disabled="@(yaEscaneado(context.PkidBien))"
-                                            Changed="@(() => OnSeleccionarItem(context))" />
-                            </MudTd>
-                            <MudTd>
+                    <GenericDataGrid TItem="BienBusquedaResponse" @key="bienesEncontrados"
+                                 Items="@bienesEncontrados"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="BienBusquedaResponse" Title="" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudCheckBox @bind-Value="cell.Item.Seleccionado"
+                                Size="Size.Small"
+                                Disabled="@(yaEscaneado(cell.Item.PkidBien))"
+                                Changed="@(() => OnSeleccionarItem(cell.Item))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="BienBusquedaResponse" Title="Clave" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
                                 <MudChip T="string" Size="Size.Small" Color="Color.Primary">
-                                    @context.Clave
+                                @cell.Item.Clave
                                 </MudChip>
-                                @if (!string.IsNullOrEmpty(context.ClaveAnt))
+                                @if (!string.IsNullOrEmpty(cell.Item.ClaveAnt))
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Default">
-                                        @context.ClaveAnt
-                                    </MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                @cell.Item.ClaveAnt
+                                </MudChip>
                                 }
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2">@context.Descripcion</MudText>
-                            </MudTd>
-                            <MudTd>
-                                @if (!string.IsNullOrEmpty(context.Serie))
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="BienBusquedaResponse" Title="Descripción" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.body2">@cell.Item.Descripcion</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="BienBusquedaResponse" Title="Serie" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @if (!string.IsNullOrEmpty(cell.Item.Serie))
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.QrCode">
-                                        @context.Serie
-                                    </MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.QrCode">
+                                @cell.Item.Serie
+                                </MudChip>
                                 }
                                 else
                                 {
-                                    <MudText Typo="Typo.caption" Color="Color.Default">-</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Default">-</MudText>
                                 }
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.caption">@context.Modelo ?? "-"</MudText>
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.caption">@context.Ubicacion ?? "-"</MudText>
-                            </MudTd>
-                        </RowTemplate>
-                        <NoRecordsContent>
-                            <MudText Align="Align.Center" Color="Color.Default">
-                                @(string.IsNullOrEmpty(filtroBusqueda) ? "Escribe un término de búsqueda para encontrar bienes" : "No se encontraron bienes con ese criterio")
-                            </MudText>
-                        </NoRecordsContent>
-                    </MudTable>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="BienBusquedaResponse" Title="Modelo" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.caption">@cell.Item.Modelo ?? "-"</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="BienBusquedaResponse" Title="Ubicación" Identifier="__local_5" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.caption">@cell.Item.Ubicacion ?? "-"</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
 
                     @* ===== PAGINATION ===== *@
                     <div class="pagination-section">

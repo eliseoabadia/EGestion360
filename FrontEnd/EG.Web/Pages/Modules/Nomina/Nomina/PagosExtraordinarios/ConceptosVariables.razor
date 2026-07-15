@@ -37,7 +37,7 @@
         </div>
 
         <div class="conceptos-table-shell">
-            <GenericTable TItem="NomConceptoVariableResponse"
+            <GenericDataGrid TItem="NomConceptoVariableResponse"
                           @ref="table"
                           Title="Captura de conceptos variables"
                           SearchPlaceholder="Buscar empleado, concepto, periodo o referencia..."
@@ -47,67 +47,68 @@
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
                           OnSearch="OnSearch">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PersonaClaveNombre" T="NomConceptoVariableResponse">Empleado</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ConceptoClaveNombre" T="NomConceptoVariableResponse">Concepto</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PeriodoId" T="NomConceptoVariableResponse">Periodo</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Importe" T="NomConceptoVariableResponse">Importe</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Referencia" T="NomConceptoVariableResponse">Referencia</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Activo" T="NomConceptoVariableResponse">Estado</MudTableSortLabel></MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd>
+                <Columns>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                        <CellTemplate Context="cell">
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Visible="@CanUpdate"
-                                           Disabled="@(!item.Activo || IsBusy)"
+                                           Disabled="@(!cell.Item.Activo || IsBusy)"
                                            Color="Color.Primary"
                                            Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidConceptoVariable))" />
+                                           OnClick="@(() => EditItem(cell.Item.PkidConceptoVariable))" />
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Pagos_Extraordinarios"
                                                SubModulo="Conceptos_Variables"
                                                Controlador="NomConceptoVariable"
-                                               EntidadId="@item.PkidConceptoVariable"
-                                               FkidEmpresaSis="@item.FkidEmpresaSis"
-                                               RegistroTitulo="@TextOrDash(item.PersonaClaveNombre)"
-                                               RegistroDescripcion="@TextOrDash(item.ConceptoClaveNombre)" />
+                                               EntidadId="@cell.Item.PkidConceptoVariable"
+                                               FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                                               RegistroTitulo="@TextOrDash(cell.Item.PersonaClaveNombre)"
+                                               RegistroDescripcion="@TextOrDash(cell.Item.ConceptoClaveNombre)" />
                         <MudTooltip Text="Eliminar">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Visible="@CanDelete"
-                                           Disabled="@(!item.Activo || IsBusy)"
+                                           Disabled="@(!cell.Item.Activo || IsBusy)"
                                            Color="Color.Error"
                                            Size="Size.Small"
-                                           OnClick="@(() => DeleteItem(item.PkidConceptoVariable))" />
+                                           OnClick="@(() => DeleteItem(cell.Item.PkidConceptoVariable))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">
-                        <div class="main-cell">@TextOrDash(item.PersonaClaveNombre)</div>
-                        <span>@TextOrDash(item.EmpresaNombre)</span>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@TextOrDash(item.ConceptoClaveNombre)</MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@item.PeriodoId.ToString(CultureInfo.InvariantCulture)</MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))" Class="money-cell">@Money(item.Importe)</MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">@TextOrDash(item.Referencia)</MudTd>
-                    <MudTd @ondblclick="@(() => EditIfAllowed(item))">
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Empleado" Identifier="PersonaClaveNombre" PropertyName="PersonaClaveNombre" SortBy="x => x.PersonaClaveNombre">
+                        <CellTemplate Context="cell"><div @ondblclick="@(() => EditIfAllowed(cell.Item))"><div class="main-cell">@TextOrDash(cell.Item.PersonaClaveNombre)</div><span>@TextOrDash(cell.Item.EmpresaNombre)</span></div></CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Concepto" Identifier="ConceptoClaveNombre" PropertyName="ConceptoClaveNombre" SortBy="x => x.ConceptoClaveNombre">
+                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@TextOrDash(cell.Item.ConceptoClaveNombre)</span></CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Periodo" Identifier="PeriodoId" PropertyName="PeriodoId" SortBy="x => x.PeriodoId">
+                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@cell.Item.PeriodoId.ToString(CultureInfo.InvariantCulture)</span></CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Importe" Identifier="Importe" PropertyName="Importe" SortBy="x => x.Importe" CellClass="money-cell">
+                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@Money(cell.Item.Importe)</span></CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Referencia" Identifier="Referencia" PropertyName="Referencia" SortBy="x => x.Referencia">
+                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@TextOrDash(cell.Item.Referencia)</span></CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                        <CellTemplate Context="cell">
                         <MudChip T="string"
                                  Size="Size.Small"
-                                 Color="@(item.Activo ? Color.Success : Color.Error)"
+                                 Color="@(cell.Item.Activo ? Color.Success : Color.Error)"
                                  Variant="Variant.Text">
-                            @(item.Activo ? "Activo" : "Inactivo")
+                            @(cell.Item.Activo ? "Activo" : "Inactivo")
                         </MudChip>
-                    </MudTd>
-                </Row>
-            </GenericTable>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
 
 @code {
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
-    private GenericTable<NomConceptoVariableResponse> table = null!;
+    private GenericDataGrid<NomConceptoVariableResponse> table = null!;
 
     protected override string ModuleName => "Pagos_Extraordinarios";
     protected override string SubModuleName => "Conceptos_Variables";

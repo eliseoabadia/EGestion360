@@ -1,4 +1,4 @@
-@page "/Adquisiciones/Programa_Anual"
+﻿@page "/Adquisiciones/Programa_Anual"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
@@ -31,7 +31,7 @@
                             OnRefresh="() => table.ReloadData()" />
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="PaaaResponse"
+                    <GenericDataGrid TItem="PaaaResponse"
                                   @ref="table"
                                   Title="Programas Anuales"
                                   SearchPlaceholder="Buscar por descripción, área o responsable..."
@@ -41,70 +41,92 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PkidPaaas" T="PaaaResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PaaaResponse">Descripción</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="PaaaResponse">Área</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PaaaResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoDescripcion" T="PaaaResponse">Fuente Financiamiento</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ResponsableCompleto" T="PaaaResponse">Responsable</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Fecha" T="PaaaResponse">Fecha</MudTableSortLabel></MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd>
+            <Columns>
+                <TemplateColumn T="PaaaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
                         <MudTooltip Text="Ver detalle del programa">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                           Color="Color.Info"
-                                           Size="Size.Small"
-                                           OnClick="@(() => SelectPaaa(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectPaaa(cell.Item))" />
                         </MudTooltip>
                         <ReportOpenButton ReportName=""
-                                          EntityId="@item.PkidPaaas"
-                                          Title="@($"Reporte PAAA {item.PkidPaaas}")"
-                                          Tooltip="Ver reporte PAAAS"
-                                          Color="Color.Secondary"
-                                          Visible="@CanView" />
+                        EntityId="@cell.Item.PkidPaaas"
+                        Title="@($"Reporte PAAA {cell.Item.PkidPaaas}")"
+                        Tooltip="Ver reporte PAAAS"
+                        Color="Color.Secondary"
+                        Visible="@CanView" />
                         <ReportDesignerOpenButton ReportName=""
-                                                  Title="Disenador reporte PAAAS"
-                                                  Tooltip="Editar diseno del reporte PAAAS"
-                                                  Color="Color.Primary"
-                                                  Visible="@CanUpdate" />
+                        Title="Disenador reporte PAAAS"
+                        Tooltip="Editar diseno del reporte PAAAS"
+                        Color="Color.Primary"
+                        Visible="@CanUpdate" />
                         <DocumentSupportButton Modulo="Adquisiciones"
-                                               SubModulo="Programa_Anual_Adquisiciones"
-                                               Controlador="Paaa"
-                                               EntidadId="@item.PkidPaaas"
-                                               FkidEmpresaSis="@item.FkidEmpresaSis"
-                                               RegistroTitulo="@item.Descripcion"
-                                               RegistroDescripcion="@($"PAAA {item.PkidPaaas} · {item.AreaNombre}")" />
+                        SubModulo="Programa_Anual_Adquisiciones"
+                        Controlador="Paaa"
+                        EntidadId="@cell.Item.PkidPaaas"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@cell.Item.Descripcion"
+                        RegistroDescripcion="@($"PAAA {cell.Item.PkidPaaas} · {cell.Item.AreaNombre}")" />
                         <MudTooltip Text="Editar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@CanUpdate"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidPaaas))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidPaaas))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@CanDelete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteItem(item.PkidPaaas))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidPaaas))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd>
-                        <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">@item.PkidPaaas</MudChip>
-                    </MudTd>
-                    <MudTd Style="font-weight: 500;">@item.Descripcion</MudTd>
-                    <MudTd Style="font-weight: 500;">@item.ProgramaDescripcion</MudTd>
-                    <MudTd Style="font-weight: 500;">@item.FuenteFinanciamientoDescripcion</MudTd>
-                    <MudTd>@item.AreaNombre</MudTd>
-                    <MudTd>@item.ResponsableCompleto</MudTd>
-                    <MudTd>@item.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                </Row>
-            </GenericTable>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="ID" Identifier="PkidPaaas" PropertyName="PkidPaaas" SortBy="x => x.PkidPaaas">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">@cell.Item.PkidPaaas</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <div Style="font-weight: 500;">
+                        @cell.Item.Descripcion
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Área" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        <div Style="font-weight: 500;">
+                        @cell.Item.ProgramaDescripcion
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        <div Style="font-weight: 500;">
+                        @cell.Item.FuenteFinanciamientoDescripcion
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Fuente Financiamiento" Identifier="FuenteFinanciamientoDescripcion" PropertyName="FuenteFinanciamientoDescripcion" SortBy="x => x.FuenteFinanciamientoDescripcion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.AreaNombre
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Responsable" Identifier="ResponsableCompleto" PropertyName="ResponsableCompleto" SortBy="x => x.ResponsableCompleto">
+                    <CellTemplate Context="cell">
+                        @cell.Item.ResponsableCompleto
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaResponse" Title="Fecha" Identifier="Fecha" PropertyName="Fecha" SortBy="x => x.Fecha">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Fecha.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -220,7 +242,7 @@
                 <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
                     @* ─── PANEL IZQUIERDO: LISTA DE PARTIDAS ─── *@
                     <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="PaaaspartidumResponse"
+                        <GenericDataGrid TItem="PaaaspartidumResponse"
                                       @ref="partidaTable"
                                       Title="Partidas"
                                       SearchPlaceholder="Buscar partida..."
@@ -232,44 +254,50 @@
                                       SearchStringChanged="(s) => partidaSearchString = s"
                                       OnSearch="ReloadPartidas"
                                       OnAdd="AddPartida">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="ClavePartida" T="PaaaspartidumResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PaaaspartidumResponse">Partida</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Monto" T="PaaaspartidumResponse">Monto</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="partida">
-                                <MudTd>
-                                    <MudTooltip Text="Ver bienes">
-                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                       Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Info)"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => SelectPartida(partida))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar partida">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => DeletePartida(partida))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>
-                                    <MudChip T="string"
-                                             Size="Size.Small"
-                                             Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Primary)">
-                                        @TextOrDash(partida.ClavePartida)
-                                    </MudChip>
-                                </MudTd>
-                                <MudTd>@TextOrDash(partida.Descripcion)</MudTd>
-                                <MudTd>@Money(partida.Monto)</MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="PaaaspartidumResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver bienes">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Info)"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectPartida(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeletePartida(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaspartidumResponse" Title="Clave" Identifier="ClavePartida" PropertyName="ClavePartida" SortBy="x => x.ClavePartida">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Primary)">
+                        @TextOrDash(cell.Item.ClavePartida)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaspartidumResponse" Title="Partida" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Descripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaaspartidumResponse" Title="Monto" Identifier="Monto" PropertyName="Monto" SortBy="x => x.Monto">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Monto)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
 
                         @* ─── PANEL DERECHO: DETALLE DE BIENES ─── *@
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="PaaasdetalleResponse"
+                        <GenericDataGrid TItem="PaaasdetalleResponse"
                                       @ref="bienTable"
                                       Title="@BienesTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
@@ -281,38 +309,52 @@
                                       SearchStringChanged="(s) => bienSearchString = s"
                                       OnSearch="ReloadBienes"
                                       OnAdd="AddBien">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="PaaasdetalleResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="PaaasdetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="PaaasdetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Unidad" T="PaaasdetalleResponse">Unidad</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="LugarEntrega" T="PaaasdetalleResponse">Lugar</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="bien">
-                                <MudTd>
-                                    <MudTooltip Text="Editar bien">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Visible="@CanUpdate"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => EditBien(bien))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar bien">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => DeleteBien(bien))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>@TextOrDash(bien.TipoBienCodigoClave)</MudTd>
-                                <MudTd>@TextOrDash(bien.TipoBienDescripcion)</MudTd>
-                                <MudTd>@Quantity(bien.Cantidad)</MudTd>
-                                <MudTd>@TextOrDash(bien.Unidad)</MudTd>
-                                <MudTd>@TextOrDash(bien.LugarEntrega)</MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditBien(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteBien(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Clave" Identifier="TipoBienCodigoClave" PropertyName="TipoBienCodigoClave" SortBy="x => x.TipoBienCodigoClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienCodigoClave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Bien / Servicio" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Unidad" Identifier="Unidad" PropertyName="Unidad" SortBy="x => x.Unidad">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Unidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Lugar" Identifier="LugarEntrega" PropertyName="LugarEntrega" SortBy="x => x.LugarEntrega">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.LugarEntrega)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
                 </MudGrid>
                 </div>
@@ -460,9 +502,9 @@
 </style>
 
 @code {
-    private GenericTable<PaaaResponse> table = null!;
-    private GenericTable<PaaaspartidumResponse>? partidaTable;
-    private GenericTable<PaaasdetalleResponse>? bienTable;
+    private GenericDataGrid<PaaaResponse> table = null!;
+    private GenericDataGrid<PaaaspartidumResponse>? partidaTable;
+    private GenericDataGrid<PaaasdetalleResponse>? bienTable;
     private int _empresaId;
     private PaaaResponse? SelectedPaaa;
     private List<PaaaspartidumResponse>? partidas;

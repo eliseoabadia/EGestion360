@@ -1,4 +1,4 @@
-@page "/Adquisiciones/Cotizacion"
+﻿@page "/Adquisiciones/Cotizacion"
 @using System.Globalization
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
@@ -47,7 +47,7 @@
                 </div>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="CotizacionResponse"
+                    <GenericDataGrid TItem="CotizacionResponse"
                                   @ref="table"
                                   Title="Cotizaciones registradas"
                                   SearchPlaceholder="Buscar requisicion, proveedor o condiciones..."
@@ -57,72 +57,86 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidCotizacion" T="CotizacionResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="CotizacionResponse">Requisicion</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="CotizacionResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="CotizacionResponse">Solicitud</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaProveedorCotiza" T="CotizacionResponse">Cotiza</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalDetalles" T="CotizacionResponse">Bienes</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalCotizado" T="CotizacionResponse">Total</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Servicio" T="CotizacionResponse">Tipo</MudTableSortLabel></MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd Class="row-actions">
-                                <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectCotizacion(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Adquisiciones"
-                                                       SubModulo="Cotizacion"
-                                                       Controlador="Cotizacion"
-                                                       EntidadId="@item.PkidCotizacion"
-                                                       RegistroTitulo="@($"{TextOrDash(item.ProveedorNombre)} - Cotizacion {item.PkidCotizacion}")"
-                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidCotizacion))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteItem(item.PkidCotizacion))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@item.PkidCotizacion</MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.RequisicionDescripcion)</MudText>
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.ProveedorNombre)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(ProviderMeta(item))</MudText>
-                            </MudTd>
-                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@DateOrDash(item.FechaProveedorCotiza)</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
-                                    @item.TotalDetalles.ToString("N0", NumberCulture)
-                                </MudChip>
-                            </MudTd>
-                            <MudTd><strong>@Money(item.TotalCotizado)</strong></MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
-                                    @(item.Servicio ? "Servicio" : "Bien")
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="CotizacionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div class="row-actions">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectCotizacion(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Adquisiciones"
+                        SubModulo="Cotizacion"
+                        Controlador="Cotizacion"
+                        EntidadId="@cell.Item.PkidCotizacion"
+                        RegistroTitulo="@($"{TextOrDash(cell.Item.ProveedorNombre)} - Cotizacion {cell.Item.PkidCotizacion}")"
+                        RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidCotizacion))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidCotizacion))" />
+                        </MudTooltip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="ID" Identifier="PkidCotizacion" PropertyName="PkidCotizacion" SortBy="x => x.PkidCotizacion">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidCotizacion</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(ProviderMeta(cell.Item))</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Solicitud" Identifier="FechaSolicitud" PropertyName="FechaSolicitud" SortBy="x => x.FechaSolicitud">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaSolicitud.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Cotiza" Identifier="FechaProveedorCotiza" PropertyName="FechaProveedorCotiza" SortBy="x => x.FechaProveedorCotiza">
+                    <CellTemplate Context="cell">
+                        @DateOrDash(cell.Item.FechaProveedorCotiza)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Bienes" Identifier="TotalDetalles" PropertyName="TotalDetalles" SortBy="x => x.TotalDetalles">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
+                        @cell.Item.TotalDetalles.ToString("N0", NumberCulture)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Total" Identifier="TotalCotizado" PropertyName="TotalCotizado" SortBy="x => x.TotalCotizado">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.TotalCotizado)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Tipo" Identifier="Servicio" PropertyName="Servicio" SortBy="x => x.Servicio">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@(cell.Item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
+                        @(cell.Item.Servicio ? "Servicio" : "Bien")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -238,7 +252,7 @@
                 </MudPaper>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="CotizacionDetalleResponse"
+                    <GenericDataGrid TItem="CotizacionDetalleResponse"
                                   @ref="detalleTable"
                                   Title="Bienes cotizados"
                                   SearchPlaceholder="Buscar bien, clave o unidad..."
@@ -252,44 +266,64 @@
                                   SearchStringChanged="(s) => detalleSearchString = s"
                                   OnSearch="ReloadDetalles"
                                   OnAdd="AddDetalle">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidCotizacionDetalle" T="CotizacionDetalleResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="CotizacionDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="CotizacionDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Cantidad" T="CotizacionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="CotizacionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PrecioUnitario" T="CotizacionDetalleResponse">Precio unitario</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Importe" T="CotizacionDetalleResponse">Importe</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="detalle">
-                            <MudTd Class="row-actions">
-                                <MudTooltip Text="Editar bien cotizado">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditDetalle(detalle.PkidCotizacionDetalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar bien cotizado">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteDetalle(detalle))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@detalle.PkidCotizacionDetalle</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(detalle.TipoBienClave)</MudChip>
-                            </MudTd>
-                            <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
-                            <MudTd>@Quantity(detalle.Cantidad)</MudTd>
-                            <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
-                            <MudTd>@MoneyOrDash(detalle.PrecioUnitario)</MudTd>
-                            <MudTd><strong>@MoneyOrDash(detalle.Importe)</strong></MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div class="row-actions">
+                        <MudTooltip Text="Editar bien cotizado">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidCotizacionDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar bien cotizado">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="ID" Identifier="PkidCotizacionDetalle" PropertyName="PkidCotizacionDetalle" SortBy="x => x.PkidCotizacionDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidCotizacionDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Clave" Identifier="TipoBienClave" PropertyName="TipoBienClave" SortBy="x => x.TipoBienClave">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(cell.Item.TipoBienClave)</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Bien / Servicio" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Unidad" Identifier="UnidadMedida" PropertyName="UnidadMedida" SortBy="x => x.UnidadMedida">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UnidadMedida)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Precio unitario" Identifier="PrecioUnitario" PropertyName="PrecioUnitario" SortBy="x => x.PrecioUnitario">
+                    <CellTemplate Context="cell">
+                        @MoneyOrDash(cell.Item.PrecioUnitario)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CotizacionDetalleResponse" Title="Importe" Identifier="Importe" PropertyName="Importe" SortBy="x => x.Importe">
+                    <CellTemplate Context="cell">
+                        <strong>@MoneyOrDash(cell.Item.Importe)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -382,8 +416,8 @@
 </style>
 
 @code {
-    private GenericTable<CotizacionResponse> table = null!;
-    private GenericTable<CotizacionDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<CotizacionResponse> table = null!;
+    private GenericDataGrid<CotizacionDetalleResponse> detalleTable = null!;
     private CotizacionResponse? SelectedCotizacion;
     private string detalleSearchString = string.Empty;
     private string _currencySymbol = "$";

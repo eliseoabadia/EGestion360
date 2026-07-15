@@ -74,29 +74,29 @@
                     </MudChip>
                 </div>
 
-                <MudTable Items="_certificates" Dense="true" Hover="true" Elevation="0">
-                    <HeaderContent>
-                        <MudTh>Alias</MudTh>
-                        <MudTh>RFC</MudTh>
-                        <MudTh>Titular</MudTh>
-                        <MudTh>Vigencia</MudTh>
-                        <MudTh>Estado</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>@context.Alias</MudTd>
-                        <MudTd>@TextOrDash(context.RFC)</MudTd>
-                        <MudTd>@TextOrDash(context.Titular)</MudTd>
-                        <MudTd>@context.VigenteDesde.ToString("dd/MM/yyyy") - @context.VigenteHasta.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="@(context.Vencido ? Color.Error : Color.Success)">
-                                @(context.Vencido ? "Vencido" : "Vigente")
+                <GenericDataGrid TItem="FirmaCertificadoUsuarioResponse"
+                                 @key="_certificates"
+                                 Items="_certificates"
+                                 Title="Certificados registrados"
+                                 SearchPlaceholder="Buscar certificado..."
+                                 SearchTextFunc="@(item => $"{item.Alias} {item.RFC} {item.Titular}")"
+                                 ShowRefreshButton="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="10">
+                    <Columns>
+                        <PropertyColumn T="FirmaCertificadoUsuarioResponse" TProperty="string" Property="x => x.Alias" Title="Alias" Identifier="Alias" />
+                        <TemplateColumn T="FirmaCertificadoUsuarioResponse" Title="RFC" Identifier="RFC" PropertyName="RFC" SortBy="x => x.RFC"><CellTemplate Context="cell">@TextOrDash(cell.Item.RFC)</CellTemplate></TemplateColumn>
+                        <TemplateColumn T="FirmaCertificadoUsuarioResponse" Title="Titular" Identifier="Titular" PropertyName="Titular" SortBy="x => x.Titular"><CellTemplate Context="cell">@TextOrDash(cell.Item.Titular)</CellTemplate></TemplateColumn>
+                        <TemplateColumn T="FirmaCertificadoUsuarioResponse" Title="Vigencia" Identifier="VigenteHasta" PropertyName="VigenteHasta" SortBy="x => x.VigenteHasta"><CellTemplate Context="cell">@cell.Item.VigenteDesde.ToString("dd/MM/yyyy") - @cell.Item.VigenteHasta.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                        <TemplateColumn T="FirmaCertificadoUsuarioResponse" Title="Estado" Identifier="Vencido" PropertyName="Vencido" SortBy="x => x.Vencido"><CellTemplate Context="cell">
+                            <MudChip T="string" Size="Size.Small" Color="@(cell.Item.Vencido ? Color.Error : Color.Success)">
+                                @(cell.Item.Vencido ? "Vencido" : "Vigente")
                             </MudChip>
-                        </MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Color="Color.Secondary">Sin certificados registrados.</MudText>
-                    </NoRecordsContent>
-                </MudTable>
+                        </CellTemplate></TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             </MudPaper>
 
             <MudPaper Elevation="1" Class="pa-4 mt-3" Style="border-radius: 8px;">

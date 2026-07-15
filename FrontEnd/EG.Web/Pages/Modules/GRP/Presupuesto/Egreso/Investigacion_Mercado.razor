@@ -1,4 +1,4 @@
-@page "/Presupuesto/Egreso/Investigacion_Mercado"
+﻿@page "/Presupuesto/Egreso/Investigacion_Mercado"
 @page "/Planeacion/Investigacion_Mercado"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
@@ -43,7 +43,7 @@
                 </div>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="EstudioMercadoResponse"
+                    <GenericDataGrid TItem="EstudioMercadoResponse"
                                   @ref="table"
                                   Title="Estudios registrados"
                                   SearchPlaceholder="Buscar por nombre, descripcion o responsable..."
@@ -53,63 +53,73 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidEstudioMercado" T="EstudioMercadoResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Nombre" T="EstudioMercadoResponse">Estudio</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ResponsableNombre" T="EstudioMercadoResponse">Responsable</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="EstudioMercadoResponse">Solicitud</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaCierre" T="EstudioMercadoResponse">Cierre</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="EstudioMercadoResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectEstudio(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Planeacion"
-                                                       SubModulo="Investigacion_Mercado"
-                                                       Controlador="EstudioMercado"
-                                                       EntidadId="@item.PkidEstudioMercado"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.Nombre)"
-                                                       RegistroDescripcion="@TextOrDash(item.Descripcion)" />
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidEstudioMercado))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteItem(item.PkidEstudioMercado))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@item.PkidEstudioMercado</MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(item.Nombre)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Descripcion)</MudText>
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.ResponsableNombre)</MudTd>
-                            <MudTd>@item.FechaSolicitud.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@DateOrDash(item.FechaCierre)</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@StatusColor(item.Estatus)" Size="Size.Small">
-                                    @StatusText(item.Estatus)
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectEstudio(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Planeacion"
+                        SubModulo="Investigacion_Mercado"
+                        Controlador="EstudioMercado"
+                        EntidadId="@cell.Item.PkidEstudioMercado"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Nombre)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidEstudioMercado))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidEstudioMercado))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="ID" Identifier="PkidEstudioMercado" PropertyName="PkidEstudioMercado" SortBy="x => x.PkidEstudioMercado">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidEstudioMercado</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Estudio" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.Nombre)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.Descripcion)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Responsable" Identifier="ResponsableNombre" PropertyName="ResponsableNombre" SortBy="x => x.ResponsableNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ResponsableNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Solicitud" Identifier="FechaSolicitud" PropertyName="FechaSolicitud" SortBy="x => x.FechaSolicitud">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaSolicitud.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Cierre" Identifier="FechaCierre" PropertyName="FechaCierre" SortBy="x => x.FechaCierre">
+                    <CellTemplate Context="cell">
+                        @DateOrDash(cell.Item.FechaCierre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoResponse" Title="Estatus" Identifier="Estatus" PropertyName="Estatus" SortBy="x => x.Estatus">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@StatusColor(cell.Item.Estatus)" Size="Size.Small">
+                        @StatusText(cell.Item.Estatus)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -198,7 +208,7 @@
                 </MudPaper>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="EstudioMercadoDetalleResponse"
+                    <GenericDataGrid TItem="EstudioMercadoDetalleResponse"
                                   @ref="detalleTable"
                                   Title="Bienes a cotizar"
                                   SearchPlaceholder="Buscar por bien u observaciones..."
@@ -210,91 +220,109 @@
                                   SearchStringChanged="(s) => detalleSearchString = s"
                                   OnSearch="ReloadDetalles"
                                   OnAdd="AddDetalle">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidEstudioMercadoDetalle" T="EstudioMercadoDetalleResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoBienClave" T="EstudioMercadoDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="EstudioMercadoDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Cantidad" T="EstudioMercadoDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                            <MudTh>Proveedores</MudTh>
-                            <MudTh>Solicitudes</MudTh>
-                            <MudTh>Cotizaciones</MudTh>
-                            <MudTh>Mejor precio</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Observaciones" T="EstudioMercadoDetalleResponse">Observaciones</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="detalle">
-                            <MudTd Class="detail-actions">
-                                <MudTooltip Text="Editar bien">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditDetalle(detalle.PkidEstudioMercadoDetalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar bien">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteDetalle(detalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Imprimir solicitud">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Print"
-                                                   Color="Color.Default"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => PrintDetallePending(detalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Enviar solicitud por mail">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Email"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   Disabled="@(_emailingDetalleId == detalle.PkidEstudioMercadoDetalle || detalle.SolicitudesCotizacion <= 0)"
-                                                   OnClick="@(() => SendSolicitudCorreo(detalle))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@detalle.PkidEstudioMercadoDetalle</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(detalle.TipoBienClave)</MudChip>
-                            </MudTd>
-                            <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
-                            <MudTd>@Quantity(detalle.Cantidad)</MudTd>
-                            <MudTd>
-                                @if (detalle.ProveedoresCotizacion.Any())
-                                {
-                                    <div class="provider-chip-list">
-                                        @foreach (var proveedor in detalle.ProveedoresCotizacion)
-                                        {
-                                            <MudChip T="string"
-                                                     Color="Color.Primary"
-                                                     Variant="Variant.Outlined"
-                                                     Size="Size.Small">
-                                                @ProviderText(proveedor)
-                                            </MudChip>
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
-                                }
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
-                                    @detalle.SolicitudesCotizacion.ToString("N0")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@QuoteProgressColor(detalle)" Size="Size.Small">
-                                    @detalle.CotizacionesRecibidas.ToString("N0") / @detalle.SolicitudesCotizacion.ToString("N0")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2" Class="main-cell">@MoneyOrDash(detalle.MenorPrecioUnitario)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@MoneyOrDash(detalle.ImporteMenorCotizacion)</MudText>
-                            </MudTd>
-                            <MudTd>@TextOrDash(detalle.Observaciones)</MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div class="detail-actions">
+                        <MudTooltip Text="Editar bien">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidEstudioMercadoDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar bien">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Imprimir solicitud">
+                        <MudIconButton Icon="@Icons.Material.Filled.Print"
+                        Color="Color.Default"
+                        Size="Size.Small"
+                        OnClick="@(() => PrintDetallePending(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Enviar solicitud por mail">
+                        <MudIconButton Icon="@Icons.Material.Filled.Email"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Disabled="@(_emailingDetalleId == cell.Item.PkidEstudioMercadoDetalle || cell.Item.SolicitudesCotizacion <= 0)"
+                        OnClick="@(() => SendSolicitudCorreo(cell.Item))" />
+                        </MudTooltip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="ID" Identifier="PkidEstudioMercadoDetalle" PropertyName="PkidEstudioMercadoDetalle" SortBy="x => x.PkidEstudioMercadoDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidEstudioMercadoDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Clave" Identifier="TipoBienClave" PropertyName="TipoBienClave" SortBy="x => x.TipoBienClave">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(cell.Item.TipoBienClave)</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Bien / Servicio" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Proveedores" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @if (cell.Item.ProveedoresCotizacion.Any())
+                        {
+                        <div class="provider-chip-list">
+                        @foreach (var proveedor in cell.Item.ProveedoresCotizacion)
+                        {
+                        <MudChip T="string"
+                        Color="Color.Primary"
+                        Variant="Variant.Outlined"
+                        Size="Size.Small">
+                        @ProviderText(proveedor)
+                        </MudChip>
+                        }
+                        </div>
+                        }
+                        else
+                        {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Solicitudes" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
+                        @cell.Item.SolicitudesCotizacion.ToString("N0")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Cotizaciones" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@QuoteProgressColor(cell.Item)" Size="Size.Small">
+                        @cell.Item.CotizacionesRecibidas.ToString("N0") / @cell.Item.SolicitudesCotizacion.ToString("N0")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Mejor precio" Identifier="__column_8" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Class="main-cell">@MoneyOrDash(cell.Item.MenorPrecioUnitario)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@MoneyOrDash(cell.Item.ImporteMenorCotizacion)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Observaciones" Identifier="Observaciones" PropertyName="Observaciones" SortBy="x => x.Observaciones">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Observaciones)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -399,8 +427,8 @@
 </style>
 
 @code {
-    private GenericTable<EstudioMercadoResponse> table = null!;
-    private GenericTable<EstudioMercadoDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<EstudioMercadoResponse> table = null!;
+    private GenericDataGrid<EstudioMercadoDetalleResponse> detalleTable = null!;
     private EstudioMercadoResponse? SelectedEstudio;
     private string detalleSearchString = string.Empty;
     private int _empresaId;

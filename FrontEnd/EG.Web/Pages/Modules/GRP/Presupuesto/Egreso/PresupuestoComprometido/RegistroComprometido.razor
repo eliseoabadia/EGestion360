@@ -1,4 +1,4 @@
-@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
+﻿@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Tesoreria.CuentasXPagar
@@ -22,7 +22,7 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="ContratoResponse" @ref="table" Title="Contratos"
+                    <GenericDataGrid TItem="ContratoResponse" @ref="table" Title="Contratos"
                                   SearchPlaceholder="Buscar contrato, proveedor o requisición..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -30,35 +30,49 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="ContratoResponse">Contrato</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="ContratoResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="ContratoResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="MontoTotal" T="ContratoResponse">Monto</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="ContratoResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(item))" />
-                                <DocumentSupportButton Modulo="Presupuesto_Comprometido"
-                                                       SubModulo="Registro_Comprometido"
-                                                       Controlador="Contrato"
-                                                       EntidadId="@item.PkidContrato"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.NumeroContrato)"
-                                                       RegistroDescripcion="@TextOrDash(item.Descripcion)" />
-                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(item))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidContrato))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidContrato))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.NumeroContrato)</MudTd>
-                            <MudTd>@TextOrDash(item.ProveedorNombre)</MudTd>
-                            <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@Money(item.MontoTotal)</MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="ContratoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(cell.Item))" />
+                        <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                        SubModulo="Registro_Comprometido"
+                        Controlador="Contrato"
+                        EntidadId="@cell.Item.PkidContrato"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.NumeroContrato)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(cell.Item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(cell.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(cell.Item.PkidContrato))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(cell.Item.PkidContrato))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoResponse" Title="Contrato" Identifier="NumeroContrato" PropertyName="NumeroContrato" SortBy="x => x.NumeroContrato">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.NumeroContrato)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ProveedorNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoResponse" Title="Fecha" Identifier="FechaContrato" PropertyName="FechaContrato" SortBy="x => x.FechaContrato">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaContrato.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoResponse" Title="Monto" Identifier="MontoTotal" PropertyName="MontoTotal" SortBy="x => x.MontoTotal">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoTotal)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoResponse" Title="Estatus" Identifier="Estatus" PropertyName="Estatus" SortBy="x => x.Estatus">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(cell.Item.Estatus)">@TextOrDash(cell.Item.EstatusDescripcion)</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -84,23 +98,36 @@
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedContrato)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                 </MudPaper>
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="ContratoDetalleResponse" @ref="detalleTable" Title="Calendario por partida"
+                    <GenericDataGrid TItem="ContratoDetalleResponse" @ref="detalleTable" Title="Calendario por partida"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetalles"
                                   SearchString="@detalleSearch"
                                   SearchStringChanged="(s) => detalleSearch = s"
                                   OnSearch="ReloadDetalles">
-                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
-                        <Row Context="d">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidContratoDetalle))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidContratoDetalle))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
-                            <MudTd>@Money(d.Total ?? 0m)</MudTd>
-                            <MudTd>@TextOrDash(d.Observaciones)</MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="ContratoDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidContratoDetalle))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidContratoDetalle))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoDetalleResponse" Title="Partida" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaClaveNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoDetalleResponse" Title="Total" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Total ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ContratoDetalleResponse" Title="Observaciones" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Observaciones)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -108,8 +135,8 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<ContratoResponse> table = null!;
-    private GenericTable<ContratoDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<ContratoResponse> table = null!;
+    private GenericDataGrid<ContratoDetalleResponse> detalleTable = null!;
     private ContratoResponse? SelectedContrato;
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;

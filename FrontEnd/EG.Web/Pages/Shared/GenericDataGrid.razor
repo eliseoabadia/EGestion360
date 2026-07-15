@@ -1,5 +1,7 @@
 @typeparam TItem
 @using MudBlazor
+@using System.Collections
+@using System.Reflection
 @implements IDisposable
 @inject ISnackbar Snackbar
 @inject ILogger<GenericDataGrid<TItem>> Logger
@@ -36,6 +38,8 @@
                  Groupable="@EnableGrouping">
 
         <ToolBarContent>
+            @if (ShowToolbar)
+            {
             <div class="eg-data-grid-title">
                 <span class="eg-data-grid-title-icon">
                     <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
@@ -94,23 +98,59 @@
                 </MudTooltip>
             }
 
-            <MudTextField T="string"
-                          Value="@SearchString"
-                          ValueChanged="@(value => OnSearchTextChanged(value))"
-                          Placeholder="@SearchPlaceholder"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Clearable="true"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          Immediate="true"
-                          Disabled="@IsGridBusy"
-                          OnKeyUp="HandleKeyUp"
-                          Class="eg-data-grid-search mt-0" />
+                <MudTextField T="string"
+                              Value="@SearchString"
+                              ValueChanged="@(value => OnSearchTextChanged(value))"
+                              Placeholder="@SearchPlaceholder"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Clearable="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Disabled="@IsGridBusy"
+                              OnKeyUp="HandleKeyUp"
+                              Class="eg-data-grid-search mt-0" />
+            }
         </ToolBarContent>
 
         <Columns>
-            @Columns
+            @if (RowActions is not null)
+            {
+                <TemplateColumn T="TItem"
+                                Title="@ActionsColumnTitle"
+                                Identifier="__actions"
+                                Sortable="false"
+                                Filterable="false"
+                                Hideable="false"
+                                Resizable="false">
+                    <CellTemplate>
+                        @RowActions(context.Item)
+                    </CellTemplate>
+                </TemplateColumn>
+            }
+
+            @if (ReflectedColumns is not null)
+            {
+                @foreach (var reflectedColumn in ReflectedColumns)
+                {
+                    <TemplateColumn T="TItem"
+                                    Title="@GetReflectedColumnTitle(reflectedColumn)"
+                                    Identifier="@reflectedColumn.Name"
+                                    PropertyName="@reflectedColumn.Name"
+                                    SortBy="@(item => reflectedColumn.GetValue(item))"
+                                    Sortable="true">
+                        <CellTemplate>
+                            @GetReflectedCellValue(context.Item, reflectedColumn)
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
+            }
+
+            @if (Columns is not null)
+            {
+                @Columns
+            }
         </Columns>
 
         <NoRecordsContent>
@@ -157,6 +197,7 @@
     [Parameter] public int SearchDebounceMilliseconds { get; set; } = 400;
     [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public bool ShowExportButton { get; set; }
+    [Parameter] public bool ShowToolbar { get; set; } = true;
     [Parameter] public bool EnableColumnOptions { get; set; } = true;
     [Parameter] public bool EnableColumnReordering { get; set; } = true;
     [Parameter] public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Column;
@@ -172,9 +213,16 @@
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
     [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
     [Parameter] public string ActionLoadingMessage { get; set; } = "Procesando...";
-    [Parameter] public RenderFragment Columns { get; set; } = null!;
+    [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? ToolbarActions { get; set; }
-    [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>> ServerDataFunc { get; set; } = null!;
+    [Parameter] public RenderFragment<TItem>? RowActions { get; set; }
+    [Parameter] public IEnumerable<PropertyInfo>? ReflectedColumns { get; set; }
+    [Parameter] public Func<PropertyInfo, string>? ColumnTitleFunc { get; set; }
+    [Parameter] public Func<TItem, PropertyInfo, string>? CellValueFunc { get; set; }
+    [Parameter] public string ActionsColumnTitle { get; set; } = "Acciones";
+    [Parameter] public Func<TableState, CancellationToken, Task<TableData<TItem>>>? ServerDataFunc { get; set; }
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public Func<TItem, string>? SearchTextFunc { get; set; }
     [Parameter] public Func<Task>? ExportFunc { get; set; }
 
     private MudDataGrid<TItem>? dataGridRef;
@@ -187,16 +235,22 @@
 
     private bool IsGridBusy => isLoading || actionInProgress;
 
+    private string GetReflectedColumnTitle(PropertyInfo property)
+        => ColumnTitleFunc?.Invoke(property) ?? property.Name;
+
+    private string GetReflectedCellValue(TItem item, PropertyInfo property)
+        => CellValueFunc?.Invoke(item, property) ?? property.GetValue(item)?.ToString() ?? string.Empty;
+
     private async Task<GridData<TItem>> LoadServerDataAsync(GridState<TItem> state, CancellationToken cancellationToken)
     {
         isLoading = true;
 
         try
         {
-            if (ServerDataFunc is null)
+            if (ServerDataFunc is null && Items is null)
             {
                 lastLoadError = "La tabla no tiene configurada una fuente de datos.";
-                Logger.LogError("GenericDataGrid no tiene ServerDataFunc. Title={Title}", Title);
+                Logger.LogError("GenericDataGrid no tiene ServerDataFunc ni Items. Title={Title}", Title);
                 return new GridData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
             }
 
@@ -212,7 +266,9 @@
                 SortDirection = sort?.Descending == true ? SortDirection.Descending : SortDirection.Ascending
             };
 
-            var tableData = await ServerDataFunc(tableState, cancellationToken);
+            var tableData = ServerDataFunc is not null
+                ? await ServerDataFunc(tableState, cancellationToken)
+                : LoadLocalData(tableState);
             totalItems = tableData.TotalItems;
             lastLoadError = null;
             return new GridData<TItem> { Items = tableData.Items, TotalItems = tableData.TotalItems };
@@ -230,6 +286,40 @@
             isLoading = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private TableData<TItem> LoadLocalData(TableState state)
+    {
+        IEnumerable<TItem> query = Items ?? Array.Empty<TItem>();
+
+        if (!string.IsNullOrWhiteSpace(SearchString) && SearchTextFunc is not null)
+        {
+            query = query.Where(item =>
+                SearchTextFunc(item).Contains(SearchString, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(state.SortLabel))
+        {
+            var property = typeof(TItem).GetProperty(
+                state.SortLabel,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+            if (property is not null)
+            {
+                var comparer = Comparer<object?>.Create((left, right) =>
+                    Comparer.DefaultInvariant.Compare(left, right));
+                query = state.SortDirection == SortDirection.Descending
+                    ? query.OrderByDescending(item => property.GetValue(item), comparer)
+                    : query.OrderBy(item => property.GetValue(item), comparer);
+            }
+        }
+
+        var materialized = query.ToList();
+        return new TableData<TItem>
+        {
+            Items = materialized.Skip(state.Page * state.PageSize).Take(state.PageSize),
+            TotalItems = materialized.Count
+        };
     }
 
     private async Task OnSearchTextChanged(string? value)

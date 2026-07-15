@@ -1,4 +1,4 @@
-@page "/Patrimonio/Inventarios"
+﻿@page "/Patrimonio/Inventarios"
 @page "/Patrimonio/Cedula_Diferencia"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -51,7 +51,7 @@
                 </div>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="InventarioResponse"
+                    <GenericDataGrid TItem="InventarioResponse"
                                   @ref="table"
                                   Title="Inventarios patrimoniales"
                                   SearchPlaceholder="Buscar por folio, calendario, area, responsable o estatus..."
@@ -61,82 +61,93 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Folio" T="InventarioResponse">Folio</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="CalendarioFolio" T="InventarioResponse">Calendario</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="InventarioResponse">Area</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaInventario" T="InventarioResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Responsable" T="InventarioResponse">Responsable</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalBienes" T="InventarioResponse">Avance</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="InventarioResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver bienes">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectInventario(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Patrimonio"
-                                                       SubModulo="Inventarios"
-                                                       Controlador="Inventario"
-                                                       EntidadId="@item.PkidInventario"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.Folio)"
-                                                       RegistroDescripcion="@($"{TextOrDash(item.AreaNombre)} | {TextOrDash(item.CalendarioFolio)}")" />
-                                <MudTooltip Text="Autorizar inventario">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                                   Visible="@CanAuthorizeInventory"
-                                                   Disabled="@IsLocked(item)"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => AutorizarInventario(item))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Disabled="@IsLocked(item)"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidInventario))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Disabled="@IsLocked(item)"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteItem(item.PkidInventario))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.Folio)</div>
-                                <span>ID @item.PkidInventario</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.CalendarioFolio)</div>
-                                <span>@TextOrDash(item.EmpresaNombre)</span>
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
-                            <MudTd>@item.FechaInventario.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@TextOrDash(item.Responsable)</MudTd>
-                            <MudTd>
-                                <div class="main-cell">@item.TotalLocalizados/@item.TotalBienes</div>
-                                <span>@item.TotalDiferencias diferencias</span>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Variant="Variant.Filled"
-                                         Style="@StatusStyle(item)">
-                                    @StatusText(item)
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="InventarioResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver bienes">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectInventario(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Patrimonio"
+                        SubModulo="Inventarios"
+                        Controlador="Inventario"
+                        EntidadId="@cell.Item.PkidInventario"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Folio)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.AreaNombre)} | {TextOrDash(cell.Item.CalendarioFolio)}")" />
+                        <MudTooltip Text="Autorizar inventario">
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                        Visible="@CanAuthorizeInventory"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => AutorizarInventario(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidInventario))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidInventario))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
+                        <span>ID @cell.Item.PkidInventario</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Calendario" Identifier="CalendarioFolio" PropertyName="CalendarioFolio" SortBy="x => x.CalendarioFolio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.CalendarioFolio)</div>
+                        <span>@TextOrDash(cell.Item.EmpresaNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.AreaNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Fecha" Identifier="FechaInventario" PropertyName="FechaInventario" SortBy="x => x.FechaInventario">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaInventario.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Responsable" Identifier="Responsable" PropertyName="Responsable" SortBy="x => x.Responsable">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Responsable)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Avance" Identifier="TotalBienes" PropertyName="TotalBienes" SortBy="x => x.TotalBienes">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@cell.Item.TotalLocalizados/@cell.Item.TotalBienes</div>
+                        <span>@cell.Item.TotalDiferencias diferencias</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioResponse" Title="Estatus" Identifier="EstatusDescripcion" PropertyName="EstatusDescripcion" SortBy="x => x.EstatusDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Variant="Variant.Filled"
+                        Style="@StatusStyle(cell.Item)">
+                        @StatusText(cell.Item)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -224,7 +235,7 @@
                     </MudCardContent>
                 </MudCard>
 
-                <GenericTable TItem="InventarioDetalleResponse"
+                <GenericDataGrid TItem="InventarioDetalleResponse"
                               @ref="detalleTable"
                               Title="Bienes inventariados"
                               SearchPlaceholder="Buscar bien, clave, serie o ubicacion..."
@@ -238,57 +249,71 @@
                               SearchStringChanged="(s) => detalleSearchString = s"
                               OnSearch="ReloadDetalle"
                               OnAdd="OpenAgregarBienDialog">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="InventarioDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienDescripcion" T="InventarioDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Serie" T="InventarioDetalleResponse">Serie</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="UbicacionSistema" T="InventarioDetalleResponse">Sistema</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="UbicacionFisica" T="InventarioDetalleResponse">Fisica</MudTableSortLabel></MudTh>
-                        <MudTh>Estado</MudTh>
-                        <MudTh>Valor</MudTh>
-                    </Header>
-                    <Row Context="detalle">
-                        <MudTd>
-                            <MudTooltip Text="Editar bien">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Visible="@CanUpdate"
-                                               Disabled="@IsSelectedLocked"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditDetalle(detalle.PkidInventarioDetalle))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Eliminar bien">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Visible="@CanDelete"
-                                               Disabled="@IsSelectedLocked"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteDetalle(detalle))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detalle.BienClave)</div>
-                            <span>@TextOrDash(detalle.ClaveBien)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detalle.BienDescripcion)</div>
-                            <span>@TextOrDash(detalle.Modelo)</span>
-                        </MudTd>
-                        <MudTd>@TextOrDash(detalle.Serie)</MudTd>
-                        <MudTd>@TextOrDash(detalle.UbicacionSistema)</MudTd>
-                        <MudTd>@TextOrDash(detalle.UbicacionFisica)</MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Color="@(detalle.TieneDiferencia ? Color.Warning : Color.Success)"
-                                     Variant="Variant.Outlined">
-                                @(detalle.Localizado ? (detalle.TieneDiferencia ? "Diferencia" : "Correcto") : "No localizado")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd><strong>@Money(detalle.ValorActual ?? 0m)</strong></MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar bien">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsSelectedLocked"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidInventarioDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar bien">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsSelectedLocked"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Clave" Identifier="BienClave" PropertyName="BienClave" SortBy="x => x.BienClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.BienClave)</div>
+                        <span>@TextOrDash(cell.Item.ClaveBien)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Bien" Identifier="BienDescripcion" PropertyName="BienDescripcion" SortBy="x => x.BienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.BienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.Modelo)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Serie" Identifier="Serie" PropertyName="Serie" SortBy="x => x.Serie">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Serie)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Sistema" Identifier="UbicacionSistema" PropertyName="UbicacionSistema" SortBy="x => x.UbicacionSistema">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UbicacionSistema)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Fisica" Identifier="UbicacionFisica" PropertyName="UbicacionFisica" SortBy="x => x.UbicacionFisica">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UbicacionFisica)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Estado" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.TieneDiferencia ? Color.Warning : Color.Success)"
+                        Variant="Variant.Outlined">
+                        @(cell.Item.Localizado ? (cell.Item.TieneDiferencia ? "Diferencia" : "Correcto") : "No localizado")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InventarioDetalleResponse" Title="Valor" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.ValorActual ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         }
     </MudContainer>
@@ -347,8 +372,8 @@
 </style>
 
 @code {
-    private GenericTable<InventarioResponse> table = null!;
-    private GenericTable<InventarioDetalleResponse>? detalleTable;
+    private GenericDataGrid<InventarioResponse> table = null!;
+    private GenericDataGrid<InventarioDetalleResponse>? detalleTable;
     private InventarioResponse? SelectedInventario;
     private string detalleSearchString = string.Empty;
 

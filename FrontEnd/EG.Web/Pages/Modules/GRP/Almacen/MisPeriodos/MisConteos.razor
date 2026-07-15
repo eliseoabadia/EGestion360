@@ -1,4 +1,4 @@
-@page "/ALMAConteo"
+﻿@page "/ALMAConteo"
 @page "/configuracion/almacen/Numero_Conteo"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
@@ -30,7 +30,7 @@
             <!-- ========== TAB 1: CONTEOS ========== -->
             <MudTabPanel Text="Conteos" Icon="@Icons.Material.Filled.FactCheck" BadgeData="@TotalCount.ToString()" BadgeColor="Color.Primary">
 
-                <GenericTable TItem="ConteoResponse"
+                <GenericDataGrid TItem="ConteoResponse"
                               @ref="tableConteos"
                               Title="Lista de Conteos Cíclicos"
                               SearchPlaceholder="Buscar por descripción, tipo de bien, período..."
@@ -40,106 +40,119 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="PkidConteo" T="ConteoResponse">ID</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Descripcion" T="ConteoResponse">Descripción</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="DescripcionTipoBien" T="ConteoResponse">Tipo de Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="NombrePeriodo" T="ConteoResponse">Período</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="ConteoResponse">Fecha Inicio</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="EstatusPeriodo" T="ConteoResponse">Estatus</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="EstadoConteo" T="ConteoResponse">Estado</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="CantidadInventario" T="ConteoResponse">Cantidad Inventario</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="TotalLecturas" T="ConteoResponse">Lecturas</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="PersonasParticipantes" T="ConteoResponse">Personas</MudTableSortLabel></MudTh>
-                    </Header>
-
-                    <Row Context="conteo">
-                        <MudTd>
-                            <MudTooltip Text="Escanear Bienes">
-                                <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               OnClick="@(() => AbrirScanner(conteo))" />
-                            </MudTooltip>
-                            <DocumentSupportButton Modulo="conteociclico"
-                                                   SubModulo="mis-periodos"
-                                                   Controlador="Conteo"
-                                                   EntidadId="@conteo.PkidConteo"
-                                                   RegistroTitulo="@conteo.Descripcion"
-                                                   RegistroDescripcion="@($"Periodo {conteo.NombrePeriodo}")" />
-                            <MudTooltip Text="Editar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Visible="@CanUpdate"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditItem(conteo.PkidConteo))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Eliminar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Visible="@CanDelete"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteItem(conteo.PkidConteo))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Ver Escaneos">
-                                <MudIconButton Icon="@Icons.Material.Filled.List"
-                                               Color="Color.Secondary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => VerEscaneosDeConteo(conteo))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>@conteo.PkidConteo</MudTd>
-                        <MudTd>@conteo.Descripcion</MudTd>
-                        <MudTd>
-                            <div>
-                                <MudText Typo="Typo.body2">@conteo.DescripcionTipoBien</MudText>
-                                @if (!string.IsNullOrEmpty(conteo.CodigoClaveTipoBien))
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@conteo.CodigoClaveTipoBien</MudText>
-                                }
-                            </div>
-                        </MudTd>
-                        <MudTd>
-                            <div>
-                                <MudText Typo="Typo.body2">@conteo.NombrePeriodo</MudText>
-                                @if (!string.IsNullOrEmpty(conteo.CodigoPeriodo))
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@conteo.CodigoPeriodo</MudText>
-                                }
-                            </div>
-                        </MudTd>
-                        <MudTd>@conteo.FechaInicio.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Color="@GetEstatusColor(conteo.EstatusPeriodo)"
-                                     Size="Size.Small">
-                                @(conteo.EstatusPeriodo ?? "–")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Color="@GetEstadoConteoColor(conteo.EstadoConteo)"
-                                     Size="Size.Small">
-                                @(conteo.EstadoConteo ?? "–")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>
-                            <MudText Align="Align.Right">@Quantity(conteo.CantidadInventario)</MudText>
-                        </MudTd>
-                        <MudTd>
-                            <MudBadge Content="@conteo.TotalLecturas" Color="Color.Info" Overlap="true">
-                                <MudIcon Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" />
-                            </MudBadge>
-                        </MudTd>
-                        <MudTd>
-                            <MudBadge Content="@conteo.PersonasParticipantes" Color="Color.Success" Overlap="true">
-                                <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" />
-                            </MudBadge>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="ConteoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Escanear Bienes">
+                        <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => AbrirScanner(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="conteociclico"
+                        SubModulo="mis-periodos"
+                        Controlador="Conteo"
+                        EntidadId="@cell.Item.PkidConteo"
+                        RegistroTitulo="@cell.Item.Descripcion"
+                        RegistroDescripcion="@($"Periodo {cell.Item.NombrePeriodo}")" />
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidConteo))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidConteo))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Ver Escaneos">
+                        <MudIconButton Icon="@Icons.Material.Filled.List"
+                        Color="Color.Secondary"
+                        Size="Size.Small"
+                        OnClick="@(() => VerEscaneosDeConteo(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="ID" Identifier="PkidConteo" PropertyName="PkidConteo" SortBy="x => x.PkidConteo">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidConteo
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Descripcion
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Tipo de Bien" Identifier="DescripcionTipoBien" PropertyName="DescripcionTipoBien" SortBy="x => x.DescripcionTipoBien">
+                    <CellTemplate Context="cell">
+                        <div>
+                        <MudText Typo="Typo.body2">@cell.Item.DescripcionTipoBien</MudText>
+                        @if (!string.IsNullOrEmpty(cell.Item.CodigoClaveTipoBien))
+                        {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.CodigoClaveTipoBien</MudText>
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Período" Identifier="NombrePeriodo" PropertyName="NombrePeriodo" SortBy="x => x.NombrePeriodo">
+                    <CellTemplate Context="cell">
+                        <div>
+                        <MudText Typo="Typo.body2">@cell.Item.NombrePeriodo</MudText>
+                        @if (!string.IsNullOrEmpty(cell.Item.CodigoPeriodo))
+                        {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.CodigoPeriodo</MudText>
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Fecha Inicio" Identifier="FechaInicio" PropertyName="FechaInicio" SortBy="x => x.FechaInicio">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaInicio.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Estatus" Identifier="EstatusPeriodo" PropertyName="EstatusPeriodo" SortBy="x => x.EstatusPeriodo">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Color="@GetEstatusColor(cell.Item.EstatusPeriodo)"
+                        Size="Size.Small">
+                        @(cell.Item.EstatusPeriodo ?? "–")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Estado" Identifier="EstadoConteo" PropertyName="EstadoConteo" SortBy="x => x.EstadoConteo">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Color="@GetEstadoConteoColor(cell.Item.EstadoConteo)"
+                        Size="Size.Small">
+                        @(cell.Item.EstadoConteo ?? "–")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Cantidad Inventario" Identifier="CantidadInventario" PropertyName="CantidadInventario" SortBy="x => x.CantidadInventario">
+                    <CellTemplate Context="cell">
+                        <MudText Align="Align.Right">@Quantity(cell.Item.CantidadInventario)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Lecturas" Identifier="TotalLecturas" PropertyName="TotalLecturas" SortBy="x => x.TotalLecturas">
+                    <CellTemplate Context="cell">
+                        <MudBadge Content="@cell.Item.TotalLecturas" Color="Color.Info" Overlap="true">
+                        <MudIcon Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" />
+                        </MudBadge>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Personas" Identifier="PersonasParticipantes" PropertyName="PersonasParticipantes" SortBy="x => x.PersonasParticipantes">
+                    <CellTemplate Context="cell">
+                        <MudBadge Content="@cell.Item.PersonasParticipantes" Color="Color.Success" Overlap="true">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" />
+                        </MudBadge>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </MudTabPanel>
 
             <!-- ========== TAB 2: ESCANEOS / LECTURAS ========== -->
@@ -160,7 +173,7 @@
                     </MudAlert>
                 }
 
-                <GenericTable TItem="ConteoDetalleEscaneoResponse"
+                <GenericDataGrid TItem="ConteoDetalleEscaneoResponse"
                               @ref="tableEscaneos"
                               Title="Escaneos de Bienes"
                               SearchPlaceholder="Buscar por código de barras, bien, persona..."
@@ -170,51 +183,68 @@
                               SearchString="@SearchStringEscaneos"
                               SearchStringChanged="(s) => SearchStringEscaneos = s"
                               OnSearch="OnSearchEscaneos">
-
-                    <Header>
-                        <MudTh><MudTableSortLabel SortLabel="PkidDetalleEscaneo" T="ConteoDetalleEscaneoResponse">ID</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="CodigoBarras" T="ConteoDetalleEscaneoResponse">Código de Barras</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="PersonaNombre" T="ConteoDetalleEscaneoResponse">Persona</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="PersonaClave" T="ConteoDetalleEscaneoResponse">Clave Persona</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="ConteoDetalleEscaneoResponse">Clave Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienDescripcion" T="ConteoDetalleEscaneoResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienSerie" T="ConteoDetalleEscaneoResponse">Serie</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="ConteoDetalleEscaneoResponse">Tipo de Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaEscaneo" T="ConteoDetalleEscaneoResponse">Fecha Escaneo</MudTableSortLabel></MudTh>
-                    </Header>
-
-                    <Row Context="escaneo">
-                        <MudTd>@escaneo.PkidDetalleEscaneo</MudTd>
-                        <MudTd>
-                            <MudChip T="string" Color="Color.Dark" Size="Size.Small">
-                                @escaneo.CodigoBarras
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>@escaneo.PersonaNombre @escaneo.PersonaPaterno @escaneo.PersonaMaterno</MudTd>
-                        <MudTd>@escaneo.PersonaClave</MudTd>
-                        <MudTd>@escaneo.BienClave</MudTd>
-                        <MudTd>
-                            <div>
-                                <MudText Typo="Typo.body2">@escaneo.BienDescripcion</MudText>
-                                @if (!string.IsNullOrEmpty(escaneo.BienModelo))
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Modelo: @escaneo.BienModelo</MudText>
-                                }
-                            </div>
-                        </MudTd>
-                        <MudTd>@escaneo.BienSerie</MudTd>
-                        <MudTd>
-                            <div>
-                                <MudText Typo="Typo.body2">@escaneo.TipoBienDescripcion</MudText>
-                                @if (!string.IsNullOrEmpty(escaneo.TipoBienCodigoClave))
-                                {
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@escaneo.TipoBienCodigoClave</MudText>
-                                }
-                            </div>
-                        </MudTd>
-                        <MudTd>@escaneo.FechaEscaneo.ToString("dd/MM/yyyy HH:mm")</MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="ID" Identifier="PkidDetalleEscaneo" PropertyName="PkidDetalleEscaneo" SortBy="x => x.PkidDetalleEscaneo">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidDetalleEscaneo
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Código de Barras" Identifier="CodigoBarras" PropertyName="CodigoBarras" SortBy="x => x.CodigoBarras">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="Color.Dark" Size="Size.Small">
+                        @cell.Item.CodigoBarras
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Persona" Identifier="PersonaNombre" PropertyName="PersonaNombre" SortBy="x => x.PersonaNombre">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PersonaNombre @cell.Item.PersonaPaterno @cell.Item.PersonaMaterno
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Clave Persona" Identifier="PersonaClave" PropertyName="PersonaClave" SortBy="x => x.PersonaClave">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PersonaClave
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Clave Bien" Identifier="BienClave" PropertyName="BienClave" SortBy="x => x.BienClave">
+                    <CellTemplate Context="cell">
+                        @cell.Item.BienClave
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Bien" Identifier="BienDescripcion" PropertyName="BienDescripcion" SortBy="x => x.BienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div>
+                        <MudText Typo="Typo.body2">@cell.Item.BienDescripcion</MudText>
+                        @if (!string.IsNullOrEmpty(cell.Item.BienModelo))
+                        {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Modelo: @cell.Item.BienModelo</MudText>
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Serie" Identifier="BienSerie" PropertyName="BienSerie" SortBy="x => x.BienSerie">
+                    <CellTemplate Context="cell">
+                        @cell.Item.BienSerie
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Tipo de Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div>
+                        <MudText Typo="Typo.body2">@cell.Item.TipoBienDescripcion</MudText>
+                        @if (!string.IsNullOrEmpty(cell.Item.TipoBienCodigoClave))
+                        {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.TipoBienCodigoClave</MudText>
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Fecha Escaneo" Identifier="FechaEscaneo" PropertyName="FechaEscaneo" SortBy="x => x.FechaEscaneo">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaEscaneo.ToString("dd/MM/yyyy HH:mm")
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </MudTabPanel>
 
         </MudTabs>
@@ -222,8 +252,8 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<ConteoResponse> tableConteos = null!;
-    private GenericTable<ConteoDetalleEscaneoResponse> tableEscaneos = null!;
+    private GenericDataGrid<ConteoResponse> tableConteos = null!;
+    private GenericDataGrid<ConteoDetalleEscaneoResponse> tableEscaneos = null!;
 
     [Inject] private IGenericCrudService<ConteoDetalleEscaneoResponse> EscaneoService { get; set; } = null!;
 

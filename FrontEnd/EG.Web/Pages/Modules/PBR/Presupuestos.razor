@@ -1,4 +1,4 @@
-@page "/PBR/Presupuestos"
+﻿@page "/PBR/Presupuestos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -30,7 +30,7 @@
         <PbrTopNavigation />
 
         <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="PbrPresupuestoProgramaResponse"
+            <GenericDataGrid TItem="PbrPresupuestoProgramaResponse"
                           @ref="table"
                           Title="Presupuesto por programa"
                           SearchPlaceholder="Buscar por programa, entidad, UR o fuente..."
@@ -40,47 +40,62 @@
                           SearchString="@search"
                           SearchStringChanged="(s) => search = s"
                           OnSearch="() => table.ReloadData()">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPresupuestoProgramaResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PkidPresupuestoPrograma" T="PbrPresupuestoProgramaResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrPresupuestoProgramaResponse">Año</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PresupuestoAnual" T="PbrPresupuestoProgramaResponse">Anual</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PresupuestoModificado" T="PbrPresupuestoProgramaResponse">Modificado</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="UnidadResponsableDescripcion" T="PbrPresupuestoProgramaResponse">UR</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
+            <Columns>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
                         <DocumentSupportButton Modulo="PBR"
-                                               SubModulo="Presupuestos"
-                                               Controlador="PbrPresupuestoPrograma"
-                                               EntidadId="@item.PkidPresupuestoPrograma"
-                                               RegistroTitulo="@($"Presupuesto {item.PkidPresupuestoPrograma}")"
-                                               RegistroDescripcion="@TextOrDash(item.ProgramaDescripcion)" />
+                        SubModulo="Presupuestos"
+                        Controlador="PbrPresupuestoPrograma"
+                        EntidadId="@cell.Item.PkidPresupuestoPrograma"
+                        RegistroTitulo="@($"Presupuesto {cell.Item.PkidPresupuestoPrograma}")"
+                        RegistroDescripcion="@TextOrDash(cell.Item.ProgramaDescripcion)" />
                         <MudTooltip Text="Ver partidas">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                           Color="Color.Info"
-                                           Size="Size.Small"
-                                           OnClick="@(() => SelectPresupuesto(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectPresupuesto(cell.Item))" />
                         </MudTooltip>
                         <MudTooltip Text="Editar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => OpenPresupuestoDialog(item.PkidPresupuestoPrograma))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => OpenPresupuestoDialog(cell.Item.PkidPresupuestoPrograma))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.ProgramaClave)</MudText>
-                    </MudTd>
-                    <MudTd>@item.PkidPresupuestoPrograma</MudTd>
-                    <MudTd>@item.Anio</MudTd>
-                    <MudTd>@Money(item.PresupuestoAnual)</MudTd>
-                    <MudTd>@Money(item.PresupuestoModificado ?? item.PresupuestoAnual)</MudTd>
-                    <MudTd>@TextOrDash(item.UnidadResponsableDescripcion)</MudTd>
-                </Row>
-            </GenericTable>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.ProgramaDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.ProgramaClave)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="ID" Identifier="PkidPresupuestoPrograma" PropertyName="PkidPresupuestoPrograma" SortBy="x => x.PkidPresupuestoPrograma">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidPresupuestoPrograma
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Año" Identifier="Anio" PropertyName="Anio" SortBy="x => x.Anio">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Anio
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Anual" Identifier="PresupuestoAnual" PropertyName="PresupuestoAnual" SortBy="x => x.PresupuestoAnual">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.PresupuestoAnual)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Modificado" Identifier="PresupuestoModificado" PropertyName="PresupuestoModificado" SortBy="x => x.PresupuestoModificado">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.PresupuestoModificado ?? cell.Item.PresupuestoAnual)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="UR" Identifier="UnidadResponsableDescripcion" PropertyName="UnidadResponsableDescripcion" SortBy="x => x.UnidadResponsableDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UnidadResponsableDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     }
     else
@@ -118,7 +133,7 @@
         </MudPaper>
 
         <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="PbrPartidaGastoResponse"
+            <GenericDataGrid TItem="PbrPartidaGastoResponse"
                           @ref="partidaTable"
                           Title="Partidas del presupuesto"
                           SearchPlaceholder="Buscar por partida, concepto o descripcion..."
@@ -127,37 +142,57 @@
                           SearchString="@partidaSearch"
                           SearchStringChanged="(s) => partidaSearch = s"
                           OnSearch="() => partidaTable.ReloadData()">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrPartidaGastoResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PkidPartidaGasto" T="PbrPartidaGastoResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="PbrPartidaGastoResponse">Partida</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PbrPartidaGastoResponse">Descripcion</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="MontoAnual" T="PbrPartidaGastoResponse">Anual</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="MontoModificado" T="PbrPartidaGastoResponse">Modificado</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoGastoDescripcion" T="PbrPartidaGastoResponse">Tipo</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenPartidaDialog(item.PkidPartidaGasto))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeletePartidaAsync(item))" />
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.ProgramaDescripcion)</MudTd>
-                    <MudTd>@item.PkidPartidaGasto</MudTd>
-                    <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd>@Money(item.MontoAnual)</MudTd>
-                    <MudTd>@Money(item.MontoModificado ?? item.MontoAnual)</MudTd>
-                    <MudTd>@TextOrDash(item.TipoGastoDescripcion)</MudTd>
-                </Row>
-            </GenericTable>
+            <Columns>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenPartidaDialog(cell.Item.PkidPartidaGasto))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeletePartidaAsync(cell.Item))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ProgramaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="ID" Identifier="PkidPartidaGasto" PropertyName="PkidPartidaGasto" SortBy="x => x.PkidPartidaGasto">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidPartidaGasto
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Partida" Identifier="PartidaDescripcion" PropertyName="PartidaDescripcion" SortBy="x => x.PartidaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Descripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Anual" Identifier="MontoAnual" PropertyName="MontoAnual" SortBy="x => x.MontoAnual">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoAnual)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Modificado" Identifier="MontoModificado" PropertyName="MontoModificado" SortBy="x => x.MontoModificado">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoModificado ?? cell.Item.MontoAnual)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrPartidaGastoResponse" Title="Tipo" Identifier="TipoGastoDescripcion" PropertyName="TipoGastoDescripcion" SortBy="x => x.TipoGastoDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoGastoDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     }
 </MudContainer>
 
 @code {
-    private GenericTable<PbrPresupuestoProgramaResponse> table = null!;
-    private GenericTable<PbrPartidaGastoResponse> partidaTable = null!;
+    private GenericDataGrid<PbrPresupuestoProgramaResponse> table = null!;
+    private GenericDataGrid<PbrPartidaGastoResponse> partidaTable = null!;
     private PbrPresupuestoProgramaResponse? selected;
     private string search = string.Empty;
     private string partidaSearch = string.Empty;

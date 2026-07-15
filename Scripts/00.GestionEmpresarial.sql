@@ -1272,6 +1272,10 @@ CREATE TABLE SIS.MenuRole (
 );
 GO
 
+select * from sis.Empresa
+select * from sis.Sucursal
+--update sis.Sucursal set Nombre = 'Sucursal Operativa', CodigoSucursal = 'PCI-MAT-001' where PKIdSucursal = 1
+
 /*
 UPDATE SIS.Menu
 SET Tipo = CASE WHEN Ruta = '/' THEN 1 ELSE 2 END
@@ -1283,7 +1287,6 @@ SET IDENTITY_INSERT SIS.Menu ON;
 
 MERGE INTO SIS.Menu AS TARGET
 USING (VALUES
-      -- Módulos principales
       -- Módulos principales
     (1, N'Configuración', 1, NULL, N'Configuración', N'/', N'FaCog', 1, N'ESP', 1, 1, GETDATE()),
     (2, N'Presupuesto', 1, NULL, N'Presupuesto', N'/', N'FaChartPie', 1, N'ESP', 2, 1, GETDATE()),

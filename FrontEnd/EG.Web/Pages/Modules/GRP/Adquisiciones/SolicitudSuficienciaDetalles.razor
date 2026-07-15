@@ -1,4 +1,4 @@
-@page "/Adquisiciones/SolicitudSuficienciaDetalle"
+﻿@page "/Adquisiciones/SolicitudSuficienciaDetalle"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
@@ -19,7 +19,7 @@
                     OnRefresh="() => table.ReloadData()" />
 
         <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="SolicitudSuficienciaDetalleResponse"
+            <GenericDataGrid TItem="SolicitudSuficienciaDetalleResponse"
                           @ref="table"
                           Title="Detalles de solicitud"
                           SearchPlaceholder="Buscar requisicion, partida o bien..."
@@ -29,49 +29,64 @@
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
                           OnSearch="OnSearch">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PkidSolicitudSuficienciaDetalle" T="SolicitudSuficienciaDetalleResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="SolicitudSuficienciaDetalleResponse">Requisicion</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="SolicitudSuficienciaDetalleResponse">Partida</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="SolicitudSuficienciaDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Cantidad" T="SolicitudSuficienciaDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Total" T="SolicitudSuficienciaDetalleResponse">Total</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
+            <Columns>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
                         <MudTooltip Text="Editar calendario">
-                            <MudIconButton Icon="@Icons.Material.Filled.EditCalendar"
-                                           Visible="@CanUpdate"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidSolicitudSuficienciaDetalle))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.EditCalendar"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidSolicitudSuficienciaDetalle))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@CanDelete"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteItem(item.PkidSolicitudSuficienciaDetalle))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidSolicitudSuficienciaDetalle))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd>@item.PkidSolicitudSuficienciaDetalle</MudTd>
-                    <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.PartidaClaveNombre)</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.TipoBienDescripcion)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(item.Observaciones)</MudText>
-                    </MudTd>
-                    <MudTd>@Quantity(item.Cantidad)</MudTd>
-                    <MudTd><strong>@Money(DetalleTotal(item))</strong></MudTd>
-                </Row>
-            </GenericTable>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="ID" Identifier="PkidSolicitudSuficienciaDetalle" PropertyName="PkidSolicitudSuficienciaDetalle" SortBy="x => x.PkidSolicitudSuficienciaDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidSolicitudSuficienciaDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaClaveNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.TipoBienDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.Observaciones)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(DetalleTotal(cell.Item))</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<SolicitudSuficienciaDetalleResponse> table = null!;
+    private GenericDataGrid<SolicitudSuficienciaDetalleResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "SolicitudSuficiencia";

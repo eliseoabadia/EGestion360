@@ -1,4 +1,4 @@
-@page "/Patrimonio/Calendario_Inventarios"
+﻿@page "/Patrimonio/Calendario_Inventarios"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -46,7 +46,7 @@
             </div>
 
             <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                <GenericTable TItem="CalendarioInventarioResponse"
+                <GenericDataGrid TItem="CalendarioInventarioResponse"
                               @ref="table"
                               Title="Periodos de inventario"
                               SearchPlaceholder="Buscar por folio, area, anio o descripcion..."
@@ -56,77 +56,84 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Folio" T="CalendarioInventarioResponse">Folio</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Descripcion" T="CalendarioInventarioResponse">Descripcion</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="CalendarioInventarioResponse">Area</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Anio" T="CalendarioInventarioResponse">Anio</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaInicio" T="CalendarioInventarioResponse">Periodo</MudTableSortLabel></MudTh>
-                        <MudTh>Inventarios</MudTh>
-                        <MudTh>Observaciones</MudTh>
-                    </Header>
-
-                    <Row Context="item">
-                        <MudTd>
-                            <DocumentSupportButton Modulo="Patrimonio"
-                                                   SubModulo="Calendario_Inventarios"
-                                                   Controlador="CalendarioInventario"
-                                                   EntidadId="@item.PkidCalendarioInventario"
-                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                   RegistroTitulo="@TextOrDash(item.Folio)"
-                                                   RegistroDescripcion="@($"{TextOrDash(item.AreaNombre)} | {item.Anio}")" />
-                            <MudTooltip Text="Iniciar inventario">
-                                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAddCheck"
-                                               Visible="@CanCreate"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               OnClick="@(() => OpenInventarioFromCalendario(item))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Editar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Visible="@CanUpdate"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditItem(item.PkidCalendarioInventario))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Eliminar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Visible="@CanDelete"
-                                               Disabled="@(item.InventariosActivos > 0)"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteItem(item.PkidCalendarioInventario))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Folio)</div>
-                            <span>ID @item.PkidCalendarioInventario</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Descripcion)</div>
-                            <span>@TextOrDash(item.EmpresaNombre)</span>
-                        </MudTd>
-                        <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
-                                @item.Anio
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@item.FechaInicio.ToString("dd/MM/yyyy")</div>
-                            <span>al @item.FechaFin.ToString("dd/MM/yyyy")</span>
-                        </MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="@(item.InventariosActivos > 0 ? Color.Success : Color.Default)" Variant="Variant.Outlined">
-                                @item.InventariosActivos inventarios
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="notes-cell">@TextOrDash(item.Observaciones)</div>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <DocumentSupportButton Modulo="Patrimonio"
+                        SubModulo="Calendario_Inventarios"
+                        Controlador="CalendarioInventario"
+                        EntidadId="@cell.Item.PkidCalendarioInventario"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Folio)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.AreaNombre)} | {cell.Item.Anio}")" />
+                        <MudTooltip Text="Iniciar inventario">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAddCheck"
+                        Visible="@CanCreate"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => OpenInventarioFromCalendario(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidCalendarioInventario))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@(cell.Item.InventariosActivos > 0)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidCalendarioInventario))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
+                        <span>ID @cell.Item.PkidCalendarioInventario</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Descripcion)</div>
+                        <span>@TextOrDash(cell.Item.EmpresaNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.AreaNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Anio" Identifier="Anio" PropertyName="Anio" SortBy="x => x.Anio">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                        @cell.Item.Anio
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Periodo" Identifier="FechaInicio" PropertyName="FechaInicio" SortBy="x => x.FechaInicio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@cell.Item.FechaInicio.ToString("dd/MM/yyyy")</div>
+                        <span>al @cell.Item.FechaFin.ToString("dd/MM/yyyy")</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Inventarios" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@(cell.Item.InventariosActivos > 0 ? Color.Success : Color.Default)" Variant="Variant.Outlined">
+                        @cell.Item.InventariosActivos inventarios
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CalendarioInventarioResponse" Title="Observaciones" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="notes-cell">@TextOrDash(cell.Item.Observaciones)</div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         </div>
     </MudContainer>
@@ -182,7 +189,7 @@
 </style>
 
 @code {
-    private GenericTable<CalendarioInventarioResponse> table = null!;
+    private GenericDataGrid<CalendarioInventarioResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     protected override string ModuleName => "Patrimonio";

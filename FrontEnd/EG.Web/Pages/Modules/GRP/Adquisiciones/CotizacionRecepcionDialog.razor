@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Domain.DTOs.Requests.Adquisicion
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Models
@@ -39,62 +39,57 @@
             }
             else
             {
-                <MudTable Items="FilteredRows"
-                          Dense="true"
-                          Hover="true"
-                          Elevation="0"
-                          FixedHeader="true"
-                          Height="420px"
-                          Class="recepcion-table">
-                    <ToolBarContent>
-                        <MudTextField T="string"
-                                      Value="@_filter"
-                                      ValueChanged="value => _filter = value ?? string.Empty"
-                                      Label="Filtrar bienes"
-                                      Variant="Variant.Outlined"
-                                      Margin="Margin.Dense"
-                                      Immediate="true"
-                                      Clearable="true"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Search" />
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh>Clave</MudTh>
-                        <MudTh>Bien / Servicio</MudTh>
-                        <MudTh>Cantidad</MudTh>
-                        <MudTh>Unidad</MudTh>
-                        <MudTh>Precio unitario</MudTh>
-                        <MudTh>Importe</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
-                                @TextOrDash(context.TipoBienClave)
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>@TextOrDash(context.TipoBienDescripcion)</MudTd>
-                        <MudTd>@Quantity(context.Cantidad)</MudTd>
-                        <MudTd>@TextOrDash(context.UnidadMedida)</MudTd>
-                        <MudTd>
-                            <MudNumericField T="decimal?"
-                                             Value="@context.PrecioUnitario"
-                                             ValueChanged="@((decimal? value) => OnPrecioChanged(context, value))"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense"
-                                             Min="0m"
-                                             Format="0.00"
-                                             Culture="@NumberCulture"
-                                             Adornment="Adornment.Start"
-                                             AdornmentText="@CurrencySymbol" />
-                        </MudTd>
-                        <MudTd>
-                            <strong>@MoneyOrDash(context.Importe)</strong>
-                        </MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">No hay bienes para capturar.</MudText>
-                    </NoRecordsContent>
-                </MudTable>
+                <GenericDataGrid TItem="CotizacionRecepcionRow" @key="FilteredRows.FirstOrDefault()"
+                                 Items="FilteredRows"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Clave" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                @TextOrDash(cell.Item.TipoBienClave)
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Bien / Servicio" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.TipoBienDescripcion)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Cantidad" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Quantity(cell.Item.Cantidad)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Unidad" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.UnidadMedida)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Precio unitario" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudNumericField T="decimal?"
+                                Value="@cell.Item.PrecioUnitario"
+                                ValueChanged="@((decimal? value) => OnPrecioChanged(cell.Item, value))"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Min="0m"
+                                Format="0.00"
+                                Culture="@NumberCulture"
+                                Adornment="Adornment.Start"
+                                AdornmentText="@CurrencySymbol" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Importe" Identifier="__local_5" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@MoneyOrDash(cell.Item.Importe)</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
 
                 <section class="recepcion-summary">
                     <div>

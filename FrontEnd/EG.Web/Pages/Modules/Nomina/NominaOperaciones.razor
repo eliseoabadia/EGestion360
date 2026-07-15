@@ -108,7 +108,7 @@
             </div>
         }
 
-        <GenericTable TItem="NominaOperacionResponse"
+        <GenericDataGrid TItem="NominaOperacionResponse"
                       @ref="table"
                       @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"
@@ -119,78 +119,72 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
+            <Columns>
                 @if (CurrentItem.IsVacation)
                 {
-                    <MudTh>Flujo</MudTh>
+                    <TemplateColumn T="NominaOperacionResponse" Title="Flujo" Identifier="__workflow" Sortable="false" Filterable="false" Hideable="false" Resizable="false" CellClass="vacation-actions">
+                        <CellTemplate Context="cell">
+                            <DocumentSupportButton Modulo="Vacaciones"
+                                                   SubModulo="@CurrentItem.SubModuleName"
+                                                   Controlador="NomOperacion"
+                                                   Servicio="Vacaciones"
+                                                   EntidadId="@cell.Item.Id"
+                                                   FkidEmpresaSis="@TryParseInt(cell.Item.Empresa)"
+                                                   RegistroTitulo="@BuildVacationTitle(cell.Item)"
+                                                   RegistroDescripcion="@BuildVacationDescription(cell.Item)"
+                                                   CanManage="@CanUpdate"
+                                                   Disabled="@IsBusy" />
+
+                            @if (IsVacationRequestRoute)
+                            {
+                                <MudTooltip Text="Enviar a autorizar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   Disabled="@(!CanSendVacation(cell.Item) || IsBusy)"
+                                                   OnClick="@(() => SendVacationToAuthorize(cell.Item))" />
+                                </MudTooltip>
+                            }
+
+                            @if (IsVacationAuthorizationRoute)
+                            {
+                                <MudTooltip Text="Autorizar">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   Disabled="@(!CanAuthorizeVacation(cell.Item) || IsBusy)"
+                                                   OnClick="@(() => AuthorizeVacation(cell.Item))" />
+                                </MudTooltip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
                 }
                 @foreach (var column in CurrentItem.Columns)
                 {
-                    <MudTh>
-                        <MudTableSortLabel SortLabel="@column.Property" T="NominaOperacionResponse">
-                            @column.Label
-                        </MudTableSortLabel>
-                    </MudTh>
+                    <TemplateColumn T="NominaOperacionResponse"
+                                    Title="@column.Label"
+                                    Identifier="@column.Property"
+                                    PropertyName="@column.Property"
+                                    SortBy="@(item => GetValue(item, column.Property))">
+                        <CellTemplate Context="cell">
+                            @if (CurrentItem.IsVacation && column.Property == nameof(NominaOperacionResponse.Estatus))
+                            {
+                                <span class="@GetVacationStatusClass(cell.Item.Estatus)">@FormatValue(GetValue(cell.Item, column.Property), column.Kind)</span>
+                            }
+                            else
+                            {
+                                @FormatValue(GetValue(cell.Item, column.Property), column.Kind)
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
                 }
-            </Header>
-            <Row Context="item">
-                @if (CurrentItem.IsVacation)
-                {
-                    <MudTd Class="vacation-actions">
-                        <DocumentSupportButton Modulo="Vacaciones"
-                                               SubModulo="@CurrentItem.SubModuleName"
-                                               Controlador="NomOperacion"
-                                               Servicio="Vacaciones"
-                                               EntidadId="@item.Id"
-                                               FkidEmpresaSis="@TryParseInt(item.Empresa)"
-                                               RegistroTitulo="@BuildVacationTitle(item)"
-                                               RegistroDescripcion="@BuildVacationDescription(item)"
-                                               CanManage="@CanUpdate"
-                                               Disabled="@IsBusy" />
-
-                        @if (IsVacationRequestRoute)
-                        {
-                            <MudTooltip Text="Enviar a autorizar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Send"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               Disabled="@(!CanSendVacation(item) || IsBusy)"
-                                               OnClick="@(() => SendVacationToAuthorize(item))" />
-                            </MudTooltip>
-                        }
-
-                        @if (IsVacationAuthorizationRoute)
-                        {
-                            <MudTooltip Text="Autorizar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               Disabled="@(!CanAuthorizeVacation(item) || IsBusy)"
-                                               OnClick="@(() => AuthorizeVacation(item))" />
-                            </MudTooltip>
-                        }
-                    </MudTd>
-                }
-                @foreach (var column in CurrentItem.Columns)
-                {
-                    <MudTd>
-                        @if (CurrentItem.IsVacation && column.Property == nameof(NominaOperacionResponse.Estatus))
-                        {
-                            <span class="@GetVacationStatusClass(item.Estatus)">@FormatValue(GetValue(item, column.Property), column.Kind)</span>
-                        }
-                        else
-                        {
-                            @FormatValue(GetValue(item, column.Property), column.Kind)
-                        }
-                    </MudTd>
-                }
-            </Row>
-        </GenericTable>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NominaOperacionResponse> table = null!;
+    private GenericDataGrid<NominaOperacionResponse> table = null!;
     private string loadedPath = string.Empty;
     private bool pendingRouteReload;
     private bool disposed;

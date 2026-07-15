@@ -129,31 +129,28 @@
                         </MudGrid>
 
                         <div class="pbr-table-wrap pbr-sticky-table">
-                            <MudTable Items="@dashboard.Semaforo" Dense="true" Hover="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Programa</MudTh>
-                                    <MudTh>Indicador</MudTh>
-                                    <MudTh>Nivel</MudTh>
-                                    <MudTh Class="text-end">%</MudTh>
-                                    <MudTh>Estado</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Programa">@TextOrDash(context.Programa)</MudTd>
-                                    <MudTd DataLabel="Indicador">
-                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(context.Nombre)</MudText>
-                                    </MudTd>
-                                    <MudTd DataLabel="Nivel">@TextOrDash(context.Nivel)</MudTd>
-                                    <MudTd DataLabel="%" Class="text-end">@PctOrDash(context.Porcentaje)</MudTd>
-                                    <MudTd DataLabel="Estado">
-                                        <MudChip T="string" Size="Size.Small" Color="@EstadoColor(context.Estado)">
-                                            @EstadoLabel(context.Estado)
+                            <GenericDataGrid TItem="PbrSemaforoIndicadorResponse"
+                                             @key="dashboard.Semaforo"
+                                             Items="@dashboard.Semaforo"
+                                             ShowToolbar="false"
+                                             EnableColumnOptions="false"
+                                             FixedHeader="false"
+                                             TableHeight="auto"
+                                             PageSize="30">
+                                <Columns>
+                                    <TemplateColumn T="PbrSemaforoIndicadorResponse" Title="Programa" Identifier="Programa" PropertyName="Programa" SortBy="x => x.Programa"><CellTemplate Context="cell">@TextOrDash(cell.Item.Programa)</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrSemaforoIndicadorResponse" Title="Indicador" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre"><CellTemplate Context="cell">
+                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.Nombre)</MudText>
+                                    </CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrSemaforoIndicadorResponse" Title="Nivel" Identifier="Nivel" PropertyName="Nivel" SortBy="x => x.Nivel"><CellTemplate Context="cell">@TextOrDash(cell.Item.Nivel)</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrSemaforoIndicadorResponse" Title="%" Identifier="Porcentaje" PropertyName="Porcentaje" SortBy="x => x.Porcentaje" HeaderClass="text-end" CellClass="text-end"><CellTemplate Context="cell">@PctOrDash(cell.Item.Porcentaje)</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrSemaforoIndicadorResponse" Title="Estado" Identifier="Estado" PropertyName="Estado" SortBy="x => x.Estado"><CellTemplate Context="cell">
+                                        <MudChip T="string" Size="Size.Small" Color="@EstadoColor(cell.Item.Estado)">
+                                            @EstadoLabel(cell.Item.Estado)
                                         </MudChip>
-                                    </MudTd>
-                                </RowTemplate>
-                                <NoRecordsContent>
-                                    <MudText Color="Color.Secondary">No hay indicadores con avance para este ejercicio.</MudText>
-                                </NoRecordsContent>
-                            </MudTable>
+                                    </CellTemplate></TemplateColumn>
+                                </Columns>
+                            </GenericDataGrid>
                         </div>
                     </MudPaper>
                 </MudItem>
@@ -202,21 +199,20 @@
                         </MudStack>
 
                         <div class="pbr-table-wrap pbr-sticky-table">
-                            <MudTable Items="@dashboard.TopPresupuestos" Dense="true" Hover="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Programa</MudTh>
-                                    <MudTh Class="text-end">Anual</MudTh>
-                                    <MudTh Class="text-end">Modificado</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Programa">@($"{context.ProgramaClave} {context.Programa}")</MudTd>
-                                    <MudTd DataLabel="Anual" Class="text-end">@Money(context.PresupuestoAnual)</MudTd>
-                                    <MudTd DataLabel="Modificado" Class="text-end">@Money(context.PresupuestoModificado)</MudTd>
-                                </RowTemplate>
-                                <NoRecordsContent>
-                                    <MudText Color="Color.Secondary">No hay presupuestos capturados para el ejercicio.</MudText>
-                                </NoRecordsContent>
-                            </MudTable>
+                            <GenericDataGrid TItem="PbrTopPresupuestoResponse"
+                                             @key="dashboard.TopPresupuestos"
+                                             Items="@dashboard.TopPresupuestos"
+                                             ShowToolbar="false"
+                                             EnableColumnOptions="false"
+                                             FixedHeader="false"
+                                             TableHeight="auto"
+                                             PageSize="10">
+                                <Columns>
+                                    <TemplateColumn T="PbrTopPresupuestoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave"><CellTemplate Context="cell">@($"{cell.Item.ProgramaClave} {cell.Item.Programa}")</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrTopPresupuestoResponse" Title="Anual" Identifier="PresupuestoAnual" PropertyName="PresupuestoAnual" SortBy="x => x.PresupuestoAnual" HeaderClass="text-end" CellClass="text-end"><CellTemplate Context="cell">@Money(cell.Item.PresupuestoAnual)</CellTemplate></TemplateColumn>
+                                    <TemplateColumn T="PbrTopPresupuestoResponse" Title="Modificado" Identifier="PresupuestoModificado" PropertyName="PresupuestoModificado" SortBy="x => x.PresupuestoModificado" HeaderClass="text-end" CellClass="text-end"><CellTemplate Context="cell">@Money(cell.Item.PresupuestoModificado)</CellTemplate></TemplateColumn>
+                                </Columns>
+                            </GenericDataGrid>
                         </div>
                     </MudPaper>
                 </MudItem>

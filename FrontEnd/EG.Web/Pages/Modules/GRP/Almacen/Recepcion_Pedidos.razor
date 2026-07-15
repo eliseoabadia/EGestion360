@@ -1,4 +1,4 @@
-@page "/Almacen/Recepcion_Pedidos"
+﻿@page "/Almacen/Recepcion_Pedidos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Almacen
@@ -27,7 +27,7 @@
 
         <div class="split-shell">
             <div class="orders-panel">
-                <GenericTable TItem="OrdenCompraResponse"
+                <GenericDataGrid TItem="OrdenCompraResponse"
                               @ref="table"
                               Title="Ordenes de compra"
                               SearchPlaceholder="Buscar orden, proveedor o descripcion..."
@@ -37,47 +37,55 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="NumeroOrdenCompra" T="OrdenCompraResponse">Orden</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="OrdenCompraResponse">Proveedor</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="OrdenCompraResponse">Fecha</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Total" T="OrdenCompraResponse">Total</MudTableSortLabel></MudTh>
-                        <MudTh>Estatus</MudTh>
-                    </Header>
-                    <Row Context="item">
-                        <MudTd>
-                            <DocumentSupportButton Modulo="Almacen"
-                                                   SubModulo="Recepcion_Pedidos"
-                                                   Controlador="OrdenCompra"
-                                                   EntidadId="@item.PkidOrdenCompra"
-                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                   RegistroTitulo="@TextOrDash(item.NumeroOrdenCompra)"
-                                                   RegistroDescripcion="@TextOrDash(item.ProveedorNombre)" />
-                            <MudTooltip Text="Ver detalle">
-                                <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
-                                               Color="Color.Info"
-                                               Size="Size.Small"
-                                               OnClick="@(() => SelectOrden(item))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.NumeroOrdenCompra)</div>
-                            <span>@TextOrDash(item.Descripcion)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
-                            <span>@TextOrDash(item.ProveedorRfc)</span>
-                        </MudTd>
-                        <MudTd>@item.FechaOrdenCompra.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd><strong>@Money(item.Total)</strong></MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Style="@StatusStyle(item)">
-                                @TextOrDash(item.EstatusDescripcion)
-                            </MudChip>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <DocumentSupportButton Modulo="Almacen"
+                        SubModulo="Recepcion_Pedidos"
+                        Controlador="OrdenCompra"
+                        EntidadId="@cell.Item.PkidOrdenCompra"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.NumeroOrdenCompra)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.ProveedorNombre)" />
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectOrden(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Orden" Identifier="NumeroOrdenCompra" PropertyName="NumeroOrdenCompra" SortBy="x => x.NumeroOrdenCompra">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.NumeroOrdenCompra)</div>
+                        <span>@TextOrDash(cell.Item.Descripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</div>
+                        <span>@TextOrDash(cell.Item.ProveedorRfc)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaOrdenCompra.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Total)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Estatus" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Style="@StatusStyle(cell.Item)">
+                        @TextOrDash(cell.Item.EstatusDescripcion)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
 
             <div class="detail-panel">
@@ -88,7 +96,7 @@
                     </div>
                 </div>
 
-                <GenericTable TItem="OrdenCompraDetalleResponse"
+                <GenericDataGrid TItem="OrdenCompraDetalleResponse"
                               @ref="detalleTable"
                               Title="Renglones por recibir"
                               SearchPlaceholder="Buscar bien..."
@@ -98,46 +106,56 @@
                               SearchString="@detalleSearch"
                               SearchStringChanged="(s) => detalleSearch = s"
                               OnSearch="OnDetalleSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh>Solicitada</MudTh>
-                        <MudTh>Recibida</MudTh>
-                        <MudTh>Pendiente</MudTh>
-                        <MudTh>Precio</MudTh>
-                    </Header>
-                    <Row Context="detail">
-                        <MudTd>
-                            <MudTooltip Text="Registrar entrada">
-                                <MudIconButton Icon="@Icons.Material.Filled.AddBox"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               Disabled="@(detail.CantidadPendiente.GetValueOrDefault() <= 0)"
-                                               OnClick="@(() => RegistrarEntrada(detail))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Ver entradas">
-                                <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
-                                               Color="Color.Info"
-                                               Size="Size.Small"
-                                               OnClick="@(() => SelectDetalle(detail))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detail.TipoBienDescripcion)</div>
-                            <span>@TextOrDash(detail.TipoBienCodigoClave)</span>
-                        </MudTd>
-                        <MudTd>@Qty(detail.CantidadSolicitada)</MudTd>
-                        <MudTd>@Qty(detail.CantidadRecibida)</MudTd>
-                        <MudTd>
-                            <MudChip T="string" Size="Size.Small" Color="@(detail.CantidadPendiente.GetValueOrDefault() <= 0 ? Color.Success : Color.Warning)">
-                                @Qty(detail.CantidadPendiente ?? 0m)
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>@Money(detail.PrecioUnitario)</MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Registrar entrada">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddBox"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        Disabled="@(cell.Item.CantidadPendiente.GetValueOrDefault() <= 0)"
+                        OnClick="@(() => RegistrarEntrada(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Ver entradas">
+                        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.TipoBienCodigoClave)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Solicitada" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Qty(cell.Item.CantidadSolicitada)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Recibida" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Qty(cell.Item.CantidadRecibida)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Pendiente" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@(cell.Item.CantidadPendiente.GetValueOrDefault() <= 0 ? Color.Success : Color.Warning)">
+                        @Qty(cell.Item.CantidadPendiente ?? 0m)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Precio" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.PrecioUnitario)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
 
-                <GenericTable TItem="AlmacenResponse"
+                <GenericDataGrid TItem="AlmacenResponse"
                               @ref="entradasTable"
                               Title="Entradas del renglon"
                               SearchPlaceholder="Buscar entrada..."
@@ -147,21 +165,34 @@
                               SearchString="@entradasSearch"
                               SearchStringChanged="(s) => entradasSearch = s"
                               OnSearch="OnEntradasSearch">
-                    <Header>
-                        <MudTh>Clave</MudTh>
-                        <MudTh>Cantidad</MudTh>
-                        <MudTh>Costo</MudTh>
-                        <MudTh>Fecha</MudTh>
-                        <MudTh>Documento</MudTh>
-                    </Header>
-                    <Row Context="entry">
-                        <MudTd>@TextOrDash(entry.Clave)</MudTd>
-                        <MudTd>@Qty(entry.Cantidad)</MudTd>
-                        <MudTd>@Money(entry.Costo ?? 0m)</MudTd>
-                        <MudTd>@entry.FechaEntrada.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd>@TextOrDash(entry.Factura)</MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="AlmacenResponse" Title="Clave" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Clave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Cantidad" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Qty(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Costo" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Costo ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Fecha" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaEntrada.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Documento" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Factura)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         </div>
     </MudContainer>
@@ -223,9 +254,9 @@
 </style>
 
 @code {
-    private GenericTable<OrdenCompraResponse> table = null!;
-    private GenericTable<OrdenCompraDetalleResponse> detalleTable = null!;
-    private GenericTable<AlmacenResponse> entradasTable = null!;
+    private GenericDataGrid<OrdenCompraResponse> table = null!;
+    private GenericDataGrid<OrdenCompraDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<AlmacenResponse> entradasTable = null!;
     private OrdenCompraResponse? selectedOrden;
     private OrdenCompraDetalleResponse? selectedDetalle;
     private string detalleSearch = string.Empty;

@@ -1,4 +1,4 @@
-@page "/nomina/configuracion/catalogos/tipos-pago"
+﻿@page "/nomina/configuracion/catalogos/tipos-pago"
 @page "/nomina/configuracion/catalogos/forma-pago"
 @page "/sis/formapago"
 @using System.Globalization
@@ -20,7 +20,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="NomTipoPagoResponse"
+        <GenericDataGrid TItem="NomTipoPagoResponse"
                       @ref="table"
                       Title="Lista de Tipos de pago de nómina"
                       SearchPlaceholder="Buscar..."
@@ -29,46 +29,35 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="@(column => GetLabel(column))"
+                      CellValueFunc="@((item, column) => FormatValue(column.GetValue(item)))">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomTipoPagoResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => EditItem(GetItemId(item)))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => DeleteItem(GetItemId(item)))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            <RowActions Context="item">
+                <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                Visible="@CanUpdate"
+                Color="Color.Primary"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => EditItem(GetItemId(item)))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                Visible="@CanDelete"
+                Color="Color.Error"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => DeleteItem(GetItemId(item)))" />
+                </MudTooltip>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NomTipoPagoResponse> table = null!;
+    private GenericDataGrid<NomTipoPagoResponse> table = null!;
 
     protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Forma_Pago";

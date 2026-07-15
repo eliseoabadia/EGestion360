@@ -1,4 +1,4 @@
-@page "/Adquisiciones/RequisicionPartida"
+﻿@page "/Adquisiciones/RequisicionPartida"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
@@ -17,7 +17,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="RequisicionPartidaResponse"
+        <GenericDataGrid TItem="RequisicionPartidaResponse"
                       @ref="table"
                       Title="Lista de Partidas"
                       SearchPlaceholder="Buscar por requisicion o partida..."
@@ -27,45 +27,57 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidRequisicionPartida" T="RequisicionPartidaResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="RequisicionPartidaResponse">Requisicion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="RequisicionPartidaResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="RequisicionPartidaResponse">Partida</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Monto" T="RequisicionPartidaResponse">Monto</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
+            <Columns>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidRequisicionPartida))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidRequisicionPartida))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidRequisicionPartida))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidRequisicionPartida</MudTd>
-                <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
-                <MudTd>@TextOrDash(item.PartidaClave)</MudTd>
-                <MudTd>@TextOrDash(item.PartidaDescripcion)</MudTd>
-                <MudTd>@MoneyOrDash(item.Monto)</MudTd>
-            </Row>
-        </GenericTable>
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidRequisicionPartida))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="ID" Identifier="PkidRequisicionPartida" PropertyName="PkidRequisicionPartida" SortBy="x => x.PkidRequisicionPartida">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidRequisicionPartida
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Clave" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaClave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Partida" Identifier="PartidaDescripcion" PropertyName="PartidaDescripcion" SortBy="x => x.PartidaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Monto" Identifier="Monto" PropertyName="Monto" SortBy="x => x.Monto">
+                    <CellTemplate Context="cell">
+                        @MoneyOrDash(cell.Item.Monto)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<RequisicionPartidaResponse> table = null!;
+    private GenericDataGrid<RequisicionPartidaResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "requisicion";

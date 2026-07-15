@@ -1,4 +1,4 @@
-@using EG.Common.GenericModel
+﻿@using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Adquisicion
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
@@ -201,37 +201,53 @@
                     }
                     else
                     {
-                        <MudTable Items="@SelectedItems" Dense="true" Hover="true" Elevation="0" Class="detail-table">
-                            <HeaderContent>
-                                <MudTh>Bien PAAAS</MudTh>
-                                <MudTh>Cantidad</MudTh>
-                                <MudTh>Observaciones</MudTh>
-                                <MudTh></MudTh>
-                            </HeaderContent>
-                            <RowTemplate Context="row">
-                                <MudTd DataLabel="Bien PAAAS">
-                                    <MudText Typo="Typo.body2" Class="main-cell">@row.TipoBienTexto</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@row.PartidaTexto</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="Cantidad">@Quantity(row.Cantidad)</MudTd>
-                                <MudTd DataLabel="Observaciones">
-                                    <MudTextField T="string"
-                                                  Value="@row.Observaciones"
-                                                  ValueChanged="@((string value) => row.Observaciones = value)"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  MaxLength="1000" />
-                                </MudTd>
-                                <MudTd>
-                                    <MudTooltip Text="Quitar">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => RemoveFromSelected(row))" />
-                                    </MudTooltip>
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
+                        <GenericDataGrid TItem="PaaasDetalleDragItem" @key="SelectedItems.FirstOrDefault()"
+                                 Items="@SelectedItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="PaaasDetalleDragItem" Title="Bien PAAAS" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Bien PAAAS">
+                                <MudText Typo="Typo.body2" Class="main-cell">@cell.Item.TipoBienTexto</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.PartidaTexto</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PaaasDetalleDragItem" Title="Cantidad" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Cantidad">
+                                @Quantity(cell.Item.Cantidad)
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PaaasDetalleDragItem" Title="Observaciones" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Observaciones">
+                                <MudTextField T="string"
+                                Value="@cell.Item.Observaciones"
+                                ValueChanged="@((string value) => cell.Item.Observaciones = value)"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                MaxLength="1000" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PaaasDetalleDragItem" Title="" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudTooltip Text="Quitar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                OnClick="@(() => RemoveFromSelected(cell.Item))" />
+                                </MudTooltip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
                     }
                 </section>
             }

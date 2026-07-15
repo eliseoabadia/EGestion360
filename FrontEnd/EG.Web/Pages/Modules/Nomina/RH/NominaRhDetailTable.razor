@@ -1,4 +1,4 @@
-@typeparam TItem where TItem : class
+﻿@typeparam TItem where TItem : class
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using MiniExcelLibs
@@ -9,7 +9,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
-<GenericTable TItem="TItem"
+<GenericDataGrid TItem="TItem"
               @ref="table"
               Title="@Title"
               SearchPlaceholder="@SearchPlaceholder"
@@ -27,36 +27,35 @@
               PageSizeOptions="@(new[] { 5, 10, 20 })"
               FixedHeader="false"
               TableHeight="auto">
-    <Header>
-        <MudTh>Acciones</MudTh>
-        @Header
-    </Header>
-    <Row Context="item">
-        <MudTd Class="rh-detail-actions">
-            <MudTooltip Text="Editar">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                               Color="Color.Primary"
-                               Size="Size.Small"
-                               Visible="@CanUpdate"
-                               Disabled="@busy"
-                               OnClick="@(() => EditAsync(item))" />
-            </MudTooltip>
-            <MudTooltip Text="Eliminar">
-                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                               Color="Color.Error"
-                               Size="Size.Small"
-                               Visible="@CanDelete"
-                               Disabled="@busy"
-                               OnClick="@(() => DeleteAsync(item))" />
-            </MudTooltip>
-            @if (AdditionalActions is not null)
-            {
-                @AdditionalActions(item)
-            }
-        </MudTd>
-        @Row(item)
-    </Row>
-</GenericTable>
+            <Columns>
+                <TemplateColumn T="TItem" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div class="rh-detail-actions">
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Visible="@CanUpdate"
+                        Disabled="@busy"
+                        OnClick="@(() => EditAsync(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Visible="@CanDelete"
+                        Disabled="@busy"
+                        OnClick="@(() => DeleteAsync(cell.Item))" />
+                        </MudTooltip>
+                        @if (AdditionalActions is not null)
+                        {
+                        @AdditionalActions(cell.Item)
+                        }
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
 
 @code {
     [Parameter, EditorRequired] public int PersonaId { get; set; }
@@ -79,7 +78,7 @@
     [Parameter] public bool CanExport { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    private GenericTable<TItem>? table;
+    private GenericDataGrid<TItem>? table;
     private string search = string.Empty;
     private bool busy;
 

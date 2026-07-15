@@ -1,4 +1,4 @@
-@page "/PBR/Anteproyectos"
+﻿@page "/PBR/Anteproyectos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -28,7 +28,7 @@
     <PbrTopNavigation />
 
     <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-        <GenericTable TItem="PbrAnteproyectoResponse"
+        <GenericDataGrid TItem="PbrAnteproyectoResponse"
                       @ref="table"
                       Title="Anteproyectos"
                       SearchPlaceholder="Buscar por programa, estatus o justificacion..."
@@ -38,65 +38,78 @@
                       SearchString="@search"
                       SearchStringChanged="(s) => search = s"
                       OnSearch="() => table.ReloadData()">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrAnteproyectoResponse">Programa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidAnteproyecto" T="PbrAnteproyectoResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Anio" T="PbrAnteproyectoResponse">Año</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MontoSolicitado" T="PbrAnteproyectoResponse">Solicitado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MontoAutorizado" T="PbrAnteproyectoResponse">Autorizado</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Estatus" T="PbrAnteproyectoResponse">Estatus</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <DocumentSupportButton Modulo="PBR"
-                                           SubModulo="Anteproyectos"
-                                           Controlador="PbrAnteproyecto"
-                                           EntidadId="@item.PkidAnteproyecto"
-                                           RegistroTitulo="@($"Anteproyecto {item.PkidAnteproyecto}")"
-                                           RegistroDescripcion="@TextOrDash(item.ProgramaDescripcion)" />
-                    <MudTooltip Text="Autorizar">
+            <Columns>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <DocumentSupportButton Modulo="PBR"
+                        SubModulo="Anteproyectos"
+                        Controlador="PbrAnteproyecto"
+                        EntidadId="@cell.Item.PkidAnteproyecto"
+                        RegistroTitulo="@($"Anteproyecto {cell.Item.PkidAnteproyecto}")"
+                        RegistroDescripcion="@TextOrDash(cell.Item.ProgramaDescripcion)" />
+                        <MudTooltip Text="Autorizar">
                         <MudIconButton Icon="@Icons.Material.Filled.TaskAlt"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Disabled="@IsLocked(item)"
-                                       OnClick="@(() => AutorizarAsync(item))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Editar">
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        Disabled="@IsLocked(cell.Item)"
+                        OnClick="@(() => AutorizarAsync(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Disabled="@IsLocked(item)"
-                                       OnClick="@(() => OpenDialog(item.PkidAnteproyecto))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Disabled="@IsLocked(cell.Item)"
+                        OnClick="@(() => OpenDialog(cell.Item.PkidAnteproyecto))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Disabled="@IsLocked(item)"
-                                       OnClick="@(() => DeleteAsync(item))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>
-                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(item.ProgramaDescripcion)</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">PBR @item.FkidProgramaPresupuestarioPbr</MudText>
-                </MudTd>
-                <MudTd>@item.PkidAnteproyecto</MudTd>
-                <MudTd>@item.Anio</MudTd>
-                <MudTd>@Money(item.MontoSolicitado)</MudTd>
-                <MudTd>@Money(item.MontoAutorizado ?? 0m)</MudTd>
-                <MudTd>
-                    <MudChip T="string" Size="Size.Small" Color="@(IsLocked(item) ? Color.Success : Color.Warning)">
-                        @TextOrDash(item.Estatus)
-                    </MudChip>
-                </MudTd>
-            </Row>
-        </GenericTable>
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Disabled="@IsLocked(cell.Item)"
+                        OnClick="@(() => DeleteAsync(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.ProgramaDescripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">PBR @cell.Item.FkidProgramaPresupuestarioPbr</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="ID" Identifier="PkidAnteproyecto" PropertyName="PkidAnteproyecto" SortBy="x => x.PkidAnteproyecto">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidAnteproyecto
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Año" Identifier="Anio" PropertyName="Anio" SortBy="x => x.Anio">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Anio
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Solicitado" Identifier="MontoSolicitado" PropertyName="MontoSolicitado" SortBy="x => x.MontoSolicitado">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoSolicitado)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Autorizado" Identifier="MontoAutorizado" PropertyName="MontoAutorizado" SortBy="x => x.MontoAutorizado">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoAutorizado ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrAnteproyectoResponse" Title="Estatus" Identifier="Estatus" PropertyName="Estatus" SortBy="x => x.Estatus">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@(IsLocked(cell.Item) ? Color.Success : Color.Warning)">
+                        @TextOrDash(cell.Item.Estatus)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </div>
 </MudContainer>
 
 @code {
-    private GenericTable<PbrAnteproyectoResponse> table = null!;
+    private GenericDataGrid<PbrAnteproyectoResponse> table = null!;
     private string search = string.Empty;
     private string currencySymbol = "$";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;

@@ -1,4 +1,4 @@
-@page "/Contabilidad/Polizas"
+﻿@page "/Contabilidad/Polizas"
 @using System.Globalization
 @using System.Net.Http.Json
 @using EG.Dommain.DTOs.Responses
@@ -255,7 +255,7 @@
                 </MudPaper>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="PolizaDetalleResponse"
+                    <GenericDataGrid TItem="PolizaDetalleResponse"
                                   @ref="detalleTable"
                                   Title="Movimientos contables"
                                   SearchPlaceholder="Buscar por cuenta, concepto o tipo..."
@@ -265,43 +265,58 @@
                                   SearchString="@detalleSearchString"
                                   SearchStringChanged="(s) => detalleSearchString = s"
                                   OnSearch="ReloadDetalles">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidPolizaDetalle" T="PolizaDetalleResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="CuentaClave" T="PolizaDetalleResponse">Cuenta</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Descripcion" T="PolizaDetalleResponse">Concepto</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoDetallePoliza" T="PolizaDetalleResponse">Tipo</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ImporteDebe" T="PolizaDetalleResponse">Debe</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ImporteHaber" T="PolizaDetalleResponse">Haber</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="detalle">
-                            <MudTd>
-                                <MudTooltip Text="Editar movimiento">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditDetalle(detalle.PkidPolizaDetalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar movimiento">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteDetalle(detalle))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@detalle.PkidPolizaDetalle</MudTd>
-                            <MudTd>
-                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(detalle.CuentaClave)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(detalle.CuentaDescripcion)</MudText>
-                            </MudTd>
-                            <MudTd>@TextOrDash(detalle.Descripcion)</MudTd>
-                            <MudTd>@TextOrDash(detalle.TipoDetallePoliza)</MudTd>
-                            <MudTd>@Money(detalle.ImporteDebe ?? 0m)</MudTd>
-                            <MudTd>@Money(detalle.ImporteHaber ?? 0m)</MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar movimiento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidPolizaDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar movimiento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="ID" Identifier="PkidPolizaDetalle" PropertyName="PkidPolizaDetalle" SortBy="x => x.PkidPolizaDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidPolizaDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Cuenta" Identifier="CuentaClave" PropertyName="CuentaClave" SortBy="x => x.CuentaClave">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.CuentaClave)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.CuentaDescripcion)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Concepto" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Descripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Tipo" Identifier="TipoDetallePoliza" PropertyName="TipoDetallePoliza" SortBy="x => x.TipoDetallePoliza">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoDetallePoliza)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Debe" Identifier="ImporteDebe" PropertyName="ImporteDebe" SortBy="x => x.ImporteDebe">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.ImporteDebe ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PolizaDetalleResponse" Title="Haber" Identifier="ImporteHaber" PropertyName="ImporteHaber" SortBy="x => x.ImporteHaber">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.ImporteHaber ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -310,7 +325,7 @@
 
 @code {
     private GenericDataGrid<PolizaResponse> table = null!;
-    private GenericTable<PolizaDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<PolizaDetalleResponse> detalleTable = null!;
     private PolizaResponse? SelectedPoliza;
     private string detalleSearchString = string.Empty;
     private string _currencySymbol = "$";

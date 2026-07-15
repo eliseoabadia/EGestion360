@@ -1,4 +1,4 @@
-@page "/configuracion/sistema/menu"
+Ôªø@page "/configuracion/sistema/menu"
 @using System.ComponentModel.DataAnnotations
 @using EG.Web.Auth
 @using EG.Web.Contracts
@@ -35,7 +35,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.OutlinedFlag" Size="Size.Large" Color="Color.Error" />
                     <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Acceso Denegado</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2 text-center">
-                        No tienes permisos para acceder a esta p·gina.
+                        No tienes permisos para acceder a esta p√°gina.
                     </MudText>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NavigateToHome" Class="mt-6">
                         Volver al inicio
@@ -58,19 +58,19 @@
                                 <MudIcon Icon="@Icons.Material.Filled.Menu"
                                 Color="Color.Primary"
                                 Size="Size.Large" />
-                                GestiÛn de Men˙s
+                                Gesti√≥n de Men√∫s
                             </MudText>
                             <MudText Typo="Typo.body2"
                             Color="Color.Tertiary"
                             Class="ml-6">
-                                Administra la estructura de navegaciÛn del sistema
+                                Administra la estructura de navegaci√≥n del sistema
                             </MudText>
                         </MudStack>
                     </MudItem>
 
                     <MudItem>
                         <MudButtonGroup Variant="Variant.Filled" Color="Color.Primary">
-                            <MudTooltip Text="Nuevo Men˙" Visible="_canCreate">
+                            <MudTooltip Text="Nuevo Men√∫" Visible="_canCreate">
                                 <MudButton StartIcon="@Icons.Material.Filled.Add"
                                 OnClick="CrearMenu"
                                 Size="Size.Small" />
@@ -92,12 +92,12 @@
                 @* <MudItem xs="12" sm="6" md="3">
                 <MudSelect T="byte?"
                            @bind-Value="selectedTipo"
-                           Label="Tipo de men˙"
+                           Label="Tipo de men√∫"
                            Variant="Variant.Outlined"
                            Clearable="true"
                            AnchorOrigin="Origin.BottomCenter">
                     <MudSelectItem T="byte?" Value="@null">Todos los tipos</MudSelectItem>
-                    <MudSelectItem Value="1">Contenedor (con submen˙s)</MudSelectItem>
+                    <MudSelectItem Value="1">Contenedor (con submen√∫s)</MudSelectItem>
                     <MudSelectItem Value="2">Item final</MudSelectItem>
                 </MudSelect>
             </MudItem>
@@ -134,137 +134,87 @@
             </MudGrid>
 
             <!-- Tabla -->
-            <MudTable ServerData="LoadServerData"
-            RowsPerPage="@pageSize"
-            Page="@currentPage"
-            RowCount="@totalCount"
-            @ref="mudTableRef"
-            Dense="@dense"
-            Hover="@hover"
-            Loading="@loading"
-            ReadOnly="@ronly"
-            SortLabel="Ordenar por"
-            @bind-SelectedItem="selectedItem"
-            FixedHeader="true"
-            Height="500px"
-            Class="mt-4">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Lista de Men˙s</MudText>
-                    <MudSpacer />
-
-                    <!-- BotÛn de Exportar a Excel -->
-                    <MudTooltip Text="Exportar a Excel">
-                        <MudButton Variant="Variant.Filled"
-                        Color="Color.Success"
-                        StartIcon="@Icons.Material.Filled.FileDownload"
-                        Visible="_canExport"
-                        OnClick="ExportarExcel"
-                        Size="Size.Small"
-                        Class="mr-2"
-                        Disabled="@loading">
-                            @if (loading)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                <span>Exportando...</span>
-                            }
-                            else
-                            {
-                                <span>Exportar Excel</span>
-                            }
-                        </MudButton>
-                    </MudTooltip>
-
-                    <MudTextField @bind-Value="searchString"
-                    Placeholder="Buscar por nombre..."
-                    Adornment="Adornment.Start"
-                    AdornmentIcon="@Icons.Material.Filled.Search"
-                    IconSize="Size.Medium"
-                    Immediate="true"
-                    @ref="txtSearch"
-                    OnKeyUp="HandleKeyUp"
-                    Class="mt-0"
-                    Variant="Variant.Outlined"
-                    Style="width: 300px;">
-                    </MudTextField>
-                </ToolBarContent>
-
-                <HeaderContent>
-                    <MudTh Style="width: 160px;">Acciones</MudTh>
-                    <MudTh Style="width: 80px;"><MudTableSortLabel SortLabel="PkidMenu" T="MenuItemsResponse">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="MenuItemsResponse">Nombre</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 150px;"><MudTableSortLabel SortLabel="Tipo" T="MenuItemsResponse">Tipo</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 200px;"><MudTableSortLabel SortLabel="MenuPadre" T="MenuItemsResponse">Men˙ Padre</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 100px;"><MudTableSortLabel SortLabel="Orden" T="MenuItemsResponse">Orden</MudTableSortLabel></MudTh>
-                </HeaderContent>
-
-                <RowTemplate>
-                    <MudTd>
-                        <MudTooltip Text="Agregar men˙">
+            <GenericDataGrid TItem="MenuItemsResponse"
+                             @ref="mudTableRef"
+                             Title="Lista de Menus"
+                             SearchPlaceholder="Buscar por nombre..."
+                             SearchString="@searchString"
+                             SearchStringChanged="value => searchString = value"
+                             ShowExportButton="@_canExport"
+                             ServerDataFunc="LoadServerData"
+                             ExportFunc="ExportarExcel"
+                             PageSize="@pageSize"
+                             FixedHeader="true"
+                             TableHeight="500px">
+                <Columns>
+                    <TemplateColumn T="MenuItemsResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                        <CellTemplate Context="cell">
+                            <MudTooltip Text="Agregar men√∫">
                             <MudIconButton Icon="@Icons.Material.Filled.Add"
                             Color="Color.Error"
                             Size="Size.Small"
                             Visible="_canCreate"
-                            OnClick="@(() => CrearHijoMenu(context.PkidMenu, context.Nombre))" />
-                        </MudTooltip>
+                            OnClick="@(() => CrearHijoMenu(cell.Item.PkidMenu, cell.Item.Nombre))" />
+                            </MudTooltip>
 
 
-                        <MudTooltip Text="Editar men˙">
+                            <MudTooltip Text="Editar men√∫">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                             Color="Color.Primary"
                             Size="Size.Small"
-                                           Visible="_canUpdate"
-                            OnClick="@(() => EditarMenu(context.PkidMenu))" />
-                        </MudTooltip>
+                            Visible="_canUpdate"
+                            OnClick="@(() => EditarMenu(cell.Item.PkidMenu))" />
+                            </MudTooltip>
 
-                        <MudTooltip Text="Eliminar men˙">
+                            <MudTooltip Text="Eliminar men√∫">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                             Color="Color.Error"
                             Size="Size.Small"
                             Visible="_canDelete"
-                            OnClick="@(() => EliminarMenu(context.PkidMenu))" />
-                        </MudTooltip>
-
-
-                    </MudTd>
-
-                    <MudTd DataLabel="ID">@context.PkidMenu</MudTd>
-                    <MudTd DataLabel="Nombre">
-                        @if (context.Tipo == 1)
-                        {
+                            OnClick="@(() => EliminarMenu(cell.Item.PkidMenu))" />
+                            </MudTooltip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="MenuItemsResponse" Title="ID" Identifier="PkidMenu" PropertyName="PkidMenu" SortBy="x => x.PkidMenu">
+                        <CellTemplate Context="cell">
+                            @cell.Item.PkidMenu
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="MenuItemsResponse" Title="Nombre" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre">
+                        <CellTemplate Context="cell">
+                            @if (cell.Item.Tipo == 1)
+                            {
                             <MudText Style="font-weight: 500;">
-                                <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Warning" Class="mr-1" />
-                                @context.Nombre
+                            <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Warning" Class="mr-1" />
+                            @cell.Item.Nombre
                             </MudText>
-                        }
-                        else
-                        {
+                            }
+                            else
+                            {
                             <MudText>
-                                <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" Class="mr-1" />
-                                @context.Nombre
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Info" Class="mr-1" />
+                            @cell.Item.Nombre
                             </MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
-                    <MudTd DataLabel="Men˙ Padre">@(context.NombreMenuPadre ?? "-")</MudTd>
-                    <MudTd DataLabel="Orden">@context.Orden</MudTd>
-                </RowTemplate>
-
-                <NoRecordsContent>
-                    <MudText Align="Align.Center" Class="py-4">No se encontraron men˙s</MudText>
-                </NoRecordsContent>
-
-                <LoadingContent>
-                    <MudText Align="Align.Center">Cargando men˙s...</MudText>
-                </LoadingContent>
-
-                <PagerContent>
-                    <MudTablePager RowsPerPageString="Filas por p·gina"
-                    PageSizeOptions="new int[] { 10, 20, 50, 100 }"
-                    ShowFirstLastPage="true"
-                    ShowPageSizeSelector="true"
-                    PaginationTextFormat="P·gina {0} de {1}" />
-                </PagerContent>
-            </MudTable>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="MenuItemsResponse" Title="Tipo" Identifier="Tipo" PropertyName="Tipo" SortBy="x => x.Tipo">
+                        <CellTemplate Context="cell">
+                            @cell.Item.Tipo
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="MenuItemsResponse" Title="Men√∫ Padre" Identifier="NombreMenuPadre" PropertyName="NombreMenuPadre" SortBy="x => x.NombreMenuPadre">
+                        <CellTemplate Context="cell">
+                            @(cell.Item.NombreMenuPadre ?? "-")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="MenuItemsResponse" Title="Orden" Identifier="Orden" PropertyName="Orden" SortBy="x => x.Orden">
+                        <CellTemplate Context="cell">
+                            @cell.Item.Orden
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </GenericDataGrid>
         </MudPaper>
     }
     </MudContainer>
@@ -279,7 +229,7 @@
     private bool _isInitialized = false;
     private bool _hasAccess = false;
 
-    // Permisos especÌficos para esta p·gina
+    // Permisos espec√≠ficos para esta p√°gina
     private bool _canView = false;
     private bool _canCreate = false;
     private bool _canUpdate = false;
@@ -292,7 +242,7 @@
     private bool blockSwitch = false;
 
     private MenuItemsResponse selectedItem = new();
-    private MudTable<MenuItemsResponse> mudTableRef = new();
+    private GenericDataGrid<MenuItemsResponse> mudTableRef = new();
 
     private MudTextField<string> txtSearch = new();
 
@@ -332,13 +282,13 @@
                    {
                        _hasAccess = false;
                        StateHasChanged();
-                       // Redirigir al home despuÈs de un pequeÒo delay
+                       // Redirigir al home despu√©s de un peque√±o delay
                        Task.Delay(2000);
                        NavigationManager.NavigateTo("/", replace: true);
                        return;
                    }
 
-                   // Si tiene acceso, verificar permisos especÌficos
+                   // Si tiene acceso, verificar permisos espec√≠ficos
                    _canCreate = AuthProvider.HasPermission("Sistema", "Menu", "new");
                    _canUpdate = AuthProvider.HasPermission("Sistema", "Menu", "update");
                    _canDelete = AuthProvider.HasPermission("Sistema", "Menu", "delete");
@@ -371,7 +321,7 @@
     //     }
     //     catch (Exception ex)
     //     {
-    //         Snackbar.Add($"Error al cargar men˙s padre: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+    //         Snackbar.Add($"Error al cargar men√∫s padre: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
     //         listadoMenusPadre = new();
     //     }
     //     finally
@@ -420,7 +370,7 @@
                 Elements = new();
                 totalCount = 0;
                 if (response != null)
-                    Snackbar.Add(response.Message ?? "Error al cargar men˙s", Severity.Error);
+                    Snackbar.Add(response.Message ?? "Error al cargar men√∫s", Severity.Error);
             }
 
             return new TableData<MenuItemsResponse>
@@ -431,7 +381,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al cargar men˙s: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+            Snackbar.Add($"Error al cargar men√∫s: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
             return new TableData<MenuItemsResponse>
             {
                 Items = new List<MenuItemsResponse>(),
@@ -457,12 +407,12 @@
             if (!searchCts.Token.IsCancellationRequested && mudTableRef != null)
             {
                 currentPage = 0;
-                await mudTableRef.ReloadServerData();
+                await mudTableRef.ReloadData();
             }
         }
         catch (TaskCanceledException)
         {
-            // B˙squeda cancelada
+            // B√∫squeda cancelada
         }
     }
 
@@ -476,7 +426,7 @@
         if (args.Key == "Enter")
         {
             currentPage = 0;
-            await mudTableRef.ReloadServerData();
+            await mudTableRef.ReloadData();
         }
     }
 
@@ -484,7 +434,7 @@
     {
         currentPage = 0;
         if (mudTableRef != null)
-            await mudTableRef.ReloadServerData();
+            await mudTableRef.ReloadData();
     }
 
     private async Task LimpiarFiltros()
@@ -497,7 +447,7 @@
         currentPage = 0;
         if (mudTableRef != null)
         {
-            await mudTableRef.ReloadServerData();
+            await mudTableRef.ReloadData();
         }
     }
 
@@ -507,7 +457,7 @@
         {
             if (!_canCreate)
             {
-                Snackbar.Add("No tienes permisos para crear men˙", Severity.Warning);
+                Snackbar.Add("No tienes permisos para crear men√∫", Severity.Warning);
                 return;
             }
 
@@ -520,24 +470,24 @@
                 Position = DialogPosition.Center,
             };
 
-            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Men˙", parameters, options);
+            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Men√∫", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
             {
                 //await CargarMenusPadre(); // Recargar lista de padres
                 currentPage = 0;
-                await mudTableRef.ReloadServerData();
-                Snackbar.Add("Men˙ creado exitosamente", Severity.Success);
+                await mudTableRef.ReloadData();
+                Snackbar.Add("Men√∫ creado exitosamente", Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear men˙: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+            Snackbar.Add($"Error al crear men√∫: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
-    
+
     private async Task CrearHijoMenu(int id, string NombreMenuPadre)
     {
         try
@@ -551,20 +501,20 @@
                 Position = DialogPosition.Center,
             };
 
-            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Men˙", parameters, options);
+            var dialog = await DialogService.ShowAsync<CrearMenu>("Crear Men√∫", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
             {
                 //await CargarMenusPadre(); // Recargar lista de padres
                 currentPage = 0;
-                await mudTableRef.ReloadServerData();
-                Snackbar.Add("Men˙ creado exitosamente", Severity.Success);
+                await mudTableRef.ReloadData();
+                Snackbar.Add("Men√∫ creado exitosamente", Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear men˙: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+            Snackbar.Add($"Error al crear men√∫: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -574,7 +524,7 @@
         {
             if (!_canUpdate)
             {
-                Snackbar.Add("No tienes permisos para editar men˙", Severity.Warning);
+                Snackbar.Add("No tienes permisos para editar men√∫", Severity.Warning);
                 return;
             }
 
@@ -586,19 +536,19 @@
                 FullWidth = true,
             };
 
-            var dialog = await DialogService.ShowAsync<EditarMenu>("Editar Men˙", parameters, options);
+            var dialog = await DialogService.ShowAsync<EditarMenu>("Editar Men√∫", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
             {
                 //await CargarMenusPadre(); // Recargar lista de padres
-                await mudTableRef.ReloadServerData();
-                Snackbar.Add("Men˙ actualizado exitosamente", Severity.Success);
+                await mudTableRef.ReloadData();
+                Snackbar.Add("Men√∫ actualizado exitosamente", Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al editar men˙: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+            Snackbar.Add($"Error al editar men√∫: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -608,7 +558,7 @@
         {
             if (!_canDelete)
             {
-                Snackbar.Add("No tienes permisos para eliminar men˙", Severity.Warning);
+                Snackbar.Add("No tienes permisos para eliminar men√∫", Severity.Warning);
                 return;
             }
             var parameters = new DialogParameters { ["MenuId"] = id };
@@ -619,7 +569,7 @@
                 FullWidth = true,
             };
 
-            var dialog = await DialogService.ShowAsync<EliminarMenu>("Eliminar Men˙", parameters, options);
+            var dialog = await DialogService.ShowAsync<EliminarMenu>("Eliminar Men√∫", parameters, options);
             var result = await dialog.Result;
 
             if (!result!.Canceled)
@@ -629,13 +579,13 @@
                     currentPage--;
                 }
                 //await CargarMenusPadre(); // Recargar lista de padres
-                await mudTableRef.ReloadServerData();
-                Snackbar.Add("Men˙ eliminado exitosamente", Severity.Success);
+                await mudTableRef.ReloadData();
+                Snackbar.Add("Men√∫ eliminado exitosamente", Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al eliminar men˙: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+            Snackbar.Add($"Error al eliminar men√∫: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
     }
 
@@ -650,7 +600,7 @@
     //         FullScreen = false
     //     };
 
-    //     await DialogService.ShowAsync<VerHijosMenu>("Submen˙s", parameters, options);
+    //     await DialogService.ShowAsync<VerHijosMenu>("Submen√∫s", parameters, options);
     // }
 
     // private async Task VerArbolMenus()
@@ -663,7 +613,7 @@
     //         FullScreen = false
     //     };
 
-    //     await DialogService.ShowAsync<ArbolMenus>("¡rbol de Men˙s", options);
+    //     await DialogService.ShowAsync<ArbolMenus>("√Årbol de Men√∫s", options);
     // }
 
     private async Task ExportarExcel()
@@ -688,8 +638,8 @@
                 filtros.Add("Activo", selectedEstado.Value == EstadoFiltro.Activo);
 
             var response = await _service.GetAllPaginadoAsync(
-                -1, // Todas las p·ginas
-                10000, // LÌmite alto
+                -1, // Todas las p√°ginas
+                10000, // L√≠mite alto
                 searchString,
                 sortLabel,
                 sortDirection,
@@ -725,7 +675,7 @@
                 $"Menus_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-            Snackbar.Add($"ExportaciÛn exitosa: {items.Count} registros", Severity.Success);
+            Snackbar.Add($"Exportaci√≥n exitosa: {items.Count} registros", Severity.Success);
         }
         catch (Exception ex)
         {

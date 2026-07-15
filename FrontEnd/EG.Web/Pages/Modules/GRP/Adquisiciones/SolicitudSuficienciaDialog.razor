@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using System.Net.Http.Json
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Adquisicion
@@ -163,28 +163,43 @@
                                 </div>
                             </div>
 
-                            <MudTable Items="_previewItems.Take(8)" Dense="true" Hover="true" Elevation="0" Class="preview-table">
-                                <HeaderContent>
-                                    <MudTh>Bien</MudTh>
-                                    <MudTh>Cantidad</MudTh>
-                                    <MudTh>Cotizaciones</MudTh>
-                                    <MudTh>Promedio</MudTh>
-                                    <MudTh>Ajustado</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd>
-                                        <MudText Typo="Typo.body2" Class="preview-main">@context.Bien</MudText>
-                                    </MudTd>
-                                    <MudTd>@Quantity(context.Cantidad)</MudTd>
-                                    <MudTd>
-                                        <MudChip T="string" Color="@(context.Cotizaciones > 0 ? Color.Success : Color.Warning)" Size="Size.Small">
-                                            @context.Cotizaciones.ToString("N0", NumberCulture)
-                                        </MudChip>
-                                    </MudTd>
-                                    <MudTd>@Money(context.Promedio)</MudTd>
-                                    <MudTd><strong>@Money(context.Ajustado)</strong></MudTd>
-                                </RowTemplate>
-                            </MudTable>
+                            <GenericDataGrid TItem="PreviewItem" @key="_previewItems.FirstOrDefault()"
+                                 Items="_previewItems.Take(8)"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="PreviewItem" Title="Bien" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.body2" Class="preview-main">@cell.Item.Bien</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PreviewItem" Title="Cantidad" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Quantity(cell.Item.Cantidad)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PreviewItem" Title="Cotizaciones" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudChip T="string" Color="@(cell.Item.Cotizaciones > 0 ? Color.Success : Color.Warning)" Size="Size.Small">
+                                @cell.Item.Cotizaciones.ToString("N0", NumberCulture)
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PreviewItem" Title="Promedio" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Money(cell.Item.Promedio)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PreviewItem" Title="Ajustado" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@Money(cell.Item.Ajustado)</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
                         }
                     </div>
                 </MudItem>

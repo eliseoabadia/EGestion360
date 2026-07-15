@@ -1290,6 +1290,14 @@
         overflow: visible !important;
     }
 
+    /* Las pantallas de consulta conservan un solo viewport: el scroll vive en la grilla. */
+    .content-wrapper .mud-container:has(> .eg-page-header):has(> .eg-generic-data-grid) {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
     .version-footer {
         height: var(--eg-footer-height);
         background:

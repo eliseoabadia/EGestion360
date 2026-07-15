@@ -1,4 +1,4 @@
-@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia"
+﻿@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
@@ -23,7 +23,7 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="AutorizacionSuficienciaResponse" @ref="table" Title="Autorizaciones"
+                    <GenericDataGrid TItem="AutorizacionSuficienciaResponse" @ref="table" Title="Autorizaciones"
                                   SearchPlaceholder="Buscar requisición, solicitud o autorizado por..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -31,35 +31,49 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidAutorizacionSuficiencia" T="AutorizacionSuficienciaResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="AutorizacionSuficienciaResponse">Requisición</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaAutorizacion" T="AutorizacionSuficienciaResponse">Autorización</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="AutorizadoPorNombre" T="AutorizacionSuficienciaResponse">Autorizó</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Estatus" T="AutorizacionSuficienciaResponse">Estatus</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="item">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectAutorizacion(item))" />
-                                <DocumentSupportButton Modulo="Presupuesto_Comprometido"
-                                                       SubModulo="Autorizacion_Suficiencia"
-                                                       Controlador="AutorizacionSuficiencia"
-                                                       EntidadId="@item.PkidAutorizacionSuficiencia"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@($"Autorizacion {item.PkidAutorizacionSuficiencia}")"
-                                                       RegistroDescripcion="@TextOrDash(item.RequisicionDescripcion)" />
-                                <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanAuthorize" Disabled="@(item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(item))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(item.PkidAutorizacionSuficiencia))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(item.PkidAutorizacionSuficiencia))" />
-                            </MudTd>
-                            <MudTd>@item.PkidAutorizacionSuficiencia</MudTd>
-                            <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
-                            <MudTd>@item.FechaAutorizacion.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@TextOrDash(item.AutorizadoPorNombre)</MudTd>
-                            <MudTd><MudChip T="string" Size="Size.Small" Color="@StatusColor(item.Estatus)">@TextOrDash(item.EstatusDescripcion)</MudChip></MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectAutorizacion(cell.Item))" />
+                        <DocumentSupportButton Modulo="Presupuesto_Comprometido"
+                        SubModulo="Autorizacion_Suficiencia"
+                        Controlador="AutorizacionSuficiencia"
+                        EntidadId="@cell.Item.PkidAutorizacionSuficiencia"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@($"Autorizacion {cell.Item.PkidAutorizacionSuficiencia}")"
+                        RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanAuthorize" Disabled="@(cell.Item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(cell.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(cell.Item.PkidAutorizacionSuficiencia))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(cell.Item.PkidAutorizacionSuficiencia))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="ID" Identifier="PkidAutorizacionSuficiencia" PropertyName="PkidAutorizacionSuficiencia" SortBy="x => x.PkidAutorizacionSuficiencia">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidAutorizacionSuficiencia
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Requisición" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Autorización" Identifier="FechaAutorizacion" PropertyName="FechaAutorizacion" SortBy="x => x.FechaAutorizacion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaAutorizacion.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Autorizó" Identifier="AutorizadoPorNombre" PropertyName="AutorizadoPorNombre" SortBy="x => x.AutorizadoPorNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.AutorizadoPorNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Estatus" Identifier="Estatus" PropertyName="Estatus" SortBy="x => x.Estatus">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(cell.Item.Estatus)">@TextOrDash(cell.Item.EstatusDescripcion)</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -86,25 +100,46 @@
                 </MudPaper>
 
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericTable TItem="AutorizacionSuficienciaDetalleResponse" @ref="detalleTable" Title="Detalle autorizado"
+                    <GenericDataGrid TItem="AutorizacionSuficienciaDetalleResponse" @ref="detalleTable" Title="Detalle autorizado"
                                   SearchPlaceholder="Buscar partida o bien..."
                                   ServerDataFunc="LoadDetalles"
                                   SearchString="@detalleSearch"
                                   SearchStringChanged="(s) => detalleSearch = s"
                                   OnSearch="ReloadDetalles">
-                        <Header><MudTh>Acciones</MudTh><MudTh>Partida</MudTh><MudTh>Bien</MudTh><MudTh>Cantidad</MudTh><MudTh>Total</MudTh><MudTh>Observaciones</MudTh></Header>
-                        <Row Context="d">
-                            <MudTd>
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(d.PkidAutorizacionSuficienciaDetalle))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(d.PkidAutorizacionSuficienciaDetalle))" />
-                            </MudTd>
-                            <MudTd>@TextOrDash(d.PartidaClaveNombre)</MudTd>
-                            <MudTd>@TextOrDash(d.TipoBienDescripcion)</MudTd>
-                            <MudTd>@((d.Cantidad ?? 0m).ToString("0.00", Culture))</MudTd>
-                            <MudTd>@Money(d.Total ?? 0m)</MudTd>
-                            <MudTd>@TextOrDash(d.Observaciones)</MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidAutorizacionSuficienciaDetalle))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedAutorizacion)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidAutorizacionSuficienciaDetalle))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Partida" Identifier="__column_1" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaClaveNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Bien" Identifier="__column_2" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Cantidad" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @((cell.Item.Cantidad ?? 0m).ToString("0.00", Culture))
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Total" Identifier="__column_4" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Total ?? 0m)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AutorizacionSuficienciaDetalleResponse" Title="Observaciones" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Observaciones)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -112,8 +147,8 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<AutorizacionSuficienciaResponse> table = null!;
-    private GenericTable<AutorizacionSuficienciaDetalleResponse> detalleTable = null!;
+    private GenericDataGrid<AutorizacionSuficienciaResponse> table = null!;
+    private GenericDataGrid<AutorizacionSuficienciaDetalleResponse> detalleTable = null!;
     private AutorizacionSuficienciaResponse? SelectedAutorizacion;
     private string detalleSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;

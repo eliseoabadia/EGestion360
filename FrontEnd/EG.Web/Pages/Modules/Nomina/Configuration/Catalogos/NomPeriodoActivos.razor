@@ -1,4 +1,4 @@
-@page "/nomina/configuracion/catalogos/periodos-activos"
+﻿@page "/nomina/configuracion/catalogos/periodos-activos"
 @page "/nomina/configuracion/periodos/semanal"
 @page "/sis/periodosemanal"
 @page "/nomina/configuracion/periodos/quincenal"
@@ -28,7 +28,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="ReloadData" />
 
-        <GenericTable TItem="NomPeriodoActivoResponse"
+        <GenericDataGrid TItem="NomPeriodoActivoResponse"
                       @ref="table"
                       @key="TableKey"
                       Title="Lista de Periodos activos"
@@ -38,46 +38,35 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="@(column => GetLabel(column))"
+                      CellValueFunc="@((item, column) => FormatValue(column.GetValue(item)))">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomPeriodoActivoResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => EditItem(GetItemId(item)))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => DeleteItem(GetItemId(item)))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            <RowActions Context="item">
+                <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                Visible="@CanUpdate"
+                Color="Color.Primary"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => EditItem(GetItemId(item)))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                Visible="@CanDelete"
+                Color="Color.Error"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => DeleteItem(GetItemId(item)))" />
+                </MudTooltip>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NomPeriodoActivoResponse> table = null!;
+    private GenericDataGrid<NomPeriodoActivoResponse> table = null!;
     private string loadedPath = string.Empty;
     private bool pendingRouteReload;
     private bool disposed;

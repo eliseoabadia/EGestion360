@@ -1,4 +1,4 @@
-@page "/rh/incidenciareport"
+﻿@page "/rh/incidenciareport"
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -34,7 +34,7 @@
 		</div>
 
 		<div class="eg-table-shell">
-			<GenericTable TItem="VwRhIncidenciaResponse"
+			<GenericDataGrid TItem="VwRhIncidenciaResponse"
 						  @ref="table"
 						  Title="Reporte de incidencias"
 						  SearchPlaceholder="Buscar empleado, tipo de incidencia, justificación..."
@@ -44,72 +44,85 @@
 						  SearchString="@SearchString"
 						  SearchStringChanged="(s) => SearchString = s"
 						  OnSearch="OnSearch">
-
-				<Header>
-					<MudTh>Acciones</MudTh>
-					<MudTh><MudTableSortLabel SortLabel="NombreCompleto" T="VwRhIncidenciaResponse">Empleado</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="ClavePersona" T="VwRhIncidenciaResponse">Clave</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="TipoIncidenciaDescripcion" T="VwRhIncidenciaResponse">Tipo Incidencia</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="Fecha" T="VwRhIncidenciaResponse">Fecha Incidencia</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="FechaFin" T="VwRhIncidenciaResponse">Periodo Fin</MudTableSortLabel></MudTh>
-					<MudTh><MudTableSortLabel SortLabel="TipoJustificacionDescripcion" T="VwRhIncidenciaResponse">Tipo Justificación</MudTableSortLabel></MudTh>
-					<MudTh>Aplica Descuento</MudTh>
-					<MudTh><MudTableSortLabel SortLabel="Activo" T="VwRhIncidenciaResponse">Estado</MudTableSortLabel></MudTh>
-				</Header>
-
-				<Row Context="item">
-					<MudTd>
-						<MudTooltip Text="Ver detalles">
-							<MudIconButton Icon="@Icons.Material.Filled.Visibility"
-										   Color="Color.Info"
-										   Size="Size.Small"
-										   OnClick="@(() => ViewDetails(item))" />
-						</MudTooltip>
-					</MudTd>
-					<MudTd>
-						<div class="eg-main-cell">@TextOrDash(item.NombreCompleto)</div>
-						<span>@TextOrDash(item.Rfc)</span>
-					</MudTd>
-					<MudTd>@TextOrDash(item.ClavePersona)</MudTd>
-					<MudTd>@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
-					<MudTd>@(item.Fecha?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
-					<MudTd>@(item.FechaFin?.ToString("dd/MM/yyyy") ?? "-")</MudTd>
-					<MudTd>
-						@if (string.IsNullOrWhiteSpace(item.TipoJustificacionDescripcion))
-						{
-							<!-- FIX: Added T="string" -->
-							<MudChip T="string" Size="Size.Small" Color="Color.Warning">Pendiente</MudChip>
-						}
-						else
-						{
-							<span>@item.TipoJustificacionDescripcion</span>
-						}
-					</MudTd>
-					<MudTd>
-						<!-- FIX: Added T="string" -->
-						<MudChip T="string"
-								 Size="Size.Small"
-								 Color="@(item.AplicaDescuento == true ? Color.Warning : Color.Default)">
-							@(item.AplicaDescuento == true ? "Aplica" : "No aplica")
-						</MudChip>
-					</MudTd>
-					<MudTd>
-						<!-- FIX: Added T="string" -->
-						<MudChip T="string"
-								 Size="Size.Small"
-								 Color="@(item.Activo == true ? Color.Success : Color.Info)"
-								 Variant="Variant.Text">
-							@(item.Activo == true ? "Autorizada" : "Pendiente")
-						</MudChip>
-					</MudTd>
-				</Row>
-			</GenericTable>
+            <Columns>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalles">
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => ViewDetails(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Empleado" Identifier="NombreCompleto" PropertyName="NombreCompleto" SortBy="x => x.NombreCompleto">
+                    <CellTemplate Context="cell">
+                        <div class="eg-main-cell">@TextOrDash(cell.Item.NombreCompleto)</div>
+                        <span>@TextOrDash(cell.Item.Rfc)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Clave" Identifier="ClavePersona" PropertyName="ClavePersona" SortBy="x => x.ClavePersona">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ClavePersona)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Tipo Incidencia" Identifier="TipoIncidenciaDescripcion" PropertyName="TipoIncidenciaDescripcion" SortBy="x => x.TipoIncidenciaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoIncidenciaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Fecha Incidencia" Identifier="Fecha" PropertyName="Fecha" SortBy="x => x.Fecha">
+                    <CellTemplate Context="cell">
+                        @(cell.Item.Fecha?.ToString("dd/MM/yyyy") ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Periodo Fin" Identifier="FechaFin" PropertyName="FechaFin" SortBy="x => x.FechaFin">
+                    <CellTemplate Context="cell">
+                        @(cell.Item.FechaFin?.ToString("dd/MM/yyyy") ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Tipo Justificación" Identifier="TipoJustificacionDescripcion" PropertyName="TipoJustificacionDescripcion" SortBy="x => x.TipoJustificacionDescripcion">
+                    <CellTemplate Context="cell">
+                        @if (string.IsNullOrWhiteSpace(cell.Item.TipoJustificacionDescripcion))
+                        {
+                        <!-- FIX: Added T="string" -->
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning">Pendiente</MudChip>
+                        }
+                        else
+                        {
+                        <span>@cell.Item.TipoJustificacionDescripcion</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Aplica Descuento" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <!-- FIX: Added T="string" -->
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.AplicaDescuento == true ? Color.Warning : Color.Default)">
+                        @(cell.Item.AplicaDescuento == true ? "Aplica" : "No aplica")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                    <CellTemplate Context="cell">
+                        <!-- FIX: Added T="string" -->
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.Activo == true ? Color.Success : Color.Info)"
+                        Variant="Variant.Text">
+                        @(cell.Item.Activo == true ? "Autorizada" : "Pendiente")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
 		</div>
 	</MudContainer>
 </AccessVerification>
 
 @code {
-	private GenericTable<VwRhIncidenciaResponse> table = null!;
+	private GenericDataGrid<VwRhIncidenciaResponse> table = null!;
 
 	protected override string ModuleName => "Incidencias";
 	protected override string SubModuleName => "Reporte_Incidencias";

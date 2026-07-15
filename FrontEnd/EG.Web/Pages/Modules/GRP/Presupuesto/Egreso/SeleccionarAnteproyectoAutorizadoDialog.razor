@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Web.Contracts
 @using MudBlazor
@@ -49,42 +49,54 @@
                     <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">@FilteredItems.Count() pendiente(s)</MudChip>
                 </div>
 
-                <MudTable Items="@FilteredItems" Dense="true" Hover="true" Elevation="0" FixedHeader="true" Height="420px" Class="anteproyecto-picker-table">
-                    <HeaderContent>
-                        <MudTh>Anteproyecto</MudTh>
-                        <MudTh>Clasificacion</MudTh>
-                        <MudTh>Descripcion</MudTh>
-                        <MudTh class="money-cell">Total</MudTh>
-                        <MudTh></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(context.ProgramaClaveNombre ?? context.ProgramaClave)</div>
-                            <span>@TextOrDash(context.PartidaClaveNombre ?? context.PartidaClave)</span><br />
-                            <span>@TextOrDash(context.AreaNombre)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(context.FuenteFinanciamientoClaveNombre)</div>
-                            <span>TG: @TextOrDash(context.TipoGastoClaveNombre)</span><br />
-                            <span>DI: @TextOrDash(context.DigitoIdentificadorClaveNombre)</span><br />
-                            <span>PY: @TextOrDash(context.PyClaveNombre)</span>
-                        </MudTd>
-                        <MudTd>@TextOrDash(context.Descripcion)</MudTd>
-                        <MudTd class="money-cell"><strong>@Money(context.Total ?? 0m)</strong></MudTd>
-                        <MudTd>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.Input"
-                                       OnClick="@(() => SelectItem(context))">
+                <GenericDataGrid TItem="EgresoProyectadoResponse" @key="FilteredItems.FirstOrDefault()"
+                                 Items="@FilteredItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="EgresoProyectadoResponse" Title="Anteproyecto" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div class="main-cell">@TextOrDash(cell.Item.ProgramaClaveNombre ?? cell.Item.ProgramaClave)</div>
+                                <span>@TextOrDash(cell.Item.PartidaClaveNombre ?? cell.Item.PartidaClave)</span><br />
+                                <span>@TextOrDash(cell.Item.AreaNombre)</span>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoResponse" Title="Clasificacion" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div class="main-cell">@TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</div>
+                                <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span><br />
+                                <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span><br />
+                                <span>PY: @TextOrDash(cell.Item.PyClaveNombre)</span>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoResponse" Title="Descripcion" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.Descripcion)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoResponse" Title="Total" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div class="money-cell">
+                                <strong>@Money(cell.Item.Total ?? 0m)</strong>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoResponse" Title="" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudButton Variant="Variant.Filled"
+                                Color="Color.Success"
+                                Size="Size.Small"
+                                StartIcon="@Icons.Material.Filled.Input"
+                                OnClick="@(() => SelectItem(cell.Item))">
                                 Usar
-                            </MudButton>
-                        </MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Color="Color.Secondary">No hay coincidencias con el filtro.</MudText>
-                    </NoRecordsContent>
-                </MudTable>
+                                </MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             }
         </div>
     </DialogContent>

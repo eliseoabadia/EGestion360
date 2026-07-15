@@ -1,4 +1,4 @@
-@page "/nomina/procesos"
+﻿@page "/nomina/procesos"
 @page "/nom/calcnomina"
 @page "/nom/cierraperiodo"
 @page "/nom/calcaguinaldo"
@@ -104,40 +104,75 @@
             }
             else
             {
-                <MudTable Items="history" Dense="true" Hover="true" Bordered="false">
-                    <HeaderContent>
-                        <MudTh>Fecha</MudTh>
-                        <MudTh>Proceso</MudTh>
-                        <MudTh>Corrida</MudTh>
-                        <MudTh>Empresa</MudTh>
-                        <MudTh>Periodo</MudTh>
-                        <MudTh>Personas</MudTh>
-                        <MudTh>Movs.</MudTh>
-                        <MudTh>Neto</MudTh>
-                        <MudTh>Código</MudTh>
-                        <MudTh>Resultado</MudTh>
-                        <MudTh>Mensaje</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>@context.FechaIntento.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@context.Proceso</MudTd>
-                        <MudTd>@(context.CorridaId?.ToString(CultureInfo.InvariantCulture) ?? "-")</MudTd>
-                        <MudTd>@TextOrDash(context.EmpresaNombre)</MudTd>
-                        <MudTd>@(context.PeriodoId?.ToString(CultureInfo.InvariantCulture) ?? "-")</MudTd>
-                        <MudTd>@context.TotalPersonas.ToString("N0", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@context.TotalMovimientos.ToString("N0", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@FormatMoney(context.TotalNeto)</MudTd>
-                        <MudTd>@context.Codigo</MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Color="@(context.Ejecutado ? Color.Success : Color.Warning)"
-                                     Size="Size.Small">
-                                @(context.Ejecutado ? "Ejecutado" : "Pendiente")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>@context.Mensaje</MudTd>
-                    </RowTemplate>
-                </MudTable>
+                <GenericDataGrid TItem="NominaProcesoResponse" @key="history.FirstOrDefault()"
+                                 Items="history"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="10">
+                    <Columns>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Fecha" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.FechaIntento.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Proceso" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.Proceso
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Corrida" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @(cell.Item.CorridaId?.ToString(CultureInfo.InvariantCulture) ?? "-")
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Empresa" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.EmpresaNombre)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Periodo" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @(cell.Item.PeriodoId?.ToString(CultureInfo.InvariantCulture) ?? "-")
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Personas" Identifier="__local_5" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.TotalPersonas.ToString("N0", CultureInfo.InvariantCulture)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Movs." Identifier="__local_6" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.TotalMovimientos.ToString("N0", CultureInfo.InvariantCulture)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Neto" Identifier="__local_7" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @FormatMoney(cell.Item.TotalNeto)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Código" Identifier="__local_8" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.Codigo
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Resultado" Identifier="__local_9" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudChip T="string"
+                                Color="@(cell.Item.Ejecutado ? Color.Success : Color.Warning)"
+                                Size="Size.Small">
+                                @(cell.Item.Ejecutado ? "Ejecutado" : "Pendiente")
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="NominaProcesoResponse" Title="Mensaje" Identifier="__local_10" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.Mensaje
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             }
         </MudPaper>
     </MudContainer>

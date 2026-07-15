@@ -1,4 +1,4 @@
-@page "/Contratos/Estado_Contrato"
+﻿@page "/Contratos/Estado_Contrato"
 @page "/Adquisiciones/Contratos/Estado_Contrato"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contratos
@@ -49,7 +49,7 @@
             </MudItem>
         </MudGrid>
 
-        <GenericTable TItem="EstadoContratoResponse"
+        <GenericDataGrid TItem="EstadoContratoResponse"
                       @ref="table"
                       Title="Estados de contrato"
                       SearchPlaceholder="Buscar por contrato, proveedor, requisicion o descripcion..."
@@ -59,76 +59,87 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="NumeroContrato" T="EstadoContratoResponse">Contrato</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="EstadoContratoResponse">Proveedor</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FkidRequisicionOrco" T="EstadoContratoResponse">Requisicion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="FechaContrato" T="EstadoContratoResponse">Fecha</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="MontoTotal" T="EstadoContratoResponse">Monto</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="EstadoContratoResponse">Estatus</MudTableSortLabel></MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <DocumentSupportButton Modulo="Contratos"
-                                           SubModulo="Estado_Contrato"
-                                           Controlador="EstadoContrato"
-                                           EntidadId="@item.PkidContrato"
-                                           FkidEmpresaSis="@item.FkidEmpresaSis"
-                                           RegistroTitulo="@TextOrDash(item.NumeroContrato)"
-                                           RegistroDescripcion="@($"{TextOrDash(item.ProveedorNombre)} | {TextOrDash(item.Descripcion)}")"
-                                           CanManage="@(!IsLocked(item))" />
-                    <MudTooltip Text="Autorizar contrato">
+            <Columns>
+                <TemplateColumn T="EstadoContratoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <DocumentSupportButton Modulo="Contratos"
+                        SubModulo="Estado_Contrato"
+                        Controlador="EstadoContrato"
+                        EntidadId="@cell.Item.PkidContrato"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.NumeroContrato)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.ProveedorNombre)} | {TextOrDash(cell.Item.Descripcion)}")"
+                        CanManage="@(!IsLocked(cell.Item))" />
+                        <MudTooltip Text="Autorizar contrato">
                         <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                       Visible="@CanAuthorize"
-                                       Disabled="@(!CanAuthorizeItem(item))"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       OnClick="@(() => Autorizar(item))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Liberar remanente y cerrar">
+                        Visible="@CanAuthorize"
+                        Disabled="@(!CanAuthorizeItem(cell.Item))"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => Autorizar(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Liberar remanente y cerrar">
                         <MudIconButton Icon="@Icons.Material.Filled.PriceCheck"
-                                       Visible="@CanAuthorize"
-                                       Disabled="@(!CanReleaseItem(item))"
-                                       Color="Color.Warning"
-                                       Size="Size.Small"
-                                       OnClick="@(() => LiberarRemanente(item))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Editar borrador">
+                        Visible="@CanAuthorize"
+                        Disabled="@(!CanReleaseItem(cell.Item))"
+                        Color="Color.Warning"
+                        Size="Size.Small"
+                        OnClick="@(() => LiberarRemanente(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar borrador">
                         <MudIconButton Icon="@Icons.Material.Filled.Rule"
-                                       Visible="@CanUpdate"
-                                       Disabled="@IsLocked(item)"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidContrato))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                        Visible="@CanUpdate"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidContrato))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Disabled="@IsLocked(item)"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidContrato))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.NumeroContrato)</div>
-                    <span>@TextOrDash(item.Descripcion)</span>
-                </MudTd>
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
-                    <span>@TextOrDash(item.ProveedorRfc)</span>
-                </MudTd>
-                <MudTd>@(item.FkidRequisicionOrco?.ToString() ?? "-")</MudTd>
-                <MudTd>@item.FechaContrato.ToString("dd/MM/yyyy")</MudTd>
-                <MudTd>@Money(item.MontoTotal)</MudTd>
-                <MudTd>
-                    <MudChip T="string" Size="Size.Small" Style="@GetStatusStyle(item)" Variant="Variant.Filled">
-                        @TextOrDash(item.EstatusDescripcion)
-                    </MudChip>
-                </MudTd>
-            </Row>
-        </GenericTable>
+                        Visible="@CanDelete"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidContrato))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Contrato" Identifier="NumeroContrato" PropertyName="NumeroContrato" SortBy="x => x.NumeroContrato">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.NumeroContrato)</div>
+                        <span>@TextOrDash(cell.Item.Descripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</div>
+                        <span>@TextOrDash(cell.Item.ProveedorRfc)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Requisicion" Identifier="FkidRequisicionOrco" PropertyName="FkidRequisicionOrco" SortBy="x => x.FkidRequisicionOrco">
+                    <CellTemplate Context="cell">
+                        @(cell.Item.FkidRequisicionOrco?.ToString() ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Fecha" Identifier="FechaContrato" PropertyName="FechaContrato" SortBy="x => x.FechaContrato">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaContrato.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Monto" Identifier="MontoTotal" PropertyName="MontoTotal" SortBy="x => x.MontoTotal">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.MontoTotal)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstadoContratoResponse" Title="Estatus" Identifier="EstatusDescripcion" PropertyName="EstatusDescripcion" SortBy="x => x.EstatusDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Style="@GetStatusStyle(cell.Item)" Variant="Variant.Filled">
+                        @TextOrDash(cell.Item.EstatusDescripcion)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
@@ -143,7 +154,7 @@
 </style>
 
 @code {
-    private GenericTable<EstadoContratoResponse> table = null!;
+    private GenericDataGrid<EstadoContratoResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private const string CurrencySymbol = "$";
 

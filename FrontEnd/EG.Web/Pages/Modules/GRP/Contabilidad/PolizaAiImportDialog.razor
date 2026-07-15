@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Contabilidad
 @using EG.Domain.DTOs.Responses.Contabilidad
@@ -263,33 +263,50 @@
                 </MudAlert>
             }
 
-            <MudTable Items="@_preview.Details" Dense="true" Hover="true" Class="mt-3 poliza-ai-preview-table" Height="260px" FixedHeader="true">
-                <HeaderContent>
-                    <MudTh>Fila</MudTh>
-                    <MudTh>Cuenta</MudTh>
-                    <MudTh>Concepto</MudTh>
-                    <MudTh>Debe</MudTh>
-                    <MudTh>Haber</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.RowNumber</MudTd>
-                    <MudTd>
-                        @if (IsDoubleAmount(context) && _selectedCuentaDebe != null && _selectedCuentaHaber != null)
-                        {
-                            <MudText Typo="Typo.body2">Debe: @_selectedCuentaDebe.Text</MudText>
-                            <MudText Typo="Typo.body2">Haber: @_selectedCuentaHaber.Text</MudText>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2">@context.Cuenta</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CuentaDescripcion</MudText>
-                        }
-                    </MudTd>
-                    <MudTd>@context.Descripcion</MudTd>
-                    <MudTd>@Money(context.ImporteDebe ?? 0m)</MudTd>
-                    <MudTd>@Money(context.ImporteHaber ?? 0m)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="PolizaAiImportDetailRequest" @key="_preview.Details"
+                                 Items="@_preview.Details"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="PolizaAiImportDetailRequest" Title="Fila" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.RowNumber
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PolizaAiImportDetailRequest" Title="Cuenta" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @if (IsDoubleAmount(cell.Item) && _selectedCuentaDebe != null && _selectedCuentaHaber != null)
+                                {
+                                <MudText Typo="Typo.body2">Debe: @_selectedCuentaDebe.Text</MudText>
+                                <MudText Typo="Typo.body2">Haber: @_selectedCuentaHaber.Text</MudText>
+                                }
+                                else
+                                {
+                                <MudText Typo="Typo.body2">@cell.Item.Cuenta</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.CuentaDescripcion</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PolizaAiImportDetailRequest" Title="Concepto" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.Descripcion
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PolizaAiImportDetailRequest" Title="Debe" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Money(cell.Item.ImporteDebe ?? 0m)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="PolizaAiImportDetailRequest" Title="Haber" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @Money(cell.Item.ImporteHaber ?? 0m)
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </DialogContent>
 </MudDialog>

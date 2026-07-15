@@ -1,4 +1,4 @@
-@page "/PBR/MatrizIndicadores"
+﻿@page "/PBR/MatrizIndicadores"
 @page "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Indicadores"
 @page "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Resumen_Narrativo"
 @using EG.Domain.DTOs.Responses.PBR
@@ -29,7 +29,7 @@
         <PbrTopNavigation />
 
         <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="PbrMirNivelResponse"
+            <GenericDataGrid TItem="PbrMirNivelResponse"
                           @ref="table"
                           Title="Niveles MIR"
                           SearchPlaceholder="Buscar por nivel, objetivo o programa..."
@@ -39,32 +39,53 @@
                           SearchString="@search"
                           SearchStringChanged="(s) => search = s"
                           OnSearch="() => table.ReloadData()">
-                <Header>
-                    <MudTh Style="width: 140px;">Acciones</MudTh>
-                    <MudTh Style="min-width: 260px;"><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrMirNivelResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 140px;"><MudTableSortLabel SortLabel="Nivel" T="PbrMirNivelResponse">Nivel</MudTableSortLabel></MudTh>
-                    <MudTh Style="min-width: 560px;"><MudTableSortLabel SortLabel="Objetivo" T="PbrMirNivelResponse">Objetivo</MudTableSortLabel></MudTh>
-                    <MudTh Style="width: 90px;"><MudTableSortLabel SortLabel="Orden" T="PbrMirNivelResponse">Orden</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd Style="width: 140px; white-space: nowrap;">
+            <Columns>
+                <TemplateColumn T="PbrMirNivelResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div Style="width: 140px; white-space: nowrap;">
                         <DocumentSupportButton Modulo="PBR"
-                                               SubModulo="MIR"
-                                               Controlador="PbrMirNivel"
-                                               EntidadId="@item.PkidMirNivel"
-                                               RegistroTitulo="@TextOrDash(item.Nivel)"
-                                               RegistroDescripcion="@TextOrDash(item.Objetivo)" />
+                        SubModulo="MIR"
+                        Controlador="PbrMirNivel"
+                        EntidadId="@cell.Item.PkidMirNivel"
+                        RegistroTitulo="@TextOrDash(cell.Item.Nivel)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.Objetivo)" />
                         <MudTooltip Text="Ver indicadores">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectMir(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectMir(cell.Item))" />
                         </MudTooltip>
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenMirDialog(item.PkidMirNivel))" />
-                    </MudTd>
-                    <MudTd Style="min-width: 260px;">@TextOrDash(item.ProgramaDescripcion)</MudTd>
-                    <MudTd Style="width: 140px;"><MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(item.Nivel)</MudChip></MudTd>
-                    <MudTd Style="min-width: 560px;">@TextOrDash(item.Objetivo)</MudTd>
-                    <MudTd Style="width: 90px;">@item.Orden</MudTd>
-                </Row>
-            </GenericTable>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenMirDialog(cell.Item.PkidMirNivel))" />
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrMirNivelResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        <div Style="min-width: 260px;">
+                        @TextOrDash(cell.Item.ProgramaDescripcion)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrMirNivelResponse" Title="Nivel" Identifier="Nivel" PropertyName="Nivel" SortBy="x => x.Nivel">
+                    <CellTemplate Context="cell">
+                        <div Style="width: 140px;">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(cell.Item.Nivel)</MudChip>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrMirNivelResponse" Title="Objetivo" Identifier="Objetivo" PropertyName="Objetivo" SortBy="x => x.Objetivo">
+                    <CellTemplate Context="cell">
+                        <div Style="min-width: 560px;">
+                        @TextOrDash(cell.Item.Objetivo)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrMirNivelResponse" Title="Orden" Identifier="Orden" PropertyName="Orden" SortBy="x => x.Orden">
+                    <CellTemplate Context="cell">
+                        <div Style="width: 90px;">
+                        @cell.Item.Orden
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     }
     else
@@ -83,7 +104,7 @@
         </MudPaper>
 
         <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="PbrIndicadorResponse"
+            <GenericDataGrid TItem="PbrIndicadorResponse"
                           @ref="indicadorTable"
                           Title="Indicadores"
                           SearchPlaceholder="Buscar por indicador, meta o frecuencia..."
@@ -92,37 +113,57 @@
                           SearchString="@indicadorSearch"
                           SearchStringChanged="(s) => indicadorSearch = s"
                           OnSearch="() => indicadorTable.ReloadData()">
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaDescripcion" T="PbrIndicadorResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Nombre" T="PbrIndicadorResponse">Indicador</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Tipo" T="PbrIndicadorResponse">Tipo</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Dimension" T="PbrIndicadorResponse">Dimension</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Frecuencia" T="PbrIndicadorResponse">Frecuencia</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Meta" T="PbrIndicadorResponse">Meta</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Sentido" T="PbrIndicadorResponse">Sentido</MudTableSortLabel></MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenIndicadorDialog(item.PkidIndicador))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteIndicadorAsync(item))" />
-                    </MudTd>
-                    <MudTd>@TextOrDash(item.ProgramaDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.Nombre)</MudTd>
-                    <MudTd>@TextOrDash(item.Tipo)</MudTd>
-                    <MudTd>@TextOrDash(item.Dimension)</MudTd>
-                    <MudTd>@TextOrDash(item.Frecuencia)</MudTd>
-                    <MudTd>@TextOrDash(item.Meta)</MudTd>
-                    <MudTd>@TextOrDash(item.Sentido)</MudTd>
-                </Row>
-            </GenericTable>
+            <Columns>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenIndicadorDialog(cell.Item.PkidIndicador))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteIndicadorAsync(cell.Item))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.ProgramaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Indicador" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Nombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Tipo" Identifier="Tipo" PropertyName="Tipo" SortBy="x => x.Tipo">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Tipo)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Dimension" Identifier="Dimension" PropertyName="Dimension" SortBy="x => x.Dimension">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Dimension)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Frecuencia" Identifier="Frecuencia" PropertyName="Frecuencia" SortBy="x => x.Frecuencia">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Frecuencia)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Meta" Identifier="Meta" PropertyName="Meta" SortBy="x => x.Meta">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Meta)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PbrIndicadorResponse" Title="Sentido" Identifier="Sentido" PropertyName="Sentido" SortBy="x => x.Sentido">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Sentido)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     }
 </MudContainer>
 
 @code {
-    private GenericTable<PbrMirNivelResponse> table = null!;
-    private GenericTable<PbrIndicadorResponse> indicadorTable = null!;
+    private GenericDataGrid<PbrMirNivelResponse> table = null!;
+    private GenericDataGrid<PbrIndicadorResponse> indicadorTable = null!;
     private PbrMirNivelResponse? selected;
     private string search = string.Empty;
     private string indicadorSearch = string.Empty;

@@ -1,4 +1,4 @@
-@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
+﻿@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -57,7 +57,7 @@
         </div>
 
         <div Style="flex: 1 1 auto; min-height: 420px; overflow: visible;">
-            <GenericTable TItem="EgresoProyectadoResponse"
+            <GenericDataGrid TItem="EgresoProyectadoResponse"
                           @ref="table"
                           Title="Partidas del anteproyecto"
                           SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
@@ -67,84 +67,110 @@
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
                           OnSearch="OnSearch">
-
-                <Header>
-                    <MudTh>Acciones</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="EgresoProyectadoResponse">Programa</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="EgresoProyectadoResponse">Partida</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="EgresoProyectadoResponse">Area</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="EgresoProyectadoResponse">Clasificacion</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Descripcion" T="EgresoProyectadoResponse">Descripcion</MudTableSortLabel></MudTh>
-                    <MudTh>Meses</MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Total" T="EgresoProyectadoResponse">Total</MudTableSortLabel></MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">
+            <Columns>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
                         <MudTooltip Text="Autorizar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                           Visible="@(CanUpdate && !item.EstaAutorizado)"
-                                           Color="Color.Success"
-                                           Size="Size.Small"
-                                           OnClick="@(() => AutorizarEgreso(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                        Visible="@(CanUpdate && !cell.Item.EstaAutorizado)"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => AutorizarEgreso(cell.Item))" />
                         </MudTooltip>
                         <MudTooltip Text="Quitar autorizacion">
-                            <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
-                                           Visible="@(CanUpdate && item.EstaAutorizado && item.PkidEgresoAutorizado.HasValue)"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DesautorizarEgreso(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
+                        Visible="@(CanUpdate && cell.Item.EstaAutorizado && cell.Item.PkidEgresoAutorizado.HasValue)"
+                        Color="Color.Warning"
+                        Size="Size.Small"
+                        OnClick="@(() => DesautorizarEgreso(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="@(item.EstaAutorizado ? "Ver anteproyecto" : "Editar")">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Visible="@CanUpdate"
-                                           Color="@(item.EstaAutorizado ? Color.Info : Color.Primary)"
-                                           Size="Size.Small"
-                                           OnClick="@(() => EditItem(item.PkidEgresoProyectado))" />
+                        <MudTooltip Text="@(cell.Item.EstaAutorizado ? "Ver anteproyecto" : "Editar")">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="@(cell.Item.EstaAutorizado ? Color.Info : Color.Primary)"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidEgresoProyectado))" />
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Planeacion"
-                                               SubModulo="Anteproyecto_Egresos"
-                                               Controlador="EgresoProyectado"
-                                               EntidadId="@item.PkidEgresoProyectado"
-                                               RegistroTitulo="@TextOrDash(item.ProgramaClaveNombre ?? item.ProgramaClave)"
-                                               RegistroDescripcion="@TextOrDash(item.Descripcion)" />
+                        SubModulo="Anteproyecto_Egresos"
+                        Controlador="EgresoProyectado"
+                        EntidadId="@cell.Item.PkidEgresoProyectado"
+                        RegistroTitulo="@TextOrDash(cell.Item.ProgramaClaveNombre ?? cell.Item.ProgramaClave)"
+                        RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
                         <MudTooltip Text="Eliminar">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Visible="@(CanDelete && !item.EstaAutorizado)"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           OnClick="@(() => DeleteEgreso(item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@(CanDelete && !cell.Item.EstaAutorizado)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteEgreso(cell.Item))" />
                         </MudTooltip>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">
-                        <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
-                        <span>@TextOrDash(item.ProgramaDescripcion)</span>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">
-                        <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
-                        <span>@TextOrDash(item.PartidaDescripcion)</span>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">@TextOrDash(item.AreaNombre)</MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">
-                        <div class="main-cell">@TextOrDash(item.FuenteFinanciamientoClaveNombre)</div>
-                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span><br />
-                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span><br />
-                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span><br />
-                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">@TextOrDash(item.Descripcion)</MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))">
-                        <div class="month-spark">
-                            @foreach (var month in GetMonths(item))
-                            {
-                                <span title="@($"{month.Label}: {Money(month.Amount)}")"
-                                      style="height:@GetMonthHeight(month.Amount, item.Total ?? 0m)%"></span>
-                            }
                         </div>
-                    </MudTd>
-                    <MudTd @ondblclick="@(() => OpenDetail(item))"><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                </Row>
-            </GenericTable>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div class="main-cell">@TextOrDash(cell.Item.ProgramaClave)</div>
+                        <span>@TextOrDash(cell.Item.ProgramaDescripcion)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
+                        <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        @TextOrDash(cell.Item.AreaNombre)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Clasificacion" Identifier="FuenteFinanciamientoClave" PropertyName="FuenteFinanciamientoClave" SortBy="x => x.FuenteFinanciamientoClave">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div class="main-cell">@TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</div>
+                        <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span><br />
+                        <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span><br />
+                        <span>DG: @TextOrDash(cell.Item.DestinoGastoClaveNombre)</span><br />
+                        <span>PY: @TextOrDash(cell.Item.PyClaveNombre)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        @TextOrDash(cell.Item.Descripcion)
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Meses" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div class="month-spark">
+                        @foreach (var month in GetMonths(cell.Item))
+                        {
+                        <span title="@($"{month.Label}: {Money(month.Amount)}")"
+                        style="height:@GetMonthHeight(month.Amount, cell.Item.Total ?? 0m)%"></span>
+                        }
+                        </div>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EgresoProyectadoResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <strong>@Money(cell.Item.Total ?? 0m)</strong>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -217,7 +243,7 @@
 </style>
 
 @code {
-    private GenericTable<EgresoProyectadoResponse> table = null!;
+    private GenericDataGrid<EgresoProyectadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
 

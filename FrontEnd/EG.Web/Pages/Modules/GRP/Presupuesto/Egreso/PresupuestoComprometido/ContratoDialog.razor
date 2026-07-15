@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Contabilidad
@@ -66,18 +66,31 @@
         {
             <MudDivider Class="my-3" />
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Calendario por partida que se generara</MudText>
-            <MudTable Items="@detalleItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
-                <HeaderContent>
-                    <MudTh>Partida</MudTh>
-                    <MudTh>Total</MudTh>
-                    <MudTh>Observaciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
-                    <MudTd><strong>@Money(DetailTotal(context))</strong></MudTd>
-                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="ContratoDetalleResponse" @key="detalleItems"
+                                 Items="@detalleItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="ContratoDetalleResponse" Title="Partida" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.PartidaClaveNombre)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="ContratoDetalleResponse" Title="Total" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@Money(DetailTotal(cell.Item))</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="ContratoDetalleResponse" Title="Observaciones" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.Observaciones)
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </BaseEntityForm>
 </BaseCrudDialog>

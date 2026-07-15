@@ -1,4 +1,4 @@
-@page "/Patrimonio/Clasificacion_Bienes_Muebles"
+﻿@page "/Patrimonio/Clasificacion_Bienes_Muebles"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -70,7 +70,7 @@
 
         <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
             <MudItem xs="12" lg="@(SelectedOrden == null ? 12 : 7)" Class="d-flex flex-column" Style="min-height: 0;">
-                <GenericTable TItem="ClasificacionBienesMueblesResponse"
+                <GenericDataGrid TItem="ClasificacionBienesMueblesResponse"
                               @ref="table"
                               Title="Ordenes de compra para clasificacion"
                               SearchPlaceholder="Buscar orden, requisicion, proveedor, justificacion o estado..."
@@ -82,76 +82,88 @@
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch"
                               PageSize="10">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="PkidOrdenCompra" T="ClasificacionBienesMueblesResponse">ID</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Numero" T="ClasificacionBienesMueblesResponse">Orden</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Requisicion" T="ClasificacionBienesMueblesResponse">Requisicion</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Proveedor" T="ClasificacionBienesMueblesResponse">Proveedor</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="ClasificacionBienesMueblesResponse">Fecha</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Estado" T="ClasificacionBienesMueblesResponse">Estado</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Faltante" T="ClasificacionBienesMueblesResponse">Avance</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Total" T="ClasificacionBienesMueblesResponse">Total</MudTableSortLabel></MudTh>
-                    </Header>
-
-                    <Row Context="item">
-                        <MudTd>
-                            <MudTooltip Text="Ver detalle">
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                               Color="Color.Info"
-                                               Size="Size.Small"
-                                               OnClick="@(() => SelectOrden(item))" />
-                            </MudTooltip>
-                            <DocumentSupportButton Modulo="Patrimonio"
-                                                   @key="@($"clasificacion-doc-{item.PkidOrdenCompra}")"
-                                                   SubModulo="Clasificacion_Bienes_Muebles"
-                                                   Controlador="ClasificacionBienesMuebles"
-                                                   EntidadId="@item.PkidOrdenCompra"
-                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                   RegistroTitulo="@TextOrDash(item.Numero)"
-                                                   RegistroDescripcion="@($"{TextOrDash(item.Requisicion)} | {TextOrDash(item.Proveedor)}")" />
-                        </MudTd>
-                        <MudTd>@item.PkidOrdenCompra</MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Numero)</div>
-                            <span>@TextOrDash(item.Justificacion)</span>
-                        </MudTd>
-                        <MudTd>@TextOrDash(item.Requisicion)</MudTd>
-                        <MudTd>@TextOrDash(item.Proveedor)</MudTd>
-                        <MudTd>
-                            <div class="main-cell">@DateOrDash(item.FechaOrdenCompra)</div>
-                            <span>Vig. @DateOrDash(item.FechaVigencia)</span>
-                        </MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Color="@GetStateColor(item)"
-                                     Variant="Variant.Outlined">
-                                @TextOrDash(item.Estado)
-                            </MudChip>
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Color="@(item.Color == 1 ? Color.Success : Color.Warning)"
-                                     Variant="Variant.Text"
-                                     Class="ml-1">
-                                @(item.Color == 1 ? "Clasificada" : "Pendiente")
-                            </MudChip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="progress-cell">
-                                <MudProgressLinear Value="@((double)item.PorcentajeRecibido)"
-                                                   Color="@GetStateColor(item)"
-                                                   Rounded="true"
-                                                   Size="Size.Small" />
-                                <span>@Quantity(item.Recibido ?? 0m) / @Quantity(item.Solicitado ?? 0m)</span>
-                            </div>
-                        </MudTd>
-                        <MudTd>
-                            <strong>@Money(item.Total ?? 0m)</strong>
-                            <span>@item.TotalBienes.ToString("N0", NumberCulture) bienes</span>
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectOrden(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Patrimonio"
+                        @key="@($"clasificacion-doc-{cell.Item.PkidOrdenCompra}")"
+                        SubModulo="Clasificacion_Bienes_Muebles"
+                        Controlador="ClasificacionBienesMuebles"
+                        EntidadId="@cell.Item.PkidOrdenCompra"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Numero)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.Requisicion)} | {TextOrDash(cell.Item.Proveedor)}")" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="ID" Identifier="PkidOrdenCompra" PropertyName="PkidOrdenCompra" SortBy="x => x.PkidOrdenCompra">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidOrdenCompra
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Orden" Identifier="Numero" PropertyName="Numero" SortBy="x => x.Numero">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Numero)</div>
+                        <span>@TextOrDash(cell.Item.Justificacion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Requisicion" Identifier="Requisicion" PropertyName="Requisicion" SortBy="x => x.Requisicion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Requisicion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Proveedor" Identifier="Proveedor" PropertyName="Proveedor" SortBy="x => x.Proveedor">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Proveedor)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@DateOrDash(cell.Item.FechaOrdenCompra)</div>
+                        <span>Vig. @DateOrDash(cell.Item.FechaVigencia)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Estado" Identifier="Estado" PropertyName="Estado" SortBy="x => x.Estado">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@GetStateColor(cell.Item)"
+                        Variant="Variant.Outlined">
+                        @TextOrDash(cell.Item.Estado)
+                        </MudChip>
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.Color == 1 ? Color.Success : Color.Warning)"
+                        Variant="Variant.Text"
+                        Class="ml-1">
+                        @(cell.Item.Color == 1 ? "Clasificada" : "Pendiente")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Avance" Identifier="Faltante" PropertyName="Faltante" SortBy="x => x.Faltante">
+                    <CellTemplate Context="cell">
+                        <div class="progress-cell">
+                        <MudProgressLinear Value="@((double)cell.Item.PorcentajeRecibido)"
+                        Color="@GetStateColor(cell.Item)"
+                        Rounded="true"
+                        Size="Size.Small" />
+                        <span>@Quantity(cell.Item.Recibido ?? 0m) / @Quantity(cell.Item.Solicitado ?? 0m)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Total ?? 0m)</strong>
+                        <span>@cell.Item.TotalBienes.ToString("N0", NumberCulture) bienes</span>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </MudItem>
 
             @if (SelectedOrden != null)
@@ -175,7 +187,7 @@
                         </div>
                     </MudPaper>
 
-                    <GenericTable TItem="OrdenCompraDetalleResponse"
+                    <GenericDataGrid TItem="OrdenCompraDetalleResponse"
                                   @ref="detalleTable"
                                   Title="Detalle de orden"
                                   SearchPlaceholder="Buscar tipo, unidad u observaciones..."
@@ -186,46 +198,51 @@
                                   SearchString="@detalleSearch"
                                   SearchStringChanged="(s) => detalleSearch = s"
                                   OnSearch="ReloadDetalles">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidOrdenCompraDetalle" T="OrdenCompraDetalleResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Tipo bien</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="CantidadPendiente" T="OrdenCompraDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalDetalle" T="OrdenCompraDetalleResponse">Importe</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="detalle">
-                            <MudTd>
-                                <MudTooltip Text="Ver bienes generados">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Inventory2"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectDetalle(detalle))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Generar bienes desde este detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   Disabled="@IsBusy"
-                                                   OnClick="@(() => GenerarBienes(detalle))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@detalle.PkidOrdenCompraDetalle</MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(detalle.TipoBienDescripcion)</div>
-                                <span>@TextOrDash(detalle.BienClaveNombre)</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@Quantity(detalle.CantidadRecibida) / @Quantity(detalle.CantidadSolicitada)</div>
-                                <span>Faltan @Quantity(detalle.CantidadPendiente ?? 0m)</span>
-                            </MudTd>
-                            <MudTd>
-                                <strong>@Money(detalle.TotalDetalle ?? detalle.Importe ?? 0m)</strong>
-                                <span>PU @Money(detalle.PrecioUnitario)</span>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver bienes generados">
+                        <MudIconButton Icon="@Icons.Material.Filled.Inventory2"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectDetalle(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Generar bienes desde este cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        Disabled="@IsBusy"
+                        OnClick="@(() => GenerarBienes(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="ID" Identifier="PkidOrdenCompraDetalle" PropertyName="PkidOrdenCompraDetalle" SortBy="x => x.PkidOrdenCompraDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidOrdenCompraDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Tipo bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.BienClaveNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Cantidad" Identifier="CantidadPendiente" PropertyName="CantidadPendiente" SortBy="x => x.CantidadPendiente">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@Quantity(cell.Item.CantidadRecibida) / @Quantity(cell.Item.CantidadSolicitada)</div>
+                        <span>Faltan @Quantity(cell.Item.CantidadPendiente ?? 0m)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Importe" Identifier="TotalDetalle" PropertyName="TotalDetalle" SortBy="x => x.TotalDetalle">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.TotalDetalle ?? cell.Item.Importe ?? 0m)</strong>
+                        <span>PU @Money(cell.Item.PrecioUnitario)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
 
-                    <GenericTable TItem="BienResponse"
+                    <GenericDataGrid TItem="BienResponse"
                                   @ref="bienesTable"
                                   Title="@BienesTitle"
                                   SearchPlaceholder="Buscar clave, descripcion, serie o factura..."
@@ -236,25 +253,31 @@
                                   SearchString="@bienesSearch"
                                   SearchStringChanged="(s) => bienesSearch = s"
                                   OnSearch="ReloadBienes">
-                        <Header>
-                            <MudTh><MudTableSortLabel SortLabel="Clave" T="BienResponse">Clave</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Descripcion" T="BienResponse">Bien</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Serie" T="BienResponse">Serie</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ValorActual" T="BienResponse">Valor</MudTableSortLabel></MudTh>
-                        </Header>
-                        <Row Context="bien">
-                            <MudTd>@TextOrDash(bien.Clave)</MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(bien.Descripcion)</div>
-                                <span>@TextOrDash(bien.TipoBienDescripcion)</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(bien.Serie)</div>
-                                <span>Factura @TextOrDash(bien.Factura)</span>
-                            </MudTd>
-                            <MudTd><strong>@Money(bien.ValorActual ?? 0m)</strong></MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="BienResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Clave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BienResponse" Title="Bien" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Descripcion)</div>
+                        <span>@TextOrDash(cell.Item.TipoBienDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BienResponse" Title="Serie" Identifier="Serie" PropertyName="Serie" SortBy="x => x.Serie">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Serie)</div>
+                        <span>Factura @TextOrDash(cell.Item.Factura)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BienResponse" Title="Valor" Identifier="ValorActual" PropertyName="ValorActual" SortBy="x => x.ValorActual">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.ValorActual ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </MudItem>
             }
         </MudGrid>
@@ -350,9 +373,9 @@
 </style>
 
 @code {
-    private GenericTable<ClasificacionBienesMueblesResponse> table = null!;
-    private GenericTable<OrdenCompraDetalleResponse>? detalleTable;
-    private GenericTable<BienResponse>? bienesTable;
+    private GenericDataGrid<ClasificacionBienesMueblesResponse> table = null!;
+    private GenericDataGrid<OrdenCompraDetalleResponse>? detalleTable;
+    private GenericDataGrid<BienResponse>? bienesTable;
     private ClasificacionBienesMueblesResponse? SelectedOrden;
     private OrdenCompraDetalleResponse? SelectedDetalle;
     private string detalleSearch = string.Empty;

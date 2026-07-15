@@ -1,4 +1,4 @@
-@page "/Almacen/Existencias_Registradas"
+﻿@page "/Almacen/Existencias_Registradas"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Pages.Shared
@@ -40,7 +40,7 @@
         </div>
 
         <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericTable TItem="AlmacenResponse"
+            <GenericDataGrid TItem="AlmacenResponse"
                           @ref="table"
                           Title="Existencias"
                           SearchPlaceholder="Buscar por clave, bien, area, factura o lote..."
@@ -50,51 +50,55 @@
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
                           OnSearch="OnSearch">
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="Clave" T="AlmacenResponse">Clave</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="AlmacenResponse">Bien</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Cantidad" T="AlmacenResponse">Disponible</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Costo" T="AlmacenResponse">Valor</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="FechaEntrada" T="AlmacenResponse">Ingreso</MudTableSortLabel></MudTh>
-                    <MudTh>Referencia</MudTh>
-                    <MudTh>Estado</MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.Clave)</div>
-                        <span>ID @item.PkidAlmacen</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.TipoBienDescripcion)</div>
-                        <span>@TextOrDash(item.TipoBienClave)</span>
-                        <span>@TextOrDash(item.AreaNombre)</span>
-                    </MudTd>
-                    <MudTd>
-                        <strong>@Qty(item.Cantidad)</strong>
-                        <span>@TextOrDash(item.UnidadDescripcion)</span>
-                    </MudTd>
-                    <MudTd>
-                        <strong>@Money(item.Costo ?? 0m)</strong>
-                        <span>CU @Qty(item.CostoUnitario ?? 0m)</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@item.FechaEntrada.ToString("dd/MM/yyyy")</div>
-                        <span>@DateOrDash(item.FechaCaducidad)</span>
-                    </MudTd>
-                    <MudTd>
-                        <div class="main-cell">@TextOrDash(item.Factura)</div>
-                        <span>@TextOrDash(item.Remision)</span>
-                        <span>@TextOrDash(item.Lote)</span>
-                    </MudTd>
-                    <MudTd>
-                        <MudChip T="string" Size="Size.Small" Color="@(item.Cantidad > 0 ? Color.Success : Color.Error)">
-                            @(item.Cantidad > 0 ? "Disponible" : "Sin existencia")
+            <Columns>
+                <TemplateColumn T="AlmacenResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Clave)</div>
+                        <span>ID @cell.Item.PkidAlmacen</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.TipoBienClave)</span>
+                        <span>@TextOrDash(cell.Item.AreaNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Disponible" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        <strong>@Qty(cell.Item.Cantidad)</strong>
+                        <span>@TextOrDash(cell.Item.UnidadDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Valor" Identifier="Costo" PropertyName="Costo" SortBy="x => x.Costo">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Costo ?? 0m)</strong>
+                        <span>CU @Qty(cell.Item.CostoUnitario ?? 0m)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Ingreso" Identifier="FechaEntrada" PropertyName="FechaEntrada" SortBy="x => x.FechaEntrada">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@cell.Item.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                        <span>@DateOrDash(cell.Item.FechaCaducidad)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Referencia" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Factura)</div>
+                        <span>@TextOrDash(cell.Item.Remision)</span>
+                        <span>@TextOrDash(cell.Item.Lote)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="AlmacenResponse" Title="Estado" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@(cell.Item.Cantidad > 0 ? Color.Success : Color.Error)">
+                        @(cell.Item.Cantidad > 0 ? "Disponible" : "Sin existencia")
                         </MudChip>
-                        <span>@TextOrDash(item.MotivoDescripcion)</span>
-                    </MudTd>
-                </Row>
-            </GenericTable>
+                        <span>@TextOrDash(cell.Item.MotivoDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -130,7 +134,7 @@
 </style>
 
 @code {
-    private GenericTable<AlmacenResponse> table = null!;
+    private GenericDataGrid<AlmacenResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
 
     protected override string ModuleName => "Almacen";

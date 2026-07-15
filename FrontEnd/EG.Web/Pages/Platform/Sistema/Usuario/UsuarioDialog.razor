@@ -1,4 +1,4 @@
-@using EG.Domain.DTOs.Responses.General
+﻿@using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Requests.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Dommain.DTOs.Responses
@@ -143,41 +143,56 @@
                         }
                         else
                         {
-                            <MudTable Items="@_areasPersona" Dense="true" Hover="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Area</MudTh>
-                                    <MudTh>Permisos</MudTh>
-                                    <MudTh Style="width: 56px;"></MudTh>
-                                </HeaderContent>
-                                <RowTemplate Context="areaAsignada">
-                                    <MudTd DataLabel="Area">@areaAsignada.UsuarioAreaDescripcion</MudTd>
-                                    <MudTd DataLabel="Permisos">
-                                        <div class="d-flex flex-wrap gap-2">
-                                            @if (areaAsignada.IsAdscrito)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Adscrito</MudChip>
-                                            }
-                                            @if (areaAsignada.EsSolicitante)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Solicitante</MudChip>
-                                            }
-                                            @if (areaAsignada.EsAutorizador)
-                                            {
-                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Autorizador</MudChip>
-                                            }
-                                        </div>
-                                    </MudTd>
-                                    <MudTd DataLabel="Acciones" Class="text-right">
-                                        <MudTooltip Text="Retirar area">
-                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                           Color="Color.Error"
-                                                           Size="Size.Small"
-                                                           Disabled="@(_savingArea || !areaAsignada.PkidPersonaArea.HasValue)"
-                                                           OnClick="@(() => EliminarAreaPersonaAsync(areaAsignada))" />
-                                        </MudTooltip>
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
+                            <GenericDataGrid TItem="UsuarioAreaResponse" @key="_areasPersona"
+                                 Items="@_areasPersona"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="UsuarioAreaResponse" Title="Area" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Area">
+                                @cell.Item.UsuarioAreaDescripcion
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="UsuarioAreaResponse" Title="Permisos" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Permisos">
+                                <div class="d-flex flex-wrap gap-2">
+                                @if (cell.Item.IsAdscrito)
+                                {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Adscrito</MudChip>
+                                }
+                                @if (cell.Item.EsSolicitante)
+                                {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Solicitante</MudChip>
+                                }
+                                @if (cell.Item.EsAutorizador)
+                                {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Autorizador</MudChip>
+                                }
+                                </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="UsuarioAreaResponse" Title="" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Acciones" class="text-right">
+                                <MudTooltip Text="Retirar area">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                Disabled="@(_savingArea || !cell.Item.PkidPersonaArea.HasValue)"
+                                OnClick="@(() => EliminarAreaPersonaAsync(cell.Item))" />
+                                </MudTooltip>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
                         }
                     </MudPaper>
                 </MudItem>
@@ -246,37 +261,57 @@
                         }
                         else
                         {
-                            <MudTable Items="@_departamentosUsuario" Dense="true" Hover="true" Elevation="0">
-                                <HeaderContent>
-                                    <MudTh>Empresa</MudTh>
-                                    <MudTh>Departamento</MudTh>
-                                    <MudTh>Rol</MudTh>
-                                    <MudTh Style="width: 56px;"></MudTh>
-                                </HeaderContent>
-                                <RowTemplate Context="departamentoAsignado">
-                                    <MudTd DataLabel="Empresa">@departamentoAsignado.EmpresaNombre</MudTd>
-                                    <MudTd DataLabel="Departamento">@departamentoAsignado.DepartamentoNombre</MudTd>
-                                    <MudTd DataLabel="Rol">
-                                        @if (departamentoAsignado.EsJefe)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Jefe</MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Miembro</MudChip>
-                                        }
-                                    </MudTd>
-                                    <MudTd DataLabel="Acciones" Class="text-right">
-                                        <MudTooltip Text="Retirar departamento">
-                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                           Color="Color.Error"
-                                                           Size="Size.Small"
-                                                           Disabled="@_savingDepartamento"
-                                                           OnClick="@(() => EliminarDepartamentoUsuarioAsync(departamentoAsignado))" />
-                                        </MudTooltip>
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
+                            <GenericDataGrid TItem="UsuarioDepartamentoResponse" @key="_departamentosUsuario"
+                                 Items="@_departamentosUsuario"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="UsuarioDepartamentoResponse" Title="Empresa" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Empresa">
+                                @cell.Item.EmpresaNombre
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="UsuarioDepartamentoResponse" Title="Departamento" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Departamento">
+                                @cell.Item.DepartamentoNombre
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="UsuarioDepartamentoResponse" Title="Rol" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Rol">
+                                @if (cell.Item.EsJefe)
+                                {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Jefe</MudChip>
+                                }
+                                else
+                                {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Miembro</MudChip>
+                                }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="UsuarioDepartamentoResponse" Title="" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Acciones" class="text-right">
+                                <MudTooltip Text="Retirar departamento">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                Disabled="@_savingDepartamento"
+                                OnClick="@(() => EliminarDepartamentoUsuarioAsync(cell.Item))" />
+                                </MudTooltip>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
                         }
                     }
                 </MudPaper>
@@ -350,39 +385,59 @@
                 }
                 else
                 {
-                    <MudTable Items="@_empresasUsuario" Dense="true" Hover="true" Elevation="0">
-                        <HeaderContent>
-                            <MudTh>Empresa</MudTh>
-                            <MudTh>Sucursal de acceso</MudTh>
-                            <MudTh>Tipo</MudTh>
-                            <MudTh>Acceso</MudTh>
-                        </HeaderContent>
-                        <RowTemplate Context="empresa">
-                            <MudTd DataLabel="Empresa">@empresa.NombreEmpresa</MudTd>
-                            <MudTd DataLabel="Sucursal de acceso">@empresa.NombreSucursal</MudTd>
-                            <MudTd DataLabel="Tipo">
-                                @if (empresa.IdEmpresa == GetEmpresaUsuarioId())
+                    <GenericDataGrid TItem="EmpresaUsuarioAsignacion" @key="_empresasUsuario"
+                                 Items="@_empresasUsuario"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="EmpresaUsuarioAsignacion" Title="Empresa" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Empresa">
+                                @cell.Item.NombreEmpresa
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EmpresaUsuarioAsignacion" Title="Sucursal de acceso" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Sucursal de acceso">
+                                @cell.Item.NombreSucursal
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EmpresaUsuarioAsignacion" Title="Tipo" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Tipo">
+                                @if (cell.Item.IdEmpresa == GetEmpresaUsuarioId())
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
-                                        Predeterminada
-                                    </MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                Predeterminada
+                                </MudChip>
                                 }
                                 else
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
-                                        Adicional
-                                    </MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
+                                Adicional
+                                </MudChip>
                                 }
-                            </MudTd>
-                            <MudTd DataLabel="Acceso">
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EmpresaUsuarioAsignacion" Title="Acceso" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Acceso">
                                 <MudSwitch T="bool"
-                                           Value="@empresa.Asignada"
-                                           ValueChanged="@((bool value) => ToggleEmpresaAsync(empresa, value))"
-                                           Color="Color.Success"
-                                           Disabled="@(!empresa.PuedeAsignarse || empresa.Procesando)" />
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
+                                Value="@cell.Item.Asignada"
+                                ValueChanged="@((bool value) => ToggleEmpresaAsync(cell.Item, value))"
+                                Color="Color.Success"
+                                Disabled="@(!cell.Item.PuedeAsignarse || cell.Item.Procesando)" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
                 }
             </MudTabPanel>
         </MudTabs>

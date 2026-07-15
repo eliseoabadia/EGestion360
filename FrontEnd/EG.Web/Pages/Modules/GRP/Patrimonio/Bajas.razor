@@ -1,4 +1,4 @@
-@page "/Patrimonio/Bajas"
+﻿@page "/Patrimonio/Bajas"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -47,7 +47,7 @@
             </div>
 
             <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                <GenericTable TItem="BajaResponse"
+                <GenericDataGrid TItem="BajaResponse"
                               @ref="table"
                               Title="Solicitudes de baja"
                               SearchPlaceholder="Buscar por folio, bien, serie, factura, tipo o motivo..."
@@ -57,93 +57,101 @@
                               SearchString="@SearchString"
                               SearchStringChanged="(s) => SearchString = s"
                               OnSearch="OnSearch">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Folio" T="BajaResponse">Folio</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="BajaResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="TipoBajaDescripcion" T="BajaResponse">Tipo</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaSolicitud" T="BajaResponse">Solicitud</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="BajaResponse">Estatus</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="ValorActual" T="BajaResponse">Valor</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Referencia" T="BajaResponse">Referencia</MudTableSortLabel></MudTh>
-                        <MudTh>Motivo</MudTh>
-                    </Header>
-
-                    <Row Context="item">
-                        <MudTd>
-                            <DocumentSupportButton Modulo="Patrimonio"
-                                                   SubModulo="Bajas"
-                                                   Controlador="Baja"
-                                                   EntidadId="@item.PkidBaja"
-                                                   FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                   RegistroTitulo="@TextOrDash(item.Folio)"
-                                                   RegistroDescripcion="@($"{TextOrDash(item.BienClave)} | {TextOrDash(item.BienDescripcion)}")" />
-                            <MudTooltip Text="Aplicar baja">
-                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
-                                               Visible="@CanUpdate"
-                                               Disabled="@IsFinal(item)"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               OnClick="@(() => AplicarBaja(item))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Editar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Visible="@CanUpdate"
-                                               Disabled="@IsFinal(item)"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditItem(item.PkidBaja))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Eliminar">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Visible="@CanDelete"
-                                               Disabled="@IsFinal(item)"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteItem(item.PkidBaja))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Folio)</div>
-                            <span>ID @item.PkidBaja</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.BienClave)</div>
-                            <span>@TextOrDash(item.BienDescripcion)</span>
-                            <span>@TextOrDash(item.Serie)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.TipoBajaDescripcion)</div>
-                            <span>@TextOrDash(item.EstadoDestino)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@item.FechaSolicitud.ToString("dd/MM/yyyy")</div>
-                            <span>@TextOrDash(item.AreaNombre)</span>
-                        </MudTd>
-                        <MudTd>
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Variant="Variant.Filled"
-                                     Style="@StatusStyle(item)">
-                                @TextOrDash(item.EstatusDescripcion)
-                            </MudChip>
-                        </MudTd>
-                        <MudTd><strong>@Money(item.ValorActual ?? 0m)</strong></MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(item.Referencia)</div>
-                            <span>@DateOrDash(item.FechaReferencia)</span>
-                            <span>@TextOrDash(item.Recibo)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="reason-cell">@TextOrDash(item.Motivo)</div>
-                            <span>@TextOrDash(item.Dictamen)</span>
-                            @if (!string.IsNullOrWhiteSpace(item.ClavePoliza))
-                            {
-                                <span>Poliza @item.ClavePoliza</span>
-                            }
-                        </MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="BajaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <DocumentSupportButton Modulo="Patrimonio"
+                        SubModulo="Bajas"
+                        Controlador="Baja"
+                        EntidadId="@cell.Item.PkidBaja"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Folio)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.BienClave)} | {TextOrDash(cell.Item.BienDescripcion)}")" />
+                        <MudTooltip Text="Aplicar baja">
+                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                        Visible="@CanUpdate"
+                        Disabled="@IsFinal(cell.Item)"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => AplicarBaja(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsFinal(cell.Item)"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidBaja))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsFinal(cell.Item)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidBaja))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
+                        <span>ID @cell.Item.PkidBaja</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Bien" Identifier="BienClave" PropertyName="BienClave" SortBy="x => x.BienClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.BienClave)</div>
+                        <span>@TextOrDash(cell.Item.BienDescripcion)</span>
+                        <span>@TextOrDash(cell.Item.Serie)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Tipo" Identifier="TipoBajaDescripcion" PropertyName="TipoBajaDescripcion" SortBy="x => x.TipoBajaDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBajaDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.EstadoDestino)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Solicitud" Identifier="FechaSolicitud" PropertyName="FechaSolicitud" SortBy="x => x.FechaSolicitud">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@cell.Item.FechaSolicitud.ToString("dd/MM/yyyy")</div>
+                        <span>@TextOrDash(cell.Item.AreaNombre)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Estatus" Identifier="EstatusDescripcion" PropertyName="EstatusDescripcion" SortBy="x => x.EstatusDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Variant="Variant.Filled"
+                        Style="@StatusStyle(cell.Item)">
+                        @TextOrDash(cell.Item.EstatusDescripcion)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Valor" Identifier="ValorActual" PropertyName="ValorActual" SortBy="x => x.ValorActual">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.ValorActual ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Referencia" Identifier="Referencia" PropertyName="Referencia" SortBy="x => x.Referencia">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Referencia)</div>
+                        <span>@DateOrDash(cell.Item.FechaReferencia)</span>
+                        <span>@TextOrDash(cell.Item.Recibo)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BajaResponse" Title="Motivo" Identifier="__column_8" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="reason-cell">@TextOrDash(cell.Item.Motivo)</div>
+                        <span>@TextOrDash(cell.Item.Dictamen)</span>
+                        @if (!string.IsNullOrWhiteSpace(cell.Item.ClavePoliza))
+                        {
+                        <span>Poliza @cell.Item.ClavePoliza</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         </div>
     </MudContainer>
@@ -199,7 +207,7 @@
 </style>
 
 @code {
-    private GenericTable<BajaResponse> table = null!;
+    private GenericDataGrid<BajaResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
     protected override string SubModuleName => "Bajas";

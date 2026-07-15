@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
@@ -42,14 +42,31 @@
         {
             <MudDivider Class="my-3" />
             <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">Partidas pagadas que se generaran</MudText>
-            <MudTable Items="@partidaItems" Dense="true" Hover="true" Elevation="0" Class="mt-2">
-                <HeaderContent><MudTh>Partida</MudTh><MudTh>Monto</MudTh><MudTh>Observaciones</MudTh></HeaderContent>
-                <RowTemplate>
-                    <MudTd>@TextOrDash(context.PartidaClaveNombre)</MudTd>
-                    <MudTd><strong>@Money(context.MontoPagado)</strong></MudTd>
-                    <MudTd>@TextOrDash(context.Observaciones)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="ChequePartidaResponse" @key="partidaItems"
+                                 Items="@partidaItems"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="ChequePartidaResponse" Title="Partida" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.PartidaClaveNombre)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="ChequePartidaResponse" Title="Monto" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@Money(cell.Item.MontoPagado)</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="ChequePartidaResponse" Title="Observaciones" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.Observaciones)
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </BaseEntityForm>
 </BaseCrudDialog>

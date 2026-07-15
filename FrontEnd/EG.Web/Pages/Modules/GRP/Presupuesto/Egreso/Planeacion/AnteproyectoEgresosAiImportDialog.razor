@@ -1,4 +1,4 @@
-@using EG.Common.GenericModel
+﻿@using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Presupuestales
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -317,41 +317,58 @@
                 </MudAlert>
             }
 
-            <MudTable Items="@_preview.Rows" Dense="true" Hover="true" Class="mt-3 anteproyecto-ai-preview-table" Height="280px" FixedHeader="true">
-                <HeaderContent>
-                    <MudTh>Fila</MudTh>
-                    <MudTh>Programa</MudTh>
-                    <MudTh>Partida</MudTh>
-                    <MudTh>Area</MudTh>
-                    <MudTh>Descripcion</MudTh>
-                    <MudTh>Clasificacion</MudTh>
-                    <MudTh>Total</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.RowNumber</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(context.Programa)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.ProgramaDescripcion)</MudText>
-                    </MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(context.Partida)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.PartidaDescripcion)</MudText>
-                    </MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.body2">@TextOrDash(context.Area)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.AreaDescripcion)</MudText>
-                    </MudTd>
-                    <MudTd>@TextOrDash(context.Descripcion)</MudTd>
-                    <MudTd>
-                        <MudText Typo="Typo.caption">FF: @TextOrDash(context.FuenteFinanciamiento)</MudText><br />
-                        <MudText Typo="Typo.caption">TG: @TextOrDash(context.TipoGasto)</MudText><br />
-                        <MudText Typo="Typo.caption">DI: @TextOrDash(context.DigitoIdentificador)</MudText><br />
-                        <MudText Typo="Typo.caption">DG: @TextOrDash(context.DestinoGasto)</MudText><br />
-                        <MudText Typo="Typo.caption">PY: @TextOrDash(context.Py)</MudText>
-                    </MudTd>
-                    <MudTd><strong>@Money(context.Total)</strong></MudTd>
-                </RowTemplate>
-            </MudTable>
+            <GenericDataGrid TItem="EgresoProyectadoAiImportRowRequest" @key="_preview.Rows"
+                                 Items="@_preview.Rows"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Fila" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @cell.Item.RowNumber
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Programa" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.body2">@TextOrDash(cell.Item.Programa)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.ProgramaDescripcion)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Partida" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.body2">@TextOrDash(cell.Item.Partida)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.PartidaDescripcion)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Area" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.body2">@TextOrDash(cell.Item.Area)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.AreaDescripcion)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Descripcion" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                @TextOrDash(cell.Item.Descripcion)
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Clasificacion" Identifier="__local_5" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <MudText Typo="Typo.caption">FF: @TextOrDash(cell.Item.FuenteFinanciamiento)</MudText><br />
+                                <MudText Typo="Typo.caption">TG: @TextOrDash(cell.Item.TipoGasto)</MudText><br />
+                                <MudText Typo="Typo.caption">DI: @TextOrDash(cell.Item.DigitoIdentificador)</MudText><br />
+                                <MudText Typo="Typo.caption">DG: @TextOrDash(cell.Item.DestinoGasto)</MudText><br />
+                                <MudText Typo="Typo.caption">PY: @TextOrDash(cell.Item.Py)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="EgresoProyectadoAiImportRowRequest" Title="Total" Identifier="__local_6" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <strong>@Money(cell.Item.Total)</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
         }
     </DialogContent>
 </MudDialog>

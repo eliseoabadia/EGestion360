@@ -1,4 +1,4 @@
-@page "/nomina/configuracion/catalogos/concepto-factor"
+﻿@page "/nomina/configuracion/catalogos/concepto-factor"
 @using System.Globalization
 @using System.Reflection
 @using EG.Domain.DTOs.Responses.Nomina
@@ -18,7 +18,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="NomConceptoFactorResponse"
+        <GenericDataGrid TItem="NomConceptoFactorResponse"
                       @ref="table"
                       Title="Lista de Factores de concepto"
                       SearchPlaceholder="Buscar..."
@@ -27,46 +27,35 @@
                       ExportFunc="ExportToExcel"
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
-                      OnSearch="OnSearch">
+                      OnSearch="OnSearch"
+                      ReflectedColumns="@VisibleColumns"
+                      ColumnTitleFunc="@(column => GetLabel(column))"
+                      CellValueFunc="@((item, column) => FormatValue(column.GetValue(item)))">
 
-            <Header>
-                <MudTh>Acciones</MudTh>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTh><MudTableSortLabel SortLabel="@column.Name" T="NomConceptoFactorResponse">@GetLabel(column)</MudTableSortLabel></MudTh>
-                }
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => EditItem(GetItemId(item)))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Disabled="@IsBusy"
-                                       OnClick="@(() => DeleteItem(GetItemId(item)))" />
-                    </MudTooltip>
-                </MudTd>
-                @foreach (var column in VisibleColumns)
-                {
-                    <MudTd>@FormatValue(column.GetValue(item))</MudTd>
-                }
-            </Row>
-        </GenericTable>
+            <RowActions Context="item">
+                <MudTooltip Text="Editar">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                Visible="@CanUpdate"
+                Color="Color.Primary"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => EditItem(GetItemId(item)))" />
+                </MudTooltip>
+                <MudTooltip Text="Eliminar">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                Visible="@CanDelete"
+                Color="Color.Error"
+                Size="Size.Small"
+                Disabled="@IsBusy"
+                OnClick="@(() => DeleteItem(GetItemId(item)))" />
+                </MudTooltip>
+            </RowActions>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<NomConceptoFactorResponse> table = null!;
+    private GenericDataGrid<NomConceptoFactorResponse> table = null!;
 
     protected override string ModuleName => EG.Web.Pages.Modules.Nomina.NominaClaimGroups.Catalogos;
     protected override string SubModuleName => "Concepto_Factor";

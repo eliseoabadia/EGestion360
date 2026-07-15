@@ -1,4 +1,4 @@
-@using EG.Common.GenericModel
+﻿@using EG.Common.GenericModel
 @using EG.Domain.DTOs.Requests.Adquisicion
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Models
@@ -72,61 +72,88 @@
             }
             else
             {
-                <MudTable Items="@FilteredRows" Dense="true" Hover="true" Elevation="0" Class="quote-table">
-                    <HeaderContent>
-                        <MudTh>Proveedor</MudTh>
-                        <MudTh>Bien PAAAS</MudTh>
-                        <MudTh>Cantidad</MudTh>
-                        <MudTh>Precio unitario</MudTh>
-                        <MudTh>Importe</MudTh>
-                        <MudTh>Entrega</MudTh>
-                        <MudTh>Condiciones</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="row">
-                        <MudTd DataLabel="Proveedor">
-                            <MudText Typo="Typo.body2" Class="main-cell">@row.ProveedorNombre</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@row.ProveedorRfc</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Bien PAAAS">
-                            <MudText Typo="Typo.body2" Class="main-cell">@row.TipoBienTexto</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Detalle @row.FkidEstudioMercadoDetalleOrco</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Cantidad">@Quantity(row.Cantidad)</MudTd>
-                        <MudTd DataLabel="Precio unitario">
-                            <MudNumericField T="decimal?"
-                                             Value="@row.PrecioUnitario"
-                                             ValueChanged="@((decimal? value) => row.PrecioUnitario = value)"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense"
-                                             Min="0.01m"
-                                             Format="0.00"
-                                             Culture="@NumberCulture"
-                                             Adornment="Adornment.Start"
-                                             AdornmentText="@CurrencySymbol"
-                                             HideSpinButtons="true" />
-                        </MudTd>
-                        <MudTd DataLabel="Importe">
-                            <MudText Typo="Typo.body2" Class="main-cell">@Money(row.Importe)</MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Entrega">
-                            <MudNumericField T="int?"
-                                             Value="@row.TiempoEntregaDias"
-                                             ValueChanged="@((int? value) => row.TiempoEntregaDias = value)"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense"
-                                             Min="0"
-                                             HideSpinButtons="true" />
-                        </MudTd>
-                        <MudTd DataLabel="Condiciones">
-                            <MudTextField T="string"
-                                          Value="@row.Condiciones"
-                                          ValueChanged="@((string value) => row.Condiciones = value)"
-                                          Variant="Variant.Outlined"
-                                          Margin="Margin.Dense"
-                                          MaxLength="500" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+                <GenericDataGrid TItem="CotizacionRecepcionRow" @key="FilteredRows.FirstOrDefault()"
+                                 Items="@FilteredRows"
+                                 ShowToolbar="false"
+                                 EnableColumnOptions="false"
+                                 FixedHeader="false"
+                                 TableHeight="auto"
+                                 PageSize="50">
+                    <Columns>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Proveedor" Identifier="__local_0" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Proveedor">
+                                <MudText Typo="Typo.body2" Class="main-cell">@cell.Item.ProveedorNombre</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@cell.Item.ProveedorRfc</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Bien PAAAS" Identifier="__local_1" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Bien PAAAS">
+                                <MudText Typo="Typo.body2" Class="main-cell">@cell.Item.TipoBienTexto</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Detalle @cell.Item.FkidEstudioMercadoDetalleOrco</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Cantidad" Identifier="__local_2" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Cantidad">
+                                @Quantity(cell.Item.Cantidad)
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Precio unitario" Identifier="__local_3" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Precio unitario">
+                                <MudNumericField T="decimal?"
+                                Value="@cell.Item.PrecioUnitario"
+                                ValueChanged="@((decimal? value) => cell.Item.PrecioUnitario = value)"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Min="0.01m"
+                                Format="0.00"
+                                Culture="@NumberCulture"
+                                Adornment="Adornment.Start"
+                                AdornmentText="@CurrencySymbol"
+                                HideSpinButtons="true" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Importe" Identifier="__local_4" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Importe">
+                                <MudText Typo="Typo.body2" Class="main-cell">@Money(cell.Item.Importe)</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Entrega" Identifier="__local_5" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Entrega">
+                                <MudNumericField T="int?"
+                                Value="@cell.Item.TiempoEntregaDias"
+                                ValueChanged="@((int? value) => cell.Item.TiempoEntregaDias = value)"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Min="0"
+                                HideSpinButtons="true" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn T="CotizacionRecepcionRow" Title="Condiciones" Identifier="__local_6" Sortable="false" Filterable="false">
+                            <CellTemplate Context="cell">
+                                <div DataLabel="Condiciones">
+                                <MudTextField T="string"
+                                Value="@cell.Item.Condiciones"
+                                ValueChanged="@((string value) => cell.Item.Condiciones = value)"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                MaxLength="500" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </GenericDataGrid>
             }
         </div>
     </DialogContent>

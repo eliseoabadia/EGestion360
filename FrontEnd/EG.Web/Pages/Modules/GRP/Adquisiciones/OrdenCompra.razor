@@ -1,4 +1,4 @@
-@page "/Adquisiciones/Orden_Compra"
+﻿@page "/Adquisiciones/Orden_Compra"
 @using System.Globalization
 @using System.Net.Http.Json
 @using EG.Dommain.DTOs.Responses
@@ -55,7 +55,7 @@
                 </div>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="OrdenCompraResponse"
+                    <GenericDataGrid TItem="OrdenCompraResponse"
                                   @ref="table"
                                   Title="Lista de ordenes de compra"
                                   SearchPlaceholder="Buscar por numero, proveedor, requisicion o descripcion..."
@@ -65,83 +65,93 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="NumeroOrdenCompra" T="OrdenCompraResponse">Numero</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="ProveedorNombre" T="OrdenCompraResponse">Proveedor</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="OrdenCompraResponse">Requisicion</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaOrdenCompra" T="OrdenCompraResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Total" T="OrdenCompraResponse">Total</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="EstatusDescripcion" T="OrdenCompraResponse">Estatus</MudTableSortLabel></MudTh>
-                            <MudTh>Hijos</MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectOrden(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Adquisiciones"
-                                                       SubModulo="OrdenCompra"
-                                                       Controlador="OrdenCompra"
-                                                       EntidadId="@item.PkidOrdenCompra"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.NumeroOrdenCompra)"
-                                                       RegistroDescripcion="@($"{TextOrDash(item.ProveedorNombre)} | {TextOrDash(item.Descripcion)}")" />
-                                <MudTooltip Text="Autorizar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                                   Visible="@CanAuthorize"
-                                                   Disabled="@(!CanAuthorizeItem(item))"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => AutorizarOrden(item))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Disabled="@IsLocked(item)"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidOrdenCompra))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Disabled="@IsLocked(item)"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteItem(item.PkidOrdenCompra))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.NumeroOrdenCompra)</div>
-                                <span>@TextOrDash(item.Descripcion)</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.ProveedorNombre)</div>
-                                <span>@TextOrDash(item.ProveedorRfc)</span>
-                            </MudTd>
-                            <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
-                            <MudTd>@item.FechaOrdenCompra.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd><strong>@Money(item.Total)</strong></MudTd>
-                            <MudTd>
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Style="@GetStatusStyle(item)"
-                                         Variant="Variant.Filled">
-                                    @TextOrDash(item.EstatusDescripcion)
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <span>@item.TotalDetalles detalles</span><br />
-                                <span>@item.TotalPartidas partidas</span>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectOrden(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Adquisiciones"
+                        SubModulo="OrdenCompra"
+                        Controlador="OrdenCompra"
+                        EntidadId="@cell.Item.PkidOrdenCompra"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.NumeroOrdenCompra)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.ProveedorNombre)} | {TextOrDash(cell.Item.Descripcion)}")" />
+                        <MudTooltip Text="Autorizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                        Visible="@CanAuthorize"
+                        Disabled="@(!CanAuthorizeItem(cell.Item))"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => AutorizarOrden(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidOrdenCompra))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsLocked(cell.Item)"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidOrdenCompra))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Numero" Identifier="NumeroOrdenCompra" PropertyName="NumeroOrdenCompra" SortBy="x => x.NumeroOrdenCompra">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.NumeroOrdenCompra)</div>
+                        <span>@TextOrDash(cell.Item.Descripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</div>
+                        <span>@TextOrDash(cell.Item.ProveedorRfc)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaOrdenCompra.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Total)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Estatus" Identifier="EstatusDescripcion" PropertyName="EstatusDescripcion" SortBy="x => x.EstatusDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Style="@GetStatusStyle(cell.Item)"
+                        Variant="Variant.Filled">
+                        @TextOrDash(cell.Item.EstatusDescripcion)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Hijos" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <span>@cell.Item.TotalDetalles detalles</span><br />
+                        <span>@cell.Item.TotalPartidas partidas</span>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -250,7 +260,7 @@
 
                 <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="OrdenCompraDetalleResponse"
+                        <GenericDataGrid TItem="OrdenCompraDetalleResponse"
                                       @ref="detalleTable"
                                       Title="Detalles"
                                       SearchPlaceholder="Buscar bien o servicio..."
@@ -262,47 +272,59 @@
                                       SearchStringChanged="(s) => detalleSearchString = s"
                                       OnSearch="ReloadDetalles"
                                       OnAdd="AddDetalle">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="OrdenCompraDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="OrdenCompraDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="CantidadSolicitada" T="OrdenCompraDetalleResponse">Cant.</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="PrecioUnitario" T="OrdenCompraDetalleResponse">Precio</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TotalDetalle" T="OrdenCompraDetalleResponse">Total</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="detalle">
-                                <MudTd>
-                                    <MudTooltip Text="Editar">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Visible="@CanUpdate"
-                                                       Disabled="@IsSelectedLocked"
-                                                       Size="Size.Small"
-                                                       Color="Color.Primary"
-                                                       OnClick="@(() => EditDetalle(detalle.PkidOrdenCompraDetalle))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Disabled="@IsSelectedLocked"
-                                                       Size="Size.Small"
-                                                       Color="Color.Error"
-                                                       OnClick="@(() => DeleteDetalle(detalle))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>@TextOrDash(detalle.TipoBienCodigoClave)</MudTd>
-                                <MudTd>
-                                    <div class="main-cell">@TextOrDash(detalle.TipoBienDescripcion)</div>
-                                    <span>@TextOrDash(detalle.UnidadMedida)</span>
-                                </MudTd>
-                                <MudTd>@Quantity(detalle.CantidadSolicitada)</MudTd>
-                                <MudTd>@Money(detalle.PrecioUnitario)</MudTd>
-                                <MudTd><strong>@Money(detalle.TotalDetalle ?? 0m)</strong></MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsSelectedLocked"
+                        Size="Size.Small"
+                        Color="Color.Primary"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidOrdenCompraDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsSelectedLocked"
+                        Size="Size.Small"
+                        Color="Color.Error"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Clave" Identifier="TipoBienCodigoClave" PropertyName="TipoBienCodigoClave" SortBy="x => x.TipoBienCodigoClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienCodigoClave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.UnidadMedida)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Cant." Identifier="CantidadSolicitada" PropertyName="CantidadSolicitada" SortBy="x => x.CantidadSolicitada">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.CantidadSolicitada)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Precio" Identifier="PrecioUnitario" PropertyName="PrecioUnitario" SortBy="x => x.PrecioUnitario">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.PrecioUnitario)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Total" Identifier="TotalDetalle" PropertyName="TotalDetalle" SortBy="x => x.TotalDetalle">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.TotalDetalle ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
 
                     <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="OrdenCompraPartidaResponse"
+                        <GenericDataGrid TItem="OrdenCompraPartidaResponse"
                                       @ref="partidaTable"
                                       Title="Partidas presupuestales"
                                       SearchPlaceholder="Buscar partida..."
@@ -314,42 +336,46 @@
                                       SearchStringChanged="(s) => partidaSearchString = s"
                                       OnSearch="ReloadPartidas"
                                       OnAdd="AddPartida">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="OrdenCompraPartidaResponse">Partida</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="FuenteFinanciamientoClave" T="OrdenCompraPartidaResponse">Fuente</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Importe" T="OrdenCompraPartidaResponse">Importe</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="partida">
-                                <MudTd>
-                                    <MudTooltip Text="Editar">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Visible="@CanUpdate"
-                                                       Disabled="@IsSelectedLocked"
-                                                       Size="Size.Small"
-                                                       Color="Color.Primary"
-                                                       OnClick="@(() => EditPartida(partida.PkidOrdenCompraPartida))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Disabled="@IsSelectedLocked"
-                                                       Size="Size.Small"
-                                                       Color="Color.Error"
-                                                       OnClick="@(() => DeletePartida(partida))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>
-                                    <div class="main-cell">@TextOrDash(partida.PartidaClave)</div>
-                                    <span>@TextOrDash(partida.PartidaDescripcion)</span>
-                                </MudTd>
-                                <MudTd>
-                                    <div class="main-cell">@TextOrDash(partida.FuenteFinanciamientoClave)</div>
-                                    <span>@TextOrDash(partida.FuenteFinanciamientoDescripcion)</span>
-                                </MudTd>
-                                <MudTd><strong>@Money(partida.Importe)</strong></MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="OrdenCompraPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Disabled="@IsSelectedLocked"
+                        Size="Size.Small"
+                        Color="Color.Primary"
+                        OnClick="@(() => EditPartida(cell.Item.PkidOrdenCompraPartida))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Disabled="@IsSelectedLocked"
+                        Size="Size.Small"
+                        Color="Color.Error"
+                        OnClick="@(() => DeletePartida(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraPartidaResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
+                        <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraPartidaResponse" Title="Fuente" Identifier="FuenteFinanciamientoClave" PropertyName="FuenteFinanciamientoClave" SortBy="x => x.FuenteFinanciamientoClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.FuenteFinanciamientoClave)</div>
+                        <span>@TextOrDash(cell.Item.FuenteFinanciamientoDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="OrdenCompraPartidaResponse" Title="Importe" Identifier="Importe" PropertyName="Importe" SortBy="x => x.Importe">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Importe)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
                 </MudGrid>
             </div>
@@ -410,9 +436,9 @@
 </style>
 
 @code {
-    private GenericTable<OrdenCompraResponse> table = null!;
-    private GenericTable<OrdenCompraDetalleResponse>? detalleTable;
-    private GenericTable<OrdenCompraPartidaResponse>? partidaTable;
+    private GenericDataGrid<OrdenCompraResponse> table = null!;
+    private GenericDataGrid<OrdenCompraDetalleResponse>? detalleTable;
+    private GenericDataGrid<OrdenCompraPartidaResponse>? partidaTable;
     private OrdenCompraResponse? SelectedOrden;
     private string detalleSearchString = string.Empty;
     private string partidaSearchString = string.Empty;

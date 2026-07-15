@@ -1,4 +1,4 @@
-@page "/Adquisiciones/Requisicion"
+﻿@page "/Adquisiciones/Requisicion"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
@@ -34,7 +34,7 @@
                             OnRefresh="() => table.ReloadData()" />
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="RequisicionResponse"
+                    <GenericDataGrid TItem="RequisicionResponse"
                                   @ref="table"
                                   Title="Lista de Requisiciones"
                                   SearchPlaceholder="Buscar por descripcion, area o solicitante..."
@@ -44,98 +44,116 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PkidRequisicion" T="RequisicionResponse">ID</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Descripcion" T="RequisicionResponse">Descripcion</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="RequisicionResponse">Area</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="SolicitanteCompleto" T="RequisicionResponse">Solicitante</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaRequisicion" T="RequisicionResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Importe" T="RequisicionResponse">Importe</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Servicio" T="RequisicionResponse">Tipo</MudTableSortLabel></MudTh>
-                            <MudTh>Clasificacion</MudTh>
-                            <MudTh>Flujo</MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   aria-label="Ver detalle de la requisicion"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectRequisicion(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Adquisiciones"
-                                                       SubModulo="Requisicion"
-                                                       Controlador="Requisicion"
-                                                       EntidadId="@item.PkidRequisicion"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@item.Descripcion"
-                                                       RegistroDescripcion="@($"Requisicion {item.PkidRequisicion} | {TextOrDash(item.AreaNombre)}")" />
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   aria-label="Editar requisicion"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   Disabled="@IsLocked(item)"
-                                                   OnClick="@(() => EditItem(item.PkidRequisicion))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   aria-label="Eliminar requisicion"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   Disabled="@IsLocked(item)"
-                                                   OnClick="@(() => DeleteItem(item.PkidRequisicion))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Generar cotizacion">
-                                    <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
-                                                   aria-label="Generar cotizacion"
-                                                   Visible="@CanCreate"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => OpenCotizacionFromRequisicion(item))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Enviar a suficiencia y autorizacion">
-                                    <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
-                                                   aria-label="Enviar a suficiencia y autorizacion"
-                                                   Visible="@CanCreate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(item))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>@item.PkidRequisicion</MudTd>
-                            <MudTd>@item.Descripcion</MudTd>
-                            <MudTd>@TextOrDash(item.AreaNombre)</MudTd>
-                            <MudTd>@TextOrDash(item.SolicitanteCompleto)</MudTd>
-                            <MudTd>@item.FechaRequisicion.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>@MoneyOrDash(item.Importe)</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Color="@(item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
-                                    @(item.Servicio ? "Servicio" : "Bien")
-                                </MudChip>
-                            </MudTd>
-                            <MudTd>
-                                <div>FF: @ClassificationText(item.FuenteFinanciamientoClave, item.FuenteFinanciamientoDescripcion)</div>
-                                <div>TG: @ClassificationText(item.TipoGastoClave?.ToString(), item.TipoGastoDescripcion)</div>
-                                <div>DI: @ClassificationText(item.DigitoIdentificadorClave, item.DigitoIdentificadorDescripcion)</div>
-                                <div>DG: @ClassificationText(item.DestinoGastoClave, item.DestinoGastoDescripcion)</div>
-                            </MudTd>
-                            <MudTd>
-                                <MudChip T="string"
-                                         Color="@(IsLocked(item) ? Color.Warning : Color.Success)"
-                                         Variant="Variant.Outlined"
-                                         Size="Size.Small">
-                                    @(IsLocked(item) ? $"En cotizacion ({item.CotizacionesActivas})" : "Libre")
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="RequisicionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver detalle">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        aria-label="Ver detalle de la requisicion"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectRequisicion(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Adquisiciones"
+                        SubModulo="Requisicion"
+                        Controlador="Requisicion"
+                        EntidadId="@cell.Item.PkidRequisicion"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@cell.Item.Descripcion"
+                        RegistroDescripcion="@($"Requisicion {cell.Item.PkidRequisicion} | {TextOrDash(cell.Item.AreaNombre)}")" />
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        aria-label="Editar requisicion"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Disabled="@IsLocked(cell.Item)"
+                        OnClick="@(() => EditItem(cell.Item.PkidRequisicion))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        aria-label="Eliminar requisicion"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Disabled="@IsLocked(cell.Item)"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidRequisicion))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Generar cotizacion">
+                        <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
+                        aria-label="Generar cotizacion"
+                        Visible="@CanCreate"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        OnClick="@(() => OpenCotizacionFromRequisicion(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Enviar a suficiencia y autorizacion">
+                        <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
+                        aria-label="Enviar a suficiencia y autorizacion"
+                        Visible="@CanCreate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="ID" Identifier="PkidRequisicion" PropertyName="PkidRequisicion" SortBy="x => x.PkidRequisicion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidRequisicion
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.Descripcion
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.AreaNombre)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Solicitante" Identifier="SolicitanteCompleto" PropertyName="SolicitanteCompleto" SortBy="x => x.SolicitanteCompleto">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.SolicitanteCompleto)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Fecha" Identifier="FechaRequisicion" PropertyName="FechaRequisicion" SortBy="x => x.FechaRequisicion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaRequisicion.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Importe" Identifier="Importe" PropertyName="Importe" SortBy="x => x.Importe">
+                    <CellTemplate Context="cell">
+                        @MoneyOrDash(cell.Item.Importe)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Tipo" Identifier="Servicio" PropertyName="Servicio" SortBy="x => x.Servicio">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@(cell.Item.Servicio ? Color.Info : Color.Primary)" Size="Size.Small">
+                        @(cell.Item.Servicio ? "Servicio" : "Bien")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Clasificacion" Identifier="__column_8" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div>FF: @ClassificationText(cell.Item.FuenteFinanciamientoClave, cell.Item.FuenteFinanciamientoDescripcion)</div>
+                        <div>TG: @ClassificationText(cell.Item.TipoGastoClave?.ToString(), cell.Item.TipoGastoDescripcion)</div>
+                        <div>DI: @ClassificationText(cell.Item.DigitoIdentificadorClave, cell.Item.DigitoIdentificadorDescripcion)</div>
+                        <div>DG: @ClassificationText(cell.Item.DestinoGastoClave, cell.Item.DestinoGastoDescripcion)</div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Flujo" Identifier="__column_9" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Color="@(IsLocked(cell.Item) ? Color.Warning : Color.Success)"
+                        Variant="Variant.Outlined"
+                        Size="Size.Small">
+                        @(IsLocked(cell.Item) ? $"En cotizacion ({cell.Item.CotizacionesActivas})" : "Libre")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -266,7 +284,7 @@
 
                 <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
                     <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="RequisicionPartidaResponse"
+                        <GenericDataGrid TItem="RequisicionPartidaResponse"
                                       @ref="partidaTable"
                                       Title="Partidas"
                                       SearchPlaceholder="Buscar partida..."
@@ -278,52 +296,58 @@
                                       SearchStringChanged="(s) => partidaSearchString = s"
                                       OnSearch="ReloadPartidas"
                                       OnAdd="AddPartida">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="RequisicionPartidaResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="PartidaDescripcion" T="RequisicionPartidaResponse">Partida</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Monto" T="RequisicionPartidaResponse">Monto</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="partida">
-                                <MudTd>
-                                    <MudTooltip Text="Seleccionar partida">
-                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                       Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Info)"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => SelectPartida(partida))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Editar partida">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Visible="@CanUpdate"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Small"
-                                                       Disabled="@IsSelectedLocked"
-                                                       OnClick="@(() => EditPartida(partida.PkidRequisicionPartida))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar partida">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       Disabled="@IsSelectedLocked"
-                                                       OnClick="@(() => DeletePartida(partida))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>
-                                    <MudChip T="string"
-                                             Size="Size.Small"
-                                             Color="@(IsSelectedPartida(partida) ? Color.Success : Color.Primary)">
-                                        @TextOrDash(partida.PartidaClave)
-                                    </MudChip>
-                                </MudTd>
-                                <MudTd>@TextOrDash(partida.PartidaDescripcion)</MudTd>
-                                <MudTd>@MoneyOrDash(partida.Monto)</MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Seleccionar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Info)"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectPartida(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Editar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Disabled="@IsSelectedLocked"
+                        OnClick="@(() => EditPartida(cell.Item.PkidRequisicionPartida))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Disabled="@IsSelectedLocked"
+                        OnClick="@(() => DeletePartida(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Clave" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Primary)">
+                        @TextOrDash(cell.Item.PartidaClave)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Partida" Identifier="PartidaDescripcion" PropertyName="PartidaDescripcion" SortBy="x => x.PartidaDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.PartidaDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionPartidaResponse" Title="Monto" Identifier="Monto" PropertyName="Monto" SortBy="x => x.Monto">
+                    <CellTemplate Context="cell">
+                        @MoneyOrDash(cell.Item.Monto)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
 
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericTable TItem="RequisicionDetalleResponse"
+                        <GenericDataGrid TItem="RequisicionDetalleResponse"
                                       @ref="detalleTable"
                                       Title="@DetalleTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
@@ -337,38 +361,49 @@
                                       SearchStringChanged="(s) => detalleSearchString = s"
                                       OnSearch="ReloadDetalles"
                                       OnAdd="AddDetalle">
-                            <Header>
-                                <MudTh>Acciones</MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="RequisicionDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="RequisicionDetalleResponse">Bien / Servicio</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="RequisicionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="RequisicionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
-                            </Header>
-                            <Row Context="detalle">
-                                <MudTd>
-                                    <MudTooltip Text="Editar detalle">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                       Visible="@CanUpdate"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Small"
-                                                       Disabled="@IsSelectedLocked"
-                                                       OnClick="@(() => EditDetalle(detalle.PkidRequisicionDetalle))" />
-                                    </MudTooltip>
-                                    <MudTooltip Text="Eliminar detalle">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                       Visible="@CanDelete"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       Disabled="@IsSelectedLocked"
-                                                       OnClick="@(() => DeleteDetalle(detalle))" />
-                                    </MudTooltip>
-                                </MudTd>
-                                <MudTd>@TextOrDash(detalle.TipoBienCodigoClave)</MudTd>
-                                <MudTd>@TextOrDash(detalle.TipoBienDescripcion)</MudTd>
-                                <MudTd>@Quantity(detalle.Cantidad)</MudTd>
-                                <MudTd>@TextOrDash(detalle.UnidadMedida)</MudTd>
-                            </Row>
-                        </GenericTable>
+            <Columns>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        Disabled="@IsSelectedLocked"
+                        OnClick="@(() => EditDetalle(cell.Item.PkidRequisicionDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Disabled="@IsSelectedLocked"
+                        OnClick="@(() => DeleteDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Clave" Identifier="TipoBienCodigoClave" PropertyName="TipoBienCodigoClave" SortBy="x => x.TipoBienCodigoClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienCodigoClave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Bien / Servicio" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Unidad" Identifier="UnidadMedida" PropertyName="UnidadMedida" SortBy="x => x.UnidadMedida">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UnidadMedida)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                     </MudItem>
                 </MudGrid>
             </div>
@@ -377,9 +412,9 @@
 </AccessVerification>
 
 @code {
-    private GenericTable<RequisicionResponse> table = null!;
-    private GenericTable<RequisicionPartidaResponse>? partidaTable;
-    private GenericTable<RequisicionDetalleResponse>? detalleTable;
+    private GenericDataGrid<RequisicionResponse> table = null!;
+    private GenericDataGrid<RequisicionPartidaResponse>? partidaTable;
+    private GenericDataGrid<RequisicionDetalleResponse>? detalleTable;
     private RequisicionResponse? SelectedRequisicion;
     private RequisicionPartidaResponse? SelectedPartida;
     private string partidaSearchString = string.Empty;

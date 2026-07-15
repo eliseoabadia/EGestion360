@@ -1,4 +1,4 @@
-@page "/Adquisiciones/RequisicionDetalle"
+﻿@page "/Adquisiciones/RequisicionDetalle"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
@@ -17,7 +17,7 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <GenericTable TItem="RequisicionDetalleResponse"
+        <GenericDataGrid TItem="RequisicionDetalleResponse"
                       @ref="table"
                       Title="Lista de Detalles"
                       SearchPlaceholder="Buscar por requisicion, bien o unidad..."
@@ -27,47 +27,62 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-
-            <Header>
-                <MudTh>Acciones</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PkidRequisicionDetalle" T="RequisicionDetalleResponse">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="RequisicionDescripcion" T="RequisicionDetalleResponse">Requisicion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoBienCodigoClave" T="RequisicionDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="TipoBienDescripcion" T="RequisicionDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Cantidad" T="RequisicionDetalleResponse">Cantidad</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="UnidadMedida" T="RequisicionDetalleResponse">Unidad</MudTableSortLabel></MudTh>
-            </Header>
-
-            <Row Context="item">
-                <MudTd>
-                    <MudTooltip Text="Editar">
+            <Columns>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Visible="@CanUpdate"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@(() => EditItem(item.PkidRequisicionDetalle))" />
-                    </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidRequisicionDetalle))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Visible="@CanDelete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteItem(item.PkidRequisicionDetalle))" />
-                    </MudTooltip>
-                </MudTd>
-                <MudTd>@item.PkidRequisicionDetalle</MudTd>
-                <MudTd>@TextOrDash(item.RequisicionDescripcion)</MudTd>
-                <MudTd>@TextOrDash(item.TipoBienCodigoClave)</MudTd>
-                <MudTd>@TextOrDash(item.TipoBienDescripcion)</MudTd>
-                <MudTd>@Quantity(item.Cantidad)</MudTd>
-                <MudTd>@TextOrDash(item.UnidadMedida)</MudTd>
-            </Row>
-        </GenericTable>
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidRequisicionDetalle))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="ID" Identifier="PkidRequisicionDetalle" PropertyName="PkidRequisicionDetalle" SortBy="x => x.PkidRequisicionDetalle">
+                    <CellTemplate Context="cell">
+                        @cell.Item.PkidRequisicionDetalle
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Clave" Identifier="TipoBienCodigoClave" PropertyName="TipoBienCodigoClave" SortBy="x => x.TipoBienCodigoClave">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienCodigoClave)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.TipoBienDescripcion)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Cantidad" Identifier="Cantidad" PropertyName="Cantidad" SortBy="x => x.Cantidad">
+                    <CellTemplate Context="cell">
+                        @Quantity(cell.Item.Cantidad)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionDetalleResponse" Title="Unidad" Identifier="UnidadMedida" PropertyName="UnidadMedida" SortBy="x => x.UnidadMedida">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.UnidadMedida)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
 @code {
-    private GenericTable<RequisicionDetalleResponse> table = null!;
+    private GenericDataGrid<RequisicionDetalleResponse> table = null!;
 
     protected override string ModuleName => "Adquisiciones";
     protected override string SubModuleName => "requisicion";

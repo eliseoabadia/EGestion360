@@ -1,4 +1,4 @@
-@page "/Patrimonio/Resguardos"
+﻿@page "/Patrimonio/Resguardos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -49,7 +49,7 @@
                 </div>
 
                 <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericTable TItem="ResguardoResponse"
+                    <GenericDataGrid TItem="ResguardoResponse"
                                   @ref="table"
                                   Title="Listado de resguardos"
                                   SearchPlaceholder="Buscar por folio, responsable o area..."
@@ -59,77 +59,86 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch">
-                        <Header>
-                            <MudTh>Acciones</MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="Folio" T="ResguardoResponse">Folio</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="PersonaNombre" T="ResguardoResponse">Responsable</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="ResguardoResponse">Area</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="FechaResguardo" T="ResguardoResponse">Fecha</MudTableSortLabel></MudTh>
-                            <MudTh><MudTableSortLabel SortLabel="TotalBienes" T="ResguardoResponse">Bienes</MudTableSortLabel></MudTh>
-                            <MudTh>Valor</MudTh>
-                            <MudTh>Estado</MudTh>
-                        </Header>
-
-                        <Row Context="item">
-                            <MudTd>
-                                <MudTooltip Text="Ver bienes">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => SelectResguardo(item))" />
-                                </MudTooltip>
-                                <DocumentSupportButton Modulo="Patrimonio"
-                                                       SubModulo="Resguardos"
-                                                       Controlador="Resguardo"
-                                                       EntidadId="@item.PkidResguardo"
-                                                       FkidEmpresaSis="@item.FkidEmpresaSis"
-                                                       RegistroTitulo="@TextOrDash(item.Folio)"
-                                                       RegistroDescripcion="@($"{TextOrDash(item.PersonaNombre)} | {TextOrDash(item.AreaNombre)}")" />
-                                <MudTooltip Text="Editar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Visible="@CanUpdate"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditItem(item.PkidResguardo))" />
-                                </MudTooltip>
-                                <MudTooltip Text="Eliminar">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Visible="@CanDelete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   Disabled="@((item.TotalBienes ?? 0) > 0)"
-                                                   OnClick="@(() => DeleteItem(item.PkidResguardo))" />
-                                </MudTooltip>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.Folio)</div>
-                                <span>ID @item.PkidResguardo</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.PersonaNombre)</div>
-                                <span>@TextOrDash(item.PersonaClave)</span>
-                            </MudTd>
-                            <MudTd>
-                                <div class="main-cell">@TextOrDash(item.AreaNombre)</div>
-                                <span>@TextOrDash(item.AreaClave)</span>
-                            </MudTd>
-                            <MudTd>@item.FechaResguardo.ToString("dd/MM/yyyy")</MudTd>
-                            <MudTd>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
-                                    @(item.TotalBienes ?? 0) bienes
-                                </MudChip>
-                            </MudTd>
-                            <MudTd><strong>@Money(item.ValorActualResguardado ?? 0m)</strong></MudTd>
-                            <MudTd>
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Color="@(item.Activo ? Color.Success : Color.Error)"
-                                         Variant="Variant.Outlined">
-                                    @(item.Activo ? "Activo" : "Inactivo")
-                                </MudChip>
-                            </MudTd>
-                        </Row>
-                    </GenericTable>
+            <Columns>
+                <TemplateColumn T="ResguardoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Ver bienes">
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        Color="Color.Info"
+                        Size="Size.Small"
+                        OnClick="@(() => SelectResguardo(cell.Item))" />
+                        </MudTooltip>
+                        <DocumentSupportButton Modulo="Patrimonio"
+                        SubModulo="Resguardos"
+                        Controlador="Resguardo"
+                        EntidadId="@cell.Item.PkidResguardo"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                        RegistroTitulo="@TextOrDash(cell.Item.Folio)"
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.PersonaNombre)} | {TextOrDash(cell.Item.AreaNombre)}")" />
+                        <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                        Visible="@CanUpdate"
+                        Color="Color.Primary"
+                        Size="Size.Small"
+                        OnClick="@(() => EditItem(cell.Item.PkidResguardo))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        Visible="@CanDelete"
+                        Color="Color.Error"
+                        Size="Size.Small"
+                        Disabled="@((cell.Item.TotalBienes ?? 0) > 0)"
+                        OnClick="@(() => DeleteItem(cell.Item.PkidResguardo))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
+                        <span>ID @cell.Item.PkidResguardo</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Responsable" Identifier="PersonaNombre" PropertyName="PersonaNombre" SortBy="x => x.PersonaNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.PersonaNombre)</div>
+                        <span>@TextOrDash(cell.Item.PersonaClave)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.AreaNombre)</div>
+                        <span>@TextOrDash(cell.Item.AreaClave)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Fecha" Identifier="FechaResguardo" PropertyName="FechaResguardo" SortBy="x => x.FechaResguardo">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaResguardo.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Bienes" Identifier="TotalBienes" PropertyName="TotalBienes" SortBy="x => x.TotalBienes">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                        @(cell.Item.TotalBienes ?? 0) bienes
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Valor" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.ValorActualResguardado ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoResponse" Title="Estado" Identifier="__column_7" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string"
+                        Size="Size.Small"
+                        Color="@(cell.Item.Activo ? Color.Success : Color.Error)"
+                        Variant="Variant.Outlined">
+                        @(cell.Item.Activo ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
                 </div>
             </div>
         }
@@ -209,7 +218,7 @@
                     </MudCardContent>
                 </MudCard>
 
-                <GenericTable TItem="ResguardoDetalleResponse"
+                <GenericDataGrid TItem="ResguardoDetalleResponse"
                               @ref="detalleTable"
                               Title="Bienes bajo resguardo"
                               SearchPlaceholder="Buscar bien, clave o serie..."
@@ -223,37 +232,47 @@
                               SearchStringChanged="(s) => detalleSearchString = s"
                               OnSearch="ReloadDetalle"
                               OnAdd="OpenAgregarBienDialog">
-                    <Header>
-                        <MudTh>Acciones</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienClave" T="ResguardoDetalleResponse">Clave</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="BienDescripcion" T="ResguardoDetalleResponse">Bien</MudTableSortLabel></MudTh>
-                        <MudTh>Serie</MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="FechaAsignacion" T="ResguardoDetalleResponse">Fecha</MudTableSortLabel></MudTh>
-                        <MudTh>Valor</MudTh>
-                    </Header>
-                    <Row Context="detalle">
-                        <MudTd>
-                            <MudTooltip Text="Liberar bien">
-                                <MudIconButton Icon="@Icons.Material.Filled.AssignmentReturn"
-                                               Visible="@CanUpdate"
-                                               Color="Color.Warning"
-                                               Size="Size.Small"
-                                               OnClick="@(() => LiberarDetalle(detalle))" />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detalle.BienClave)</div>
-                            <span>@TextOrDash(detalle.BienClaveAnterior)</span>
-                        </MudTd>
-                        <MudTd>
-                            <div class="main-cell">@TextOrDash(detalle.BienDescripcion)</div>
-                            <span>@TextOrDash(detalle.TipoBienDescripcion)</span>
-                        </MudTd>
-                        <MudTd>@TextOrDash(detalle.Serie)</MudTd>
-                        <MudTd>@detalle.FechaAsignacion.ToString("dd/MM/yyyy")</MudTd>
-                        <MudTd><strong>@Money(detalle.ValorActual ?? 0m)</strong></MudTd>
-                    </Row>
-                </GenericTable>
+            <Columns>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Liberar bien">
+                        <MudIconButton Icon="@Icons.Material.Filled.AssignmentReturn"
+                        Visible="@CanUpdate"
+                        Color="Color.Warning"
+                        Size="Size.Small"
+                        OnClick="@(() => LiberarDetalle(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Clave" Identifier="BienClave" PropertyName="BienClave" SortBy="x => x.BienClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.BienClave)</div>
+                        <span>@TextOrDash(cell.Item.BienClaveAnterior)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Bien" Identifier="BienDescripcion" PropertyName="BienDescripcion" SortBy="x => x.BienDescripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.BienDescripcion)</div>
+                        <span>@TextOrDash(cell.Item.TipoBienDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Serie" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Serie)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Fecha" Identifier="FechaAsignacion" PropertyName="FechaAsignacion" SortBy="x => x.FechaAsignacion">
+                    <CellTemplate Context="cell">
+                        @cell.Item.FechaAsignacion.ToString("dd/MM/yyyy")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ResguardoDetalleResponse" Title="Valor" Identifier="__column_5" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.ValorActual ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
             </div>
         }
     </MudContainer>
@@ -312,8 +331,8 @@
 </style>
 
 @code {
-    private GenericTable<ResguardoResponse> table = null!;
-    private GenericTable<ResguardoDetalleResponse>? detalleTable;
+    private GenericDataGrid<ResguardoResponse> table = null!;
+    private GenericDataGrid<ResguardoDetalleResponse>? detalleTable;
     private ResguardoResponse? SelectedResguardo;
     private string detalleSearchString = string.Empty;
 

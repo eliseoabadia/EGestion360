@@ -1,4 +1,4 @@
-@page "/Contratos/Saldos_Contratos"
+﻿@page "/Contratos/Saldos_Contratos"
 @page "/Adquisiciones/Contratos/Saldos_Contratos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contratos
@@ -47,7 +47,7 @@
             </MudItem>
         </MudGrid>
 
-        <GenericTable TItem="SaldosContratoResponse"
+        <GenericDataGrid TItem="SaldosContratoResponse"
                       @ref="table"
                       Title="Presupuesto disponible"
                       SearchPlaceholder="Buscar por programa, partida, area, PY o descripcion..."
@@ -57,62 +57,69 @@
                       SearchString="@SearchString"
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
-            <Header>
-                <MudTh><MudTableSortLabel SortLabel="ProgramaClave" T="SaldosContratoResponse">Programa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="PartidaClave" T="SaldosContratoResponse">Partida</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="AreaNombre" T="SaldosContratoResponse">Area</MudTableSortLabel></MudTh>
-                <MudTh>Clasificacion</MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Descripcion" T="SaldosContratoResponse">Descripcion</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Total" T="SaldosContratoResponse">Disponible</MudTableSortLabel></MudTh>
-                <MudTh>Meses</MudTh>
-            </Header>
-            <Row Context="item">
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.ProgramaClave)</div>
-                    <span>@TextOrDash(item.ProgramaDescripcion)</span>
-                </MudTd>
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.PartidaClave)</div>
-                    <span>@TextOrDash(item.PartidaDescripcion)</span>
-                </MudTd>
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.AreaNombre)</div>
-                    <span>@TextOrDash(item.AreaClave)</span>
-                </MudTd>
-                <MudTd>
-                    <div class="stacked-lines">
-                        <span>FF: @TextOrDash(item.FuenteFinanciamientoClaveNombre)</span>
-                        <span>TG: @TextOrDash(item.TipoGastoClaveNombre)</span>
-                        <span>DI: @TextOrDash(item.DigitoIdentificadorClaveNombre)</span>
-                        <span>DG: @TextOrDash(item.DestinoGastoClaveNombre)</span>
-                        <span>PY: @TextOrDash(item.PyClaveNombre)</span>
-                    </div>
-                </MudTd>
-                <MudTd>
-                    <div class="main-cell">@TextOrDash(item.Descripcion)</div>
-                    <span>@TextOrDash(item.DescripcionRequisicion)</span>
-                </MudTd>
-                <MudTd><strong>@Money(item.Total ?? 0m)</strong></MudTd>
-                <MudTd>
-                    <div class="months-line">
-                        <span>ENE @Money(item.Enero ?? 0m)</span>
-                        <span>FEB @Money(item.Febrero ?? 0m)</span>
-                        <span>MAR @Money(item.Marzo ?? 0m)</span>
-                        <span>ABR @Money(item.Abril ?? 0m)</span>
-                        <span>MAY @Money(item.Mayo ?? 0m)</span>
-                        <span>JUN @Money(item.Junio ?? 0m)</span>
-                    </div>
-                    <div class="months-line">
-                        <span>JUL @Money(item.Julio ?? 0m)</span>
-                        <span>AGO @Money(item.Agosto ?? 0m)</span>
-                        <span>SEP @Money(item.Septiembre ?? 0m)</span>
-                        <span>OCT @Money(item.Octubre ?? 0m)</span>
-                        <span>NOV @Money(item.Noviembre ?? 0m)</span>
-                        <span>DIC @Money(item.Diciembre ?? 0m)</span>
-                    </div>
-                </MudTd>
-            </Row>
-        </GenericTable>
+            <Columns>
+                <TemplateColumn T="SaldosContratoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.ProgramaClave)</div>
+                        <span>@TextOrDash(cell.Item.ProgramaDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
+                        <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.AreaNombre)</div>
+                        <span>@TextOrDash(cell.Item.AreaClave)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Clasificacion" Identifier="__column_3" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="stacked-lines">
+                        <span>FF: @TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</span>
+                        <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span>
+                        <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span>
+                        <span>DG: @TextOrDash(cell.Item.DestinoGastoClaveNombre)</span>
+                        <span>PY: @TextOrDash(cell.Item.PyClaveNombre)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <div class="main-cell">@TextOrDash(cell.Item.Descripcion)</div>
+                        <span>@TextOrDash(cell.Item.DescripcionRequisicion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Disponible" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.Total ?? 0m)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SaldosContratoResponse" Title="Meses" Identifier="__column_6" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <div class="months-line">
+                        <span>ENE @Money(cell.Item.Enero ?? 0m)</span>
+                        <span>FEB @Money(cell.Item.Febrero ?? 0m)</span>
+                        <span>MAR @Money(cell.Item.Marzo ?? 0m)</span>
+                        <span>ABR @Money(cell.Item.Abril ?? 0m)</span>
+                        <span>MAY @Money(cell.Item.Mayo ?? 0m)</span>
+                        <span>JUN @Money(cell.Item.Junio ?? 0m)</span>
+                        </div>
+                        <div class="months-line">
+                        <span>JUL @Money(cell.Item.Julio ?? 0m)</span>
+                        <span>AGO @Money(cell.Item.Agosto ?? 0m)</span>
+                        <span>SEP @Money(cell.Item.Septiembre ?? 0m)</span>
+                        <span>OCT @Money(cell.Item.Octubre ?? 0m)</span>
+                        <span>NOV @Money(cell.Item.Noviembre ?? 0m)</span>
+                        <span>DIC @Money(cell.Item.Diciembre ?? 0m)</span>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
     </MudContainer>
 </AccessVerification>
 
@@ -131,7 +138,7 @@
 </style>
 
 @code {
-    private GenericTable<SaldosContratoResponse> table = null!;
+    private GenericDataGrid<SaldosContratoResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private const string CurrencySymbol = "$";
 

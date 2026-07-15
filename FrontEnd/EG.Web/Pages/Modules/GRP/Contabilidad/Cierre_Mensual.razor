@@ -1,4 +1,4 @@
-@page "/Contabilidad/Cierre_Mensual"
+﻿@page "/Contabilidad/Cierre_Mensual"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Dommain.DTOs.Responses
@@ -137,7 +137,7 @@
         </div>
 
         <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericTable TItem="CierreMensualResponse"
+            <GenericDataGrid TItem="CierreMensualResponse"
                           @ref="table"
                           Title="Saldos mensuales por cuenta"
                           SearchPlaceholder="Buscar cuenta o descripcion..."
@@ -155,26 +155,35 @@
                         @(_estado?.PeriodoNombre ?? "Periodo")
                     </MudChip>
                 </ToolbarActions>
-
-                <Header>
-                    <MudTh><MudTableSortLabel SortLabel="FkidCuentaContable" T="CierreMensualResponse">Cuenta</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="SaldoInicial" T="CierreMensualResponse">Saldo inicial</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Cargos" T="CierreMensualResponse">Cargos</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="Abonos" T="CierreMensualResponse">Abonos</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortLabel="SaldoFinal" T="CierreMensualResponse">Saldo final</MudTableSortLabel></MudTh>
-                </Header>
-
-                <Row Context="item">
-                    <MudTd>
-                        <div class="account-cell">@TextOrDash(item.CuentaClave)</div>
-                        <span>@TextOrDash(item.CuentaDescripcion)</span>
-                    </MudTd>
-                    <MudTd>@Money(item.SaldoInicial)</MudTd>
-                    <MudTd>@Money(item.Cargos)</MudTd>
-                    <MudTd>@Money(item.Abonos)</MudTd>
-                    <MudTd><strong>@Money(item.SaldoFinal)</strong></MudTd>
-                </Row>
-            </GenericTable>
+            <Columns>
+                <TemplateColumn T="CierreMensualResponse" Title="Cuenta" Identifier="FkidCuentaContable" PropertyName="FkidCuentaContable" SortBy="x => x.FkidCuentaContable">
+                    <CellTemplate Context="cell">
+                        <div class="account-cell">@TextOrDash(cell.Item.CuentaClave)</div>
+                        <span>@TextOrDash(cell.Item.CuentaDescripcion)</span>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CierreMensualResponse" Title="Saldo inicial" Identifier="SaldoInicial" PropertyName="SaldoInicial" SortBy="x => x.SaldoInicial">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.SaldoInicial)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CierreMensualResponse" Title="Cargos" Identifier="Cargos" PropertyName="Cargos" SortBy="x => x.Cargos">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Cargos)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CierreMensualResponse" Title="Abonos" Identifier="Abonos" PropertyName="Abonos" SortBy="x => x.Abonos">
+                    <CellTemplate Context="cell">
+                        @Money(cell.Item.Abonos)
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CierreMensualResponse" Title="Saldo final" Identifier="SaldoFinal" PropertyName="SaldoFinal" SortBy="x => x.SaldoFinal">
+                    <CellTemplate Context="cell">
+                        <strong>@Money(cell.Item.SaldoFinal)</strong>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
         </div>
     </MudContainer>
 </AccessVerification>
@@ -395,7 +404,7 @@
 </style>
 
 @code {
-    private GenericTable<CierreMensualResponse> table = null!;
+    private GenericDataGrid<CierreMensualResponse> table = null!;
     private CierreMensualResponse? _estado;
     private bool _estadoLoading = true;
     private string _currencySymbol = "$";
