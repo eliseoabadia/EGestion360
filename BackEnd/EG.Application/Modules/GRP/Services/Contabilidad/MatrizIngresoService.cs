@@ -243,7 +243,15 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<PagedResult<LookupItem>> GetOrigenLookupPaginadoAsync(int page, int pageSize, string? filter)
         {
-            var query = _context.Set<Origen>()
+            var query = _context.Set<Origen>().AsNoTracking();
+            var normalizedFilter = filter?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(normalizedFilter))
+            {
+                query = query.Where(o => o.Descripcion != null && o.Descripcion.Contains(normalizedFilter));
+            }
+
+            var lookupQuery = query
                 .OrderBy(o => o.Descripcion)
                 .Select(o => new LookupItem
                 {
@@ -251,8 +259,8 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                     Text = o.Descripcion ?? ""
                 });
 
-            var totalCount = await query.CountAsync();
-            var items = await query
+            var totalCount = await lookupQuery.CountAsync();
+            var items = await lookupQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -269,7 +277,16 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task<PagedResult<LookupItem>> GetCuentaContableLookupPaginadoAsync(int page, int pageSize, string? filter)
         {
             var query = _context.VwCuentas
-                .Where(c => c.NivelCuenta == 7)
+                .AsNoTracking()
+                .Where(c => c.NivelCuenta == 7);
+            var normalizedFilter = filter?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(normalizedFilter))
+            {
+                query = query.Where(c => c.ClaveNombre != null && c.ClaveNombre.Contains(normalizedFilter));
+            }
+
+            var lookupQuery = query
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem
                 {
@@ -277,8 +294,8 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                     Text = c.ClaveNombre ?? ""
                 });
 
-            var totalCount = await query.CountAsync();
-            var items = await query
+            var totalCount = await lookupQuery.CountAsync();
+            var items = await lookupQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

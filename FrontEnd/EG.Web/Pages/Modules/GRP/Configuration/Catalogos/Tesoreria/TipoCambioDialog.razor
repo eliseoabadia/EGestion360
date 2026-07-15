@@ -105,26 +105,18 @@
             if (selectedDate.HasValue)
                 item.Fecha = selectedDate.Value;
 
-            bool success;
-            if (Id.HasValue)
-            {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
-            }
-            else
-            {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
-            }
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
 
-            if (success)
+            if (response?.Success == true)
             {
                 Snackbar.Add(Id.HasValue ? "Tipo de cambio actualizado correctamente" : "Tipo de cambio creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al guardar los cambios", Severity.Error);
             }
         }
         catch (Exception ex)

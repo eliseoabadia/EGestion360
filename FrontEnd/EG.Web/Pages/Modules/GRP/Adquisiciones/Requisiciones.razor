@@ -1,4 +1,5 @@
 ﻿@page "/Adquisiciones/Requisicion"
+@page "/Adquisiciones/Requisicion/{RequisicionId:int}"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Contracts
@@ -52,7 +53,8 @@
                         aria-label="Ver detalle de la requisicion"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectRequisicion(cell.Item))" />
+                        Disabled="@openingRequisicion"
+                        OnClick="@(() => OpenRequisicionDetail(cell.Item))" />
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Adquisiciones"
                         SubModulo="Requisicion"
@@ -159,7 +161,7 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div @key="SelectedRequisicion.PkidRequisicion" Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
@@ -412,6 +414,8 @@
 </AccessVerification>
 
 @code {
+    [Parameter] public int? RequisicionId { get; set; }
+
     private GenericDataGrid<RequisicionResponse> table = null!;
     private GenericDataGrid<RequisicionPartidaResponse>? partidaTable;
     private GenericDataGrid<RequisicionDetalleResponse>? detalleTable;
@@ -419,6 +423,8 @@
     private RequisicionPartidaResponse? SelectedPartida;
     private string partidaSearchString = string.Empty;
     private string detalleSearchString = string.Empty;
+    private bool openingRequisicion;
+    private int? loadedRequisicionId;
     private string DetalleTableTitle => SelectedPartida == null
         ? "Detalle de Requisicion"
         : $"Detalle de Requisicion - {SelectedPartida.PartidaClave}";
@@ -438,6 +444,25 @@
         await base.OnInitializedAsync();
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (!RequisicionId.HasValue || RequisicionId.Value <= 0)
+        {
+            ResetRequisicionSelection();
+            return;
+        }
+
+        if (loadedRequisicionId == RequisicionId.Value &&
+            SelectedRequisicion?.PkidRequisicion == RequisicionId.Value)
+        {
+            return;
+        }
+
+        await LoadRequisicionFromRouteAsync(RequisicionId.Value);
     }
 
     protected override async Task<TableData<RequisicionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -657,13 +682,59 @@
         }
     }
 
-    private void SelectRequisicion(RequisicionResponse item)
+    private void OpenRequisicionDetail(RequisicionResponse item)
     {
+        if (openingRequisicion)
+        {
+            return;
+        }
+
+        if (item.PkidRequisicion <= 0)
+        {
+            Snackbar.Add("No fue posible identificar la requisición seleccionada.", Severity.Error);
+            return;
+        }
+
         partidaSearchString = string.Empty;
         detalleSearchString = string.Empty;
         SelectedPartida = null;
         SelectedRequisicion = item;
-        StateHasChanged();
+        loadedRequisicionId = null;
+
+        NavigationManager.NavigateTo($"/Adquisiciones/Requisicion/{item.PkidRequisicion}");
+    }
+
+    private async Task LoadRequisicionFromRouteAsync(int id)
+    {
+        openingRequisicion = true;
+
+        try
+        {
+            var response = await Service.GetByIdAsync(id);
+            if (response?.Success == true && response.Data != null)
+            {
+                SelectedRequisicion = response.Data;
+                SelectedPartida = null;
+                loadedRequisicionId = id;
+                return;
+            }
+
+            Snackbar.Add(response?.Message ?? "No fue posible cargar la requisición seleccionada.", Severity.Error);
+            ResetRequisicionSelection();
+            NavigationManager.NavigateTo("/Adquisiciones/Requisicion", replace: true);
+        }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("Requisiciones")
+                .LogError(ex, "No se pudo cargar la requisición {RequisicionId} desde la ruta.", id);
+            Snackbar.Add("No fue posible cargar el detalle de la requisición.", Severity.Error);
+            ResetRequisicionSelection();
+            NavigationManager.NavigateTo("/Adquisiciones/Requisicion", replace: true);
+        }
+        finally
+        {
+            openingRequisicion = false;
+        }
     }
 
     private async Task RefreshSelectedRequisicion()
@@ -685,11 +756,17 @@
 
     private void BackToTable()
     {
+        ResetRequisicionSelection();
+        NavigationManager.NavigateTo("/Adquisiciones/Requisicion");
+    }
+
+    private void ResetRequisicionSelection()
+    {
         SelectedRequisicion = null;
         SelectedPartida = null;
+        loadedRequisicionId = null;
         partidaSearchString = string.Empty;
         detalleSearchString = string.Empty;
-        StateHasChanged();
     }
 
     protected override async Task CreateItem()

@@ -2,17 +2,26 @@
 @typeparam TEntity where TEntity : class, new()
 
 <MudForm @ref="mudForm">
-    <MudCard Elevation="0" Class="entity-form-card">
+    <MudCard Elevation="0" Class="@CardCssClass">
         @if (ShouldShowHeader)
         {
             <MudCardHeader Class="entity-form-header">
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="entity-form-title">
-                        @HeaderTitle
-                    </MudText>
+                    <div class="entity-form-heading">
+                        <span class="entity-form-heading-icon" aria-hidden="true">
+                            <MudIcon Icon="@HeaderIcon" Size="Size.Medium" />
+                        </span>
+                        <div class="entity-form-heading-copy">
+                            <MudText Typo="Typo.h6" Class="entity-form-title">
+                                @HeaderTitle
+                            </MudText>
+                            <MudText Typo="Typo.caption" Class="entity-form-subtitle">
+                                @HeaderSubtitle
+                            </MudText>
+                        </div>
+                    </div>
                 </CardHeaderContent>
             </MudCardHeader>
-            <MudDivider />
         }
         
         <MudCardContent Class="entity-form-content">
@@ -32,6 +41,8 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public string HeaderTitle { get; set; } = string.Empty;
+    [Parameter] public string HeaderSubtitle { get; set; } = "Completa la información solicitada para continuar.";
+    [Parameter] public string HeaderIcon { get; set; } = Icons.Material.Filled.EditNote;
     [Parameter] public bool Loading { get; set; }
     [Parameter] public string LoadingMessage { get; set; } = "Preparando formulario...";
     [Parameter] public int LoadingSkeletonRows { get; set; } = 8;
@@ -40,7 +51,11 @@
     private object? BaseDialog { get; set; }
     
     private MudForm mudForm = new();
+    private bool InsideDialog => BaseDialog != null;
     private bool ShouldShowHeader => ShowHeader && BaseDialog == null;
+    private string CardCssClass => InsideDialog
+        ? "entity-form-card entity-form-card-dialog"
+        : "entity-form-card entity-form-card-standalone";
     
     // Propiedades para acceder al estado del formulario
     public bool IsValid => mudForm.IsValid;

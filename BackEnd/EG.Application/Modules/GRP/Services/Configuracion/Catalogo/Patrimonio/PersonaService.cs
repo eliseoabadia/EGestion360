@@ -104,6 +104,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 var dto = request.Adapt<PersonaDto>();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.UtcNow;
+                NormalizeForPersistence(dto);
 
                 await _service.CanAddAsync(dto);
                 await _service.AddAsync(dto);
@@ -140,6 +141,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 dto.FechaCreacion = existing.FechaCreacion;
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.UtcNow;
+                NormalizeForPersistence(dto);
 
                 await _service.CanUpdateAsync(id, dto);
                 await _service.UpdateAsync(id, dto);
@@ -177,6 +179,30 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<bool> { Success = false, Message = ex.Message, Code = "ERROR" };
             }
         }
+
+        private static void NormalizeForPersistence(PersonaDto dto)
+        {
+            foreach (var property in typeof(PersonaDto).GetProperties()
+                .Where(property => property.PropertyType == typeof(string) && property.CanWrite))
+            {
+                var value = property.GetValue(dto) as string;
+                property.SetValue(dto, (value ?? string.Empty).Trim());
+            }
+
+            dto.FechaDeInicio ??= DateTime.Today;
+            dto.FechaNacimiento ??= new DateTime(1900, 1, 1);
+
+            if (string.IsNullOrWhiteSpace(dto.Iniciales))
+            {
+                dto.Iniciales = string.Concat(
+                    FirstLetter(dto.Nombre),
+                    FirstLetter(dto.Paterno),
+                    FirstLetter(dto.Materno));
+            }
+        }
+
+        private static string FirstLetter(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim()[0].ToString().ToUpperInvariant();
 
         public async Task<PagedResult<PersonaResponse>> GetAllPaginadoAsync(PagedRequest request)
         {

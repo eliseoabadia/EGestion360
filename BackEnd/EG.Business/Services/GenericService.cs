@@ -315,9 +315,7 @@ namespace EG.Business.Services
             var query = GetQueryWithIncludes();
 
             // Obtener la propiedad ID de forma est�tica para la expresi�n
-            var idProperty = typeof(TEntity).GetProperties()
-                .FirstOrDefault(p => p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase) &&
-                                    (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
+            var idProperty = FindIntegerIdProperty(typeof(TEntity));
 
             if (idProperty == null)
                 return null;
@@ -362,10 +360,7 @@ namespace EG.Business.Services
             }
             else
             {
-                keyProperty = typeof(TEntity).GetProperties()
-                    .FirstOrDefault(p => p.Name.EndsWith("Id") ||
-                                       p.Name.Equals("Id") ||
-                                       p.Name.Equals($"{typeof(TEntity).Name}Id"));
+                keyProperty = FindIntegerIdProperty(typeof(TEntity));
 
                 if (keyProperty == null)
                     return null;
@@ -422,6 +417,24 @@ namespace EG.Business.Services
 
             var value = intProperty?.GetValue(entity) as int?;
             return value ?? 0;
+        }
+
+        private static PropertyInfo? FindIntegerIdProperty(Type type)
+        {
+            static bool IsInteger(PropertyInfo property) =>
+                property.PropertyType == typeof(int) || property.PropertyType == typeof(int?);
+
+            var properties = type.GetProperties().Where(IsInteger).ToArray();
+
+            return properties.FirstOrDefault(p => p.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase))
+                ?? properties.FirstOrDefault(p => p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase))
+                ?? properties.FirstOrDefault(p => p.Name.Equals($"{type.Name}Id", StringComparison.OrdinalIgnoreCase))
+                ?? properties.FirstOrDefault(p =>
+                    !p.Name.StartsWith("Fk", StringComparison.OrdinalIgnoreCase) &&
+                    p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+                ?? properties.FirstOrDefault(p =>
+                    !p.Name.StartsWith("Fk", StringComparison.OrdinalIgnoreCase) &&
+                    p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase));
         }
 
         public virtual async Task AddAsync(TDto dto)

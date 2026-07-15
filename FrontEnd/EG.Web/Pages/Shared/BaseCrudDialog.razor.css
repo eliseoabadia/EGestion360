@@ -1,18 +1,44 @@
 .crud-dialog-title {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     width: 100%;
     min-height: 44px;
     position: relative;
 }
 
+.crud-dialog-title-icon {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: var(--eg-primary, var(--mud-palette-primary));
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 10%, transparent);
+}
+
+.crud-dialog-title-copy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
 .crud-dialog-title-text {
     color: var(--mud-palette-text-primary);
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.2;
-    letter-spacing: 0;
+    letter-spacing: -.015em;
+}
+
+.crud-dialog-subtitle {
+    overflow: hidden;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 500;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .crud-dialog-close {
@@ -22,9 +48,9 @@
 }
 
 ::deep .mud-dialog.crud-dialog {
-    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 24%, var(--mud-palette-lines-default));
-    border-radius: 8px !important;
-    box-shadow: 0 28px 70px rgba(2, 8, 23, .34) !important;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 86%, transparent);
+    border-radius: 16px !important;
+    box-shadow: 0 30px 80px rgba(2, 8, 23, .30) !important;
     max-height: calc(100dvh - 24px) !important;
     display: flex !important;
     flex-direction: column !important;
@@ -34,21 +60,14 @@
 ::deep .mud-dialog.crud-dialog .mud-dialog-title {
     flex: 0 0 auto;
     position: relative;
-    min-height: 58px;
-    padding: 11px 18px 9px !important;
-    border-bottom: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 22%, var(--mud-palette-lines-default));
-    background:
-        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 15%, transparent), transparent 50%),
-        linear-gradient(280deg, color-mix(in srgb, #22c55e 6%, transparent), transparent 52%),
-        var(--mud-palette-surface);
+    min-height: 68px;
+    padding: 12px 20px !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 88%, transparent);
+    background: var(--mud-palette-surface);
 }
 
 ::deep .mud-dialog.crud-dialog .mud-dialog-title::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 3px;
-    background: linear-gradient(90deg, var(--eg-primary, var(--mud-palette-primary)), #22c55e, #f59e0b);
+    display: none;
 }
 
 ::deep .mud-dialog.crud-dialog .mud-dialog-content {
@@ -56,11 +75,7 @@
     min-height: 0;
     overflow-y: auto !important;
     overscroll-behavior: contain;
-    background:
-        linear-gradient(90deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 5%, transparent) 1px, transparent 1px),
-        linear-gradient(0deg, color-mix(in srgb, #22c55e 3%, transparent) 1px, transparent 1px),
-        var(--mud-palette-surface);
-    background-size: 44px 44px;
+    background: color-mix(in srgb, var(--mud-palette-background) 64%, var(--mud-palette-surface));
 }
 
 ::deep .mud-dialog.crud-dialog.crud-dialog-wide,
@@ -100,31 +115,23 @@
 .crud-dialog-shell {
     margin: 0 0 8px;
     max-height: none;
-    padding: 14px 16px 12px;
-    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 24%, var(--mud-palette-lines-default));
-    border-top: 0;
-    border-radius: 8px;
-    background:
-        linear-gradient(120deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 5%, transparent), transparent 42%),
-        var(--mud-palette-surface);
-    box-shadow: 0 14px 34px rgba(2, 8, 23, .14) !important;
+    padding: 16px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, transparent);
+    border-radius: 13px;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 8px 24px rgba(2, 8, 23, .06) !important;
     transition: box-shadow .18s ease;
     position: relative;
     overflow: hidden;
 }
 
 .crud-dialog-shell::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 3px;
-    background: linear-gradient(90deg, var(--eg-primary, var(--mud-palette-primary)), #22c55e, #f59e0b);
-    opacity: .76;
+    display: none;
 }
 
 .crud-dialog-shell:hover {
     transform: none;
-    box-shadow: 0 18px 44px rgba(2, 8, 23, .18) !important;
+    box-shadow: 0 8px 24px rgba(2, 8, 23, .06) !important;
 }
 
 .crud-dialog-loading {

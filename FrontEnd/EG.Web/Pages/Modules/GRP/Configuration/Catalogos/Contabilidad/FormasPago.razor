@@ -7,7 +7,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False">
         <PageHeader Title="Formas de Pago"
                     Subtitle="Catálogo de formas de pago"
                     Icon="@Icons.Material.Filled.CreditCard"
@@ -18,7 +18,7 @@
         <GenericDataGrid TItem="ContaTipoDoctoPagoResponse"
                       @ref="table"
                       Title="Lista de Formas de Pago"
-                      SearchPlaceholder="Buscar por nombre o código..."
+                      SearchPlaceholder="Buscar por descripción..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -29,9 +29,7 @@
             <Columns>
                 <TemplateColumn Resizable="false" T="ContaTipoDoctoPagoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDoctoPago))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDoctoPago))" /></MudTooltip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="ContaTipoDoctoPagoResponse" TProperty="int" Property="x => x.PkidTipoDoctoPago" Title="ID" Identifier="PkidTipoDoctoPago" />
-                <PropertyColumn T="ContaTipoDoctoPagoResponse" TProperty="string" Property="x => x.Codigo" Title="Código" Identifier="Codigo" />
-                <PropertyColumn T="ContaTipoDoctoPagoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
-                <PropertyColumn T="ContaTipoDoctoPagoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
+                <PropertyColumn T="ContaTipoDoctoPagoResponse" TProperty="string" Property="x => x.Descripcion" Title="Forma de pago" Identifier="Descripcion" />
             </Columns>
         </GenericDataGrid>
     </MudContainer>
@@ -47,23 +45,21 @@
     protected override Type EditDialogType => typeof(FormaPagoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<ContaTipoDoctoPagoResponse>);
 
-    protected override string GetDefaultSortLabel() => "Nombre";
+    protected override string GetDefaultSortLabel() => "Descripcion";
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<ContaTipoDoctoPagoResponse> items)
     {
         return items.Select(u => new
         {
             ID = u.PkidTipoDoctoPago,
-            Código = u.Codigo,
-            Nombre = u.Nombre,
-            Descripción = u.Descripcion,
+            Forma_de_pago = u.Descripcion,
         });
     }
 
     protected override async Task<string> GetItemNameForDelete(int id)
     {
         var response = await Service.GetByIdAsync(id);
-        return response?.Data?.Nombre ?? "la forma de pago";
+        return response?.Data?.Descripcion ?? "la forma de pago";
     }
 
     protected override async Task ReloadData()

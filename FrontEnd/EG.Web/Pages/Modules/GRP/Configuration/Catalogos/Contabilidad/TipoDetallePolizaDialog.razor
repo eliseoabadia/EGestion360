@@ -19,16 +19,6 @@
                     @ref="form"
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
-                      Label="Clave"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Numbers"
-                      FullWidth="true"
-                      Class="mb-3"
-                      Required="true"
-                      For="@(() => item.Clave)" />
-
         <MudTextField @bind-Value="item.Descripcion"
                       Label="Descripción"
                       Variant="Variant.Outlined"

@@ -24,6 +24,8 @@
                 <MudTextField @bind-Value="item.Clave"
                               Label="Clave"
                               Variant="Variant.Outlined"
+                              MaxLength="3"
+                              Counter="3"
                               Required="true"
                               RequiredError="La clave es requerida" />
             </MudItem>
@@ -31,6 +33,8 @@
                 <MudTextField @bind-Value="item.Descripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
+                              MaxLength="64"
+                              Counter="64"
                               Required="true"
                               RequiredError="La descripción es requerida" />
             </MudItem>
@@ -79,26 +83,18 @@
     {
         try
         {
-            bool success;
-            if (Id.HasValue)
-            {
-                var response = await Service.UpdateAsync(item, Id.Value);
-                success = response?.Success == true;
-            }
-            else
-            {
-                var response = await Service.CreateAsync(item);
-                success = response?.Success == true;
-            }
+            var response = Id.HasValue
+                ? await Service.UpdateAsync(item, Id.Value)
+                : await Service.CreateAsync(item);
 
-            if (success)
+            if (response?.Success == true)
             {
                 Snackbar.Add(dialogTitle.Contains("Editar") ? "Actividad Institucional actualizada correctamente" : "Actividad Institucional creada correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add("Error al guardar los cambios", Severity.Error);
+                Snackbar.Add(response?.Message ?? "Error al guardar los cambios", Severity.Error);
             }
         }
         catch (Exception ex)

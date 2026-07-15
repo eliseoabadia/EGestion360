@@ -4,7 +4,19 @@
 <MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
     <TitleContent>
         <div class="crud-dialog-title">
-            <MudText Typo="Typo.h6" Class="crud-dialog-title-text">@Title</MudText>
+            @if (!string.IsNullOrWhiteSpace(EffectiveTitleIcon))
+            {
+                <span class="crud-dialog-title-icon" aria-hidden="true">
+                    <MudIcon Icon="@EffectiveTitleIcon" Size="Size.Medium" />
+                </span>
+            }
+            <div class="crud-dialog-title-copy">
+                <MudText Typo="Typo.h6" Class="crud-dialog-title-text">@Title</MudText>
+                @if (!string.IsNullOrWhiteSpace(EffectiveSubtitle))
+                {
+                    <MudText Typo="Typo.caption" Class="crud-dialog-subtitle">@EffectiveSubtitle</MudText>
+                }
+            </div>
             <MudIconButton Icon="@Icons.Material.Filled.Close" 
                          OnClick="Cancelar" 
                          Disabled="@isProcessing"
@@ -63,6 +75,8 @@
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? TitleIcon { get; set; }
     [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Medium;
     [Parameter] public string? DialogClass { get; set; }
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
@@ -86,6 +100,51 @@
     private string DialogCssClass => string.IsNullOrWhiteSpace(DialogClass)
         ? "crud-dialog"
         : $"crud-dialog {DialogClass}";
+    private string EffectiveTitleIcon => !string.IsNullOrWhiteSpace(TitleIcon)
+        ? TitleIcon!
+        : ResolveTitleIcon(Title);
+    private string EffectiveSubtitle => !string.IsNullOrWhiteSpace(Subtitle)
+        ? Subtitle!
+        : ResolveSubtitle(Title);
+
+    private static string ResolveTitleIcon(string title)
+    {
+        var value = title?.Trim() ?? string.Empty;
+
+        if (ContainsAny(value, "eliminar", "borrar", "cancelar"))
+            return Icons.Material.Filled.DeleteOutline;
+        if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
+            return Icons.Material.Filled.Verified;
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return Icons.Material.Filled.Visibility;
+        if (ContainsAny(value, "editar", "actualizar", "modificar"))
+            return Icons.Material.Filled.EditNote;
+        if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar"))
+            return Icons.Material.Filled.AddCircleOutline;
+
+        return Icons.Material.Filled.Description;
+    }
+
+    private static string ResolveSubtitle(string title)
+    {
+        var value = title?.Trim() ?? string.Empty;
+
+        if (ContainsAny(value, "eliminar", "borrar"))
+            return "Confirma la operación antes de continuar.";
+        if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
+            return "Revisa la información y confirma la operación.";
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return "Consulta la información registrada y su detalle.";
+        if (ContainsAny(value, "editar", "actualizar", "modificar"))
+            return "Actualiza únicamente la información necesaria.";
+        if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar"))
+            return "Captura la información solicitada para continuar.";
+
+        return "Revisa y completa la información de esta operación.";
+    }
+
+    private static bool ContainsAny(string value, params string[] terms) =>
+        terms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {

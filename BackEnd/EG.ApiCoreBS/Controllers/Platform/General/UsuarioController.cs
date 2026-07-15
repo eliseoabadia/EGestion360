@@ -236,12 +236,17 @@ namespace EG.ApiCoreBS.Controllers.General
 
         private static void NormalizeUsuarioDtoEmpresa(UsuarioResponse request, UsuarioDto dto)
         {
-            if (dto.FkidEmpresaSis > 0)
-                return;
+            dto.FkidEmpresaSis = dto.FkidEmpresaSis > 0
+                ? dto.FkidEmpresaSis
+                : request.IdEmpresa > 0
+                    ? request.IdEmpresa
+                    : request.PkidEmpresa;
 
-            dto.FkidEmpresaSis = request.IdEmpresa > 0
-                ? request.IdEmpresa
-                : request.PkidEmpresa;
+            // Los contratos de lectura y escritura usan nombres diferentes.
+            // Sin esta normalizacion la edicion desvinculaba a la persona o
+            // guardaba el usuario como inactivo.
+            dto.FkidPersonaNom = request.IdPersona;
+            dto.Activo = request.UsuarioActivo;
         }
     }
 }

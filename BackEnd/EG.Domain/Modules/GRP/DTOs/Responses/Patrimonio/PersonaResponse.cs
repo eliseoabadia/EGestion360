@@ -4,6 +4,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
     {
         public int PkidPersona { get; set; }
         public string Clave { get; set; } = string.Empty;
+        public string Iniciales { get; set; } = string.Empty;
         public string Nombre { get; set; } = string.Empty;
         public string Paterno { get; set; } = string.Empty;
         public string Materno { get; set; } = string.Empty;
@@ -22,6 +23,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public string NoLicencia { get; set; } = string.Empty;
         public string NoPasaporte { get; set; } = string.Empty;
         public string NoCredencialElector { get; set; } = string.Empty;
+        public string Gafete { get; set; } = string.Empty;
         public string Calle { get; set; } = string.Empty;
         public string NumExterior { get; set; } = string.Empty;
         public string NumInterior { get; set; } = string.Empty;
@@ -36,6 +38,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public string Banco { get; set; } = string.Empty;
         public string NumeroCuenta { get; set; } = string.Empty;
         public string Clabe { get; set; } = string.Empty;
+        public int? FkidEmpresaSis { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }

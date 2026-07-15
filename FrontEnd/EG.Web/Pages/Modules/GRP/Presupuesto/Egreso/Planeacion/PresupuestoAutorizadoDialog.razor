@@ -19,6 +19,8 @@
 
 <BaseCrudDialog TItem="EgresoAutorizadoResponse"
                 Title="@dialogTitle"
+                Subtitle="@dialogSubtitle"
+                TitleIcon="@Icons.Material.Filled.AccountBalanceWallet"
                 MaxWidth="MaxWidth.ExtraExtraLarge"
                 DialogClass="crud-dialog-wide-xl"
                 ActionColor="@actionColor"
@@ -38,138 +40,235 @@
                     LoadingMessage="Preparando presupuesto autorizado..."
                     LoadingSkeletonRows="14">
 
-        <MudGrid GutterSize="1" Class="presupuesto-autorizado-dialog">
+        <MudGrid GutterSize="1" Class="@DialogBodyClass">
             <MudItem xs="12">
-                <div class="budget-ribbon">
-                    <div>
-                        <span>Total @AmountKind @CurrencyDisplay</span>
-                        <strong>@Money(TotalMeses)</strong>
+                <div class="budget-overview">
+                    <div class="budget-total">
+                        <span class="budget-total-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Paid" Size="Size.Large" />
+                        </span>
+                        <div>
+                            <span class="budget-eyebrow">Monto @AmountKind</span>
+                            <strong>@Money(TotalMeses)</strong>
+                            <small>@CurrencyName · distribución anual</small>
+                        </div>
                     </div>
-                    <div>
-                        <span>Promedio @CurrencyDisplay</span>
-                        <strong>@Money(TotalMeses / 12m)</strong>
+
+                    <div class="budget-insights" aria-label="Indicadores del presupuesto">
+                        <div>
+                            <span>Promedio mensual</span>
+                            <strong>@Money(TotalMeses / 12m)</strong>
+                        </div>
+                        <div>
+                            <span>Meses con asignación</span>
+                            <strong>@MesesConMonto <small>de 12</small></strong>
+                        </div>
+                        <div>
+                            <span>Mayor asignación</span>
+                            <strong>@MesMayor</strong>
+                            <small>@Money(MontoMesMayor)</small>
+                        </div>
                     </div>
                 </div>
             </MudItem>
 
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedPrograma"
-                                   ValueChanged="value => _selectedPrograma = value"
-                                   Label="Programa"
-                                   Required="true"
-                                   RequiredError="El programa es requerido"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadProgramasPageAsync" />
+            <MudItem xs="12">
+                <section class="form-section" aria-labelledby="classification-title">
+                    <div class="section-heading">
+                        <span class="section-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <h3 id="classification-title">Clasificación presupuestal</h3>
+                            <p>Claves contables y administrativas asociadas al presupuesto.</p>
+                        </div>
+                        <span class="section-number">01</span>
+                    </div>
+
+                    <MudGrid GutterSize="1" Class="compact-form-grid">
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedPrograma"
+                                               ValueChanged="value => _selectedPrograma = value"
+                                               Label="Programa"
+                                               Required="true"
+                                               RequiredError="El programa es requerido"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadProgramasPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedPartida"
+                                               ValueChanged="value => _selectedPartida = value"
+                                               Label="Partida"
+                                               Required="true"
+                                               RequiredError="La partida es requerida"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadPartidasPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedArea"
+                                               ValueChanged="value => _selectedArea = value"
+                                               Label="Área"
+                                               Required="true"
+                                               RequiredError="El área es requerida"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadAreasPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                                               ValueChanged="value => _selectedFuenteFinanciamiento = value"
+                                               Label="Fuente de financiamiento"
+                                               Clearable="true"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadFuentesFinanciamientoPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedTipoGasto"
+                                               ValueChanged="value => _selectedTipoGasto = value"
+                                               Label="Tipo de gasto"
+                                               Clearable="true"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadTiposGastoPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedDigitoIdentificador"
+                                               ValueChanged="value => _selectedDigitoIdentificador = value"
+                                               Label="Dígito identificador"
+                                               Clearable="true"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadDigitosIdentificadorPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="4">
+                            <PagedAutocomplete Value="@_selectedDestinoGasto"
+                                               ValueChanged="value => _selectedDestinoGasto = value"
+                                               Label="Destino de gasto"
+                                               Clearable="true"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadDestinosGastoPageAsync" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="8">
+                            <PagedAutocomplete Value="@_selectedPy"
+                                               ValueChanged="value => _selectedPy = value"
+                                               Label="Proyecto (PY)"
+                                               Clearable="true"
+                                               ReadOnly="@IsReadOnly"
+                                               Disabled="@(!IsReadOnly && SourceFieldsLocked)"
+                                               LoadPage="LoadPyPageAsync" />
+                        </MudItem>
+                    </MudGrid>
+                </section>
             </MudItem>
 
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedPartida"
-                                   ValueChanged="value => _selectedPartida = value"
-                                   Label="Partida"
-                                   Required="true"
-                                   RequiredError="La partida es requerida"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadPartidasPageAsync" />
-            </MudItem>
+            <MudItem xs="12">
+                <section class="form-section" aria-labelledby="movement-title">
+                    <div class="section-heading">
+                        <span class="section-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <h3 id="movement-title">Datos del movimiento</h3>
+                            <p>Fecha y referencia descriptiva para identificar el registro.</p>
+                        </div>
+                        <span class="section-number">02</span>
+                    </div>
 
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedArea"
-                                   ValueChanged="value => _selectedArea = value"
-                                   Label="Area"
-                                   Required="true"
-                                   RequiredError="El area es requerida"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadAreasPageAsync" />
-            </MudItem>
+                    <MudGrid GutterSize="1" Class="compact-form-grid">
+                        <MudItem xs="12" md="4">
+                            <MudDatePicker @bind-Date="_fecha"
+                                           Label="Fecha"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           DateFormat="dd/MM/yyyy"
+                                           Culture="@DateCulture"
+                                           Required="true"
+                                           RequiredError="La fecha es requerida"
+                                           ReadOnly="@IsReadOnly"
+                                           Disabled="@(!IsReadOnly && SourceFieldsLocked)" />
+                        </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fecha"
-                               Label="Fecha"
-                               Variant="Variant.Outlined"
-                               DateFormat="dd/MM/yyyy"
-                               Culture="@DateCulture"
-                               Required="true"
-                               RequiredError="La fecha es requerida"
-                               Disabled="@FormFieldsLocked" />
-            </MudItem>
-
-            <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripcion"
-                              Variant="Variant.Outlined"
-                              MaxLength="250"
-                              Disabled="@FormFieldsLocked" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
-                                   ValueChanged="value => _selectedFuenteFinanciamiento = value"
-                                   Label="Fuente de financiamiento"
-                                   Clearable="true"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadFuentesFinanciamientoPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedTipoGasto"
-                                   ValueChanged="value => _selectedTipoGasto = value"
-                                   Label="Tipo de gasto"
-                                   Clearable="true"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadTiposGastoPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedDigitoIdentificador"
-                                   ValueChanged="value => _selectedDigitoIdentificador = value"
-                                   Label="Digito identificador"
-                                   Clearable="true"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadDigitosIdentificadorPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedDestinoGasto"
-                                   ValueChanged="value => _selectedDestinoGasto = value"
-                                   Label="Destino de gasto"
-                                   Clearable="true"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadDestinosGastoPageAsync" />
-            </MudItem>
-
-            <MudItem xs="12" md="8">
-                <PagedAutocomplete Value="@_selectedPy"
-                                   ValueChanged="value => _selectedPy = value"
-                                   Label="PY"
-                                   Clearable="true"
-                                   Disabled="@FormFieldsLocked"
-                                   LoadPage="LoadPyPageAsync" />
+                        <MudItem xs="12" md="8">
+                            <MudTextField @bind-Value="item.Descripcion"
+                                          Label="Descripción"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          MaxLength="250"
+                                          ReadOnly="@IsReadOnly"
+                                          Disabled="@(!IsReadOnly && SourceFieldsLocked)" />
+                        </MudItem>
+                    </MudGrid>
+                </section>
             </MudItem>
 
             <MudItem xs="12">
                 <div class="months-panel">
                     <div class="months-header">
-                        <div>
-                            <MudText Typo="Typo.subtitle1">Distribucion mensual</MudText>
-                            <MudText Typo="Typo.caption">@MonthlyAmountHelpText</MudText>
+                        <div class="section-heading months-heading">
+                            <span class="section-icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" />
+                            </span>
+                            <div>
+                                <h3>Distribución mensual</h3>
+                                <p>@MonthlyAmountHelpText</p>
+                            </div>
+                            <span class="section-number">03</span>
                         </div>
-                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
+                        <div class="months-total">
+                            <span>Total distribuido</span>
+                            <strong>@Money(TotalMeses)</strong>
+                        </div>
                     </div>
 
-                    <MudGrid GutterSize="1">
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@AmountsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                    </MudGrid>
+                    <div class="months-layout">
+                        <div class="distribution-chart">
+                            <div class="chart-copy">
+                                <span>Comportamiento anual</span>
+                                <strong>@MesesConMonto meses activos</strong>
+                            </div>
+                            <div class="chart-bars" role="img" aria-label="Distribución del presupuesto por mes">
+                                @foreach (var month in MonthValues)
+                                {
+                                    <div class="chart-bar" title="@($"{month.Name}: {Money(month.Amount)}")">
+                                        <span class="bar-track">
+                                            <span class="bar-fill" style="@MonthBarStyle(month.Amount)"></span>
+                                        </span>
+                                        <small>@month.ShortName</small>
+                                    </div>
+                                }
+                            </div>
+                            <div class="chart-highlight">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" />
+                                <span>Mayor: <strong>@MesMayor</strong> · @Money(MontoMesMayor)</span>
+                            </div>
+                        </div>
+
+                        <MudGrid GutterSize="1" Class="month-fields">
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                            <MudItem xs="12" sm="6" lg="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.00" Culture="@NumberCulture" Min="0m" ReadOnly="@IsReadOnly" Disabled="@(!IsReadOnly && AmountsLocked)" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        </MudGrid>
+                    </div>
                 </div>
             </MudItem>
 
@@ -178,63 +277,381 @@
 </BaseCrudDialog>
 
 <style>
-    .presupuesto-autorizado-dialog .budget-ribbon {
+    .presupuesto-autorizado-dialog {
+        --budget-ink: var(--mud-palette-text-primary);
+        --budget-muted: var(--mud-palette-text-secondary);
+        color: var(--budget-ink);
+    }
+
+    .presupuesto-autorizado-dialog .budget-overview {
+        position: relative;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-        margin-bottom: 2px;
+        grid-template-columns: minmax(300px, .95fr) minmax(520px, 1.25fr);
+        align-items: stretch;
+        gap: 20px;
+        min-height: 132px;
+        padding: 20px;
+        overflow: hidden;
+        border-radius: 16px;
+        color: #fff;
+        background: linear-gradient(125deg, #073b72 0%, #075fa8 58%, #1783bc 100%);
+        box-shadow: 0 14px 30px rgba(7, 59, 114, .18);
     }
 
-    .presupuesto-autorizado-dialog .budget-ribbon > div,
-    .presupuesto-autorizado-dialog .months-panel {
-        border: 1px solid color-mix(in srgb, var(--eg-primary) 38%, var(--mud-palette-lines-default));
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--eg-primary) 8%, var(--mud-palette-surface));
-        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--mud-palette-white) 5%, transparent);
+    .presupuesto-autorizado-dialog .budget-overview::after {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        right: -100px;
+        top: -190px;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 999px;
+        box-shadow: 0 0 0 48px rgba(255, 255, 255, .025), 0 0 0 96px rgba(255, 255, 255, .018);
+        pointer-events: none;
     }
 
-    .presupuesto-autorizado-dialog .budget-ribbon > div {
-        padding: 8px 10px;
+    .presupuesto-autorizado-dialog .budget-total {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding-right: 20px;
+        border-right: 1px solid rgba(255, 255, 255, .17);
     }
 
-    .presupuesto-autorizado-dialog .budget-ribbon span {
-        display: block;
-        color: var(--mud-palette-text-secondary);
-        font-size: .72rem;
+    .presupuesto-autorizado-dialog .budget-total-icon {
+        width: 54px;
+        height: 54px;
+        flex: 0 0 54px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 15px;
+        color: #b9e5ff;
+        background: rgba(255, 255, 255, .10);
+    }
+
+    .presupuesto-autorizado-dialog .budget-total > div {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+    }
+
+    .presupuesto-autorizado-dialog .budget-eyebrow,
+    .presupuesto-autorizado-dialog .budget-insights span,
+    .presupuesto-autorizado-dialog .months-total span,
+    .presupuesto-autorizado-dialog .chart-copy span {
+        color: inherit;
+        font-size: .68rem;
+        font-weight: 750;
+        letter-spacing: .055em;
         text-transform: uppercase;
     }
 
-    .presupuesto-autorizado-dialog .budget-ribbon strong,
-    .presupuesto-autorizado-dialog .months-header .mud-typography {
-        color: var(--mud-palette-text-primary);
+    .presupuesto-autorizado-dialog .budget-eyebrow {
+        color: rgba(255, 255, 255, .72);
+    }
+
+    .presupuesto-autorizado-dialog .budget-total strong {
+        overflow: hidden;
+        color: #fff;
+        font-size: clamp(1.65rem, 2.5vw, 2.25rem);
+        font-weight: 820;
+        line-height: 1.08;
+        letter-spacing: -.035em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .presupuesto-autorizado-dialog .budget-total small {
+        color: rgba(255, 255, 255, .68);
+        font-size: .74rem;
+        font-weight: 550;
+    }
+
+    .presupuesto-autorizado-dialog .budget-insights {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: center;
+        gap: 8px;
+    }
+
+    .presupuesto-autorizado-dialog .budget-insights > div {
+        min-width: 0;
+        display: grid;
+        align-content: center;
+        gap: 4px;
+        min-height: 76px;
+        padding: 10px 13px;
+        border: 1px solid rgba(255, 255, 255, .15);
+        border-radius: 12px;
+        background: rgba(0, 25, 58, .13);
+    }
+
+    .presupuesto-autorizado-dialog .budget-insights span {
+        overflow: hidden;
+        color: rgba(255, 255, 255, .66);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .presupuesto-autorizado-dialog .budget-insights strong {
+        overflow: hidden;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .presupuesto-autorizado-dialog .budget-insights strong small,
+    .presupuesto-autorizado-dialog .budget-insights > div > small {
+        color: rgba(255, 255, 255, .66);
+        font-size: .7rem;
+        font-weight: 600;
+    }
+
+    .presupuesto-autorizado-dialog .form-section,
+    .presupuesto-autorizado-dialog .months-panel {
+        margin-top: 12px;
+        padding: 17px 18px 12px;
+        border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, transparent);
+        border-radius: 14px;
+        background: var(--mud-palette-surface);
+    }
+
+    .presupuesto-autorizado-dialog .section-heading {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .presupuesto-autorizado-dialog .section-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: var(--eg-primary, var(--mud-palette-primary));
+        background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 9%, transparent);
+    }
+
+    .presupuesto-autorizado-dialog .section-heading h3 {
+        margin: 0;
+        color: var(--budget-ink);
+        font-size: .96rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -.01em;
+    }
+
+    .presupuesto-autorizado-dialog .section-heading p {
+        margin: 2px 0 0;
+        color: var(--budget-muted);
+        font-size: .72rem;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    .presupuesto-autorizado-dialog .section-number {
+        color: color-mix(in srgb, var(--budget-muted) 68%, transparent);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+    }
+
+    .presupuesto-autorizado-dialog .compact-form-grid,
+    .presupuesto-autorizado-dialog .month-fields {
+        align-items: start;
+    }
+
+    .presupuesto-autorizado-dialog .compact-form-grid .mud-input-control,
+    .presupuesto-autorizado-dialog .month-fields .mud-input-control {
+        margin-top: 4px;
+        margin-bottom: 1px;
+    }
+
+    .presupuesto-autorizado-dialog .compact-form-grid .mud-input-helper-text:empty,
+    .presupuesto-autorizado-dialog .month-fields .mud-input-helper-text:empty {
+        display: none;
+    }
+
+    .presupuesto-autorizado-dialog .mud-input-outlined-border {
+        border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 38%, transparent);
+        border-radius: 10px;
+    }
+
+    .presupuesto-autorizado-dialog .mud-input-control:hover .mud-input-outlined-border {
+        border-color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 52%, var(--mud-palette-lines-default));
+    }
+
+    .presupuesto-autorizado-dialog.is-readonly input[readonly],
+    .presupuesto-autorizado-dialog.is-readonly textarea[readonly] {
+        color: var(--budget-ink) !important;
+        -webkit-text-fill-color: var(--budget-ink) !important;
+        opacity: 1 !important;
+    }
+
+    .presupuesto-autorizado-dialog.is-readonly .mud-input-control {
+        pointer-events: none;
+    }
+
+    .presupuesto-autorizado-dialog.is-readonly .mud-input-outlined-border {
+        border-color: color-mix(in srgb, var(--mud-palette-lines-default) 88%, transparent);
+        background: color-mix(in srgb, var(--mud-palette-background) 55%, transparent);
+    }
+
+    .presupuesto-autorizado-dialog.is-readonly .mud-input-adornment-end {
+        display: none;
     }
 
     .presupuesto-autorizado-dialog .months-panel {
-        padding: 10px;
-        color: var(--mud-palette-text-primary);
+        padding: 17px 18px 16px;
     }
 
     .presupuesto-autorizado-dialog .months-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 78%, transparent);
+    }
+
+    .presupuesto-autorizado-dialog .months-heading {
+        flex: 1 1 auto;
+        margin: 0;
+    }
+
+    .presupuesto-autorizado-dialog .months-total {
+        flex: 0 0 auto;
+        display: grid;
+        justify-items: end;
+        gap: 1px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        color: var(--eg-primary, var(--mud-palette-primary));
+        background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 8%, transparent);
+    }
+
+    .presupuesto-autorizado-dialog .months-total span {
+        color: var(--budget-muted);
+    }
+
+    .presupuesto-autorizado-dialog .months-total strong {
+        color: var(--eg-primary, var(--mud-palette-primary));
+        font-size: .98rem;
+        font-weight: 850;
+    }
+
+    .presupuesto-autorizado-dialog .months-layout {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .presupuesto-autorizado-dialog .distribution-chart {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto minmax(78px, 1fr) auto;
         gap: 10px;
-        margin-bottom: 8px;
+        padding: 13px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 5%, var(--mud-palette-background));
     }
 
-    .presupuesto-autorizado-dialog .months-header .mud-typography-caption {
-        color: var(--mud-palette-text-secondary);
+    .presupuesto-autorizado-dialog .chart-copy {
+        display: grid;
+        gap: 2px;
     }
 
-    .presupuesto-autorizado-dialog .months-panel .mud-input,
-    .presupuesto-autorizado-dialog .months-panel .mud-input input,
-    .presupuesto-autorizado-dialog .months-panel .mud-input-adornment,
-    .presupuesto-autorizado-dialog .months-panel .mud-input-label {
-        color: var(--mud-palette-text-primary);
+    .presupuesto-autorizado-dialog .chart-copy span {
+        color: var(--budget-muted);
     }
 
-    .presupuesto-autorizado-dialog .months-panel .mud-input-outlined-border {
-        border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 50%, transparent);
+    .presupuesto-autorizado-dialog .chart-copy strong {
+        color: var(--budget-ink);
+        font-size: .88rem;
+        font-weight: 800;
+    }
+
+    .presupuesto-autorizado-dialog .chart-bars {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        align-items: end;
+        gap: 4px;
+    }
+
+    .presupuesto-autorizado-dialog .chart-bar {
+        min-width: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: minmax(62px, 1fr) auto;
+        align-items: end;
+        gap: 4px;
+    }
+
+    .presupuesto-autorizado-dialog .bar-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 62px;
+        display: flex;
+        align-items: end;
+        overflow: hidden;
+        border-radius: 4px 4px 2px 2px;
+        background: color-mix(in srgb, var(--mud-palette-lines-default) 34%, transparent);
+    }
+
+    .presupuesto-autorizado-dialog .bar-fill {
+        width: 100%;
+        height: var(--bar-height, 4%);
+        min-height: 3px;
+        border-radius: inherit;
+        background: linear-gradient(180deg, #28a0dc, #075fa8);
+        transition: height 180ms ease;
+    }
+
+    .presupuesto-autorizado-dialog .chart-bar small {
+        overflow: hidden;
+        color: var(--budget-muted);
+        font-size: .57rem;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        text-overflow: clip;
+        text-transform: uppercase;
+    }
+
+    .presupuesto-autorizado-dialog .chart-highlight {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--eg-primary, var(--mud-palette-primary));
+        font-size: .67rem;
+    }
+
+    .presupuesto-autorizado-dialog .chart-highlight span {
+        overflow: hidden;
+        color: var(--budget-muted);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .presupuesto-autorizado-dialog .chart-highlight strong {
+        color: var(--budget-ink);
     }
 
     .presupuesto-autorizado-dialog .months-panel input::selection {
@@ -242,14 +659,53 @@
         background: var(--eg-primary);
     }
 
-    @@media (max-width: 760px) {
-        .presupuesto-autorizado-dialog .budget-ribbon {
+    @@media (max-width: 1180px) {
+        .presupuesto-autorizado-dialog .budget-overview {
             grid-template-columns: 1fr;
+        }
+
+        .presupuesto-autorizado-dialog .budget-total {
+            padding: 0 0 16px;
+            border-right: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .17);
+        }
+
+        .presupuesto-autorizado-dialog .months-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .presupuesto-autorizado-dialog .distribution-chart {
+            min-height: 168px;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .presupuesto-autorizado-dialog .budget-overview {
+            gap: 14px;
+            padding: 16px;
+        }
+
+        .presupuesto-autorizado-dialog .budget-insights {
+            grid-template-columns: 1fr;
+        }
+
+        .presupuesto-autorizado-dialog .budget-insights > div {
+            min-height: 60px;
         }
 
         .presupuesto-autorizado-dialog .months-header {
             align-items: flex-start;
             flex-direction: column;
+        }
+
+        .presupuesto-autorizado-dialog .months-total {
+            width: 100%;
+            justify-items: start;
+        }
+
+        .presupuesto-autorizado-dialog .form-section,
+        .presupuesto-autorizado-dialog .months-panel {
+            padding: 14px 12px 10px;
         }
     }
 </style>
@@ -287,19 +743,44 @@
     private bool _formLoading = true;
 
     private string dialogTitle => IsReadOnly ? ReadOnlyTitle ?? "Ver Presupuesto Autorizado" : IsAuthorizationFlow ? "Autorizar Presupuesto de Egresos" : Id.HasValue ? "Editar Presupuesto Autorizado" : "Nuevo Presupuesto Autorizado";
+    private string dialogSubtitle => IsReadOnly
+        ? "Consulta la clasificación, el contexto y la distribución anual del presupuesto."
+        : IsAuthorizationFlow
+            ? "Verifica los datos y confirma la autorización del presupuesto."
+            : "Captura los datos presupuestales y distribuye el monto por mes.";
+    private string DialogBodyClass => IsReadOnly
+        ? "presupuesto-autorizado-dialog is-readonly"
+        : "presupuesto-autorizado-dialog is-editable";
     private string actionText => IsAuthorizationFlow ? "Firmar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
     private string cancelText => IsReadOnly ? "Cerrar" : "Cancelar";
     private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
     private string actionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
-    private string CurrencyDisplay => $"({CurrencyName} {CurrencySymbol})";
     private string MonthlyAmountHelpText => IsReadOnly
         ? $"Monto {AmountKind} por mes."
         : $"Captura el monto {AmountKind} por mes.";
     private bool AmountsLocked => IsReadOnly || IsAuthorizationFlow || Id.HasValue;
     private bool SourceFieldsLocked => IsAuthorizationFlow || (Id.HasValue && item.FkidEgresoProyectadoPres.HasValue);
-    private bool FormFieldsLocked => IsReadOnly || SourceFieldsLocked;
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
+    private IReadOnlyList<MonthAmount> MonthValues => new[]
+    {
+        new MonthAmount("Enero", "E", item.Enero),
+        new MonthAmount("Febrero", "F", item.Febrero),
+        new MonthAmount("Marzo", "M", item.Marzo),
+        new MonthAmount("Abril", "A", item.Abril),
+        new MonthAmount("Mayo", "M", item.Mayo),
+        new MonthAmount("Junio", "J", item.Junio),
+        new MonthAmount("Julio", "J", item.Julio),
+        new MonthAmount("Agosto", "A", item.Agosto),
+        new MonthAmount("Septiembre", "S", item.Septiembre),
+        new MonthAmount("Octubre", "O", item.Octubre),
+        new MonthAmount("Noviembre", "N", item.Noviembre),
+        new MonthAmount("Diciembre", "D", item.Diciembre)
+    };
+    private int MesesConMonto => MonthValues.Count(month => month.Amount > 0m);
+    private MonthAmount HighestMonth => MonthValues.OrderByDescending(month => month.Amount).First();
+    private decimal MontoMesMayor => HighestMonth.Amount;
+    private string MesMayor => MontoMesMayor > 0m ? HighestMonth.Name : "Sin asignación";
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private static readonly CultureInfo DateCulture = new("es-MX");
 
@@ -582,7 +1063,17 @@
         };
     }
 
-    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", NumberCulture)}";
+    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("N2", NumberCulture)}";
+
+    private string MonthBarStyle(decimal amount)
+    {
+        var maximum = MonthValues.Max(month => month.Amount);
+        var percentage = maximum <= 0m
+            ? 4m
+            : Math.Max(4m, amount / maximum * 100m);
+
+        return $"--bar-height:{percentage.ToString("0.##", CultureInfo.InvariantCulture)}%;";
+    }
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
@@ -591,4 +1082,6 @@
         id.HasValue && id.Value > 0
             ? new LookupItem { Id = id.Value, Text = TextOrDefault(text, id.Value) }
             : null;
+
+    private sealed record MonthAmount(string Name, string ShortName, decimal Amount);
 }

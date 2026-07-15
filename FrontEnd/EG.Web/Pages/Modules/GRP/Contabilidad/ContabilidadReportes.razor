@@ -55,7 +55,7 @@
 <AccessVerification IsInitialized="@_isInitialized"
                     HasAccess="@_hasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False">
         <PageHeader Title="@_config.Title"
                     Subtitle="@_config.Subtitle"
                     Icon="@_config.Icon"
@@ -161,8 +161,11 @@
 
                 @if (string.IsNullOrWhiteSpace(_config.ReportName))
                 {
-                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                        Ruta registrada sin layout legacy disponible.
+                    <MudAlert Severity="Severity.Warning"
+                              Variant="Variant.Outlined"
+                              Icon="@Icons.Material.Filled.Construction">
+                        <MudText Typo="Typo.subtitle2">Reporte pendiente de configuración</MudText>
+                        <MudText Typo="Typo.body2">@UnavailableReportMessage</MudText>
                     </MudAlert>
                 }
                 else
@@ -208,6 +211,15 @@
     private int? _usuarioId;
     private bool _usaMesTrece;
     private bool _soloCuentasPres;
+
+    private string UnavailableReportMessage => _config.Route switch
+    {
+        "/Contabilidad/Reportes_Contabilidad/Reporte_DIOT" =>
+            "La consulta DIOT existe en la base de datos, pero este proyecto no incluye la plantilla visual necesaria para mostrarla.",
+        "/Contabilidad/EI_Presupuestarios/Indicadores_APP" =>
+            "Este proyecto no incluye una consulta ni una plantilla de reporte para Indicadores APP.",
+        _ => "No se encontró una plantilla de reporte asociada a esta opción."
+    };
     private bool _esCierre;
 
     private bool CanOpenReport => !string.IsNullOrWhiteSpace(_config.ReportName) &&

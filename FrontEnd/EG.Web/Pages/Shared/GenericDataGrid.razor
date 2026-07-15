@@ -98,19 +98,28 @@
                 </MudTooltip>
             }
 
-                <MudTextField T="string"
-                              Value="@SearchString"
-                              ValueChanged="@(value => OnSearchTextChanged(value))"
-                              Placeholder="@SearchPlaceholder"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
-                              Clearable="true"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              Immediate="true"
-                              Disabled="@IsGridBusy"
-                              OnKeyUp="HandleKeyUp"
-                              Class="eg-data-grid-search mt-0" />
+                <div class="eg-data-grid-search-shell">
+                    <MudTextField T="string"
+                                  Value="@SearchString"
+                                  ValueChanged="@(value => OnSearchTextChanged(value))"
+                                  Placeholder="@SearchPlaceholder"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Clearable="true"
+                                  Immediate="true"
+                                  Disabled="@IsGridBusy"
+                                  OnKeyUp="HandleKeyUp"
+                                  Class="eg-data-grid-search mt-0" />
+                    <MudTooltip Text="Buscar (Enter)">
+                        <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                       Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Disabled="@IsGridBusy"
+                                       OnClick="ApplySearchAsync"
+                                       Class="eg-data-grid-search-button"
+                                       aria-label="Buscar" />
+                    </MudTooltip>
+                </div>
             }
         </ToolBarContent>
 
@@ -243,6 +252,11 @@
 
     private async Task<GridData<TItem>> LoadServerDataAsync(GridState<TItem> state, CancellationToken cancellationToken)
     {
+        if (disposed)
+        {
+            return new GridData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+        }
+
         isLoading = true;
 
         try
@@ -273,6 +287,11 @@
             lastLoadError = null;
             return new GridData<TItem> { Items = tableData.Items, TotalItems = tableData.TotalItems };
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || disposed)
+        {
+            Logger.LogDebug("Se canceló la carga de GenericDataGrid al cambiar de vista. Title={Title}", Title);
+            return new GridData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+        }
         catch (Exception ex)
         {
             lastLoadError = "No fue posible cargar la información. Revisa tu conexión e intenta nuevamente.";
@@ -284,7 +303,10 @@
         finally
         {
             isLoading = false;
-            await InvokeAsync(StateHasChanged);
+            if (!disposed)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -326,15 +348,12 @@
     {
         SearchString = value ?? string.Empty;
         await SearchStringChanged.InvokeAsync(SearchString);
-        var version = ++searchDebounceVersion;
-        _ = DebounceSearchAsync(version);
     }
 
     private async Task HandleKeyUp(KeyboardEventArgs args)
     {
         if (args.Key == "Enter")
         {
-            searchDebounceVersion++;
             await ApplySearchAsync();
         }
     }
@@ -381,6 +400,11 @@
 
     public async Task ReloadData()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (dataGridRef is null)
         {
             Logger.LogWarning("Se intentó recargar GenericDataGrid antes de estar listo. Title={Title}", Title);
@@ -391,6 +415,10 @@
         try
         {
             await dataGridRef.ReloadServerData();
+        }
+        catch (OperationCanceledException) when (disposed)
+        {
+            Logger.LogDebug("Se canceló la recarga de GenericDataGrid al cambiar de vista. Title={Title}", Title);
         }
         catch (Exception ex)
         {
@@ -416,6 +444,11 @@
 
     private async Task ExportToExcelAsync()
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (ExportFunc is null)
         {
             Logger.LogWarning("Se solicitó exportar GenericDataGrid sin ExportFunc. Title={Title}", Title);
@@ -438,7 +471,10 @@
         finally
         {
             actionInProgress = false;
-            await InvokeAsync(StateHasChanged);
+            if (!disposed)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 

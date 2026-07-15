@@ -718,14 +718,23 @@ body,
 }
 
 /* Animaciones */
-.mud-paper {
+.eg-hover-lift {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-    .mud-paper:hover {
+.eg-hover-lift:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
     }
+
+/* Superficie neutra para el contenido de paginas que no usan un shell especializado. */
+.eg-content-surface {
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 88%, transparent);
+    border-radius: 14px !important;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 14px 34px rgba(2, 8, 23, .06);
+}
 
 /* Estilos para los KPIs */
 .kpi-card {
@@ -748,3 +757,97 @@ body,
     .kpi-card:hover::after {
         opacity: 1;
     }
+
+/* Lenguaje visual compartido para dialogos que no usan BaseCrudDialog. */
+.mud-dialog:not(.crud-dialog) {
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 86%, transparent);
+    border-radius: 16px !important;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 30px 80px rgba(2, 8, 23, .30) !important;
+}
+
+.mud-dialog:not(.crud-dialog) > .mud-dialog-title {
+    min-height: 64px;
+    padding: 14px 20px !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 86%, transparent);
+    color: var(--mud-palette-text-primary);
+    background: var(--mud-palette-surface);
+}
+
+.mud-dialog:not(.crud-dialog) > .mud-dialog-title .mud-typography-h6,
+.mud-dialog:not(.crud-dialog) > .mud-dialog-title .mud-typography-subtitle1 {
+    color: var(--mud-palette-text-primary);
+    font-weight: 800;
+    letter-spacing: -.012em;
+}
+
+.mud-dialog:not(.crud-dialog) > .mud-dialog-content {
+    padding: 18px 20px !important;
+    color: var(--mud-palette-text-primary);
+    background: color-mix(in srgb, var(--mud-palette-background) 58%, var(--mud-palette-surface));
+}
+
+.mud-dialog:not(.crud-dialog) > .mud-dialog-actions {
+    gap: 8px;
+    padding: 12px 20px 14px !important;
+    border-top: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, transparent);
+    background: var(--mud-palette-surface);
+}
+
+.mud-dialog .mud-button-root {
+    min-height: 38px;
+    border-radius: 9px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.mud-dialog .mud-icon-button {
+    border-radius: 10px;
+}
+
+.mud-dialog .mud-input-control {
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.mud-dialog .mud-input-outlined-border {
+    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 38%, transparent);
+    border-radius: 10px;
+}
+
+.mud-dialog .mud-input-control:hover .mud-input-outlined-border {
+    border-color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 48%, var(--mud-palette-lines-default));
+}
+
+.mud-dialog .mud-input-helper-text:empty {
+    display: none;
+}
+
+.mud-dialog input[readonly],
+.mud-dialog textarea[readonly] {
+    color: var(--mud-palette-text-primary) !important;
+    -webkit-text-fill-color: var(--mud-palette-text-primary) !important;
+    opacity: 1 !important;
+}
+
+.mud-overlay-dialog {
+    background-color: rgba(8, 18, 34, .54) !important;
+    backdrop-filter: blur(3px);
+}
+
+@media (max-width: 760px) {
+    .mud-dialog:not(.crud-dialog) {
+        max-width: calc(100vw - 20px) !important;
+        margin: 10px !important;
+        border-radius: 14px !important;
+    }
+
+    .mud-dialog:not(.crud-dialog) > .mud-dialog-title,
+    .mud-dialog:not(.crud-dialog) > .mud-dialog-content,
+    .mud-dialog:not(.crud-dialog) > .mud-dialog-actions {
+        padding-right: 14px !important;
+        padding-left: 14px !important;
+    }
+}

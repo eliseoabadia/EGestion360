@@ -52,12 +52,9 @@ namespace EG.Application.Modules.GRP.Services.Configuracion.Catalogo
 
         public virtual async Task DeleteAsync(int id)
         {
-            var existing = await Service.GetByIdAsync(id);
-            if (existing == null)
-            {
-                throw new KeyNotFoundException($"Registro con ID {id} no encontrado");
-            }
-
+            // GenericService valida la clave con FindAsync y aplica la baja
+            // lógica. La consulta previa generaba falsos "no encontrado" en
+            // catálogos cuyo nombre de clave no sigue una única convención.
             await Service.DeleteAsync(id);
         }
 

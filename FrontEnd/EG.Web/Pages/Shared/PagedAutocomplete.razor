@@ -5,6 +5,7 @@
 @implements IAsyncDisposable
 
 @inject IJSRuntime JSRuntime
+@inject ILogger<PagedAutocomplete> Logger
 
 <MudAutocomplete T="LookupItem"
                  @ref="_autocomplete"
@@ -71,6 +72,12 @@
                 <MudText Typo="Typo.body2">@LoadingText</MudText>
             </div>
         }
+        else if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="ma-2">
+                @_loadErrorMessage
+            </MudAlert>
+        }
         else
         {
             <MudText Class="px-4 py-2" Typo="Typo.body2">@NoItemsText</MudText>
@@ -114,6 +121,7 @@
     private bool _hasMore = true;
     private bool _loading;
     private bool _observerPending;
+    private string? _loadErrorMessage;
 
     private async Task<IEnumerable<LookupItem>> SearchAsync(string? value, CancellationToken ct)
     {
@@ -164,6 +172,7 @@
         try
         {
             _loading = true;
+            _loadErrorMessage = null;
             await InvokeAsync(StateHasChanged);
             var nextPage = _currentPage + 1;
             ComboLookupResult result;
@@ -200,6 +209,17 @@
             _totalCount = result.TotalCount;
             _hasMore = _cache.Count < _totalCount;
             _observerPending = _hasMore;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Una búsqueda anterior puede cancelarse al seguir escribiendo.
+        }
+        catch (Exception ex)
+        {
+            _hasMore = false;
+            _observerPending = false;
+            _loadErrorMessage = "No fue posible cargar este catálogo. Intenta nuevamente.";
+            Logger.LogError(ex, "No se pudo cargar el catálogo paginado {Label}.", Label);
         }
         finally
         {
@@ -267,6 +287,7 @@
         _hasMore = true;
         _cache.Clear();
         _observerPending = false;
+        _loadErrorMessage = null;
     }
 
     private string NormalizeSearchFilter(string? value)
@@ -299,9 +320,17 @@
     {
         if (_observerPending && _hasMore && !_loading)
         {
-            _dotNetObjectReference ??= DotNetObjectReference.Create(this);
-            _observerPending = false;
-            await JSRuntime.InvokeVoidAsync("egestionComboScroll.observe", _sentinel, _dotNetObjectReference);
+            try
+            {
+                _dotNetObjectReference ??= DotNetObjectReference.Create(this);
+                _observerPending = false;
+                await JSRuntime.InvokeVoidAsync("egestionComboScroll.observe", _sentinel, _dotNetObjectReference);
+            }
+            catch (Exception ex)
+            {
+                _observerPending = false;
+                Logger.LogWarning(ex, "No se pudo activar la carga incremental del catálogo {Label}.", Label);
+            }
         }
     }
 

@@ -45,7 +45,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<MatrizIngresoResponse>
                 {
                     Success = false,
-                    Message = $"No se encontrÃ³ el registro con ID {id}",
+                    Message = $"No se encontró el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -70,7 +70,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<MatrizIngresoResponse>
                 {
                     Success = false,
-                    Message = "Datos invÃ¡lidos",
+                    Message = "Datos inválidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -97,7 +97,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<MatrizIngresoResponse>
                 {
                     Success = false,
-                    Message = "Datos invÃ¡lidos",
+                    Message = "Datos inválidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -109,7 +109,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<MatrizIngresoResponse>
                 {
                     Success = false,
-                    Message = $"No se encontrÃ³ el registro con ID {id}",
+                    Message = $"No se encontró el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -144,7 +144,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<MatrizIngresoResponse>
                 {
                     Success = false,
-                    Message = $"No se encontrÃ³ el registro con ID {id}",
+                    Message = $"No se encontró el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });

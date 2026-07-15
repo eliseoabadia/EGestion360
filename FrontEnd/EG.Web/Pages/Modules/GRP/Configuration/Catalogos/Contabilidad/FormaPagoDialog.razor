@@ -19,27 +19,13 @@
         @ref="form"
         ShowHeader="true"
         HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Nombre"
-            Label="Nombre"
+        <MudTextField @bind-Value="item.Descripcion"
+            Label="Forma de pago"
             Variant="Variant.Outlined"
             FullWidth="true"
             Class="mb-3"
             Required="true"
-            For="@(() => item.Nombre)" />
-
-        <MudTextField @bind-Value="item.Codigo"
-            Label="Código"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Codigo)" />
-
-        <MudTextField @bind-Value="item.Descripcion"
-            Label="Descripción"
-            Variant="Variant.Outlined"
-            FullWidth="true"
-            Class="mb-3"
-            Lines="3"
+            RequiredError="La forma de pago es requerida"
             For="@(() => item.Descripcion)" />
 
     </BaseEntityForm>

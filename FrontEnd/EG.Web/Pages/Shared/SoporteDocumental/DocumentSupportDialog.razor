@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
 @using System.Globalization
+@implements IAsyncDisposable
 @inject IDocumentSupportService DocumentService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
@@ -341,8 +342,8 @@
             }
             else
             {
+                await ReleasePreviewUrlAsync();
                 SelectedDocument = null;
-                _previewUrl = null;
                 Annotations = [];
             }
         }
@@ -370,7 +371,7 @@
 
     private async Task LoadPreview()
     {
-        _previewUrl = null;
+        await ReleasePreviewUrlAsync();
         if (SelectedDocument == null)
             return;
 
@@ -384,7 +385,11 @@
                 return;
             }
 
-            _previewUrl = $"data:{download.ContentType};base64,{Convert.ToBase64String(download.Content)}";
+            _previewUrl = await JS.InvokeAsync<string>(
+                "documentSupport.createPreviewUrl",
+                InputId,
+                Convert.ToBase64String(download.Content),
+                download.ContentType);
         }
         finally
         {
@@ -452,7 +457,7 @@
         {
             Snackbar.Add("Documento eliminado.", Severity.Success);
             SelectedDocument = null;
-            _previewUrl = null;
+            await ReleasePreviewUrlAsync();
             Annotations = [];
             await LoadDocuments(preserveSelection: false);
         }
@@ -558,7 +563,28 @@
     private static string OfficialLabel(DocumentoResponse document)
         => string.IsNullOrWhiteSpace(document.EtiquetaProteccion) ? "Oficial para firma" : document.EtiquetaProteccion!;
 
-    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private async Task ReleasePreviewUrlAsync()
+    {
+        _previewUrl = null;
+        try
+        {
+            await JS.InvokeVoidAsync("documentSupport.revokePreviewUrl", InputId);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    private async Task Close()
+    {
+        await ReleasePreviewUrlAsync();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ReleasePreviewUrlAsync();
+    }
 
     private sealed class RelativePoint
     {

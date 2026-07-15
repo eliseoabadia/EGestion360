@@ -2,14 +2,25 @@
 @inject IJSRuntime JS
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pa-3">
-    <MudPaper Elevation="1" Class="pa-4">
-        <div class="d-flex align-center gap-2">
-            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
-                           Color="Color.Primary"
-                           Size="Size.Small"
-                           OnClick="GoBack" />
-            <MudText Typo="Typo.h6">Disenador de reporte</MudText>
-        </div>
+    <PageHeader Title="Disenador de reporte"
+                Subtitle="Configura la estructura visual y los datos del reporte."
+                Kicker="Centro de reportes"
+                Icon="@Icons.Material.Filled.DesignServices"
+                ShowCreateButton="false"
+                ShowRefreshButton="false">
+        <AdditionalButtons>
+            <MudTooltip Text="Volver">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                               Color="Color.Primary"
+                               Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               OnClick="GoBack"
+                               aria-label="Volver" />
+            </MudTooltip>
+        </AdditionalButtons>
+    </PageHeader>
+
+    <MudPaper Elevation="0" Class="pa-4 eg-content-surface">
         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
             El disenador se mantiene deshabilitado para aligerar el arranque del sistema.
         </MudAlert>

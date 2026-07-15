@@ -6,7 +6,7 @@
             <MudIcon Icon="@Icon" Size="Size.Large" />
         </span>
         <div>
-            <span class="eg-page-header-kicker">Modulo operativo</span>
+            <span class="eg-page-header-kicker">@Kicker</span>
             <h1>@Title</h1>
             @if (!string.IsNullOrWhiteSpace(Subtitle))
             {
@@ -15,38 +15,46 @@
         </div>
     </div>
 
-    <div class="eg-page-header-actions" aria-label="Acciones de pagina">
-        @if (ShowCreateButton)
-        {
-            <MudTooltip Text="@CreateTooltip">
-                <MudIconButton Icon="@Icons.Material.Filled.Add"
-                               Visible="@CanCreate"
-                               OnClick="HandleCreate"
-                               Disabled="@IsBusy"
-                               Color="Color.Primary"
-                               Variant="Variant.Filled"
-                               Size="Size.Small"
-                               aria-label="@CreateTooltip" />
-            </MudTooltip>
-        }
-        <MudTooltip Text="Refrescar">
-            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                           OnClick="HandleRefresh"
-                           Disabled="@IsBusy"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           Size="Size.Small"
-                           aria-label="Refrescar" />
-        </MudTooltip>
-        @AdditionalButtons
-    </div>
+    @if (HasActions)
+    {
+        <div class="eg-page-header-actions" aria-label="Acciones de pagina">
+            @if (ShowCreateButton)
+            {
+                <MudTooltip Text="@CreateTooltip">
+                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                   Visible="@CanCreate"
+                                   OnClick="HandleCreate"
+                                   Disabled="@IsBusy"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   aria-label="@CreateTooltip" />
+                </MudTooltip>
+            }
+            @if (ShowRefreshButton)
+            {
+                <MudTooltip Text="Refrescar">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                   OnClick="HandleRefresh"
+                                   Disabled="@IsBusy"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   aria-label="Refrescar" />
+                </MudTooltip>
+            }
+            @AdditionalButtons
+        </div>
+    }
 </section>
 
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string Kicker { get; set; } = "Modulo operativo";
     [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Business;
     [Parameter] public bool ShowCreateButton { get; set; } = true;
+    [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public string CreateTooltip { get; set; } = "Nuevo";
     [Parameter] public bool CanCreate { get; set; } = true;
     [Parameter] public EventCallback OnCreate { get; set; }
@@ -55,6 +63,7 @@
 
     private bool actionInProgress;
     private bool IsBusy => actionInProgress;
+    private bool HasActions => ShowCreateButton || ShowRefreshButton || AdditionalButtons is not null;
 
     private async Task HandleCreate()
     {

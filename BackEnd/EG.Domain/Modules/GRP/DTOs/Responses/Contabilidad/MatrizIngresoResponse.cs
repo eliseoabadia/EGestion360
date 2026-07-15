@@ -20,14 +20,16 @@ namespace EG.Domain.DTOs.Responses.Contabilidad
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
 
-        public string ProgramaClave { get; set; }
-        public string ProgramaDescripcion { get; set; }
-        public string OrigenDescripcion { get; set; }
-        public string CuentaAutorizadoNombre { get; set; }
-        public string CuentaPorEjecutarNombre { get; set; }
-        public string CuentaModificadoNombre { get; set; }
-        public string CuentaDevengadoNombre { get; set; }
-        public string CuentaRecaudadoNombre { get; set; }
-        public string CuentaDepositoNombre { get; set; }
+        // Campos descriptivos de salida. El contrato también se usa al crear y
+        // editar, por lo que no deben provocar validación de modelo por null.
+        public string ProgramaClave { get; set; } = string.Empty;
+        public string ProgramaDescripcion { get; set; } = string.Empty;
+        public string OrigenDescripcion { get; set; } = string.Empty;
+        public string CuentaAutorizadoNombre { get; set; } = string.Empty;
+        public string CuentaPorEjecutarNombre { get; set; } = string.Empty;
+        public string CuentaModificadoNombre { get; set; } = string.Empty;
+        public string CuentaDevengadoNombre { get; set; } = string.Empty;
+        public string CuentaRecaudadoNombre { get; set; } = string.Empty;
+        public string CuentaDepositoNombre { get; set; } = string.Empty;
     }
 }

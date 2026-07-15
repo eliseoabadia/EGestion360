@@ -29,7 +29,6 @@
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoDetallePolizaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDetallePoliza))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDetallePoliza))" /></MudTooltip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="TipoDetallePolizaResponse" TProperty="int" Property="x => x.PkidTipoDetallePoliza" Title="ID" Identifier="PkidTipoDetallePoliza" />
-                <PropertyColumn T="TipoDetallePolizaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="TipoDetallePolizaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
         </GenericDataGrid>
@@ -53,7 +52,6 @@
         return items.Select(u => new
         {
             ID = u.PkidTipoDetallePoliza,
-            Clave = u.Clave,
             Descripcion = u.Descripcion,
         });
     }

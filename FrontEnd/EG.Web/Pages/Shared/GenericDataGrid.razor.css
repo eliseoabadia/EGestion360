@@ -97,8 +97,21 @@
     font-size: .75rem;
 }
 
+.eg-data-grid-search-shell {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: min(370px, 39vw);
+}
+
 .eg-data-grid-search {
-    min-width: min(310px, 34vw);
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.eg-data-grid-search-button {
+    flex: 0 0 auto;
+    align-self: center;
 }
 
 .eg-data-grid-export-button {
@@ -134,7 +147,7 @@
         min-width: 0;
     }
 
-    .eg-data-grid-search {
+    .eg-data-grid-search-shell {
         order: 3;
         min-width: 100%;
     }

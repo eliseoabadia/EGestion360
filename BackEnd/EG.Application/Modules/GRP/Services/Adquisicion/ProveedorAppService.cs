@@ -450,11 +450,11 @@ namespace EG.Application.Services.Adquisicion
             var location = await FindLocationAsync(municipioId: response.FkidMunicipioSis)
                 ?? throw new ArgumentException("El municipio seleccionado no existe o no esta activo.");
 
-            if (response.FkidEstadoSis > 0 && response.FkidEstadoSis != location.EstadoId)
-                throw new ArgumentException("El municipio no pertenece al estado seleccionado.");
-            if (response.FkidPaisSis > 0 && response.FkidPaisSis != location.PaisId)
-                throw new ArgumentException("El estado no pertenece al pais seleccionado.");
-
+            // El municipio es la referencia geografica mas especifica. Algunos
+            // proveedores heredados tienen pais/estado desactualizados; al editar
+            // cualquier otro dato se bloqueaban aunque el municipio fuera valido.
+            // ResolveLocationAsync devuelve la jerarquia canonica y el guardado
+            // corrige esos identificadores automaticamente.
             return location;
         }
 

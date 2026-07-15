@@ -114,6 +114,7 @@ else
            href="@Href"
            aria-label="@Item.Nombre"
            aria-current="@(isActive ? "page" : null)"
+           @onclick:preventDefault="true"
            @onclick="HandleNavigateAsync">
             <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
             @if (!IsCollapsed)

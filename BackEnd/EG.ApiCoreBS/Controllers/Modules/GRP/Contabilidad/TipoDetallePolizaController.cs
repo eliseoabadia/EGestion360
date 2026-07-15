@@ -29,7 +29,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de pÃ³liza obtenidos correctamente",
+                Message = "Tipos de detalle de póliza obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.ToList(),
                 TotalCount = result.Count()
@@ -44,7 +44,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = false,
-                    Message = "Tipo de detalle de pÃ³liza no encontrado",
+                    Message = "Tipo de detalle de póliza no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -52,7 +52,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipo de detalle de pÃ³liza encontrado",
+                Message = "Tipo de detalle de póliza encontrado",
                 Code = "SUCCESS",
                 Data = result,
                 Items = new List<TipoDetallePolizaResponse> { result },
@@ -70,7 +70,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     new PagedResult<TipoDetallePolizaResponse>
                     {
                         Success = true,
-                        Message = "Tipo de detalle de pÃ³liza creado correctamente",
+                        Message = "Tipo de detalle de póliza creado correctamente",
                         Code = "SUCCESS",
                         TotalCount = 1
                     });
@@ -107,7 +107,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                     return NotFound(new PagedResult<TipoDetallePolizaResponse>
                     {
                         Success = false,
-                        Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
+                        Message = $"Tipo de detalle de póliza con ID {id} no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     });
@@ -115,7 +115,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return Ok(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = true,
-                    Message = "Tipo de detalle de pÃ³liza actualizado correctamente",
+                    Message = "Tipo de detalle de póliza actualizado correctamente",
                     Code = "SUCCESS",
                     TotalCount = 1
                 });
@@ -135,7 +135,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<TipoDetallePolizaResponse>
                 {
                     Success = false,
-                    Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
+                    Message = $"Tipo de detalle de póliza con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -161,7 +161,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return Ok(new PagedResult<bool>
                 {
                     Success = true,
-                    Message = "Tipo de detalle de pÃ³liza eliminado correctamente",
+                    Message = "Tipo de detalle de póliza eliminado correctamente",
                     Code = "SUCCESS",
                     Data = true,
                     Items = new List<bool> { true },
@@ -173,7 +173,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return NotFound(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de detalle de pÃ³liza con ID {id} no encontrado",
+                    Message = $"Tipo de detalle de póliza con ID {id} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -197,7 +197,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de pÃ³liza obtenidos correctamente",
+                Message = "Tipos de detalle de póliza obtenidos correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
@@ -221,7 +221,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             return Ok(new PagedResult<TipoDetallePolizaResponse>
             {
                 Success = true,
-                Message = "Tipos de detalle de pÃ³liza filtrados correctamente",
+                Message = "Tipos de detalle de póliza filtrados correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount
