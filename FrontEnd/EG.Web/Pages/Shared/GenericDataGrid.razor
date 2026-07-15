@@ -7,7 +7,7 @@
 @inject ILogger<GenericDataGrid<TItem>> Logger
 
 <MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-data-grid">
-    @if (actionInProgress)
+    @if (ShowBusyOverlay && actionInProgress)
     {
         <div class="eg-generic-data-grid-busy" role="status" aria-live="polite">
             <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
@@ -223,6 +223,7 @@
     [Parameter] public int SearchDebounceMilliseconds { get; set; } = 400;
     [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public bool ShowExportButton { get; set; }
+    [Parameter] public bool ShowBusyOverlay { get; set; } = true;
     [Parameter] public bool ShowAddButton { get; set; }
     [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
     [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
@@ -241,6 +242,7 @@
     [Parameter] public bool FixedHeader { get; set; } = true;
     [Parameter] public string TableHeight { get; set; } = "100%";
     [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Ascending;
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
     [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
     [Parameter] public string ActionLoadingMessage { get; set; } = "Procesando...";
@@ -299,7 +301,9 @@
                 Page = state.Page,
                 PageSize = state.PageSize,
                 SortLabel = sort?.SortBy,
-                SortDirection = sort?.Descending == true ? SortDirection.Descending : SortDirection.Ascending
+                SortDirection = sort is null
+                    ? InitialSortDirection
+                    : sort.Descending ? SortDirection.Descending : SortDirection.Ascending
             };
 
             var tableData = ServerDataFunc is not null

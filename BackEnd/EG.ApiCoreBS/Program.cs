@@ -121,7 +121,8 @@ try
     var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
     var issuer = builder.Configuration["JsonWebTokenKeys:ValidIssuer"];
     var audience = builder.Configuration["JsonWebTokenKeys:ValidAudience"];
-    var expiryMinutes = builder.Configuration["JsonWebTokenKeys:ExpiryMinutes"];
+    var clockSkewMinutes = builder.Configuration.GetValue<double?>("JsonWebTokenKeys:ClockSkewMinutes") ?? 1d;
+    clockSkewMinutes = Math.Clamp(clockSkewMinutes, 0d, 5d);
 
     builder.Services.AddAuthentication(x =>
     {
@@ -141,7 +142,9 @@ try
             ValidAudience = audience,
             ValidIssuer = issuer,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-            ClockSkew = TimeSpan.FromMinutes(Convert.ToDouble(expiryMinutes))
+            // La tolerancia de reloj no debe reutilizar la vigencia del token: hacerlo
+            // prolonga accidentalmente sesiones que ya expiraron.
+            ClockSkew = TimeSpan.FromMinutes(clockSkewMinutes)
         };
     });
 
@@ -178,6 +181,7 @@ try
     app.UseResponseCompression();
     app.UseCors("AllowFrontend");
     app.UseMiddleware<ApiExceptionMiddleware>();
+    app.UseMiddleware<RequestPerformanceMiddleware>();
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();

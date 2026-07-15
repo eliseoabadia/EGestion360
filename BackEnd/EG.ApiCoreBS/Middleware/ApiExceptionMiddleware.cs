@@ -9,11 +9,12 @@ namespace EG.ApiCoreBS.Middleware;
 public sealed class ApiExceptionMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly Logger.Log4NetLogger _logger = new(typeof(ApiExceptionMiddleware));
+    private readonly ILogger<ApiExceptionMiddleware> _logger;
 
-    public ApiExceptionMiddleware(RequestDelegate next)
+    public ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExceptionMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context, IUserIpService userIpService)
@@ -79,16 +80,14 @@ public sealed class ApiExceptionMiddleware
             ?? context.User.FindFirstValue("id")
             ?? "0";
 
-        var clientIp = userIpService.GetUserIpAddress(context);
-        var path = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString}";
-
-        _logger.LogMessage(
-            LogLevelGRP.Error,
-            $"Excepcion no controlada. TraceId={context.TraceIdentifier}; Path={path}; Error={ex}",
-            (byte)SystemLogTypes.Error,
-            "ApiExceptionMiddleware",
+        _logger.LogError(
+            ex,
+            "Excepcion no controlada. TraceId={TraceId}; Method={Method}; Path={Path}; UserId={UserId}; ClientIp={ClientIp}",
+            context.TraceIdentifier,
+            context.Request.Method,
+            $"{context.Request.Path}{context.Request.QueryString}",
             userId,
-            clientIp);
+            userIpService.GetUserIpAddress(context));
     }
 
     private void LogControlledException(HttpContext context, IUserIpService userIpService, Exception ex)
@@ -98,15 +97,14 @@ public sealed class ApiExceptionMiddleware
             ?? context.User.FindFirstValue("id")
             ?? "0";
 
-        var clientIp = userIpService.GetUserIpAddress(context);
-        var path = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString}";
-
-        _logger.LogMessage(
-            LogLevelGRP.Warn,
-            $"Validacion controlada. TraceId={context.TraceIdentifier}; Path={path}; Error={ex.Message}",
-            (byte)SystemLogTypes.Warning,
-            "ApiExceptionMiddleware",
+        _logger.LogWarning(
+            ex,
+            "Validacion controlada. TraceId={TraceId}; Method={Method}; Path={Path}; UserId={UserId}; ClientIp={ClientIp}; Message={Message}",
+            context.TraceIdentifier,
+            context.Request.Method,
+            $"{context.Request.Path}{context.Request.QueryString}",
             userId,
-            clientIp);
+            userIpService.GetUserIpAddress(context),
+            ex.Message);
     }
 }

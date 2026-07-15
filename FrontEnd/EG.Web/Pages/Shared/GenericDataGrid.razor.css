@@ -21,6 +21,23 @@
     overflow: hidden;
 }
 
+/* La toolbar de MudBlazor es nowrap por defecto. Con zoom o viewports angostos
+   puede aumentar el ancho real de la tabla y dejar ambos scrolls fuera de vista. */
+.eg-generic-data-grid ::deep .mud-table-toolbar {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    gap: 8px;
+}
+
+.eg-generic-data-grid ::deep .mud-table-toolbar > * {
+    max-width: 100%;
+}
+
 .eg-generic-data-grid ::deep .mud-table-container {
     flex: 1 1 0;
     width: 100%;
@@ -28,8 +45,9 @@
     max-width: 100%;
     min-height: 0;
     overflow-x: auto !important;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
+    overflow-y: auto !important;
+    scrollbar-gutter: stable both-edges;
+    overscroll-behavior: contain;
 }
 
 .eg-generic-data-grid ::deep .mud-table-container > table {
@@ -74,7 +92,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 180px;
+    min-width: min(180px, 100%);
 }
 
 .eg-data-grid-title-icon {
@@ -101,7 +119,10 @@
     display: flex;
     align-items: stretch;
     gap: 6px;
-    min-width: min(370px, 39vw);
+    flex: 1 1 260px;
+    width: min(370px, 100%);
+    min-width: min(260px, 100%);
+    max-width: 100%;
 }
 
 .eg-data-grid-search {
@@ -149,6 +170,8 @@
 
     .eg-data-grid-search-shell {
         order: 3;
+        flex-basis: 100%;
+        width: 100%;
         min-width: 100%;
     }
 }

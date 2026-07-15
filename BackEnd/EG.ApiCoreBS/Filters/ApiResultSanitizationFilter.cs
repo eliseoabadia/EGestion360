@@ -19,6 +19,7 @@ public sealed class ApiResultSanitizationFilter(ILogger<ApiResultSanitizationFil
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
         var statusCode = GetStatusCode(context);
+        var applicationFailure = TryDescribeApplicationFailure(context.Result);
 
         if (statusCode >= StatusCodes.Status400BadRequest)
         {
@@ -39,11 +40,32 @@ public sealed class ApiResultSanitizationFilter(ILogger<ApiResultSanitizationFil
                     statusCode,
                     message,
                     code,
-                    context.HttpContext.TraceIdentifier);
+                context.HttpContext.TraceIdentifier);
             }
+        }
+        else if (applicationFailure is not null)
+        {
+            LogApplicationFailure(context, statusCode, applicationFailure);
         }
 
         await next();
+    }
+
+    private void LogApplicationFailure(
+        ResultExecutingContext context,
+        int statusCode,
+        ApplicationFailure failure)
+    {
+        var request = context.HttpContext.Request;
+        _logger.LogError(
+            "Operacion API reportada como fallida. Status={StatusCode}; Method={Method}; Path={Path}; TraceId={TraceId}; ResultType={ResultType}; Code={Code}; Message={Message}",
+            statusCode,
+            request.Method,
+            request.Path,
+            context.HttpContext.TraceIdentifier,
+            context.Result.GetType().Name,
+            failure.Code,
+            failure.Message);
     }
 
     private void LogFailedResult(ResultExecutingContext context, int statusCode)
@@ -109,6 +131,35 @@ public sealed class ApiResultSanitizationFilter(ILogger<ApiResultSanitizationFil
         return property?.GetValue(value)?.ToString();
     }
 
+    private static ApplicationFailure? TryDescribeApplicationFailure(IActionResult result)
+    {
+        if (result is not ObjectResult { Value: not null } objectResult)
+        {
+            return null;
+        }
+
+        var value = objectResult.Value;
+        var successProperty = value.GetType().GetProperty(
+            "Success",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+        if (successProperty?.PropertyType != typeof(bool)
+            || successProperty.GetValue(value) is not false)
+        {
+            return null;
+        }
+
+        var message = GetMessageProperty(value);
+        var codeProperty = value.GetType().GetProperty(
+            "Code",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+        var code = codeProperty?.GetValue(value)?.ToString();
+
+        return new ApplicationFailure(
+            UserFacingMessageSanitizer.SafeOrFallback(message, UserFacingMessages.UnexpectedError),
+            string.IsNullOrWhiteSpace(code) ? ApiResponseCode.Error.ToCode() : code);
+    }
+
     private static string DescribeResult(IActionResult result)
     {
         try
@@ -159,4 +210,6 @@ public sealed class ApiResultSanitizationFilter(ILogger<ApiResultSanitizationFil
         _ =>
             (UserFacingMessages.OperationFailed("completar la solicitud"), ApiResponseCode.Error.ToCode())
     };
+
+    private sealed record ApplicationFailure(string Message, string Code);
 }

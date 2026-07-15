@@ -642,8 +642,8 @@ body,
 }
 
     .mud-table-container::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
     }
 
     .mud-table-container::-webkit-scrollbar-track {
@@ -653,6 +653,7 @@ body,
     .mud-table-container::-webkit-scrollbar-thumb {
         background-color: var(--mud-palette-primary);
         border-radius: 20px;
+        border: 2px solid var(--mud-palette-background);
     }
 
 .eg-action-column {

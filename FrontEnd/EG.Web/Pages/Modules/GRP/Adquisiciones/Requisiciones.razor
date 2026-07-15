@@ -302,13 +302,13 @@
             <Columns>
                 <TemplateColumn T="RequisicionPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Seleccionar cell.Item">
+                        <MudTooltip Text="Seleccionar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
                         Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Info)"
                         Size="Size.Small"
                         OnClick="@(() => SelectPartida(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Editar cell.Item">
+                        <MudTooltip Text="Editar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Color="Color.Primary"
@@ -316,7 +316,7 @@
                         Disabled="@IsSelectedLocked"
                         OnClick="@(() => EditPartida(cell.Item.PkidRequisicionPartida))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudTooltip Text="Eliminar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Color="Color.Error"
@@ -368,7 +368,7 @@
             <Columns>
                 <TemplateColumn T="RequisicionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar cell.Item">
+                        <MudTooltip Text="Editar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Color="Color.Primary"
@@ -376,7 +376,7 @@
                         Disabled="@IsSelectedLocked"
                         OnClick="@(() => EditDetalle(cell.Item.PkidRequisicionDetalle))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudTooltip Text="Eliminar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Color="Color.Error"

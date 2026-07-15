@@ -263,7 +263,7 @@
                         Size="Size.Small"
                         OnClick="@(() => SelectPartida(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudTooltip Text="Eliminar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Color="Color.Error"
@@ -312,14 +312,14 @@
             <Columns>
                 <TemplateColumn T="PaaasdetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar cell.Item">
+                        <MudTooltip Text="Editar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditBien(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar cell.Item">
+                        <MudTooltip Text="Eliminar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Color="Color.Error"
