@@ -224,13 +224,13 @@
                                        OnClick="@(() => OpenCotizacionFromRequisicion(SelectedRequisicion))"
                                        Class="ml-1" />
                     </MudTooltip>
-                    <MudTooltip Text="Enviar a suficiencia y autorizacion">
-                        <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
-                                       aria-label="Enviar a suficiencia y autorizacion"
+                    <MudTooltip Text="Exportar requisicion a Excel">
+                        <MudIconButton Icon="@Icons.Material.Filled.FileDownload"
+                                       aria-label="Exportar requisicion a Excel"
                                        Color="Color.Success"
                                        Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(SelectedRequisicion))"
+                                       Visible="@CanExport"
+                                       OnClick="@(() => ExportSelectedRequisicionToExcel(SelectedRequisicion))"
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
@@ -671,6 +671,39 @@
         }
     }
 
+    private async Task ExportSelectedRequisicionToExcel(RequisicionResponse? requisicion)
+    {
+        if (!CanExport)
+        {
+            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            return;
+        }
+
+        if (requisicion is null)
+        {
+            Snackbar.Add("Selecciona una requisicion primero.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var excelData = MapToExcelData(new[] { requisicion });
+            using var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(excelData);
+
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            await JsRuntime.InvokeVoidAsync("downloadFile", base64,
+                $"Requisicion_{requisicion.PkidRequisicion}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            Snackbar.Add("Requisicion exportada correctamente", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al exportar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+    }
+
     protected override async Task ReloadData()
     {
         if (SelectedRequisicion == null && table != null)
@@ -1023,7 +1056,7 @@
 
         if (!HasCompleteBudgetClassification(requisicion))
         {
-            Snackbar.Add("Completa programa, fuente de financiamiento, TG, DI y DG antes de generar la cotizacion.", Severity.Error);
+            Snackbar.Add($"No se puede generar la cotizacion. {BuildMissingBudgetClassificationMessage(requisicion)}", Severity.Error);
             return;
         }
 
@@ -1072,6 +1105,19 @@
         item.FkidDigitoIdentificadorPres.HasValue && item.FkidDigitoIdentificadorPres.Value > 0 &&
         item.FkidDestinoGastoPres.HasValue && item.FkidDestinoGastoPres.Value > 0;
 
+    private static string BuildMissingBudgetClassificationMessage(RequisicionResponse item)
+    {
+        var missing = new List<string>();
+
+        if (!item.FkidProgramaPres.HasValue || item.FkidProgramaPres.Value <= 0) missing.Add("programa");
+        if (!item.FkidFuenteFinanciamientoPres.HasValue || item.FkidFuenteFinanciamientoPres.Value <= 0) missing.Add("fuente de financiamiento");
+        if (!item.FkidTipoGastoPres.HasValue || item.FkidTipoGastoPres.Value <= 0) missing.Add("TG");
+        if (!item.FkidDigitoIdentificadorPres.HasValue || item.FkidDigitoIdentificadorPres.Value <= 0) missing.Add("DI");
+        if (!item.FkidDestinoGastoPres.HasValue || item.FkidDestinoGastoPres.Value <= 0) missing.Add("DG");
+
+        return $"Completa {string.Join(", ", missing)} editando la requisicion.";
+    }
+
     private static string ClassificationText(string? clave, string? descripcion)
     {
         if (string.IsNullOrWhiteSpace(clave) && string.IsNullOrWhiteSpace(descripcion)) return "FALTA";
@@ -1094,7 +1140,7 @@
 
         if (!HasCompleteBudgetClassification(requisicion))
         {
-            Snackbar.Add("No se puede enviar a suficiencia: completa programa, fuente de financiamiento, TG, DI y DG.", Severity.Error);
+            Snackbar.Add($"No se puede enviar a suficiencia. {BuildMissingBudgetClassificationMessage(requisicion)}", Severity.Error);
             return;
         }
 
