@@ -78,6 +78,19 @@
                 </MudTooltip>
             }
 
+            @if (ShowAddButton)
+            {
+                <MudTooltip Text="@AddButtonTooltip">
+                    <MudIconButton Icon="@AddButtonIcon"
+                                   Color="@AddButtonColor"
+                                   Size="Size.Small"
+                                   Disabled="@IsGridBusy"
+                                   OnClick="OnAdd"
+                                   aria-label="@AddButtonTooltip"
+                                   Class="eg-data-grid-tool-button" />
+                </MudTooltip>
+            }
+
             @if (ToolbarActions is not null)
             {
                 @ToolbarActions
@@ -98,28 +111,31 @@
                 </MudTooltip>
             }
 
-                <div class="eg-data-grid-search-shell">
-                    <MudTextField T="string"
-                                  Value="@SearchString"
-                                  ValueChanged="@(value => OnSearchTextChanged(value))"
-                                  Placeholder="@SearchPlaceholder"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense"
-                                  Clearable="true"
-                                  Immediate="true"
-                                  Disabled="@IsGridBusy"
-                                  OnKeyUp="HandleKeyUp"
-                                  Class="eg-data-grid-search mt-0" />
-                    <MudTooltip Text="Buscar (Enter)">
-                        <MudIconButton Icon="@Icons.Material.Filled.Search"
-                                       Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       Disabled="@IsGridBusy"
-                                       OnClick="ApplySearchAsync"
-                                       Class="eg-data-grid-search-button"
-                                       aria-label="Buscar" />
-                    </MudTooltip>
-                </div>
+                @if (ShowSearch)
+                {
+                    <div class="eg-data-grid-search-shell">
+                        <MudTextField T="string"
+                                      Value="@SearchString"
+                                      ValueChanged="@(value => OnSearchTextChanged(value))"
+                                      Placeholder="@SearchPlaceholder"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Clearable="true"
+                                      Immediate="true"
+                                      Disabled="@IsGridBusy"
+                                      OnKeyUp="HandleKeyUp"
+                                      Class="eg-data-grid-search mt-0" />
+                        <MudTooltip Text="Buscar (Enter)">
+                            <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                           Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           Disabled="@IsGridBusy"
+                                           OnClick="ApplySearchAsync"
+                                           Class="eg-data-grid-search-button"
+                                           aria-label="Buscar" />
+                        </MudTooltip>
+                    </div>
+                }
             }
         </ToolBarContent>
 
@@ -200,12 +216,18 @@
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public int Elevation { get; set; } = 2;
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
+    [Parameter] public bool ShowSearch { get; set; } = true;
     [Parameter] public string SearchString { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> SearchStringChanged { get; set; }
     [Parameter] public EventCallback OnSearch { get; set; }
     [Parameter] public int SearchDebounceMilliseconds { get; set; } = 400;
     [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public bool ShowExportButton { get; set; }
+    [Parameter] public bool ShowAddButton { get; set; }
+    [Parameter] public string AddButtonTooltip { get; set; } = "Agregar";
+    [Parameter] public string AddButtonIcon { get; set; } = Icons.Material.Filled.AddCircleOutline;
+    [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
+    [Parameter] public EventCallback OnAdd { get; set; }
     [Parameter] public bool ShowToolbar { get; set; } = true;
     [Parameter] public bool EnableColumnOptions { get; set; } = true;
     [Parameter] public bool EnableColumnReordering { get; set; } = true;
