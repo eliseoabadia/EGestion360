@@ -240,7 +240,10 @@
     [Parameter] public bool Striped { get; set; }
     [Parameter] public bool ReadOnly { get; set; } = true;
     [Parameter] public bool FixedHeader { get; set; } = true;
-    [Parameter] public string TableHeight { get; set; } = "100%";
+    // Sin alto por defecto: el contenedor flex calcula el espacio restante entre
+    // toolbar y paginador. Un height:100% aqui suma ambos elementos y los empuja
+    // por debajo del viewport.
+    [Parameter] public string? TableHeight { get; set; }
     [Parameter] public int PageSize { get; set; } = 10;
     [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Ascending;
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
