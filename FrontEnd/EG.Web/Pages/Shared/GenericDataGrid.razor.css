@@ -1,26 +1,26 @@
 .eg-generic-data-grid {
     position: relative;
     display: flex;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     flex-direction: column;
     width: 100%;
     max-width: 100%;
     min-height: 0;
-    max-height: 100%;
-    overflow: hidden;
+    max-height: none;
+    overflow: visible;
 }
 
 .eg-generic-data-grid ::deep .mud-table {
     display: flex;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     flex-direction: column;
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    height: 100%;
-    max-height: 100%;
+    height: auto;
+    max-height: none;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* La toolbar de MudBlazor es nowrap por defecto. Con zoom o viewports angostos
@@ -41,13 +41,11 @@
 }
 
 .eg-generic-data-grid ::deep .mud-table-container {
-    flex: 1 1 0;
+    flex: 0 0 auto;
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    /* En un layout flex, height:0 evita que la altura intrinseca de las filas
-       empuje el paginador fuera del viewport. flex-grow ocupa sólo el remanente. */
-    height: 0 !important;
+    height: auto !important;
     max-height: none;
     min-height: 0;
     overflow-x: auto !important;

@@ -1290,12 +1290,13 @@
         overflow: visible !important;
     }
 
-    /* Las pantallas de consulta conservan un solo viewport: el scroll vive en la grilla. */
+    /* Las pantallas de consulta deben poder crecer. Encerrarlas en un viewport con
+       overflow:hidden recorta el paginador en resoluciones bajas y con zoom. */
     .content-wrapper .mud-container:has(> .eg-page-header):has(> .eg-generic-data-grid) {
-        height: 100% !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow: hidden !important;
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
     }
 
     .version-footer {
