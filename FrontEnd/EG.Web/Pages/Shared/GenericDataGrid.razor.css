@@ -10,6 +10,30 @@
     overflow: visible;
 }
 
+.eg-grid-has-detail ::deep .mud-table-body .mud-table-row {
+    cursor: zoom-in;
+}
+
+.eg-data-grid-detail-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 26%, transparent);
+    border-radius: 999px;
+    color: var(--mud-palette-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 7%, transparent);
+    font-size: .67rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .eg-data-grid-detail-hint span {
+        display: none;
+    }
+}
+
 .eg-generic-data-grid ::deep .mud-table {
     display: flex;
     flex: 0 0 auto;

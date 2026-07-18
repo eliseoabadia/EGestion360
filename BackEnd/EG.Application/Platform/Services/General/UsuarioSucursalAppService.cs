@@ -369,7 +369,7 @@ namespace EG.Application.Services.General
                 .FirstOrDefaultAsync(x => x.FkidUsuarioSis == usuarioId && x.FkidSucursalSis == sucursalId);
 
             if (entity == null || !entity.Activo)
-                throw new Exception("Asignacion no encontrada o ya se encuentra inactiva");
+                throw new KeyNotFoundException("Asignación no encontrada o ya se encuentra inactiva");
 
             entity.Activo = false;
             entity.FechaFinAsignacion = DateTime.Now;

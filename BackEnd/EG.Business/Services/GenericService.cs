@@ -44,7 +44,7 @@ namespace EG.Business.Services
         // Propiedad para habilitar/deshabilitar filtro de empresa del usuario autenticado
         protected bool FilterByEmpresa { get; set; } = true;
 
-        // Propiedades para configurar includes din�micos
+        // Propiedades para configurar includes dinámicos
         protected List<Expression<Func<TEntity, object>>> _includes = new();
         protected Dictionary<string, List<string>> _relationFilters = new();
         protected List<string> _searchFilterProperties = new();
@@ -53,9 +53,9 @@ namespace EG.Business.Services
         protected Dictionary<string, Func<TDto, Task<bool>>> _validationRules = new();
         protected Dictionary<string, Func<TDto, int?, Task<bool>>> _validationRulesWithId = new();
 
-        // ============ NUEVO: M�TODOS DE VALIDACI�N ============
+        // ============ NUEVO: MÉTODOS DE VALIDACIÓN ============
 
-        // M�todo para agregar regla de validaci�n (para Add)
+        // Método para agregar regla de validación (para Add)
         public virtual GenericService<TEntity, TDto, TResponse> AddValidationRule(
             string ruleName,
             Func<TDto, Task<bool>> rule)
@@ -64,7 +64,7 @@ namespace EG.Business.Services
             return this;
         }
 
-        // M�todo para agregar regla de validaci�n con ID (para Update)
+        // Método para agregar regla de validación con ID (para Update)
         public virtual GenericService<TEntity, TDto, TResponse> AddValidationRuleWithId(
             string ruleName,
             Func<TDto, int?, Task<bool>> rule)
@@ -73,7 +73,7 @@ namespace EG.Business.Services
             return this;
         }
 
-        // Validaci�n para agregar
+        // Validación para agregar
         public virtual async Task<bool> CanAddAsync(TDto dto)
         {
             foreach (var rule in _validationRules.Values)
@@ -84,7 +84,7 @@ namespace EG.Business.Services
             return true;
         }
 
-        // Validaci�n para actualizar
+        // Validación para actualizar
         public virtual async Task<bool> CanUpdateAsync(int id, TDto dto)
         {
             foreach (var rule in _validationRulesWithId.Values)
@@ -95,21 +95,21 @@ namespace EG.Business.Services
             return true;
         }
 
-        // M�todo para agregar includes din�micamente
+        // Método para agregar includes dinámicamente
         public virtual GenericService<TEntity, TDto, TResponse> AddInclude(Expression<Func<TEntity, object>> includeExpression)
         {
             _includes.Add(includeExpression);
             return this;
         }
 
-        // M�todo para agregar filtros en relaciones
+        // Método para agregar filtros en relaciones
         public virtual GenericService<TEntity, TDto, TResponse> AddRelationFilter(string relationProperty, List<string> searchProperties)
         {
             _relationFilters[relationProperty] = searchProperties;
             return this;
         }
 
-        // Limpiar configuraci�n
+        // Limpiar configuración
         public virtual GenericService<TEntity, TDto, TResponse> AddSearchFilter(params string[] propertyNames)
         {
             foreach (var propertyName in propertyNames)
@@ -314,13 +314,13 @@ namespace EG.Business.Services
         {
             var query = GetQueryWithIncludes();
 
-            // Obtener la propiedad ID de forma est�tica para la expresi�n
+            // Obtener la propiedad ID de forma estática para la expresión
             var idProperty = FindIntegerIdProperty(typeof(TEntity));
 
             if (idProperty == null)
                 return null;
 
-            // Construir la expresi�n lambda de forma est�tica
+            // Construir la expresión lambda de forma estática
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             var propertyAccess = Expression.Property(parameter, idProperty);
             var constant = Expression.Constant(id);
@@ -343,7 +343,7 @@ namespace EG.Business.Services
             return entity != null ? entity.Adapt<TResponse>() : null;
         }
 
-        // Versi�n con par�metros personalizados - CORREGIDA
+        // Versión con parámetros personalizados - CORREGIDA
         public virtual async Task<TResponse?> GetByIdAsync(int id,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? customQuery = null,
             string idPropertyName = null)

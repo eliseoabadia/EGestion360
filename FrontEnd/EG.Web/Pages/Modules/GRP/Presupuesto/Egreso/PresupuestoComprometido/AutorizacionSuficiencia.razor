@@ -30,7 +30,8 @@
                                   ExportFunc="ExportToExcel"
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
-                                  OnSearch="OnSearch">
+                                  OnSearch="OnSearch"
+                                  OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -167,6 +168,17 @@
     private static string Money(decimal value) => value.ToString("$0.00", Culture);
     private static Color StatusColor(int e) => e switch { 2 => Color.Success, 3 => Color.Error, _ => Color.Warning };
     private static bool IsLocked(AutorizacionSuficienciaResponse item) => item.Estatus >= 2;
+    private async Task OpenReadOnlyDetail(AutorizacionSuficienciaResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForAutorizacionSuficiencia(item)
+        };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
+        await dialog.Result;
+    }
+
     private async Task SelectAutorizacion(AutorizacionSuficienciaResponse item) { SelectedAutorizacion = item; await InvokeAsync(StateHasChanged); }
     private async Task BackToTable() { SelectedAutorizacion = null; if (table != null) await table.ReloadData(); }
     private async Task<TableData<AutorizacionSuficienciaDetalleResponse>> LoadDetalles(TableState state, CancellationToken _) {

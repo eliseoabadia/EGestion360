@@ -10,7 +10,10 @@
 
 <BaseCrudDialog TItem="ProveedorResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.Medium"
+                Subtitle="Identificacion fiscal, control contable, domicilio y contacto del proveedor."
+                TitleIcon="@Icons.Material.Filled.Business"
+                MaxWidth="MaxWidth.ExtraExtraLarge"
+                DialogClass="proveedor-dialog crud-dialog-wide-xl"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -19,9 +22,22 @@
     <BaseEntityForm TEntity="ProveedorResponse"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    CatalogMode="true">
 
-        <MudGrid GutterSize="2">
+        <div class="proveedor-form">
+        <section class="proveedor-section proveedor-section-identity">
+            <div class="proveedor-section-heading">
+                <span class="proveedor-section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Identificacion fiscal</MudText>
+                    <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Datos principales y clasificacion operativa.</MudText>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="2">
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Clave"
                               Label="Clave"
@@ -62,6 +78,21 @@
                                    RequiredError="El estatus es requerido"
                                    LoadPage="LoadEstatusPageAsync" />
             </MudItem>
+            </MudGrid>
+        </section>
+
+        <section class="proveedor-section proveedor-section-accounting">
+            <div class="proveedor-section-heading">
+                <span class="proveedor-section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Control contable</MudText>
+                    <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Cuenta auxiliar utilizada para controlar el saldo del proveedor.</MudText>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="2">
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_selectedCuentaAuxiliar"
                                    ValueChanged="value => _selectedCuentaAuxiliar = value"
@@ -72,6 +103,21 @@
                     Esta cuenta controla el saldo por proveedor; la cuenta de gasto o activo se obtiene de la matriz COG + TG.
                 </MudText>
             </MudItem>
+            </MudGrid>
+        </section>
+
+        <section class="proveedor-section proveedor-section-address">
+            <div class="proveedor-section-heading">
+                <span class="proveedor-section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Domicilio fiscal</MudText>
+                    <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Ubicacion registrada para operaciones y documentos fiscales.</MudText>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="2">
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Calle"
                               Label="Calle"
@@ -129,6 +175,21 @@
                                    Required="true"
                                    LoadPage="LoadMunicipiosPageAsync" />
             </MudItem>
+            </MudGrid>
+        </section>
+
+        <section class="proveedor-section proveedor-section-contact">
+            <div class="proveedor-section-heading">
+                <span class="proveedor-section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.ContactMail" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Contacto y notas</MudText>
+                    <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Canales de comunicacion e informacion complementaria.</MudText>
+                </div>
+            </div>
+
+            <MudGrid GutterSize="2">
             <MudItem xs="12" sm="6">
                 <MudTextField @bind-Value="item.Email"
                               Label="Email"
@@ -156,7 +217,9 @@
                               MaxLength="500"
                               Lines="2" />
             </MudItem>
-        </MudGrid>
+            </MudGrid>
+        </section>
+        </div>
     </BaseEntityForm>
 </BaseCrudDialog>
 

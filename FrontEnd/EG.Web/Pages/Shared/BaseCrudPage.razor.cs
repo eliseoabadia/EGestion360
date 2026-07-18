@@ -278,7 +278,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // ==================== Mï¿½TODOS CRUD MEJORADOS ====================
+    // ==================== MÉTODOS CRUD MEJORADOS ====================
 
     protected virtual async Task CreateItem()
     {
@@ -396,7 +396,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             return;
         }
 
-        // Obtener el nombre del item para mostrarlo en el diï¿½logo
+        // Obtener el nombre del item para mostrarlo en el diálogo
         var itemName = await GetItemNameForDelete(id);
 
         var parameters = new DialogParameters
@@ -431,13 +431,13 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // Mï¿½todo para obtener el nombre del item (sobrescribir en cada pï¿½gina)
+    // Método para obtener el nombre del item (sobrescribir en cada página)
     protected virtual Task<string> GetItemNameForDelete(int id)
     {
         return Task.FromResult(string.Empty);
     }
 
-    // Mï¿½todo que ejecuta la eliminaciï¿½n real
+    // Método que ejecuta la eliminación real
     private async Task<bool> ExecuteDelete(int id)
     {
         try
@@ -480,14 +480,14 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
-    // Mï¿½todo para recargar datos (sobrescribir en las pï¿½ginas hijas)
+    // Método para recargar datos (sobrescribir en las páginas hijas)
     protected virtual async Task ReloadData()
     {
-        // Este mï¿½todo serï¿½ sobrescrito en las pï¿½ginas hijas
+        // Este método será sobrescrito en las páginas hijas
         await Task.CompletedTask;
     }
 
-    // ==================== FIN Mï¿½TODOS CRUD ====================
+    // ==================== FIN MÉTODOS CRUD ====================
 
     protected virtual async Task<List<TResponse>> LoadExportItemsAsync()
     {

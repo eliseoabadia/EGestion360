@@ -268,21 +268,29 @@
 
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        if (e.Location.Contains("/login", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            _shellInitialized = false;
-            _sidebarResizeInitialized = false;
-            _anios.Clear();
-            _selectedAnioId = null;
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+            if (e.Location.Contains("/login", StringComparison.OrdinalIgnoreCase))
+            {
+                _shellInitialized = false;
+                _sidebarResizeInitialized = false;
+                _anios.Clear();
+                _selectedAnioId = null;
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
 
-        await InvokeAsync(async () =>
+            await InvokeAsync(async () =>
+            {
+                await EnsureShellInitializedAsync();
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
         {
-            await EnsureShellInitializedAsync();
-            StateHasChanged();
-        });
+            AppLoggerFactory.CreateLogger("MainLayout")
+                .LogError(ex, "No se pudo actualizar el layout después de cambiar de ruta.");
+        }
     }
 
     private void OnSucursalChanged(int sucursalId, string sucursalNombre)

@@ -14,14 +14,26 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     <MudContainer Class="px-3 d-flex flex-column ingresos-clc-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
         <PageHeader Title="Ingresos (CLCs)"
-                    Subtitle="Consulta de CLCs de ingreso, poliza, documento y calendario mensual"
+                    Subtitle="Consulta consolidada de CLCs; la captura se realiza desde Depositos CLC"
                     Icon="@Icons.Material.Filled.Scale"
                     ShowCreateButton="false"
-                    OnRefresh="ReloadData" />
+                    OnRefresh="ReloadData">
+            <AdditionalButtons>
+                <MudTooltip Text="Abrir captura de Depositos CLC">
+                    <MudIconButton Icon="@Icons.Material.Filled.AddCard"
+                                   Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="OpenDepositosClc"
+                                   aria-label="Abrir captura de Depositos CLC" />
+                </MudTooltip>
+            </AdditionalButtons>
+        </PageHeader>
 
         <section class="ingresos-clc-summary">
             <div><span>Total visible</span><strong>@Money(Elements.Sum(GetAmount))</strong></div>
@@ -199,6 +211,7 @@
     });
 
     protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
+    private void OpenDepositosClc() => Navigation.NavigateTo("/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC");
 
     private Dictionary<string, object> BuildFilters() => new()
     {

@@ -64,7 +64,8 @@
                                   ExportFunc="ExportToExcel"
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
-                                  OnSearch="OnSearch">
+                                  OnSearch="OnSearch"
+                                  OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="OrdenCompraResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -677,6 +678,17 @@
         await RefreshSelectedOrden();
         await ReloadDetalles();
         await ReloadPartidas();
+    }
+
+    private async Task OpenReadOnlyDetail(OrdenCompraResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForOrdenCompra(item)
+        };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
+        await dialog.Result;
     }
 
     private void SelectOrden(OrdenCompraResponse item)

@@ -211,6 +211,22 @@ body,
     margin: 12px 24px !important;
 }
 
+/* Las clases se asignan directamente al dialogo renderizado por MudBlazor. */
+.mud-dialog.crud-dialog.crud-dialog-wide {
+    width: min(88vw, 1280px) !important;
+    max-width: calc(100vw - 48px) !important;
+}
+
+.mud-dialog.crud-dialog.crud-dialog-wide-xl {
+    width: min(94vw, 1480px) !important;
+    max-width: calc(100vw - 48px) !important;
+}
+
+.mud-dialog.crud-dialog.crud-dialog-wide-xxl {
+    width: min(96vw, 1680px) !important;
+    max-width: calc(100vw - 32px) !important;
+}
+
 .mud-dialog:has(.crud-dialog .entity-form-content .mud-grid > .mud-grid-item:nth-of-type(11)),
 .mud-dialog:has(.crud-dialog .crud-dialog-shell .mud-grid > .mud-grid-item:nth-of-type(11)),
 .mud-dialog.crud-dialog:has(.entity-form-content .mud-grid > .mud-grid-item:nth-of-type(11)),
@@ -760,6 +776,286 @@ body,
     }
 
 /* Lenguaje visual compartido para dialogos que no usan BaseCrudDialog. */
+.mud-dialog.matriz-conversion-dialog,
+.mud-dialog.matriz-ingreso-dialog {
+    width: min(94vw, 1480px) !important;
+    max-width: calc(100vw - 48px) !important;
+    max-height: calc(100dvh - 40px) !important;
+}
+
+.mud-dialog.matriz-conversion-dialog > .mud-dialog-content,
+.mud-dialog.matriz-ingreso-dialog > .mud-dialog-content {
+    min-height: 0;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+/* Estructura compartida para matrices contables de ingreso y conversion. */
+.matriz-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+}
+
+.matriz-section {
+    --matriz-section-accent: var(--eg-primary, var(--mud-palette-primary));
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    overflow: hidden;
+    min-width: 0;
+    padding: 11px 14px 13px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 10px;
+    background: var(--mud-palette-surface);
+    box-shadow: none;
+}
+
+.matriz-section::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--matriz-section-accent);
+}
+
+.matriz-section-mapping { --matriz-section-accent: var(--mud-palette-info); }
+
+.matriz-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding-left: 2px;
+}
+
+.matriz-section-icon {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--matriz-section-accent) 28%, transparent);
+    border-radius: 8px;
+    color: var(--matriz-section-accent);
+    background: color-mix(in srgb, var(--matriz-section-accent) 11%, transparent);
+}
+
+.matriz-section-heading > div {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+}
+
+.matriz-section-title {
+    flex: 0 0 auto;
+    color: var(--mud-palette-text-primary);
+    font-size: .82rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.matriz-section-subtitle {
+    overflow: hidden;
+    color: var(--mud-palette-text-secondary);
+    font-size: .7rem;
+    font-weight: 500;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.matriz-reference-grid {
+    display: grid;
+    align-items: start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.matriz-reference-grid-three {
+    grid-template-columns: minmax(180px, .72fr) minmax(320px, 1.55fr) minmax(250px, 1fr);
+}
+
+.matriz-reference-grid-income {
+    grid-template-columns: minmax(220px, .75fr) minmax(420px, 2fr);
+}
+
+.matriz-reference-field,
+.matriz-map-row > .mud-input-control {
+    min-width: 0;
+}
+
+.matriz-mapping-list {
+    overflow: hidden;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 8px;
+}
+
+.matriz-map-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 6px 10px;
+    background: color-mix(in srgb, var(--mud-palette-surface) 96%, var(--matriz-section-accent));
+}
+
+.matriz-map-row + .matriz-map-row {
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.matriz-map-row:nth-child(even) {
+    background: color-mix(in srgb, var(--mud-palette-surface) 93%, var(--mud-palette-background));
+}
+
+.matriz-map-label {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    padding-left: 4px;
+}
+
+.matriz-map-label span {
+    color: var(--mud-palette-text-primary);
+    font-size: .8rem;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.matriz-map-label small {
+    overflow: hidden;
+    color: var(--mud-palette-text-secondary);
+    font-size: .66rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.matriz-form .mud-input-control { margin: 0; }
+.matriz-form .mud-input { min-height: 42px; }
+.matriz-form .mud-input-label { font-size: .76rem; }
+.matriz-form .mud-input > input { font-size: .88rem; }
+
+/* Los catalogos paginados pueden contener descripciones extensas.
+   Cada opcion crece verticalmente en vez de recortar el texto. */
+.eg-paged-autocomplete-popover .mud-list-item {
+    height: auto !important;
+    min-height: 42px;
+    align-items: flex-start;
+    padding-block: 9px !important;
+}
+
+.eg-paged-autocomplete-popover .mud-list-item-text,
+.eg-paged-autocomplete-popover .mud-tooltip-root,
+.eg-paged-autocomplete-popover .eg-paged-autocomplete-option {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+@media (max-width: 1050px) {
+    .matriz-reference-grid-three {
+        grid-template-columns: minmax(160px, .65fr) minmax(260px, 1.35fr) minmax(220px, 1fr);
+    }
+
+    .matriz-map-row {
+        grid-template-columns: minmax(160px, 190px) minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 760px) {
+    .matriz-form { gap: 8px; }
+    .matriz-section { padding: 10px; border-radius: 11px; }
+    .matriz-section-heading { align-items: flex-start; }
+    .matriz-section-heading > div { display: grid; gap: 2px; }
+    .matriz-section-subtitle { white-space: normal; }
+    .matriz-reference-grid-three,
+    .matriz-reference-grid-income { grid-template-columns: minmax(0, 1fr); }
+    .matriz-map-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 5px;
+        padding: 8px;
+    }
+    .matriz-map-label small { white-space: normal; }
+}
+
+.entity-form-card-dialog .entity-form-content-structured:has(> .mud-input-control),
+.entity-form-card-dialog .entity-form-content-catalog:has(> :nth-child(7)):not(:has(> .mud-grid)) {
+    position: relative;
+    overflow: hidden;
+    padding: 14px !important;
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 16%, var(--mud-palette-lines-default));
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 4%, var(--mud-palette-surface)), var(--mud-palette-surface) 116px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .055);
+}
+
+.entity-form-card-dialog .entity-form-content-structured:has(> .mud-input-control)::before,
+.entity-form-card-dialog .entity-form-content-catalog:has(> :nth-child(7)):not(:has(> .mud-grid))::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--eg-primary, var(--mud-palette-primary)), var(--eg-secondary, var(--mud-palette-secondary)));
+}
+
+.entity-form-content-structured > .mud-grid,
+.entity-form-content-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7)),
+.crud-dialog-shell-structured > .mud-grid,
+.crud-dialog-shell-structured > form > .mud-grid,
+.crud-dialog-shell-structured > .mud-form > .mud-grid,
+.crud-dialog-shell-structured > .mud-container > .mud-grid,
+.crud-dialog-shell-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7)),
+.crud-dialog-shell-catalog > form > .mud-grid:has(> .mud-grid-item:nth-child(7)),
+.crud-dialog-shell-catalog > .mud-form > .mud-grid:has(> .mud-grid-item:nth-child(7)),
+.crud-dialog-shell-catalog > .mud-container > .mud-grid:has(> .mud-grid-item:nth-child(7)) {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 16%, var(--mud-palette-lines-default));
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 4%, var(--mud-palette-surface)), var(--mud-palette-surface) 116px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .055);
+}
+
+.entity-form-content-structured > .mud-grid::before,
+.entity-form-content-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7))::before,
+.crud-dialog-shell-structured > .mud-grid::before,
+.crud-dialog-shell-structured > form > .mud-grid::before,
+.crud-dialog-shell-structured > .mud-form > .mud-grid::before,
+.crud-dialog-shell-structured > .mud-container > .mud-grid::before,
+.crud-dialog-shell-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7))::before,
+.crud-dialog-shell-catalog > form > .mud-grid:has(> .mud-grid-item:nth-child(7))::before,
+.crud-dialog-shell-catalog > .mud-form > .mud-grid:has(> .mud-grid-item:nth-child(7))::before,
+.crud-dialog-shell-catalog > .mud-container > .mud-grid:has(> .mud-grid-item:nth-child(7))::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--eg-primary, var(--mud-palette-primary)), var(--eg-secondary, var(--mud-palette-secondary)));
+}
+
+.entity-form-content-structured > .mud-grid > .mud-grid-item,
+.entity-form-content-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7)) > .mud-grid-item,
+.crud-dialog-shell-structured > .mud-grid > .mud-grid-item,
+.crud-dialog-shell-catalog > .mud-grid:has(> .mud-grid-item:nth-child(7)) > .mud-grid-item {
+    position: relative;
+}
+
 .mud-dialog:not(.crud-dialog) {
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 86%, transparent);
@@ -796,10 +1092,34 @@ body,
     background: var(--mud-palette-surface);
 }
 
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > .mud-grid:not(:has(.mud-table)),
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > form > .mud-grid:not(:has(.mud-table)),
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > .mud-form > .mud-grid:not(:has(.mud-table)) {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 13%, var(--mud-palette-lines-default));
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 3%, var(--mud-palette-surface)), var(--mud-palette-surface) 116px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .055);
+}
+
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > .mud-grid:not(:has(.mud-table))::before,
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > form > .mud-grid:not(:has(.mud-table))::before,
+.mud-dialog:not(.crud-dialog):not(.document-support-dialog):not(.poliza-ai-dialog):not(.anteproyecto-ai-dialog) > .mud-dialog-content > .mud-form > .mud-grid:not(:has(.mud-table))::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--eg-primary, var(--mud-palette-primary)), var(--eg-secondary, var(--mud-palette-secondary)));
+}
+
 .mud-dialog .mud-button-root {
     min-height: 38px;
-    border-radius: 9px;
-    font-weight: 700;
+    border-radius: 10px;
+    font-weight: 800;
     letter-spacing: 0;
     text-transform: none;
 }
@@ -813,13 +1133,43 @@ body,
     margin-bottom: 2px;
 }
 
+.mud-dialog .mud-input {
+    min-height: 44px;
+}
+
+.mud-dialog .mud-input-outlined {
+    background: color-mix(in srgb, var(--mud-palette-surface) 90%, transparent);
+    transition: background-color .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
 .mud-dialog .mud-input-outlined-border {
-    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 38%, transparent);
-    border-radius: 10px;
+    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 25%, var(--mud-palette-lines-default));
+    border-radius: 11px;
 }
 
 .mud-dialog .mud-input-control:hover .mud-input-outlined-border {
     border-color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 48%, var(--mud-palette-lines-default));
+}
+
+.mud-dialog .mud-input-control:focus-within .mud-input-outlined {
+    background: var(--mud-palette-surface);
+}
+
+.mud-dialog .mud-input-control:focus-within .mud-input-outlined-border {
+    border-color: var(--eg-primary, var(--mud-palette-primary));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 13%, transparent);
+}
+
+.mud-dialog .mud-input-label {
+    color: var(--mud-palette-text-secondary);
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.mud-dialog .mud-input > input,
+.mud-dialog .mud-input > textarea,
+.mud-dialog .mud-select .mud-input-slot {
+    font-weight: 560;
 }
 
 .mud-dialog .mud-input-helper-text:empty {

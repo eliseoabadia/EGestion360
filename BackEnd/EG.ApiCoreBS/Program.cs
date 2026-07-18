@@ -102,20 +102,12 @@ try
 
     builder.Services.AddSwaggerGen(c =>
     {
-        c.CustomSchemaIds(type =>
-        {
-            if (type.IsGenericType)
-            {
-                var genericTypeName = type.GetGenericTypeDefinition().Name;
-                genericTypeName = genericTypeName.Contains('`')
-                    ? genericTypeName[..genericTypeName.IndexOf('`')]
-                    : genericTypeName;
-                var genericArgs = string.Join("_", type.GetGenericArguments().Select(t => t.Name));
-                return $"{genericTypeName}_{genericArgs}";
-            }
-
-            return type.Name;
-        });
+        // Existen DTO con el mismo nombre en modulos distintos (por ejemplo,
+        // Patrimonio.BienResponse y ConteoCiclico.BienResponse). Usar solo
+        // Type.Name provoca colisiones y hace que /swagger/v1/swagger.json
+        // responda 500. El identificador incluye namespace y argumentos
+        // genericos de forma recursiva para mantenerlo estable y unico.
+        c.CustomSchemaIds(GetSwaggerSchemaId);
     });
 
     var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
@@ -202,4 +194,28 @@ catch (Exception ex)
 {
     logger.LogCritical(ex, "ERROR FATAL al iniciar la aplicacion: {Mensaje}", ex.Message);
     throw;
+}
+
+static string GetSwaggerSchemaId(Type type)
+{
+    if (!type.IsGenericType)
+    {
+        return (type.FullName ?? type.Name)
+            .Replace('.', '_')
+            .Replace('+', '_');
+    }
+
+    var definition = type.GetGenericTypeDefinition();
+    var definitionName = definition.Name;
+    var tickIndex = definitionName.IndexOf('`');
+    if (tickIndex >= 0)
+    {
+        definitionName = definitionName[..tickIndex];
+    }
+
+    var namespacePrefix = string.IsNullOrWhiteSpace(definition.Namespace)
+        ? string.Empty
+        : definition.Namespace.Replace('.', '_') + "_";
+    var arguments = string.Join("_", type.GetGenericArguments().Select(GetSwaggerSchemaId));
+    return $"{namespacePrefix}{definitionName}_{arguments}";
 }

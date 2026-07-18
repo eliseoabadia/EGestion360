@@ -67,7 +67,8 @@
                           ExportFunc="ExportToExcel"
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
-                          OnSearch="OnSearch">
+                          OnSearch="OnSearch"
+                          OnRowDoubleClick="OpenCinematicDetail">
             <Columns>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -95,7 +96,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         <div class="main-cell">@TextOrDash(cell.Item.ProgramaClave)</div>
                         <span>@TextOrDash(cell.Item.ProgramaDescripcion)</span>
                         </div>
@@ -103,7 +104,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
                         <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
                         </div>
@@ -111,14 +112,14 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         @TextOrDash(cell.Item.AreaNombre)
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Clasificacion" Identifier="FuenteFinanciamientoClave" PropertyName="FuenteFinanciamientoClave" SortBy="x => x.FuenteFinanciamientoClave">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         <div class="main-cell">@TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</div>
                         <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span><br />
                         <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span><br />
@@ -129,7 +130,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Poliza" Identifier="FkidPolizaConta" PropertyName="FkidPolizaConta" SortBy="x => x.FkidPolizaConta">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         <MudChip T="string" Size="Size.Small" Color="@(cell.Item.FkidPolizaConta.HasValue ? Color.Success : Color.Default)" Variant="Variant.Filled">
                         @(cell.Item.FkidPolizaConta.HasValue ? $"Poliza {cell.Item.FkidPolizaConta}" : "Sin poliza")
                         </MudChip>
@@ -138,21 +139,21 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         @TextOrDash(cell.Item.Descripcion)
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Autorizacion" Identifier="FechaAutorizacion" PropertyName="FechaAutorizacion" SortBy="x => x.FechaAutorizacion">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         @(cell.Item.FechaAutorizacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
                     <CellTemplate Context="cell">
-                        <div class="detail-cell" @ondblclick="@(() => ViewItem(cell.Item.PkidEgresoAutorizado))">
+                        <div class="detail-cell">
                         <strong>@Money(cell.Item.Total ?? 0m)</strong>
                         </div>
                     </CellTemplate>
@@ -406,19 +407,15 @@
             await ReloadData();
     }
 
-    private async Task ViewItem(int id)
+    private async Task OpenCinematicDetail(EgresoAutorizadoResponse item)
     {
         var parameters = new DialogParameters
         {
-            ["Id"] = id,
-            ["AnioId"] = AnioStateService.AnioId ?? 0,
-            ["CurrencySymbol"] = _currencySymbol,
-            ["CurrencyName"] = _currencyName,
-            ["IsReadOnly"] = true
+            ["Record"] = CinematicRecordFactory.ForPresupuestoAutorizado(item, _currencySymbol, _currencyName)
         };
 
-        var dialog = await DialogService.ShowAsync(EditDialogType, "Ver presupuesto autorizado", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
 
         await dialog.Result;
     }

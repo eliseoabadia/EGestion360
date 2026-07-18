@@ -6,7 +6,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<GenericDataGrid<TItem>> Logger
 
-<MudPaper Elevation="@Elevation" Class="pa-4 rounded-lg themed-table eg-generic-data-grid">
+<MudPaper Elevation="@Elevation" Class="@GridClass">
     @if (ShowBusyOverlay && actionInProgress)
     {
         <div class="eg-generic-data-grid-busy" role="status" aria-live="polite">
@@ -35,7 +35,8 @@
                  DragDropColumnReordering="@EnableColumnReordering"
                  ColumnsPanelReordering="@EnableColumnReordering"
                  ColumnResizeMode="@ColumnResizeMode"
-                 Groupable="@EnableGrouping">
+                 Groupable="@EnableGrouping"
+                 RowClick="HandleRowClickAsync">
 
         <ToolBarContent>
             @if (ShowToolbar)
@@ -49,6 +50,13 @@
                     <span>@totalItems.ToString("N0") registro(s)</span>
                 </div>
             </div>
+            @if (OnRowDoubleClick.HasDelegate)
+            {
+                <div class="eg-data-grid-detail-hint" title="Haz doble clic sobre cualquier registro para consultar su expediente">
+                    <MudIcon Icon="@Icons.Material.Filled.TouchApp" Size="Size.Small" />
+                    <span>Doble clic para consultar</span>
+                </div>
+            }
             <MudSpacer />
 
             @if (ShowRefreshButton)
@@ -260,6 +268,7 @@
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
     [Parameter] public Func<TItem, string>? SearchTextFunc { get; set; }
     [Parameter] public Func<Task>? ExportFunc { get; set; }
+    [Parameter] public EventCallback<TItem> OnRowDoubleClick { get; set; }
 
     private MudDataGrid<TItem>? dataGridRef;
     private bool isLoading;
@@ -270,6 +279,17 @@
     private string? lastLoadError;
 
     private bool IsGridBusy => isLoading || actionInProgress;
+    private string GridClass => $"pa-4 rounded-lg themed-table eg-generic-data-grid{(OnRowDoubleClick.HasDelegate ? " eg-grid-has-detail" : string.Empty)}";
+
+    private async Task HandleRowClickAsync(DataGridRowClickEventArgs<TItem> args)
+    {
+        if (args.MouseEventArgs.Detail != 2 || !OnRowDoubleClick.HasDelegate || args.Item is null)
+        {
+            return;
+        }
+
+        await OnRowDoubleClick.InvokeAsync(args.Item);
+    }
 
     private string GetReflectedColumnTitle(PropertyInfo property)
         => ColumnTitleFunc?.Invoke(property) ?? property.Name;

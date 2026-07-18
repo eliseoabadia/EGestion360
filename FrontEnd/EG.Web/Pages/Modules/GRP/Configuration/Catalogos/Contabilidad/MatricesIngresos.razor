@@ -25,19 +25,20 @@
                 ExportFunc="ExportToExcel"
                 SearchString="@SearchString"
                 SearchStringChanged="(s) => SearchString = s"
-                OnSearch="OnSearch">
+                OnSearch="OnSearch"
+                OnRowDoubleClick="OpenDetail">
 
                 <Columns>
-                    <TemplateColumn Resizable="false" T="MatrizIngresoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))"><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizIngreso))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizIngreso))" /></MudTooltip></div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="PK" Identifier="PkidMatrizIngreso"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PkidMatrizIngreso</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.ProgramaClave</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Origen de Recursos" Identifier="OrigenDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.OrigenDescripcion</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cta. Presupuesto Autorizado" Identifier="CuentaAutorizadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaAutorizadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto por Ejecutar" Identifier="CuentaPorEjecutarNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPorEjecutarNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Modificado" Identifier="CuentaModificadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaModificadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Devengado" Identifier="CuentaDevengadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaDevengadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Recaudado" Identifier="CuentaRecaudadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaRecaudadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta de Depósito" Identifier="CuentaDepositoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaDepositoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="false" T="MatrizIngresoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizIngreso))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizIngreso))" /></MudTooltip></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="PK" Identifier="PkidMatrizIngreso"><CellTemplate>@context.Item.PkidMatrizIngreso</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate>@context.Item.ProgramaClave</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Origen de Recursos" Identifier="OrigenDescripcion"><CellTemplate>@context.Item.OrigenDescripcion</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cta. Presupuesto Autorizado" Identifier="CuentaAutorizadoNombre"><CellTemplate>@context.Item.CuentaAutorizadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto por Ejecutar" Identifier="CuentaPorEjecutarNombre"><CellTemplate>@context.Item.CuentaPorEjecutarNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Modificado" Identifier="CuentaModificadoNombre"><CellTemplate>@context.Item.CuentaModificadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Devengado" Identifier="CuentaDevengadoNombre"><CellTemplate>@context.Item.CuentaDevengadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta Presupuesto Recaudado" Identifier="CuentaRecaudadoNombre"><CellTemplate>@context.Item.CuentaRecaudadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cuenta de Depósito" Identifier="CuentaDepositoNombre"><CellTemplate>@context.Item.CuentaDepositoNombre</CellTemplate></TemplateColumn>
                 </Columns>
             </GenericDataGrid>
         </div>
@@ -58,9 +59,12 @@
 
     private async Task OpenDetail(MatrizIngresoResponse item)
     {
-        var parameters = new DialogParameters { ["Item"] = item };
-        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.ShowAsync<MatrizIngresoPersonalizado>(string.Empty, parameters, options);
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForMatrizIngreso(item)
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters, options);
         await dialog.Result;
     }
 

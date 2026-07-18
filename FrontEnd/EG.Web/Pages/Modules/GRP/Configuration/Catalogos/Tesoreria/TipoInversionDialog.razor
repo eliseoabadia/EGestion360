@@ -8,7 +8,7 @@
 
 <BaseCrudDialog TItem="TipoInversionResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
-    <BaseEntityForm TEntity="TipoInversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
+    <BaseEntityForm TEntity="TipoInversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" CatalogMode="true">
         <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Descripcion)" />
     </BaseEntityForm>
 </BaseCrudDialog>

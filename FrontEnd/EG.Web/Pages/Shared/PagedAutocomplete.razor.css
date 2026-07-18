@@ -10,3 +10,24 @@
 .eg-paged-autocomplete ::deep .mud-progress-linear {
     color: var(--eg-primary);
 }
+
+.eg-paged-autocomplete ::deep input {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.eg-paged-autocomplete-option {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    color: var(--mud-palette-text-primary);
+    font-size: .88rem;
+    font-weight: 550;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+}

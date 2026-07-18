@@ -44,7 +44,8 @@
                                   ExportFunc="ExportToExcel"
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
-                                  OnSearch="OnSearch">
+                                  OnSearch="OnSearch"
+                                  OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="RequisicionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -737,6 +738,19 @@
         loadedRequisicionId = null;
 
         NavigationManager.NavigateTo($"/Adquisiciones/Requisicion/{item.PkidRequisicion}");
+    }
+
+    private async Task OpenReadOnlyDetail(RequisicionResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForRequisicion(item)
+        };
+
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
+
+        await dialog.Result;
     }
 
     private async Task LoadRequisicionFromRouteAsync(int id)

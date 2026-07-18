@@ -23,7 +23,10 @@
 
 <BaseCrudDialog TItem="RequisicionResponse"
                 Title="@dialogTitle"
+                Subtitle="Datos operativos y clasificacion presupuestal de la solicitud."
+                TitleIcon="@Icons.Material.Filled.AssignmentTurnedIn"
                 MaxWidth="MaxWidth.Large"
+                DialogClass="requisicion-dialog crud-dialog-wide-xl"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -34,135 +37,185 @@
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
 
-        <MudGrid GutterSize="2">
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
-                              Label="Descripcion"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              MaxLength="100"
-                              RequiredError="La descripcion es requerida" />
-            </MudItem>
+        <div class="requisition-form">
+            <section class="req-section req-section-main">
+                <div class="req-section-heading">
+                    <span class="req-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Article" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="req-section-title">Datos base</MudText>
+                        <MudText Typo="Typo.caption" Class="req-section-subtitle">Identifica la solicitud, responsable y monto estimado.</MudText>
+                    </div>
+                </div>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedArea"
-                                   ValueChanged="value => _selectedArea = value"
-                                   Label="Area"
-                                   Required="true"
-                                   RequiredError="El area es requerida"
-                                   LoadPage="LoadAreasPageAsync" />
-            </MudItem>
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="item.Descripcion"
+                                      Label="Descripcion"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      MaxLength="100"
+                                      RequiredError="La descripcion es requerida" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedPersona"
-                                   ValueChanged="value => _selectedPersona = value"
-                                   Label="Solicitante"
-                                   Required="true"
-                                   RequiredError="El solicitante es requerido"
-                                   LoadPage="LoadPersonasPageAsync" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedArea"
+                                           ValueChanged="value => _selectedArea = value"
+                                           Label="Area"
+                                           Required="true"
+                                           RequiredError="El area es requerida"
+                                           LoadPage="LoadAreasPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaRequisicion"
-                               Label="Fecha requisicion"
-                               Variant="Variant.Outlined"
-                               Required="true"
-                               RequiredError="La fecha es requerida" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedPersona"
+                                           ValueChanged="value => _selectedPersona = value"
+                                           Label="Solicitante"
+                                           Required="true"
+                                           RequiredError="El solicitante es requerido"
+                                           LoadPage="LoadPersonasPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudNumericField @bind-Value="item.Importe"
-                                 Label="Importe"
-                                 Variant="Variant.Outlined"
-                                 Format="0.00"
-                                 Culture="@NumberCulture"
-                                 Adornment="Adornment.Start"
-                                 AdornmentText="$" />
-            </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudDatePicker @bind-Date="_fechaRequisicion"
+                                       Label="Fecha requisicion"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="La fecha es requerida" />
+                    </MudItem>
 
-            <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
-            </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="item.Importe"
+                                         Label="Importe"
+                                         Variant="Variant.Outlined"
+                                         Format="0.00"
+                                         Culture="@NumberCulture"
+                                         Adornment="Adornment.Start"
+                                         AdornmentText="$" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedProyecto"
-                                   ValueChanged="value => _selectedProyecto = value"
-                                   Label="Proyecto"
-                                   Clearable="true"
-                                   LoadPage="LoadProyectosPageAsync" />
-            </MudItem>
+                    <MudItem xs="12" md="4">
+                        <div class="req-toggle-card">
+                            <span class="req-toggle-icon" aria-hidden="true">
+                                <MudIcon Icon="@(item.Servicio ? Icons.Material.Filled.DesignServices : Icons.Material.Filled.Inventory2)" Size="Size.Small" />
+                            </span>
+                            <div class="req-toggle-copy">
+                                <span>Tipo</span>
+                                <strong>@(item.Servicio ? "Servicio" : "Bien")</strong>
+                            </div>
+                            <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </section>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedPrograma"
-                                   ValueChanged="value => _selectedPrograma = value"
-                                   Label="Programa"
-                                   Clearable="true"
-                                   LoadPage="LoadProgramasPageAsync" />
-            </MudItem>
+            <section class="req-section req-section-budget">
+                <div class="req-section-heading">
+                    <span class="req-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="req-section-title">Clasificacion presupuestal</MudText>
+                        <MudText Typo="Typo.caption" Class="req-section-subtitle">Programa, fuente y claves de gasto que completan el flujo.</MudText>
+                    </div>
+                </div>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedFuente"
-                                   ValueChanged="value => _selectedFuente = value"
-                                   Label="Fuente de financiamiento"
-                                   Required="true"
-                                   LoadPage="LoadFuentesPageAsync" />
-            </MudItem>
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedProyecto"
+                                           ValueChanged="value => _selectedProyecto = value"
+                                           Label="Proyecto"
+                                           Clearable="true"
+                                           LoadPage="LoadProyectosPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedTipoGasto"
-                                   ValueChanged="value => _selectedTipoGasto = value"
-                                   Label="Tipo de gasto (TG)"
-                                   Required="true"
-                                   LoadPage="LoadTiposGastoPageAsync" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedPrograma"
+                                           ValueChanged="value => _selectedPrograma = value"
+                                           Label="Programa"
+                                           Clearable="true"
+                                           LoadPage="LoadProgramasPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedDigito"
-                                   ValueChanged="value => _selectedDigito = value"
-                                   Label="Digito identificador (DI)"
-                                   Required="true"
-                                   LoadPage="LoadDigitosPageAsync" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedFuente"
+                                           ValueChanged="value => _selectedFuente = value"
+                                           Label="Fuente de financiamiento"
+                                           Required="true"
+                                           LoadPage="LoadFuentesPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedDestino"
-                                   ValueChanged="value => _selectedDestino = value"
-                                   Label="Destino del gasto (DG)"
-                                   Required="true"
-                                   LoadPage="LoadDestinosPageAsync" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedTipoGasto"
+                                           ValueChanged="value => _selectedTipoGasto = value"
+                                           Label="Tipo de gasto (TG)"
+                                           Required="true"
+                                           LoadPage="LoadTiposGastoPageAsync" />
+                    </MudItem>
 
-            @if (_selectedTipoGasto?.Text.StartsWith("1", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                <MudItem xs="12">
-                    <MudAlert Severity="Severity.Info" Dense="true">
-                        TG 1 es gasto corriente y se atendera en la cola prioritaria. La prioridad no modifica su clasificacion contable.
-                    </MudAlert>
-                </MudItem>
-            }
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedDigito"
+                                           ValueChanged="value => _selectedDigito = value"
+                                           Label="Digito identificador (DI)"
+                                           Required="true"
+                                           LoadPage="LoadDigitosPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Oficio"
-                              Label="Oficio"
-                              Variant="Variant.Outlined"
-                              MaxLength="120" />
-            </MudItem>
+                    <MudItem xs="12" md="6">
+                        <PagedAutocomplete Value="@_selectedDestino"
+                                           ValueChanged="value => _selectedDestino = value"
+                                           Label="Destino del gasto (DG)"
+                                           Required="true"
+                                           LoadPage="LoadDestinosPageAsync" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="item.FechaOficio"
-                               Label="Fecha oficio"
-                               Variant="Variant.Outlined" />
-            </MudItem>
+                    @if (_selectedTipoGasto?.Text.StartsWith("1", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="req-alert">
+                                TG 1 es gasto corriente y se atendera en la cola prioritaria. La prioridad no modifica su clasificacion contable.
+                            </MudAlert>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </section>
 
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
-                              Label="Observaciones"
-                              Variant="Variant.Outlined"
-                              Lines="3"
-                              MaxLength="1000" />
-            </MudItem>
+            <section class="req-section req-section-notes">
+                <div class="req-section-heading">
+                    <span class="req-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.FolderOpen" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="req-section-title">Oficio y notas</MudText>
+                        <MudText Typo="Typo.caption" Class="req-section-subtitle">Referencia documental y observaciones internas.</MudText>
+                    </div>
+                </div>
 
-        </MudGrid>
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="item.Oficio"
+                                      Label="Oficio"
+                                      Variant="Variant.Outlined"
+                                      MaxLength="120" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudDatePicker @bind-Date="item.FechaOficio"
+                                       Label="Fecha oficio"
+                                       Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="item.Observaciones"
+                                      Label="Observaciones"
+                                      Variant="Variant.Outlined"
+                                      Lines="3"
+                                      MaxLength="1000" />
+                    </MudItem>
+                </MudGrid>
+            </section>
+        </div>
     </BaseEntityForm>
 </BaseCrudDialog>
 

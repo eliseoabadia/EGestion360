@@ -1,0 +1,196 @@
+.requisition-form {
+    display: grid;
+    gap: 14px;
+}
+
+.req-section {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 13%, var(--mud-palette-lines-default));
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 3%, var(--mud-palette-surface)), var(--mud-palette-surface) 118px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .055);
+}
+
+.req-section::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--req-section-accent, var(--eg-primary, var(--mud-palette-primary)));
+}
+
+.req-section-main {
+    --req-section-accent: var(--eg-primary, var(--mud-palette-primary));
+}
+
+.req-section-budget {
+    --req-section-accent: var(--mud-palette-success);
+}
+
+.req-section-notes {
+    --req-section-accent: var(--mud-palette-warning);
+}
+
+.req-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-left: 3px;
+}
+
+.req-section-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--req-section-accent, var(--eg-primary, var(--mud-palette-primary))) 26%, transparent);
+    border-radius: 10px;
+    color: var(--req-section-accent, var(--eg-primary, var(--mud-palette-primary)));
+    background: color-mix(in srgb, var(--req-section-accent, var(--eg-primary, var(--mud-palette-primary))) 11%, transparent);
+}
+
+.req-section-title {
+    color: var(--mud-palette-text-primary);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.req-section-subtitle {
+    color: var(--mud-palette-text-secondary);
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.req-toggle-card {
+    min-height: 56px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 18%, var(--mud-palette-lines-default));
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 4%, var(--mud-palette-surface));
+}
+
+.req-toggle-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    color: var(--eg-primary, var(--mud-palette-primary));
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 11%, transparent);
+}
+
+.req-toggle-copy {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+}
+
+.req-toggle-copy span {
+    color: var(--mud-palette-text-secondary);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.req-toggle-copy strong {
+    overflow: hidden;
+    color: var(--mud-palette-text-primary);
+    font-size: .95rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.req-alert {
+    border-radius: 10px;
+}
+
+.requisition-form ::deep .mud-grid {
+    margin: -6px;
+}
+
+.requisition-form ::deep .mud-grid > .mud-grid-item {
+    padding: 6px;
+}
+
+.requisition-form ::deep .mud-input-control {
+    margin: 0;
+}
+
+.requisition-form ::deep .mud-input-outlined {
+    background: color-mix(in srgb, var(--mud-palette-surface) 88%, transparent);
+}
+
+.requisition-form ::deep .mud-input-outlined-border {
+    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 25%, var(--mud-palette-lines-default));
+    border-radius: 11px;
+}
+
+.requisition-form ::deep .mud-input-control:hover .mud-input-outlined-border {
+    border-color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 58%, var(--mud-palette-lines-default));
+}
+
+.requisition-form ::deep .mud-input-control.mud-input-focused .mud-input-outlined-border,
+.requisition-form ::deep .mud-input-control:focus-within .mud-input-outlined-border {
+    border-color: var(--eg-primary, var(--mud-palette-primary));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 13%, transparent);
+}
+
+.requisition-form ::deep .mud-input-label {
+    color: var(--mud-palette-text-secondary);
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.requisition-form ::deep .mud-input > input,
+.requisition-form ::deep .mud-input > textarea,
+.requisition-form ::deep .mud-select .mud-input-slot {
+    font-weight: 560;
+}
+
+.req-toggle-card ::deep .mud-switch {
+    margin: 0;
+}
+
+.req-toggle-card ::deep .mud-switch-label {
+    margin: 0;
+    color: var(--mud-palette-text-secondary);
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .requisition-form {
+        gap: 12px;
+    }
+
+    .req-section {
+        padding: 13px;
+        border-radius: 12px;
+    }
+
+    .req-section-heading {
+        align-items: flex-start;
+    }
+
+    .req-section-subtitle {
+        white-space: normal;
+    }
+}

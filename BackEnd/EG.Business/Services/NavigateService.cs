@@ -144,7 +144,7 @@ namespace EG.Business.Services
 
         /// <summary>
         /// Obtiene los claims del usuario desde la base de datos.
-        /// Solo devuelve permisos asociados a menÃºs activos.
+        /// Solo devuelve permisos asociados a menús activos.
         /// </summary>
         public async Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int usuarioId)
         {

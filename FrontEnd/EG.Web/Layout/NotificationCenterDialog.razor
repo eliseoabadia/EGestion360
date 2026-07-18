@@ -257,8 +257,10 @@
             var itemsTask = NotificationService.GetMisNotificacionesAsync(50, _onlyPending);
             await Task.WhenAll(summaryTask, itemsTask);
 
-            _resumen = summaryTask.Result.Success ? summaryTask.Result.Data ?? new NotificacionResumenModel() : new NotificacionResumenModel();
-            _items = itemsTask.Result.Success ? itemsTask.Result.Items.ToList() : new List<NotificacionUsuarioModel>();
+            var summary = await summaryTask;
+            var items = await itemsTask;
+            _resumen = summary.Success ? summary.Data ?? new NotificacionResumenModel() : new NotificacionResumenModel();
+            _items = items.Success ? items.Items.ToList() : new List<NotificacionUsuarioModel>();
             _selected = _selected == null ? _items.FirstOrDefault() : _items.FirstOrDefault(x => x.PkidNotificacionDestino == _selected.PkidNotificacionDestino) ?? _items.FirstOrDefault();
 
             if (_selected is null)

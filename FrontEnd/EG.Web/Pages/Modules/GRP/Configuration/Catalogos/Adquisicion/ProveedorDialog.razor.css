@@ -1,0 +1,103 @@
+.proveedor-form {
+    display: grid;
+    gap: 14px;
+}
+
+.proveedor-section {
+    --proveedor-section-accent: var(--eg-primary, var(--mud-palette-primary));
+    position: relative;
+    display: grid;
+    gap: 14px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid color-mix(in srgb, var(--proveedor-section-accent) 17%, var(--mud-palette-lines-default));
+    border-radius: 14px;
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--proveedor-section-accent) 4%, var(--mud-palette-surface)),
+        var(--mud-palette-surface) 120px);
+    box-shadow: 0 10px 26px rgba(2, 8, 23, .055);
+}
+
+.proveedor-section::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--proveedor-section-accent);
+}
+
+.proveedor-section-accounting {
+    --proveedor-section-accent: var(--mud-palette-warning);
+}
+
+.proveedor-section-address {
+    --proveedor-section-accent: var(--mud-palette-info);
+}
+
+.proveedor-section-contact {
+    --proveedor-section-accent: var(--mud-palette-success);
+}
+
+.proveedor-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-left: 3px;
+}
+
+.proveedor-section-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--proveedor-section-accent) 28%, transparent);
+    border-radius: 10px;
+    color: var(--proveedor-section-accent);
+    background: color-mix(in srgb, var(--proveedor-section-accent) 11%, transparent);
+}
+
+.proveedor-section-title {
+    color: var(--mud-palette-text-primary);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.proveedor-section-subtitle {
+    color: var(--mud-palette-text-secondary);
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.proveedor-form ::deep .mud-grid {
+    margin: -6px;
+}
+
+.proveedor-form ::deep .mud-grid > .mud-grid-item {
+    padding: 6px;
+}
+
+.proveedor-section-accounting ::deep .mud-typography-caption {
+    display: block;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--mud-palette-warning) 8%, transparent);
+}
+
+@media (max-width: 760px) {
+    .proveedor-form {
+        gap: 12px;
+    }
+
+    .proveedor-section {
+        padding: 13px;
+        border-radius: 12px;
+    }
+
+    .proveedor-section-heading {
+        align-items: flex-start;
+    }
+}

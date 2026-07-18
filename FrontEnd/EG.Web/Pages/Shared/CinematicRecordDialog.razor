@@ -1,0 +1,107 @@
+@using MudBlazor
+
+<MudDialog MaxWidth="MaxWidth.ExtraLarge"
+           FullWidth="true"
+           CloseOnEscapeKey="true"
+           Class="cinematic-record-dialog">
+    <DialogContent>
+        <article class="mission-file" aria-label="Detalle de solo lectura: @Record.Title">
+            <div class="mission-grid" aria-hidden="true"></div>
+            <div class="mission-scan" aria-hidden="true"></div>
+
+            <header class="mission-header">
+                <div class="mission-kicker">
+                    <span class="signal-dot" aria-hidden="true"></span>
+                    <span>@Record.Eyebrow</span>
+                    <span class="mission-separator">//</span>
+                    <span>@Record.Classification</span>
+                </div>
+
+                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                               Size="Size.Small"
+                               OnClick="Close"
+                               Class="mission-close"
+                               aria-label="Cerrar detalle" />
+
+                <div class="mission-heading">
+                    <div class="mission-mark" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Radar" />
+                    </div>
+                    <div>
+                        <h2>@Record.Title</h2>
+                        <p>@ValueOrDash(Record.Subtitle)</p>
+                    </div>
+                </div>
+
+                <div class="mission-id-panel">
+                    <div>
+                        <span>Código de archivo</span>
+                        <strong>@Record.RecordCode</strong>
+                    </div>
+                    <span class="mission-status @StatusClass">@Record.Status</span>
+                </div>
+            </header>
+
+            @if (!string.IsNullOrWhiteSpace(Record.HeroValue))
+            {
+                <section class="mission-hero">
+                    <span>@ValueOrDash(Record.HeroLabel)</span>
+                    <strong>@Record.HeroValue</strong>
+                    <small>INFORMACIÓN VERIFICADA · MODO CONSULTA</small>
+                </section>
+            }
+
+            <div class="mission-content">
+                @foreach (var section in Record.Sections)
+                {
+                    <section class="mission-section">
+                        <div class="mission-section-title">
+                            <span>@section.Code</span>
+                            <h3>@section.Title</h3>
+                            <i aria-hidden="true"></i>
+                        </div>
+                        <div class="mission-fields">
+                            @foreach (var field in section.Fields)
+                            {
+                                <div class="mission-field @(field.Wide ? "wide" : string.Empty) @(field.Emphasized ? "emphasized" : string.Empty)">
+                                    <span>@field.Label</span>
+                                    <strong>@ValueOrDash(field.Value)</strong>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
+
+            <footer class="mission-footer">
+                <span><MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" /> VISUALIZACIÓN SEGURA</span>
+                <span>NO SE REALIZARÁN CAMBIOS EN ESTE REGISTRO</span>
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Lock"
+                           OnClick="Close"
+                           Class="mission-close-button">
+                    Cerrar expediente
+                </MudButton>
+            </footer>
+        </article>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter, EditorRequired] public CinematicRecordModel Record { get; set; } = new();
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private string StatusClass => Record.StatusTone.ToLowerInvariant() switch
+    {
+        "success" => "status-success",
+        "warning" => "status-warning",
+        "danger" => "status-danger",
+        _ => "status-info"
+    };
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+}

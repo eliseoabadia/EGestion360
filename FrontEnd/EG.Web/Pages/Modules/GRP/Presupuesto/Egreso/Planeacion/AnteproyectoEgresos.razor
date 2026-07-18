@@ -66,11 +66,12 @@
                           ExportFunc="ExportToExcel"
                           SearchString="@SearchString"
                           SearchStringChanged="(s) => SearchString = s"
-                          OnSearch="OnSearch">
+                          OnSearch="OnSearch"
+                          OnRowDoubleClick="OpenDetail">
             <Columns>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <MudTooltip Text="Autorizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Verified"
                         Visible="@(CanUpdate && !cell.Item.EstaAutorizado)"
@@ -110,7 +111,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <div class="main-cell">@TextOrDash(cell.Item.ProgramaClave)</div>
                         <span>@TextOrDash(cell.Item.ProgramaDescripcion)</span>
                         </div>
@@ -118,7 +119,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
                         <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
                         </div>
@@ -126,14 +127,14 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         @TextOrDash(cell.Item.AreaNombre)
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Clasificacion" Identifier="FuenteFinanciamientoClave" PropertyName="FuenteFinanciamientoClave" SortBy="x => x.FuenteFinanciamientoClave">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <div class="main-cell">@TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</div>
                         <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span><br />
                         <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span><br />
@@ -144,14 +145,14 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         @TextOrDash(cell.Item.Descripcion)
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Meses" Identifier="__column_6" Sortable="false" Filterable="false">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <div class="month-spark">
                         @foreach (var month in GetMonths(cell.Item))
                         {
@@ -164,7 +165,7 @@
                 </TemplateColumn>
                 <TemplateColumn T="EgresoProyectadoResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
                     <CellTemplate Context="cell">
-                        <div @ondblclick="@(() => OpenDetail(cell.Item))">
+                        <div>
                         <strong>@Money(cell.Item.Total ?? 0m)</strong>
                         </div>
                     </CellTemplate>
@@ -653,16 +654,14 @@
     {
         await RunExclusiveAsync(async () =>
         {
-        var parameters = new DialogParameters
-        {
-            ["Item"] = item,
-            ["CurrencySymbol"] = _currencySymbol,
-            ["CurrencyName"] = _currencyName
-        };
+            var parameters = new DialogParameters
+            {
+                ["Record"] = CinematicRecordFactory.ForAnteproyecto(item, _currencySymbol, _currencyName)
+            };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.ShowAsync<AnteproyectoEgresosDetalleDialog>(string.Empty, parameters, options);
-        await dialog.Result;
+            var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false };
+            var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters, options);
+            await dialog.Result;
         }, "Operacion en proceso...");
     }
 

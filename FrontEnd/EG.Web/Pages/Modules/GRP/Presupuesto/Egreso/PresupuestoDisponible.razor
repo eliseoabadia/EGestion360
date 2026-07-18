@@ -62,11 +62,12 @@
                              ExportFunc="ExportToExcel"
                              SearchString="@SearchString"
                              SearchStringChanged="value => SearchString = value"
-                             OnSearch="OnSearch">
+                             OnSearch="OnSearch"
+                             OnRowDoubleClick="ViewItem">
                 <Columns>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="string" Property="x => x.ProgramaClave" Title="Programa" Identifier="ProgramaClave">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">
+                            <div class="detail-cell">
                                 <div class="main-cell">@TextOrDash(context.Item.ProgramaClave)</div>
                                 <span>@TextOrDash(context.Item.ProgramaDescripcion)</span>
                             </div>
@@ -74,7 +75,7 @@
                     </PropertyColumn>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="string" Property="x => x.PartidaClave" Title="Partida" Identifier="PartidaClave">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">
+                            <div class="detail-cell">
                                 <div class="main-cell">@TextOrDash(context.Item.PartidaClave)</div>
                                 <span>@TextOrDash(context.Item.PartidaDescripcion)</span>
                             </div>
@@ -82,12 +83,12 @@
                     </PropertyColumn>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="string" Property="x => x.AreaNombre" Title="Area" Identifier="AreaNombre">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">@TextOrDash(context.Item.AreaNombre)</div>
+                            <div class="detail-cell">@TextOrDash(context.Item.AreaNombre)</div>
                         </CellTemplate>
                     </PropertyColumn>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="string" Property="x => x.FuenteFinanciamientoClave" Title="Clasificación" Identifier="FuenteFinanciamientoClave">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">
+                            <div class="detail-cell">
                                 <span>FF: @TextOrDash(context.Item.FuenteFinanciamientoClaveNombre)</span><br />
                                 <span>TG: @TextOrDash(context.Item.TipoGastoClaveNombre)</span><br />
                                 <span>DI: @TextOrDash(context.Item.DigitoIdentificadorClaveNombre)</span><br />
@@ -98,12 +99,12 @@
                     </PropertyColumn>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">@TextOrDash(context.Item.Descripcion)</div>
+                            <div class="detail-cell">@TextOrDash(context.Item.Descripcion)</div>
                         </CellTemplate>
                     </PropertyColumn>
                     <TemplateColumn T="EgresoDisponibleResponse" Title="Meses" Sortable="false" Filterable="false">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))">
+                            <div class="detail-cell">
                                 <div class="month-spark">
                                     @foreach (var month in GetMonths(context.Item))
                                     {
@@ -116,7 +117,7 @@
                     </TemplateColumn>
                     <PropertyColumn T="EgresoDisponibleResponse" TProperty="decimal?" Property="x => x.Total" Title="Disponible" Identifier="Total">
                         <CellTemplate>
-                            <div class="detail-cell" @ondblclick="@(() => ViewItem(context.Item))"><strong>@Money(context.Item.Total ?? 0m)</strong></div>
+                            <div class="detail-cell"><strong>@Money(context.Item.Total ?? 0m)</strong></div>
                         </CellTemplate>
                     </PropertyColumn>
                 </Columns>
@@ -394,19 +395,11 @@
     {
         var parameters = new DialogParameters
         {
-            ["AnioId"] = AnioStateService.AnioId ?? 0,
-            ["CurrencySymbol"] = _currencySymbol,
-            ["CurrencyName"] = _currencyName,
-            ["PrefillItem"] = ToAuthorizedSnapshot(item),
-            ["IsReadOnly"] = true,
-            ["ReadOnlyTitle"] = "Ver Presupuesto Disponible",
-            ["AmountKind"] = "disponible"
+            ["Record"] = CinematicRecordFactory.ForPresupuestoDisponible(item, _currencySymbol, _currencyName)
         };
 
-        var dialog = await DialogService.ShowAsync<PresupuestoAutorizadoDialog>(
-            "Ver presupuesto disponible",
-            parameters,
-            new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true });
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
 
         await dialog.Result;
     }

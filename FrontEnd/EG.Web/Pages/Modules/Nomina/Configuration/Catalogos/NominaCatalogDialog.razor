@@ -42,7 +42,8 @@
     <BaseEntityForm TEntity="TItem"
                     @ref="form"
                     ShowHeader="true"
-                    HeaderTitle="@dialogTitle">
+                    HeaderTitle="@dialogTitle"
+                    CatalogMode="true">
 
         <MudGrid GutterSize="2">
             @foreach (var property in EditableProperties)

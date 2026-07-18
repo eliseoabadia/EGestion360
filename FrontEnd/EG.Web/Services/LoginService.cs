@@ -92,9 +92,9 @@ namespace EG.Web.Services
                 // Normalizar el token (remover comillas si existen)
                 token = token.Trim('"', '\'');
 
-                // Crear cliente HTTP con la configuraciÃ³n "ApiClient"
+                // Crear cliente HTTP con la configuración "ApiClient"
                 var client = _httpClientFactory.CreateClient("ApiClient");
-                // Agregar el token Bearer al cliente para esta peticiÃ³n
+                // Agregar el token Bearer al cliente para esta petición
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var url = $"api/UsuarioSucursal/usuario/{usuarioId}";
@@ -136,7 +136,7 @@ namespace EG.Web.Services
 
         public async Task Logout()
         {
-            // Limpiar estado de autenticaciÃ³n
+            // Limpiar estado de autenticación
             IsAuthenticated = false;
             _application.RemoveVariable(Const.KEY_USERID);
             _application.RemoveVariable(Const.KEY_TOKEN);

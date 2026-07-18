@@ -1,0 +1,86 @@
+.assignment-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100dvh - 96px);
+    padding: 16px 20px 12px;
+    overflow: hidden;
+}
+
+.assignment-title {
+    flex: 0 0 auto;
+    margin-bottom: 12px;
+}
+
+.assignment-column {
+    display: flex;
+    flex-direction: column;
+    height: clamp(260px, 55dvh, 520px);
+    min-height: 0;
+    padding: 16px;
+}
+
+.assignment-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+.assignment-actions {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.dropzone {
+    min-height: 100%;
+    padding: 8px;
+    border: 2px dashed var(--mud-palette-lines-default);
+    border-radius: 8px;
+    transition: border-color .2s, background-color .2s;
+}
+
+.dropzone.mud-drop-zone-drag-over {
+    border-color: var(--mud-palette-primary);
+    background-color: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent);
+}
+
+.item-card {
+    border: 1px solid transparent;
+    transition: border-color .2s, background-color .2s;
+}
+
+.item-card:hover {
+    border-color: var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+.assignment-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.assignment-list::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: var(--mud-palette-action-disabled);
+}
+
+@media (max-width: 959px) {
+    .assignment-page {
+        max-height: calc(100dvh - 48px);
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .assignment-column {
+        height: clamp(220px, 38dvh, 360px);
+    }
+}
+
+@media (max-height: 720px) and (min-width: 960px) {
+    .assignment-column {
+        height: clamp(240px, 48dvh, 360px);
+    }
+}

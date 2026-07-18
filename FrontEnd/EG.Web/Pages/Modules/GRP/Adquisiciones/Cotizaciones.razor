@@ -56,7 +56,8 @@
                                   ExportFunc="ExportToExcel"
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
-                                  OnSearch="OnSearch">
+                                  OnSearch="OnSearch"
+                                  OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="CotizacionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -608,6 +609,17 @@
         {
             await table.ReloadData();
         }
+    }
+
+    private async Task OpenReadOnlyDetail(CotizacionResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForCotizacion(item)
+        };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
+        await dialog.Result;
     }
 
     private async Task SelectCotizacion(CotizacionResponse cotizacion)

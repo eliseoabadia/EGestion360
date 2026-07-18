@@ -118,7 +118,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     return new PagedResult<NivelResponse>
                     {
                         Success = false,
-                        Message = "Ya existe un Nivel activo con ese nÃºmero",
+                        Message = "Ya existe un Nivel activo con ese número",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     };
@@ -159,7 +159,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     return new PagedResult<NivelResponse>
                     {
                         Success = false,
-                        Message = "Ya existe otro Nivel activo con ese nÃºmero",
+                        Message = "Ya existe otro Nivel activo con ese número",
                         Code = "DUPLICATE",
                         TotalCount = 0
                     };

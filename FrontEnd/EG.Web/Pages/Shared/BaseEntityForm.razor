@@ -1,5 +1,6 @@
 @using MudBlazor
 @typeparam TEntity where TEntity : class, new()
+@inject NavigationManager Navigation
 
 <MudForm @ref="mudForm">
     <MudCard Elevation="0" Class="@CardCssClass">
@@ -24,7 +25,7 @@
             </MudCardHeader>
         }
         
-        <MudCardContent Class="entity-form-content">
+        <MudCardContent Class="@ContentCssClass">
             @if (Loading)
             {
                 <FormLoadingState Message="@LoadingMessage" Rows="@LoadingSkeletonRows" />
@@ -46,6 +47,7 @@
     [Parameter] public bool Loading { get; set; }
     [Parameter] public string LoadingMessage { get; set; } = "Preparando formulario...";
     [Parameter] public int LoadingSkeletonRows { get; set; } = 8;
+    [Parameter] public bool? CatalogMode { get; set; }
     
     [CascadingParameter(Name = "BaseDialog")] 
     private object? BaseDialog { get; set; }
@@ -56,6 +58,17 @@
     private string CardCssClass => InsideDialog
         ? "entity-form-card entity-form-card-dialog"
         : "entity-form-card entity-form-card-standalone";
+    private bool IsCatalogContext => CatalogMode ?? IsCatalogRoute();
+    private string ContentCssClass => IsCatalogContext
+        ? "entity-form-content entity-form-content-catalog"
+        : "entity-form-content entity-form-content-structured";
+
+    private bool IsCatalogRoute()
+    {
+        var path = Navigation.ToBaseRelativePath(Navigation.Uri);
+        return path.Contains("configuracion/", StringComparison.OrdinalIgnoreCase)
+            || path.Contains("configuration/", StringComparison.OrdinalIgnoreCase);
+    }
     
     // Propiedades para acceder al estado del formulario
     public bool IsValid => mudForm.IsValid;

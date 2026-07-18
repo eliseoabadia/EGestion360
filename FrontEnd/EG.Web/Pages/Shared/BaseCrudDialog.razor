@@ -1,5 +1,6 @@
 @using MudBlazor
 @typeparam TItem
+@inject NavigationManager Navigation
 
 <MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
     <TitleContent>
@@ -36,7 +37,7 @@
         @if (!loading)
         {
             <CascadingValue Value="this" Name="BaseDialog">
-                <MudPaper Class="crud-dialog-shell" Elevation="2">
+                <MudPaper Class="@DialogShellCssClass" Elevation="2">
                     @ChildContent
 
                     <div class="crud-dialog-actions">
@@ -87,6 +88,7 @@
     [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
     [Parameter] public bool CanConfirm { get; set; } = true;
     [Parameter] public bool ShowConfirmButton { get; set; } = true;
+    [Parameter] public bool? CatalogMode { get; set; }
     [Parameter] public EventCallback<bool> OnConfirm { get; set; }  // Señal de confirmación con resultado (bool)
     [Parameter] public EventCallback OnCancel { get; set; }
     // Nota: el cierre se notifica al padre mediante SignalClose(success)
@@ -100,12 +102,23 @@
     private string DialogCssClass => string.IsNullOrWhiteSpace(DialogClass)
         ? "crud-dialog"
         : $"crud-dialog {DialogClass}";
+    private bool IsCatalogContext => CatalogMode ?? IsCatalogRoute();
+    private string DialogShellCssClass => IsCatalogContext
+        ? "crud-dialog-shell crud-dialog-shell-catalog"
+        : "crud-dialog-shell crud-dialog-shell-structured";
     private string EffectiveTitleIcon => !string.IsNullOrWhiteSpace(TitleIcon)
         ? TitleIcon!
         : ResolveTitleIcon(Title);
     private string EffectiveSubtitle => !string.IsNullOrWhiteSpace(Subtitle)
         ? Subtitle!
         : ResolveSubtitle(Title);
+
+    private bool IsCatalogRoute()
+    {
+        var path = Navigation.ToBaseRelativePath(Navigation.Uri);
+        return path.Contains("configuracion/", StringComparison.OrdinalIgnoreCase)
+            || path.Contains("configuration/", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static string ResolveTitleIcon(string title)
     {

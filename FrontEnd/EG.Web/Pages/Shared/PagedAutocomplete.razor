@@ -10,6 +10,8 @@
 <MudAutocomplete T="LookupItem"
                  @ref="_autocomplete"
                  Class="eg-paged-autocomplete"
+                 PopoverClass="eg-paged-autocomplete-popover"
+                 title="@Value?.Text"
                  Value="@Value"
                  ValueChanged="HandleValueChanged"
                  Label="@Label"
@@ -31,6 +33,11 @@
                  ReadOnly="@ReadOnly"
                  Virtualize="@Virtualize"
                  MaxItems="@((int?)null)">
+    <ItemTemplate Context="item">
+        <MudTooltip Text="@item.Text">
+            <span class="eg-paged-autocomplete-option">@item.Text</span>
+        </MudTooltip>
+    </ItemTemplate>
     <ProgressIndicatorTemplate>
         <MudProgressCircular Size="Size.Small"
                              Color="@ProgressIndicatorColor"

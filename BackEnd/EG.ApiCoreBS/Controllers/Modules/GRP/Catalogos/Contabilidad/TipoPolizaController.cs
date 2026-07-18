@@ -50,7 +50,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = $"No se encontrÃ³ el registro con ID {id}",
+                    Message = $"No se encontró el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -75,7 +75,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = "Datos invÃ¡lidos",
+                    Message = "Datos inválidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -87,7 +87,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return Conflict(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = "Ya existe un registro activo con la misma Clave o DescripciÃ³n",
+                    Message = "Ya existe un registro activo con la misma Clave o Descripción",
                     Code = "DUPLICATE",
                     TotalCount = 0
                 });
@@ -115,7 +115,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return BadRequest(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = "Datos invÃ¡lidos",
+                    Message = "Datos inválidos",
                     Code = "INVALID_MODEL",
                     TotalCount = 0
                 });
@@ -129,7 +129,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return Conflict(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = "Ya existe otro registro activo con la misma Clave o DescripciÃ³n",
+                    Message = "Ya existe otro registro activo con la misma Clave o Descripción",
                     Code = "DUPLICATE",
                     TotalCount = 0
                 });
@@ -169,7 +169,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 return NotFound(new PagedResult<TipoPolizaResponse>
                 {
                     Success = false,
-                    Message = $"No se encontrÃ³ el registro con ID {id}",
+                    Message = $"No se encontró el registro con ID {id}",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 });
@@ -215,7 +215,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
             return Ok(new PagedResult<TipoPolizaResponse>
             {
                 Success = true,
-                Message = "BÃºsqueda realizada correctamente",
+                Message = "Búsqueda realizada correctamente",
                 Code = "SUCCESS",
                 Items = result.Items,
                 TotalCount = result.TotalCount

@@ -1,0 +1,98 @@
+P001 [Normal] Error de diseño , en la mayoría de pantallas que tienen muchos registros estos no se llegan a visualizar correctamente en el tamaño normal , ejemplo del antes-después.
+    [IMAGE: image4.png]
+    [IMAGE: image9.png]
+P004 [Normal] Configuración
+P005 [Normal] Sistema
+P006 [Normal] Usuario
+P007 [Normal] En la opción de asignar sucursal no hay forma de acceder a las opciones de abajo en el tamaño normal , es un error de diseño .
+    [IMAGE: image5.png]
+    [IMAGE: image6.png]
+P008 [Normal] Menú
+P009 [Normal] Configurar Accesos
+P010 [Normal] General
+P011 [Normal] A pesar de parecer que deja editar , los cambios no se guardan
+P012 [Normal] Empresa
+P013 [Normal] Departamento
+P014 [Normal] Al crear un departamento nuevo este si lo crea porque me aparece el mensaje de error al querer crear otro con el mismo nombre , sin embargo estos no se muestran.
+P015 [Normal] Presupuestales
+P016 [Normal] Programas Presupuestales
+P017 [Normal] Clave del Programa Presupuestal
+P018 [Normal] Unidad Responsable
+P019 [Normal] Finalidad
+P020 [Normal] Función
+P021 [Normal] SubFunción
+P022 [Normal] Actividad Institucional
+P023 [Normal] Programa Presupuestal
+P024 [Normal] Años
+P025 [Normal] El campo de DESCRIPCIÓN no guarda informacion y esta en blanco en todos los registros
+P026 [Normal] Sector
+P027 [Normal] Tipo Recurso
+P028 [Normal] Fuente Financiamiento
+P029 [Normal] PG
+P030 [Normal] Ramo
+P031 [Normal] Proyecto
+P032 [Normal] Adquisiciones
+P033 [Normal] Modalidad
+P034 [Normal] Tipo de Contrato
+P035 [Normal] Tipo de Documentos
+P036 [Normal] Tipo de Garantía
+P037 [Normal] Procedimientos de Contratación
+P038 [Normal] Estatus Requisición
+P039 [Normal] Proveedores
+P040 [Normal] Artículo
+P041 [Normal] Fracción
+P042 [Normal] No deja hacer cambios
+    [IMAGE: image11.png]
+P043 [Normal] Contabilidad
+P044 [Normal] Tipo Pólizas
+P045 [Normal] Tipo Detalles Pólizas
+P046 [Normal] Matriz Conversión
+P047 [Normal] Al abrir esta sección el menú se pasma y arroja un error en el visual
+    [IMAGE: image7.png]
+    [IMAGE: image10.png]
+P048 [Normal] Matriz Conversión Ingresos
+P049 [Normal] Partidas Presupuestales
+P050 [Normal] Cuentas Contables
+P051 [Normal] No deja editar
+    [IMAGE: image2.png]
+P052 [Normal] Formas Pago
+P053 [Normal] Patrimonio
+P054 [Normal] Familia
+P055 [Normal] Grupo Bien
+P056 [Normal] Bienes y Servicios
+P057 [Normal] Error de diseño , el apartado tiene bastantes campos de información (Las COLUMNAS) pero no hay una barra horizontal para visualizarlas todas
+    [IMAGE: image13.png]
+P058 [Normal] No deja editar.
+    [IMAGE: image8.png]
+P059 [Normal] Tipo de Patrimonio
+P060 [Normal] Tipo de Adquisición
+P061 [Normal] Marca
+P062 [Normal] Personas
+P063 [Normal] Almacén
+P064 [Normal] Motivo de Entradas Salidas
+P065 [Normal] Estatus Solicitud
+P066 [Normal] Unidades
+P067 [Normal] Si deja hacer cambios y estos si se guardan , pero no se visualizan .
+P068 [Normal] Periodo de Conteo
+P069 [Normal] Familia
+P070 [Normal] Tipo Bien
+P071 [Normal] Error de diseño , el apartado tiene bastantes campos de información (Las COLUMNAS) pero no hay una barra horizontal para visualizarlas todas
+    [IMAGE: image12.png]
+P072 [Normal] Bien
+P073 [Normal] Número Conteo
+P074 [Normal] El menú se pasma al querer crear algo y no deja hacer nada , se tiene que detener la depuración y volver a correr el visual
+    [IMAGE: image3.png]
+P075 [Normal] Tesorería
+P076 [Normal] Tipo de Cambio
+P077 [Normal] No hay registros por lo que para hacer pruebas quise crear uno pero al hacerlo me salta a la siguiente ventana
+    [IMAGE: image1.png]
+P078 [Normal] Tipo Inversión
+P079 [Normal] Tipo Moneda
+P080 [Normal] Tipo de Pago
+P081 [Normal] Tipo de Pago SF
+P082 [Normal] Tipo Solicitud CLC
+P083 [Normal] Tipo Documento CLC
+P084 [Normal] Ingresos (CLCs)
+P085 [Normal] No hay registros y no hay opción para crear uno
+P086 [Normal] Ingresos Propios (Recibo...)
+P087 [Normal] No hay registros y no hay opción para crear uno

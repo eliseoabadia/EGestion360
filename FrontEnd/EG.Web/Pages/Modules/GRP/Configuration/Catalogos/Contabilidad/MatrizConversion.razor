@@ -25,22 +25,23 @@
                 ExportFunc="ExportToExcel"
                 SearchString="@SearchString"
                 SearchStringChanged="(s) => SearchString = s"
-                OnSearch="OnSearch">
+                OnSearch="OnSearch"
+                OnRowDoubleClick="OpenDetail">
 
                 <Columns>
-                    <TemplateColumn Resizable="false" T="MatrizConversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))"><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizConversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizConversion))" /></MudTooltip></div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="ID" Identifier="PkidMatrizConversion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PkidMatrizConversion</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.ProgramaClave</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Partida" Identifier="PartidaDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.PartidaDescripcion</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="TG" Identifier="TipoGastoDescripcion"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@($"{context.Item.TipoGastoClave} - {context.Item.TipoGastoDescripcion}".Trim(' ', '-'))</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Aprobado" Identifier="CuentaAprobadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaAprobadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Por Ejercer" Identifier="CuentaPorEjercerNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPorEjercerNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Modificado" Identifier="CuentaModificadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaModificadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Comprometido" Identifier="CuentaComprometidoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaComprometidoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Devengado" Identifier="CuentaDevengadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaDevengadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Ejercido" Identifier="CuentaEjercidoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaEjercidoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Pagado" Identifier="CuentaPagadoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaPagadoNombre</div></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Gasto" Identifier="CuentaGastoNombre"><CellTemplate><div @ondblclick="@(() => OpenDetail(context.Item))">@context.Item.CuentaGastoNombre</div></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="false" T="MatrizConversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizConversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizConversion))" /></MudTooltip></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="ID" Identifier="PkidMatrizConversion"><CellTemplate>@context.Item.PkidMatrizConversion</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate>@context.Item.ProgramaClave</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Partida" Identifier="PartidaDescripcion"><CellTemplate>@context.Item.PartidaDescripcion</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="TG" Identifier="TipoGastoDescripcion"><CellTemplate>@($"{context.Item.TipoGastoClave} - {context.Item.TipoGastoDescripcion}".Trim(' ', '-'))</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Aprobado" Identifier="CuentaAprobadoNombre"><CellTemplate>@context.Item.CuentaAprobadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Por Ejercer" Identifier="CuentaPorEjercerNombre"><CellTemplate>@context.Item.CuentaPorEjercerNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Modificado" Identifier="CuentaModificadoNombre"><CellTemplate>@context.Item.CuentaModificadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Comprometido" Identifier="CuentaComprometidoNombre"><CellTemplate>@context.Item.CuentaComprometidoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Devengado" Identifier="CuentaDevengadoNombre"><CellTemplate>@context.Item.CuentaDevengadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Ejercido" Identifier="CuentaEjercidoNombre"><CellTemplate>@context.Item.CuentaEjercidoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Pagado" Identifier="CuentaPagadoNombre"><CellTemplate>@context.Item.CuentaPagadoNombre</CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="MatrizConversionResponse" Title="Gasto" Identifier="CuentaGastoNombre"><CellTemplate>@context.Item.CuentaGastoNombre</CellTemplate></TemplateColumn>
                 </Columns>
             </GenericDataGrid>
         </div>
@@ -61,9 +62,12 @@
 
     private async Task OpenDetail(MatrizConversionResponse item)
     {
-        var parameters = new DialogParameters { ["Item"] = item };
-        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.ShowAsync<MatrizConversionPersonalizado>(string.Empty, parameters, options);
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForMatrizConversion(item)
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters, options);
         await dialog.Result;
     }
 

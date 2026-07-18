@@ -13,7 +13,10 @@
 
 <BaseCrudDialog TItem="PolizaResponse"
                 Title="@dialogTitle"
+                Subtitle="Periodo, tipo y control de autorizacion de la poliza."
+                TitleIcon="@Icons.Material.Filled.ReceiptLong"
                 MaxWidth="MaxWidth.Medium"
+                DialogClass="poliza-dialog crud-dialog-wide"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -24,72 +27,131 @@
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
 
-        <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <MudSelect T="int"
-                           @bind-Value="item.FkidMesSis"
-                           Label="Mes"
-                           Variant="Variant.Outlined"
-                           Required="true"
-                           RequiredError="El mes es requerido">
-                    @foreach (var mes in MonthOptions)
-                    {
-                        <MudSelectItem T="int" Value="@mes.Id">@mes.Nombre</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
+        <div class="poliza-form">
+            <section class="poliza-section poliza-section-period">
+                <div class="poliza-section-heading">
+                    <span class="poliza-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Periodo y tipo</MudText>
+                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Ubica la poliza dentro del ejercicio contable.</MudText>
+                    </div>
+                </div>
 
-            <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedTipoPoliza"
-                                   ValueChanged="value => _selectedTipoPoliza = value"
-                                   Label="Tipo de póliza"
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="int"
+                                   @bind-Value="item.FkidMesSis"
+                                   Label="Mes"
+                                   Variant="Variant.Outlined"
                                    Required="true"
-                                   RequiredError="El tipo de póliza es requerido"
-                                   LoadPage="LoadTiposPolizaPageAsync" />
-            </MudItem>
+                                   RequiredError="El mes es requerido">
+                            @foreach (var mes in MonthOptions)
+                            {
+                                <MudSelectItem T="int" Value="@mes.Id">@mes.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.ClavePoliza"
-                              Label="Clave"
-                              Variant="Variant.Outlined"
-                              MaxLength="10"
-                              Required="true"
-                              RequiredError="La clave es requerida" />
-            </MudItem>
+                    <MudItem xs="12" md="8">
+                        <PagedAutocomplete Value="@_selectedTipoPoliza"
+                                           ValueChanged="value => _selectedTipoPoliza = value"
+                                           Label="Tipo de poliza"
+                                           Required="true"
+                                           RequiredError="El tipo de poliza es requerido"
+                                           LoadPage="LoadTiposPolizaPageAsync" />
+                    </MudItem>
+                </MudGrid>
+            </section>
 
-            <MudItem xs="12" md="8">
-                <MudDatePicker @bind-Date="_fechaPoliza"
-                               Label="Fecha"
-                               Variant="Variant.Outlined"
-                               Required="true"
-                               RequiredError="La fecha es requerida" />
-            </MudItem>
+            <section class="poliza-section poliza-section-data">
+                <div class="poliza-section-heading">
+                    <span class="poliza-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Datos contables</MudText>
+                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Clave, fecha y concepto principal de captura.</MudText>
+                    </div>
+                </div>
 
-            <MudItem xs="12">
-                <MudTextField @bind-Value="item.NombrePoliza"
-                              Label="Nombre"
-                              Variant="Variant.Outlined"
-                              Lines="2"
-                              MaxLength="1000"
-                              Required="true"
-                              RequiredError="El nombre de la póliza es requerido" />
-            </MudItem>
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="item.ClavePoliza"
+                                      Label="Clave"
+                                      Variant="Variant.Outlined"
+                                      MaxLength="10"
+                                      Required="true"
+                                      RequiredError="La clave es requerida" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudSwitch T="bool"
-                           @bind-Value="_permitirModificar"
-                           Label="Permitir modificación"
-                           Color="Color.Primary" />
-            </MudItem>
+                    <MudItem xs="12" md="8">
+                        <MudDatePicker @bind-Date="_fechaPoliza"
+                                       Label="Fecha"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="La fecha es requerida" />
+                    </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudSwitch T="bool"
-                           @bind-Value="_autorizado"
-                           Label="Autorizada"
-                           Color="Color.Success" />
-            </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="item.NombrePoliza"
+                                      Label="Nombre"
+                                      Variant="Variant.Outlined"
+                                      Lines="2"
+                                      MaxLength="1000"
+                                      Required="true"
+                                      RequiredError="El nombre de la poliza es requerido" />
+                    </MudItem>
+                </MudGrid>
+            </section>
 
-        </MudGrid>
+            <section class="poliza-section poliza-section-control">
+                <div class="poliza-section-heading">
+                    <span class="poliza-section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Small" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Control</MudText>
+                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Permisos de modificacion y estado de autorizacion.</MudText>
+                    </div>
+                </div>
+
+                <MudGrid GutterSize="2">
+                    <MudItem xs="12" md="6">
+                        <div class="poliza-toggle-card">
+                            <span class="poliza-toggle-icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+                            </span>
+                            <div class="poliza-toggle-copy">
+                                <span>Edicion</span>
+                                <strong>@(_permitirModificar ? "Modificable" : "Bloqueada")</strong>
+                            </div>
+                            <MudSwitch T="bool"
+                                       @bind-Value="_permitirModificar"
+                                       Label="Permitir modificacion"
+                                       Color="Color.Primary" />
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <div class="poliza-toggle-card">
+                            <span class="poliza-toggle-icon success" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.Small" />
+                            </span>
+                            <div class="poliza-toggle-copy">
+                                <span>Estado</span>
+                                <strong>@(_autorizado ? "Autorizada" : "Pendiente")</strong>
+                            </div>
+                            <MudSwitch T="bool"
+                                       @bind-Value="_autorizado"
+                                       Label="Autorizada"
+                                       Color="Color.Success" />
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </section>
+        </div>
     </BaseEntityForm>
 </BaseCrudDialog>
 
@@ -112,7 +174,7 @@
     private bool _permitirModificar = true;
     private bool _autorizado;
 
-    private string dialogTitle => Id.HasValue ? "Editar Póliza" : "Nueva Póliza";
+    private string dialogTitle => Id.HasValue ? "Editar Poliza" : "Nueva Poliza";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
 
@@ -141,6 +203,7 @@
             await CargarDatosAsync();
             return;
         }
+
         ApplyHeaderAnio();
     }
 
@@ -175,6 +238,7 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
+
         ApplyHeaderAnio();
         if (item.FkidAnioSis <= 0)
         {
@@ -184,15 +248,16 @@
 
         if (_selectedTipoPoliza == null)
         {
-            Snackbar.Add("Selecciona el tipo de póliza.", Severity.Warning);
+            Snackbar.Add("Selecciona el tipo de poliza.", Severity.Warning);
             return;
         }
 
         if (item.FkidMesSis < 1 || item.FkidMesSis > 12)
         {
-            Snackbar.Add("Selecciona un mes válido.", Severity.Warning);
+            Snackbar.Add("Selecciona un mes valido.", Severity.Warning);
             return;
         }
+
         item.FkidTipoPolizaSis = _selectedTipoPoliza.Id;
         item.FechaPoliza = _fechaPoliza ?? DateTime.Today;
         item.ClavePoliza = item.ClavePoliza?.Trim() ?? string.Empty;
@@ -208,12 +273,12 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(Id.HasValue ? "Póliza actualizada correctamente." : "Póliza creada correctamente.", Severity.Success);
+                Snackbar.Add(Id.HasValue ? "Poliza actualizada correctamente." : "Poliza creada correctamente.", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
 
-            Snackbar.Add(response?.Message ?? "Error al guardar la póliza.", Severity.Error);
+            Snackbar.Add(response?.Message ?? "Error al guardar la poliza.", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -226,6 +291,7 @@
         var response = await TipoPolizaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
         return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoPoliza, Text = x.Descripcion }), response?.TotalCount);
     }
+
     private void ApplyHeaderAnio()
     {
         if (AnioStateService.AnioId is > 0)

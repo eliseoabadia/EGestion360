@@ -14,7 +14,7 @@ namespace EG.Web.Services
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
-            return user.Identity!.IsAuthenticated;
+            return user.Identity?.IsAuthenticated == true;
         }
 
         public async Task<string?> GetUserNameAsync()
@@ -89,7 +89,15 @@ namespace EG.Web.Services
         {
             try
             {
-                var authState = _authenticationStateProvider.GetAuthenticationStateAsync().Result;
+                // No bloquear el hilo de Blazor esperando una tarea asíncrona:
+                // en WebAssembly eso puede congelar la interfaz. Los consumidores
+                // nuevos deben usar HasPermissionAsync; este método solo aprovecha
+                // un estado que ya esté disponible de forma síncrona.
+                var authStateTask = _authenticationStateProvider.GetAuthenticationStateAsync();
+                if (!authStateTask.IsCompletedSuccessfully)
+                    return false;
+
+                var authState = authStateTask.GetAwaiter().GetResult();
                 var user = authState.User;
 
                 if (!user.Identity?.IsAuthenticated ?? true)

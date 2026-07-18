@@ -20,7 +20,7 @@ internal class Program
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
-        // Configurar MudBlazor con localizaci�n y Snackbar
+        // Configurar MudBlazor con localización y Snackbar
         builder.Services.AddMudServices(config =>
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;

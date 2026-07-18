@@ -44,7 +44,8 @@
                                   ExportFunc="ExportToExcel"
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
-                                  OnSearch="OnSearch">
+                                  OnSearch="OnSearch"
+                                  OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="SolicitudSuficienciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -359,6 +360,17 @@
     protected override Task CreateItem() => Task.CompletedTask;
     protected override Task EditItem(int id) => Task.CompletedTask;
     protected override Task DeleteItem(int id) => Task.CompletedTask;
+
+    private async Task OpenReadOnlyDetail(SolicitudSuficienciaResponse item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Record"] = CinematicRecordFactory.ForSolicitudSuficiencia(item)
+        };
+        var dialog = await DialogService.ShowAsync<CinematicRecordDialog>(string.Empty, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = false });
+        await dialog.Result;
+    }
 
     private async Task SelectSolicitud(SolicitudSuficienciaResponse item)
     {

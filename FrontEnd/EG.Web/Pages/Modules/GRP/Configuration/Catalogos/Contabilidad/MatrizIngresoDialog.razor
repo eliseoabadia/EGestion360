@@ -10,7 +10,11 @@
 
 <BaseCrudDialog TItem="MatrizIngresoResponse"
                 Title="@dialogTitle"
+                Subtitle="Relaciona el origen de los recursos con las cuentas contables de ingreso."
+                TitleIcon="@Icons.Material.Filled.AccountTree"
                 MaxWidth="MaxWidth.ExtraExtraLarge"
+                DialogClass="matriz-ingreso-dialog crud-dialog-wide-xl"
+                CatalogMode="false"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando catálogos..."
@@ -25,77 +29,64 @@
     }
     else
     {
-        <MudContainer Class="py-2">
-            <MudGrid GutterSize="2" Spacing="2">
-                <MudItem xs="12">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="section-title">Referencia Principal</MudText>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
+        <div class="matriz-form">
+            <section class="matriz-section matriz-section-reference">
+                <div class="matriz-section-heading">
+                    <span class="matriz-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Small" /></span>
+                    <div><MudText Typo="Typo.subtitle2" Class="matriz-section-title">Referencia principal</MudText><MudText Typo="Typo.caption" Class="matriz-section-subtitle">Programa y origen de los recursos asociados al ingreso.</MudText></div>
+                </div>
+                <div class="matriz-reference-grid matriz-reference-grid-income">
+                    <div class="matriz-reference-field matriz-reference-field-code">
                     <PagedAutocomplete Value="@_selectedPrograma"
                                        ValueChanged="value => _selectedPrograma = value"
                                        Label="Programa"
                                        Required="true"
                                        LoadPage="LoadProgramasPageAsync" />
-                </MudItem>
+                    </div>
 
-                <MudItem xs="12" md="6">
+                    <div class="matriz-reference-field matriz-reference-field-wide">
                     <PagedAutocomplete Value="@_selectedOrigen"
                                        ValueChanged="value => _selectedOrigen = value"
                                        Label="Origen de Recursos"
                                        Required="true"
                                        LoadPage="LoadOrigenesPageAsync" />
-                </MudItem>
+                    </div>
+                </div>
+            </section>
 
-                <MudItem xs="12" class="mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="section-title">Cuentas Contables</MudText>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedAutorizado"
-                                       ValueChanged="value => _selectedAutorizado = value"
-                                       Label="Cta. Presupuesto Autorizado"
-                                       Required="true"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedPorEjercer"
-                                       ValueChanged="value => _selectedPorEjercer = value"
-                                       Label="Cuenta Presupuesto por Ejecutar"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedModificado"
-                                       ValueChanged="value => _selectedModificado = value"
-                                       Label="Cuenta Presupuesto Modificado"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedDevengado"
-                                       ValueChanged="value => _selectedDevengado = value"
-                                       Label="Cuenta Presupuesto Devengado"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedRecaudado"
-                                       ValueChanged="value => _selectedRecaudado = value"
-                                       Label="Cuenta Presupuesto Recaudado"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedDeposito"
-                                       ValueChanged="value => _selectedDeposito = value"
-                                       Label="Cuenta de Depósito"
-                                       LoadPage="LoadCuentasPageAsync" />
-                </MudItem>
-
-            </MudGrid>
-        </MudContainer>
+            <section class="matriz-section matriz-section-mapping">
+                <div class="matriz-section-heading">
+                    <span class="matriz-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" /></span>
+                    <div><MudText Typo="Typo.subtitle2" Class="matriz-section-title">Cuentas contables</MudText><MudText Typo="Typo.caption" Class="matriz-section-subtitle">Cuentas para autorizado, ejecución, modificado, devengado, recaudado y depósito.</MudText></div>
+                </div>
+                <div class="matriz-mapping-list">
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Autorizado</span><small>Presupuesto aprobado</small></div>
+                        <PagedAutocomplete Value="@_selectedAutorizado" ValueChanged="value => _selectedAutorizado = value" Label="Cuenta de presupuesto autorizado" Required="true" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Por ejecutar</span><small>Presupuesto disponible</small></div>
+                        <PagedAutocomplete Value="@_selectedPorEjercer" ValueChanged="value => _selectedPorEjercer = value" Label="Cuenta de presupuesto por ejecutar" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Modificado</span><small>Adecuaciones del ingreso</small></div>
+                        <PagedAutocomplete Value="@_selectedModificado" ValueChanged="value => _selectedModificado = value" Label="Cuenta de presupuesto modificado" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Devengado</span><small>Derecho de cobro reconocido</small></div>
+                        <PagedAutocomplete Value="@_selectedDevengado" ValueChanged="value => _selectedDevengado = value" Label="Cuenta de presupuesto devengado" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Recaudado</span><small>Ingreso efectivamente recibido</small></div>
+                        <PagedAutocomplete Value="@_selectedRecaudado" ValueChanged="value => _selectedRecaudado = value" Label="Cuenta de presupuesto recaudado" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                    <div class="matriz-map-row">
+                        <div class="matriz-map-label"><span>Depósito</span><small>Cuenta bancaria de destino</small></div>
+                        <PagedAutocomplete Value="@_selectedDeposito" ValueChanged="value => _selectedDeposito = value" Label="Cuenta de depósito" LoadPage="LoadCuentasPageAsync" />
+                    </div>
+                </div>
+            </section>
+        </div>
     }
 </BaseCrudDialog>
 

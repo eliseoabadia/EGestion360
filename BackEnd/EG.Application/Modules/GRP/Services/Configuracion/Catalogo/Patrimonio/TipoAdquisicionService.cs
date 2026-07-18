@@ -47,7 +47,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
-                    Message = "Tipos de adquisiciÃ³n obtenidos correctamente",
+                    Message = "Tipos de adquisición obtenidos correctamente",
                     Code = "SUCCESS",
                     Items = result.ToList(),
                     TotalCount = result.Count()
@@ -58,7 +58,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener tipos de adquisiciÃ³n: {ex.Message}",
+                    Message = $"Error al obtener tipos de adquisición: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
@@ -71,13 +71,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
             {
                 var entity = await _service.GetQueryWithIncludes().FirstOrDefaultAsync(e => e.PkidTipoAdq == id);
                 if (entity == null)
-                    return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisiciÃ³n no encontrado", Code = "NOT_FOUND" };
+                    return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisición no encontrado", Code = "NOT_FOUND" };
 
                 var result = entity.Adapt<TipoAdquisicionResponse>();
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
-                    Message = "Tipo de adquisiciÃ³n obtenido correctamente",
+                    Message = "Tipo de adquisición obtenido correctamente",
                     Code = "SUCCESS",
                     Data = result,
                     Items = new List<TipoAdquisicionResponse> { result },
@@ -89,7 +89,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener tipo de adquisiciÃ³n: {ex.Message}",
+                    Message = $"Error al obtener tipo de adquisición: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
@@ -113,7 +113,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
-                    Message = "Tipo de adquisiciÃ³n creado correctamente",
+                    Message = "Tipo de adquisición creado correctamente",
                     Code = "SUCCESS",
                     Data = created != null ? created.Adapt<TipoAdquisicionResponse>() : null,
                     Items = created != null ? new List<TipoAdquisicionResponse> { created.Adapt<TipoAdquisicionResponse>() } : new List<TipoAdquisicionResponse>(),
@@ -132,7 +132,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
             {
                 var existing = await _service.GetByIdAsync(id);
                 if (existing == null)
-                    return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisiciÃ³n no encontrado", Code = "NOT_FOUND" };
+                    return new PagedResult<TipoAdquisicionResponse> { Success = false, Message = "Tipo de adquisición no encontrado", Code = "NOT_FOUND" };
 
                 var dto = request.Adapt<TipoAdquisicionDto>();
                 dto.UsuarioCreacion = existing.UsuarioCreacion;
@@ -147,7 +147,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = true,
-                    Message = "Tipo de adquisiciÃ³n actualizado correctamente",
+                    Message = "Tipo de adquisición actualizado correctamente",
                     Code = "SUCCESS",
                     Data = updated,
                     Items = new List<TipoAdquisicionResponse> { updated },
@@ -166,10 +166,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
             {
                 var existing = await _service.GetByIdAsync(id);
                 if (existing == null)
-                    return new PagedResult<bool> { Success = false, Message = "Tipo de adquisiciÃ³n no encontrado", Code = "NOT_FOUND" };
+                    return new PagedResult<bool> { Success = false, Message = "Tipo de adquisición no encontrado", Code = "NOT_FOUND" };
 
                 await _service.DeleteAsync(id);
-                return new PagedResult<bool> { Success = true, Message = "Tipo de adquisiciÃ³n eliminado correctamente", Code = "SUCCESS", Items = new List<bool> { true }, TotalCount = 1 };
+                return new PagedResult<bool> { Success = true, Message = "Tipo de adquisición eliminado correctamente", Code = "SUCCESS", Items = new List<bool> { true }, TotalCount = 1 };
             }
             catch (Exception ex)
             {
@@ -223,7 +223,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<TipoAdquisicionResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener tipos de adquisiciÃ³n: {ex.Message}",
+                    Message = $"Error al obtener tipos de adquisición: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
