@@ -18,6 +18,13 @@
     box-shadow: 0 10px 28px rgba(2, 8, 23, .06) !important;
 }
 
+.mission-entity-form.entity-form-card-standalone {
+    border-top: 3px solid #df2038;
+    background:
+        linear-gradient(90deg, rgba(223, 32, 56, .055), transparent 30%),
+        var(--mud-palette-surface);
+}
+
 .entity-form-card:hover {
     transform: none;
     box-shadow: none !important;
@@ -31,6 +38,23 @@
     padding: 15px 18px !important;
     border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, transparent);
     background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 3%, var(--mud-palette-surface));
+}
+
+.mission-entity-form .entity-form-header {
+    position: relative;
+    border-bottom-color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 22%, var(--mud-palette-lines-default));
+}
+
+.mission-entity-form .entity-form-header::after {
+    content: "FORMULARIO // CONTROL DE CAPTURA";
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 62%, var(--mud-palette-text-secondary));
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .1em;
 }
 
 .entity-form-heading {
@@ -171,6 +195,11 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 13%, transparent);
 }
 
+.mission-entity-form .entity-form-content ::deep .mud-input-control:focus-within .mud-input-outlined-border {
+    border-color: #df2038;
+    box-shadow: 0 0 0 3px rgba(223, 32, 56, .14);
+}
+
 .entity-form-content ::deep .mud-input-helper-text:empty {
     display: none;
 }
@@ -250,5 +279,9 @@
 
     .entity-form-card-dialog .entity-form-content {
         padding: 0 !important;
+    }
+
+    .mission-entity-form .entity-form-header::after {
+        display: none;
     }
 }

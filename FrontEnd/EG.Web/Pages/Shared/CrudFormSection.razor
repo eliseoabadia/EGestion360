@@ -1,0 +1,25 @@
+@using MudBlazor
+
+<section class="crud-form-section">
+    <div class="crud-form-section-heading">
+        <span class="crud-form-section-icon" aria-hidden="true">
+            <MudIcon Icon="@Icon" Size="Size.Small" />
+        </span>
+        <div>
+            <MudText Typo="Typo.subtitle2" Class="crud-form-section-title">@Title</MudText>
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <MudText Typo="Typo.caption" Class="crud-form-section-subtitle">@Subtitle</MudText>
+            }
+        </div>
+    </div>
+
+    @ChildContent
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Description;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

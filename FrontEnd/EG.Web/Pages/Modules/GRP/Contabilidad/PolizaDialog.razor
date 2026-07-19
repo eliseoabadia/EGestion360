@@ -27,17 +27,10 @@
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
 
-        <div class="poliza-form">
-            <section class="poliza-section poliza-section-period">
-                <div class="poliza-section-heading">
-                    <span class="poliza-section-icon" aria-hidden="true">
-                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
-                    </span>
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Periodo y tipo</MudText>
-                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Ubica la poliza dentro del ejercicio contable.</MudText>
-                    </div>
-                </div>
+        <div class="crud-form-layout">
+            <CrudFormSection Title="Periodo y tipo"
+                             Subtitle="Ubica la poliza dentro del ejercicio contable."
+                             Icon="@Icons.Material.Filled.CalendarMonth">
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
@@ -63,18 +56,11 @@
                                            LoadPage="LoadTiposPolizaPageAsync" />
                     </MudItem>
                 </MudGrid>
-            </section>
+            </CrudFormSection>
 
-            <section class="poliza-section poliza-section-data">
-                <div class="poliza-section-heading">
-                    <span class="poliza-section-icon" aria-hidden="true">
-                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" />
-                    </span>
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Datos contables</MudText>
-                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Clave, fecha y concepto principal de captura.</MudText>
-                    </div>
-                </div>
+            <CrudFormSection Title="Datos contables"
+                             Subtitle="Clave, fecha y concepto principal de captura."
+                             Icon="@Icons.Material.Filled.Description">
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
@@ -104,53 +90,46 @@
                                       RequiredError="El nombre de la poliza es requerido" />
                     </MudItem>
                 </MudGrid>
-            </section>
+            </CrudFormSection>
 
-            <section class="poliza-section poliza-section-control">
-                <div class="poliza-section-heading">
-                    <span class="poliza-section-icon" aria-hidden="true">
-                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Small" />
-                    </span>
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Class="poliza-section-title">Control</MudText>
-                        <MudText Typo="Typo.caption" Class="poliza-section-subtitle">Permisos de modificacion y estado de autorizacion.</MudText>
-                    </div>
-                </div>
+            <CrudFormSection Title="Control"
+                             Subtitle="Permisos de modificacion y estado de autorizacion."
+                             Icon="@Icons.Material.Filled.AdminPanelSettings">
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="6">
-                        <div class="poliza-toggle-card">
-                            <span class="poliza-toggle-icon" aria-hidden="true">
-                                <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
-                            </span>
-                            <div class="poliza-toggle-copy">
-                                <span>Edicion</span>
-                                <strong>@(_permitirModificar ? "Modificable" : "Bloqueada")</strong>
-                            </div>
+                        <CrudFormToggle Label="Edicion"
+                                        State="@(_permitirModificar ? "Modificable" : "Bloqueada")"
+                                        Icon="@Icons.Material.Filled.Edit">
                             <MudSwitch T="bool"
                                        @bind-Value="_permitirModificar"
                                        Label="Permitir modificacion"
                                        Color="Color.Primary" />
-                        </div>
+                        </CrudFormToggle>
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <div class="poliza-toggle-card">
-                            <span class="poliza-toggle-icon success" aria-hidden="true">
-                                <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.Small" />
-                            </span>
-                            <div class="poliza-toggle-copy">
-                                <span>Estado</span>
-                                <strong>@(_autorizado ? "Autorizada" : "Pendiente")</strong>
-                            </div>
-                            <MudSwitch T="bool"
-                                       @bind-Value="_autorizado"
-                                       Label="Autorizada"
-                                       Color="Color.Success" />
-                        </div>
+                        <CrudFormToggle Label="Estado"
+                                        State="@(_autorizado ? "Autorizada" : "Pendiente")"
+                                        Icon="@Icons.Material.Filled.Verified"
+                                        Amber="true">
+                            @if (Id.HasValue)
+                            {
+                                <MudSwitch T="bool"
+                                           @bind-Value="_autorizado"
+                                           Label="Autorizada"
+                                           Color="Color.Success" />
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                                    Pendiente de autorización
+                                </MudChip>
+                            }
+                        </CrudFormToggle>
                     </MudItem>
                 </MudGrid>
-            </section>
+            </CrudFormSection>
         </div>
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -263,7 +242,8 @@
         item.ClavePoliza = item.ClavePoliza?.Trim() ?? string.Empty;
         item.NombrePoliza = item.NombrePoliza?.Trim() ?? string.Empty;
         item.PermitirModificar = _permitirModificar;
-        item.Autorizado = _autorizado;
+        // Un alta siempre inicia pendiente; la autorización se ejecuta después en su flujo correspondiente.
+        item.Autorizado = Id.HasValue && _autorizado;
 
         try
         {

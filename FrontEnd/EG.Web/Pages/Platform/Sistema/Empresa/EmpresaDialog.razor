@@ -71,8 +71,8 @@
             </MudItem>
 
             <MudItem xs="12">
-                <div class="empresa-logo-panel">
-                    <div class="empresa-logo-preview">
+                <div class="crud-form-media-panel">
+                    <div class="crud-form-media-preview">
                         @if (!string.IsNullOrWhiteSpace(logoPreviewUrl))
                         {
                             <img src="@logoPreviewUrl" alt="Logo de la empresa" />
@@ -82,12 +82,12 @@
                             <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" />
                         }
                     </div>
-                    <div class="empresa-logo-content">
+                    <div class="crud-form-media-content">
                         <MudText Typo="Typo.subtitle2">Logo institucional</MudText>
-                        <MudText Typo="Typo.caption" Class="empresa-logo-file">
+                        <MudText Typo="Typo.caption" Class="crud-form-media-file">
                             @LogoStatusText
                         </MudText>
-                        <div class="empresa-logo-actions">
+                        <div class="crud-form-media-actions">
                             <MudFileUpload T="IBrowserFile"
                                            Accept="image/png,image/jpeg,image/webp"
                                            FilesChanged="OnLogoSelected">
@@ -117,8 +117,8 @@
             </MudItem>
 
             <MudItem xs="12">
-                <div class="empresa-section-panel">
-                    <div class="empresa-section-heading">
+                <div class="crud-form-section-panel">
+                    <div class="crud-form-inline-heading">
                         <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Size="Size.Small" />
                         <MudText Typo="Typo.subtitle2">Registro patronal</MudText>
                     </div>
@@ -177,8 +177,8 @@
             </MudItem>
 
             <MudItem xs="12">
-                <div class="empresa-section-panel">
-                    <div class="empresa-section-heading">
+                <div class="crud-form-section-panel">
+                    <div class="crud-form-inline-heading">
                         <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Small" />
                         <MudText Typo="Typo.subtitle2">Configuración de nómina</MudText>
                     </div>

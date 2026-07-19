@@ -990,6 +990,396 @@ body,
     .matriz-map-label small { white-space: normal; }
 }
 
+/*
+   Estándar visual obligatorio para formularios ABC.
+   La clase se inyecta desde los diálogos base; !important es intencional para
+   que los estilos locales de una pantalla no vuelvan a fragmentar la experiencia.
+*/
+.mud-dialog.mission-form-dialog {
+    --eg-primary: #df2038;
+    --eg-primary-dark: #8f1021;
+    --eg-secondary: #ff9a3d;
+    --eg-on-primary: #ffffff;
+}
+
+.mud-dialog.mission-form-dialog .mud-dialog-content {
+    background:
+        linear-gradient(90deg, rgba(255, 47, 66, .045) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 47, 66, .035) 1px, transparent 1px),
+        color-mix(in srgb, #07101e 16%, var(--mud-palette-background)) !important;
+    background-size: 38px 38px !important;
+}
+
+.mud-dialog.mission-form-dialog:not(.crud-dialog) > .mud-dialog-title {
+    border-bottom-color: rgba(255, 108, 108, .24) !important;
+    background:
+        radial-gradient(circle at 86% 20%, rgba(255, 51, 67, .24), transparent 23%),
+        linear-gradient(100deg, rgba(255, 48, 65, .16), transparent 42%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .028) 0 1px, transparent 1px 34px),
+        #07101e !important;
+}
+
+.mud-dialog.mission-form-dialog:not(.crud-dialog) > .mud-dialog-actions {
+    border-top-color: rgba(255, 80, 94, .24) !important;
+    background: color-mix(in srgb, #07101e 8%, var(--mud-palette-surface)) !important;
+}
+
+.mud-dialog.mission-form-dialog .mission-base-title {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 7px;
+    row-gap: 8px;
+    color: #f7f9ff;
+}
+
+.mud-dialog.mission-form-dialog .mission-base-title-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff354a;
+    box-shadow: 0 0 0 4px rgba(255, 53, 74, .16), 0 0 14px rgba(255, 53, 74, .72);
+}
+
+.mud-dialog.mission-form-dialog .mission-base-title-code {
+    color: #ff9da7;
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .11em;
+}
+
+.mud-dialog.mission-form-dialog .mission-base-title .mud-typography {
+    grid-column: 1 / -1;
+    color: #f7f9ff;
+    font-weight: 800;
+}
+
+.mud-dialog.mission-form-dialog .mud-input-outlined {
+    background: color-mix(in srgb, #07101e 18%, var(--mud-palette-surface)) !important;
+}
+
+.mud-dialog.mission-form-dialog .mud-input-control:focus-within .mud-input-outlined-border {
+    border-color: #df2038 !important;
+    box-shadow: 0 0 0 3px rgba(223, 32, 56, .15) !important;
+}
+
+.mud-dialog.mission-form-dialog :is(section, article, div)[class*="-section"]:not([class*="-heading"]):not([class*="-icon"]):not([class*="-title"]):not([class*="-subtitle"]) {
+    border-color: rgba(255, 80, 94, .34) !important;
+    background:
+        linear-gradient(100deg, rgba(255, 45, 66, .10), transparent 40%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .022) 0 1px, transparent 1px 30px),
+        color-mix(in srgb, #0b1728 88%, var(--mud-palette-surface)) !important;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 12px 28px rgba(2, 8, 23, .14) !important;
+}
+
+.mud-dialog.mission-form-dialog :is(section, article, div)[class*="-section"]:not([class*="-heading"]):not([class*="-icon"]):not([class*="-title"]):not([class*="-subtitle"])::before {
+    background: linear-gradient(180deg, #ff3449, #a80f22 72%, transparent) !important;
+}
+
+.mud-dialog.mission-form-dialog :is([class*="-section-icon"], [class*="-toggle-icon"], [class*="-panel-icon"]) {
+    color: #ffd9dc !important;
+    border-color: rgba(255, 107, 119, .48) !important;
+    background: linear-gradient(135deg, #d91f37, #771120) !important;
+    box-shadow: 0 6px 16px rgba(225, 31, 55, .22) !important;
+}
+
+.mud-dialog.mission-form-dialog :is([class*="-section-title"], [class*="-panel-title"]) {
+    color: #f6f8ff !important;
+}
+
+.mud-dialog.mission-form-dialog :is([class*="-section-subtitle"], [class*="-panel-subtitle"]) {
+    color: rgba(225, 233, 248, .72) !important;
+}
+
+.mud-dialog.mission-form-dialog :is(div[class*="-toggle-card"], div[class*="-control-card"], div[class*="-status-card"]) {
+    border-color: rgba(255, 110, 121, .27) !important;
+    background: rgba(3, 12, 25, .38) !important;
+}
+
+.mud-dialog.mission-form-dialog .mud-button-filled:not(.mud-button-filled-error) {
+    background: linear-gradient(135deg, #df2038, #a80d22) !important;
+    box-shadow: 0 10px 24px rgba(201, 22, 43, .28) !important;
+}
+
+/* Bloques reutilizables para cualquier formulario ABC. No se definen en las vistas. */
+.crud-form-layout {
+    display: grid;
+    gap: 14px;
+}
+
+/* Adaptadores transitorios: permiten retirar CSS aislado de vistas ya existentes. */
+.mission-form-dialog div[class$="-form"],
+.mission-form-dialog div[class*="-form "] {
+    display: grid;
+    gap: 14px;
+}
+
+.mission-form-dialog [class$="-section-heading"],
+.mission-form-dialog [class*="-section-heading "] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-left: 3px;
+}
+
+.mission-form-dialog [class$="-section-icon"],
+.mission-form-dialog [class*="-section-icon "] {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.mission-form-dialog [class$="-section-title"],
+.mission-form-dialog [class*="-section-title "] { font-weight: 800; line-height: 1.2; }
+
+.mission-form-dialog [class$="-section-subtitle"],
+.mission-form-dialog [class*="-section-subtitle "] { font-weight: 500; line-height: 1.25; }
+
+.mission-form-dialog div[class$="-form"] .mud-grid,
+.mission-form-dialog div[class*="-form "] .mud-grid { margin: -6px; }
+
+.mission-form-dialog div[class$="-form"] .mud-grid > .mud-grid-item,
+.mission-form-dialog div[class*="-form "] .mud-grid > .mud-grid-item { padding: 6px; }
+
+.mission-form-dialog [class$="-toggle-card"],
+.mission-form-dialog [class*="-toggle-card "] {
+    min-height: 56px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+}
+
+.mission-form-dialog [class$="-toggle-icon"],
+.mission-form-dialog [class*="-toggle-icon "] {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+}
+
+.mission-form-dialog [class$="-toggle-copy"],
+.mission-form-dialog [class*="-toggle-copy "] { min-width: 0; display: grid; gap: 1px; }
+
+.mission-form-dialog :is([class$="-toggle-copy"], [class*="-toggle-copy "]) span {
+    color: rgba(225, 233, 248, .62);
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.mission-form-dialog :is([class$="-toggle-copy"], [class*="-toggle-copy "]) strong {
+    overflow: hidden;
+    color: #f7f9ff;
+    font-size: .95rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.crud-form-context {
+    display: grid;
+    grid-template-columns: minmax(280px, 1.5fr) minmax(150px, .7fr) minmax(150px, .6fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 80, 94, .34);
+    border-left: 4px solid #df2038;
+    border-radius: 12px;
+    background: rgba(3, 12, 25, .38);
+}
+
+.crud-form-context-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.crud-form-context-entity { flex: 1 1 auto; min-width: 0; }
+.crud-form-context-item { display: flex; min-width: 0; flex-direction: column; }
+.crud-form-context-item span { color: rgba(225, 233, 248, .62); font-size: .72rem; text-transform: uppercase; }
+.crud-form-context-item strong { overflow: hidden; color: #f7f9ff; text-overflow: ellipsis; white-space: nowrap; }
+.crud-form-context-item-amount strong { color: #ffbd76; font-size: 1.05rem; }
+
+.crud-form-media-panel,
+.crud-form-section-panel {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 80, 94, .30);
+    border-radius: 12px;
+    background: rgba(3, 12, 25, .30);
+}
+
+.crud-form-media-panel { align-items: center; gap: 16px; }
+.crud-form-media-preview { width: 112px; height: 72px; flex: 0 0 112px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed rgba(255, 150, 160, .48); border-radius: 8px; color: rgba(225, 233, 248, .72); background: rgba(255, 255, 255, .04); }
+.crud-form-media-preview img { width: 100%; height: 100%; object-fit: contain; }
+.crud-form-media-content { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 8px; }
+.crud-form-media-file { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crud-form-media-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.crud-form-section-panel { flex-direction: column; }
+.crud-form-inline-heading { display: flex; align-items: center; gap: 8px; color: #f7f9ff; }
+
+.crud-form-section {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid rgba(255, 80, 94, .34);
+    border-radius: 14px;
+    background:
+        linear-gradient(100deg, rgba(255, 45, 66, .10), transparent 40%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .022) 0 1px, transparent 1px 30px),
+        color-mix(in srgb, #0b1728 88%, var(--mud-palette-surface));
+    box-shadow: inset 0 1px rgba(255, 255, 255, .035), 0 12px 28px rgba(2, 8, 23, .14);
+}
+
+.crud-form-section::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ff3449, #a80f22 72%, transparent);
+}
+
+.crud-form-section::after {
+    content: "REGISTRO // ACTIVO";
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    color: rgba(255, 185, 191, .66);
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .56rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+.crud-form-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-left: 3px;
+}
+
+.crud-form-section-icon,
+.crud-form-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 107, 119, .48);
+    color: #ffd9dc;
+    background: linear-gradient(135deg, #d91f37, #771120);
+    box-shadow: 0 6px 16px rgba(225, 31, 55, .22);
+}
+
+.crud-form-section-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 10px;
+}
+
+.crud-form-section-title {
+    color: #f6f8ff;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.crud-form-section-subtitle {
+    color: rgba(225, 233, 248, .72);
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.crud-form-layout .mud-grid {
+    margin: -6px;
+}
+
+.crud-form-layout .mud-grid > .mud-grid-item {
+    padding: 6px;
+}
+
+.crud-form-toggle-card {
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 110, 121, .27);
+    border-radius: 11px;
+    background: rgba(3, 12, 25, .38);
+}
+
+.crud-form-toggle-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+}
+
+.crud-form-toggle-icon-amber {
+    color: #ffe2b9;
+    background: linear-gradient(135deg, #b34e13, #70300c);
+}
+
+.crud-form-toggle-copy {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+}
+
+.crud-form-toggle-copy span {
+    color: rgba(225, 233, 248, .62);
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.crud-form-toggle-copy strong {
+    overflow: hidden;
+    color: #f7f9ff;
+    font-size: .95rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.crud-form-toggle-card .mud-switch {
+    margin: 0;
+}
+
+.crud-form-toggle-control {
+    min-width: 0;
+}
+
+.crud-form-toggle-control .mud-switch-label {
+    margin: 0;
+    color: rgba(234, 240, 252, .84);
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .crud-form-layout { gap: 12px; }
+    .crud-form-section { padding: 13px; border-radius: 12px; }
+    .crud-form-section-heading { align-items: flex-start; }
+    .crud-form-section::after { display: none; }
+}
+
 .entity-form-card-dialog .entity-form-content-structured:has(> .mud-input-control),
 .entity-form-card-dialog .entity-form-content-catalog:has(> :nth-child(7)):not(:has(> .mud-grid)) {
     position: relative;

@@ -1,0 +1,26 @@
+@using MudBlazor
+
+<div class="crud-form-toggle-card">
+    <span class="@IconCssClass" aria-hidden="true">
+        <MudIcon Icon="@Icon" Size="Size.Small" />
+    </span>
+    <div class="crud-form-toggle-copy">
+        <span>@Label</span>
+        <strong>@State</strong>
+    </div>
+    <div class="crud-form-toggle-control">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string State { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Tune;
+    [Parameter] public bool Amber { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string IconCssClass => Amber
+        ? "crud-form-toggle-icon crud-form-toggle-icon-amber"
+        : "crud-form-toggle-icon";
+}

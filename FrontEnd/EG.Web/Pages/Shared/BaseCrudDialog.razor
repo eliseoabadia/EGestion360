@@ -5,6 +5,11 @@
 <MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
     <TitleContent>
         <div class="crud-dialog-title">
+            <div class="crud-dialog-operation" aria-label="Tipo de operación">
+                <span class="crud-dialog-operation-pulse" aria-hidden="true"></span>
+                <span>OPERACIÓN // @OperationState</span>
+                <span class="crud-dialog-operation-code">@OperationCode</span>
+            </div>
             @if (!string.IsNullOrWhiteSpace(EffectiveTitleIcon))
             {
                 <span class="crud-dialog-title-icon" aria-hidden="true">
@@ -100,8 +105,8 @@
     private bool _closed = false;
     private Dictionary<string, object> _registeredComponents = new();
     private string DialogCssClass => string.IsNullOrWhiteSpace(DialogClass)
-        ? "crud-dialog"
-        : $"crud-dialog {DialogClass}";
+        ? $"crud-dialog mission-form-dialog mission-form-{OperationKey}"
+        : $"crud-dialog mission-form-dialog mission-form-{OperationKey} {DialogClass}";
     private bool IsCatalogContext => CatalogMode ?? IsCatalogRoute();
     private string DialogShellCssClass => IsCatalogContext
         ? "crud-dialog-shell crud-dialog-shell-catalog"
@@ -112,6 +117,25 @@
     private string EffectiveSubtitle => !string.IsNullOrWhiteSpace(Subtitle)
         ? Subtitle!
         : ResolveSubtitle(Title);
+    private string OperationKey => ResolveOperationKey(Title, ActionText);
+    private string OperationState => OperationKey switch
+    {
+        "alta" => "ALTA DE REGISTRO",
+        "cambio" => "ACTUALIZACIÓN",
+        "baja" => "BAJA CONTROLADA",
+        "consulta" => "CONSULTA",
+        "autorizacion" => "VALIDACIÓN",
+        _ => "GESTIÓN DE REGISTRO"
+    };
+    private string OperationCode => OperationKey switch
+    {
+        "alta" => "A-01",
+        "cambio" => "C-02",
+        "baja" => "B-03",
+        "consulta" => "Q-04",
+        "autorizacion" => "V-05",
+        _ => "G-00"
+    };
 
     private bool IsCatalogRoute()
     {
@@ -136,6 +160,24 @@
             return Icons.Material.Filled.AddCircleOutline;
 
         return Icons.Material.Filled.Description;
+    }
+
+    private static string ResolveOperationKey(string title, string actionText)
+    {
+        var value = $"{title} {actionText}";
+
+        if (ContainsAny(value, "eliminar", "borrar", "cancelar", "eliminando"))
+            return "baja";
+        if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
+            return "autorizacion";
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return "consulta";
+        if (ContainsAny(value, "editar", "actualizar", "modificar"))
+            return "cambio";
+        if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar", "guardar"))
+            return "alta";
+
+        return "gestion";
     }
 
     private static string ResolveSubtitle(string title)

@@ -45,6 +45,7 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<TResponse>> CreateAsync(TResponse response, int usuarioActual)
         {
+            SetPendingAuthorizationOnCreate(response);
             return await ExecuteMutationAsync(CreateAction, null, response, usuarioActual, "creado", "crear");
         }
 

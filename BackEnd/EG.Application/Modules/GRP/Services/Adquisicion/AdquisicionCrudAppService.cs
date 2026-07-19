@@ -77,6 +77,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                SetPendingAuthorizationOnCreate(response);
                 var dto = response.Adapt<TDto>();
                 SetProperty(dto, "UsuarioCreacion", usuarioActual);
                 SetProperty(dto, "FechaCreacion", DateTime.Now);
@@ -243,6 +244,28 @@ namespace EG.Application.Services.Adquisicion
                 _entityName,
                 string.Empty,
                 string.Empty);
+        }
+
+        /// <summary>
+        /// Las banderas de autorización son controladas exclusivamente por sus flujos de autorización.
+        /// Ningún alta puede recibirlas como verdaderas desde el cliente.
+        /// </summary>
+        protected static void SetPendingAuthorizationOnCreate(TResponse response)
+        {
+            foreach (var propertyName in new[] { "Autorizado", "EstaAutorizado" })
+            {
+                var property = typeof(TResponse).GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+                if (property?.CanWrite != true)
+                {
+                    continue;
+                }
+
+                var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                if (propertyType == typeof(bool))
+                {
+                    property.SetValue(response, false);
+                }
+            }
         }
 
         private static void CopyProperty(object source, object target, string propertyName)

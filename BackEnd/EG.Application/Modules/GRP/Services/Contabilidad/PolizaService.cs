@@ -39,7 +39,8 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             response.FechaPoliza = response.FechaPoliza == default ? DateTime.Today : response.FechaPoliza;
             response.EstaBalanceado = false;
             response.PermitirModificar ??= true;
-            response.Autorizado ??= false;
+            // La autorización nunca puede llegar desde un alta, incluso si el cliente altera la solicitud.
+            response.Autorizado = false;
 
             return base.CreateAsync(response, usuarioActual);
         }

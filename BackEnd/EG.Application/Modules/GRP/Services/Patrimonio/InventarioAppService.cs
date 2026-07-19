@@ -63,6 +63,8 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<InventarioResponse>> CreateAsync(InventarioResponse response, int usuarioActual)
         {
+            // La autorización se concede únicamente mediante el flujo posterior al alta.
+            response.Autorizado = false;
             var validation = await NormalizeAndValidateAsync(response, isCreate: true);
             if (validation != null)
             {

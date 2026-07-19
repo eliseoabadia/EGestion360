@@ -21,13 +21,13 @@
                 LoadingMessage="Cargando concepto variable..."
                 OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="NomConceptoVariableResponse" @ref="form" ShowHeader="false">
-        <section class="concepto-variable-dialog">
-            <div class="capture-context">
-                <div class="context-main">
+        <section class="crud-form-layout">
+            <div class="crud-form-context">
+                <div class="crud-form-context-main">
                     <MudAvatar Color="Color.Primary" Size="Size.Medium" Variant="Variant.Filled">
                         <MudIcon Icon="@Icons.Material.Filled.Person" />
                     </MudAvatar>
-                    <div class="context-employee">
+                    <div class="crud-form-context-entity">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Empleado</MudText>
                         <PagedAutocomplete Value="@selectedEmpleado"
                                            ValueChanged="OnEmpleadoChanged"
@@ -39,11 +39,11 @@
                                            PageSize="25" />
                     </div>
                 </div>
-                <div class="context-pill">
+                <div class="crud-form-context-item">
                     <span>Periodo</span>
                     <strong>@TextOrDash(selectedPeriodo?.Text)</strong>
                 </div>
-                <div class="context-pill amount">
+                <div class="crud-form-context-item crud-form-context-item-amount">
                     <span>Importe</span>
                     <strong>@Money(item.Importe)</strong>
                 </div>

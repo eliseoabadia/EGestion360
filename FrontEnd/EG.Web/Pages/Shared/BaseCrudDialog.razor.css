@@ -1,11 +1,47 @@
 .crud-dialog-title {
     display: grid;
+    grid-template-rows: auto auto;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 14px;
     width: 100%;
     min-height: 48px;
     position: relative;
+}
+
+.crud-dialog-operation {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    color: #ff7b7b;
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.crud-dialog-operation-pulse {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: #ff354a;
+    box-shadow: 0 0 0 4px rgba(255, 53, 74, .16), 0 0 15px rgba(255, 53, 74, .78);
+    animation: mission-pulse 1.8s ease-in-out infinite;
+}
+
+.crud-dialog-operation-code {
+    margin-left: auto;
+    padding: 4px 7px;
+    border: 1px solid rgba(255, 110, 110, .36);
+    border-radius: 999px;
+    background: rgba(255, 53, 74, .1);
+    color: #ffc0c4;
+    letter-spacing: .08em;
 }
 
 .crud-dialog-title-icon {
@@ -62,6 +98,11 @@
     overflow: hidden;
 }
 
+::deep .mud-dialog.crud-dialog.mission-form-dialog {
+    border-color: rgba(255, 73, 85, .38);
+    box-shadow: 0 34px 90px rgba(2, 8, 23, .50), 0 0 0 1px rgba(255, 73, 85, .08) !important;
+}
+
 ::deep .mud-dialog.crud-dialog .mud-dialog-title {
     flex: 0 0 auto;
     position: relative;
@@ -73,6 +114,39 @@
         linear-gradient(180deg, color-mix(in srgb, var(--mud-palette-surface) 92%, transparent), var(--mud-palette-surface));
 }
 
+::deep .mud-dialog.crud-dialog.mission-form-dialog .mud-dialog-title {
+    min-height: 95px;
+    padding-top: 14px !important;
+    border-bottom-color: rgba(255, 108, 108, .24);
+    background:
+        radial-gradient(circle at 86% 20%, rgba(255, 51, 67, .24), transparent 23%),
+        linear-gradient(100deg, rgba(255, 48, 65, .16), transparent 42%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .028) 0 1px, transparent 1px 34px),
+        #07101e;
+}
+
+::deep .mud-dialog.crud-dialog.mission-form-dialog .crud-dialog-title-text {
+    color: #f7f9ff;
+    letter-spacing: .01em;
+}
+
+::deep .mud-dialog.crud-dialog.mission-form-dialog .crud-dialog-subtitle {
+    color: rgba(226, 234, 249, .72);
+}
+
+::deep .mud-dialog.crud-dialog.mission-form-dialog .crud-dialog-title-icon {
+    border-color: rgba(255, 104, 111, .52);
+    color: #fff;
+    background: linear-gradient(135deg, #e51e38, #7c1021 72%);
+    box-shadow: 0 10px 24px rgba(229, 30, 56, .32);
+}
+
+::deep .mud-dialog.crud-dialog.mission-form-dialog .crud-dialog-close {
+    color: #ffd2d6;
+    border-color: rgba(255, 155, 162, .34);
+    background: rgba(255, 91, 103, .12);
+}
+
 ::deep .mud-dialog.crud-dialog .mud-dialog-title::before {
     content: "";
     position: absolute;
@@ -80,6 +154,12 @@
     display: block;
     height: 3px;
     background: linear-gradient(90deg, var(--eg-primary, var(--mud-palette-primary)), var(--eg-secondary, var(--mud-palette-secondary)), var(--mud-palette-success));
+}
+
+::deep .mud-dialog.crud-dialog.mission-form-dialog .mud-dialog-title::before {
+    height: 4px;
+    background: linear-gradient(90deg, #ff3145 0 16%, #ff9a35 42%, #ff3145 68%, transparent 100%);
+    box-shadow: 0 1px 10px rgba(255, 49, 69, .64);
 }
 
 ::deep .mud-dialog.crud-dialog .mud-dialog-content {
@@ -140,6 +220,24 @@
     transition: box-shadow .18s ease;
     position: relative;
     overflow: hidden;
+}
+
+::deep .mission-form-dialog .crud-dialog-shell {
+    border-top-color: rgba(255, 70, 84, .34);
+}
+
+::deep .mission-form-dialog .crud-dialog-shell::after {
+    content: "DATOS DE OPERACIÓN";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 1;
+    color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 58%, var(--mud-palette-text-secondary));
+    font-family: "Roboto Mono", "Cascadia Code", Consolas, monospace;
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    pointer-events: none;
 }
 
 .crud-dialog-shell::before {
@@ -249,6 +347,26 @@
     box-shadow: 0 10px 24px color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 18%, transparent);
 }
 
+::deep .mission-form-dialog.mission-form-alta .crud-dialog-actions .mud-button-filled,
+::deep .mission-form-dialog.mission-form-cambio .crud-dialog-actions .mud-button-filled,
+::deep .mission-form-dialog.mission-form-autorizacion .crud-dialog-actions .mud-button-filled {
+    background: linear-gradient(135deg, #df2038, #a80d22) !important;
+    box-shadow: 0 10px 24px rgba(201, 22, 43, .28);
+}
+
+::deep .mission-form-dialog.mission-form-baja .crud-dialog-actions .mud-button-filled {
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--mud-palette-error) 28%, transparent);
+}
+
+@keyframes mission-pulse {
+    0%, 100% { transform: scale(.85); opacity: .72; }
+    50% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .crud-dialog-operation-pulse { animation: none; }
+}
+
 .crud-dialog-actions ::deep .mud-button-text {
     border: 1px solid transparent;
 }
@@ -332,5 +450,16 @@
         margin-bottom: -12px;
         margin-left: -12px;
         padding: 10px 12px;
+    }
+}
+
+@media (max-width: 520px) {
+    ::deep .mud-dialog.crud-dialog.mission-form-dialog .mud-dialog-title {
+        min-height: 90px;
+        padding: 13px 15px !important;
+    }
+
+    .crud-dialog-operation-code {
+        display: none;
     }
 }

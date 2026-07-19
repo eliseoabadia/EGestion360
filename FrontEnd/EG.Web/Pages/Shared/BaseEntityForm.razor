@@ -56,8 +56,8 @@
     private bool InsideDialog => BaseDialog != null;
     private bool ShouldShowHeader => ShowHeader && BaseDialog == null;
     private string CardCssClass => InsideDialog
-        ? "entity-form-card entity-form-card-dialog"
-        : "entity-form-card entity-form-card-standalone";
+        ? "entity-form-card entity-form-card-dialog mission-entity-form"
+        : "entity-form-card entity-form-card-standalone mission-entity-form";
     private bool IsCatalogContext => CatalogMode ?? IsCatalogRoute();
     private string ContentCssClass => IsCatalogContext
         ? "entity-form-content entity-form-content-catalog"
