@@ -25,13 +25,13 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
-                <MudSelect Label="Empresa"
+                <MudSelect Label="Entidad"
                            @bind-Value="item.FkidEmpresaSis"
                            T="int"
                            Variant="Variant.Outlined"
                            Required="true"
-                           RequiredError="Debe seleccionar una empresa">
-                    <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                           RequiredError="Debe seleccionar una entidad">
+                    <MudSelectItem T="int" Value="0">Seleccione una entidad</MudSelectItem>
                     @foreach (var empresa in empresas)
                     {
                         <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>
@@ -256,7 +256,7 @@
 
         if (item.FkidEmpresaSis <= 0)
         {
-            Snackbar.Add("Debe seleccionar la empresa de la sucursal.", Severity.Warning);
+            Snackbar.Add("Debe seleccionar la entidad de la sucursal.", Severity.Warning);
             return;
         }
 

@@ -167,7 +167,7 @@
     private bool _loading;
 
     private string EmpresaTexto =>
-        FirstText(SucursalStateService.EmpresaNombreCorto, SucursalStateService.EmpresaNombre, "Sin empresa");
+        FirstText(SucursalStateService.EmpresaNombreCorto, SucursalStateService.EmpresaNombre, "Sin entidad");
 
     private string AnioTexto =>
         string.IsNullOrWhiteSpace(AnioStateService.AnioTexto)
@@ -493,7 +493,7 @@
     private sealed record ModuleStyle(string Accent, string Icon);
 }
 
-<style>
+<style media="not all">
     /* Composición comercial del inicio: dos niveles, una jerarquía y menos ruido visual. */
     .home-page {
         height: 100%;

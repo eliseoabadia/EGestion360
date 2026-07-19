@@ -293,11 +293,11 @@
             var breadcrumb = BuildBreadcrumb(item);
             _searchIndex.Add(new SearchIndexEntry
             {
-                Name = item.Nombre,
+                Name = UiTerminology.Display(item.Nombre),
                 Route = item.Ruta,
                 IconClass = GetIconClass(item.ImageUrl),
                 Breadcrumb = breadcrumb,
-                SearchText = NormalizeText($"{breadcrumb} {item.Nombre} {item.LegacyName} {item.Ruta}")
+                SearchText = NormalizeText($"{breadcrumb} {UiTerminology.Display(item.Nombre)} {item.Nombre} {item.LegacyName} {item.Ruta}")
             });
         }
     }
@@ -329,7 +329,7 @@
             if (!_itemsById.TryGetValue(parentId.Value, out var parent))
                 break;
 
-            segments.Push(parent.Nombre);
+            segments.Push(UiTerminology.Display(parent.Nombre));
             currentId = parent.PkidMenu;
         }
 

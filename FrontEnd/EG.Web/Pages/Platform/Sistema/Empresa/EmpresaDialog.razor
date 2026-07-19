@@ -17,7 +17,7 @@
                 MaxWidth="MaxWidth.Medium"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos de la empresa..."
+                LoadingMessage="Cargando datos de la entidad..."
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EmpresaResponse"
@@ -29,10 +29,10 @@
             <!-- Fila 1: Nombre y RFC -->
             <MudItem xs="12" md="5">
                 <MudTextField @bind-Value="empresa.EmpresaNombre"
-                              Label="Nombre de la Empresa"
+                              Label="Nombre de la Entidad"
                               Variant="Variant.Outlined"
                               Required="true"
-                              RequiredError="El nombre de la empresa es requerido"
+                              RequiredError="El nombre de la entidad es requerido"
                               Validation="@(new Func<string, IEnumerable<string>>(ValidarNombre))"
                               For="@(() => empresa.EmpresaNombre)" />
             </MudItem>
@@ -75,7 +75,7 @@
                     <div class="crud-form-media-preview">
                         @if (!string.IsNullOrWhiteSpace(logoPreviewUrl))
                         {
-                            <img src="@logoPreviewUrl" alt="Logo de la empresa" />
+                            <img src="@logoPreviewUrl" alt="Logo de la entidad" />
                         }
                         else
                         {
@@ -261,7 +261,7 @@
             <!-- Fila 5: Estatus informativo -->
             <MudItem xs="12">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus de la Empresa</MudText>
+                    <MudText Class="mb-2" Typo="Typo.subtitle2" Color="Color.Default">Estatus de la Entidad</MudText>
                     <MudDivider Class="mb-3" />
                     <div class="d-flex align-center">
                         <MudChip T="string"
@@ -297,7 +297,7 @@
     private int? estadoSeleccionado;
     private DateTime? fechaApertura = DateTime.Today;
 
-    private string dialogTitle => Id.HasValue ? "Editar Empresa" : "Nueva Empresa";
+    private string dialogTitle => Id.HasValue ? "Editar Entidad" : "Nueva Entidad";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private string LogoStatusText => logoFile?.Name
@@ -522,7 +522,7 @@
 
                 await SyncSelectedEmpresaStateAsync(savedEmpresa);
 
-                var message = response.Message ?? $"Empresa {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
+                var message = response.Message ?? $"Entidad {(Id.HasValue ? "actualizada" : "creada")} exitosamente";
                 Snackbar.Add(message, Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }

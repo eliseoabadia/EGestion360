@@ -8,8 +8,8 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
-        <PageHeader Title="Gestión de Empresas"
-                    Subtitle="Administra y mantén el registro de empresas del sistema"
+        <PageHeader Title="Gestión de Entidades"
+                    Subtitle="Administra y mantén el registro de entidades del sistema"
                     Icon="@Icons.Material.Filled.Business"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -17,7 +17,7 @@
 
         <GenericDataGrid TItem="EmpresaResponse"
                       @ref="table"
-                      Title="Lista de Empresas"
+                      Title="Lista de Entidades"
                       SearchPlaceholder="Buscar por nombre, nombre corto, RFC o registro IMSS..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
@@ -27,7 +27,7 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn Resizable="false" T="EmpresaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar empresa"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEmpresa))" /></MudTooltip><MudTooltip Text="Agregar departamento a esta empresa"><MudIconButton Icon="@Icons.Material.Filled.DomainAdd" Visible="@CanCreate" Color="Color.Success" Size="Size.Small" OnClick="@(() => CrearDepartamentoEmpresa(context.Item))" /></MudTooltip><MudTooltip Text="Eliminar empresa"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEmpresa))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="EmpresaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar entidad"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEmpresa))" /></MudTooltip><MudTooltip Text="Agregar departamento a esta entidad"><MudIconButton Icon="@Icons.Material.Filled.DomainAdd" Visible="@CanCreate" Color="Color.Success" Size="Size.Small" OnClick="@(() => CrearDepartamentoEmpresa(context.Item))" /></MudTooltip><MudTooltip Text="Eliminar entidad"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEmpresa))" /></MudTooltip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="EmpresaResponse" TProperty="int" Property="x => x.PkidEmpresa" Title="ID" Identifier="PkidEmpresa" />
                 <PropertyColumn T="EmpresaResponse" TProperty="string" Property="x => x.EmpresaNombre" Title="Nombre" Identifier="EmpresaNombre" />
                 <PropertyColumn T="EmpresaResponse" TProperty="string" Property="x => x.NombreCorto" Title="Nombre corto" Identifier="NombreCorto" />
@@ -71,11 +71,11 @@
         try
         {
             var response = await Service.GetByIdAsync(id);
-            return response?.Data?.EmpresaNombre ?? "la empresa";
+            return response?.Data?.EmpresaNombre ?? "la entidad";
         }
         catch
         {
-            return "la empresa";
+            return "la entidad";
         }
     }
 
@@ -92,7 +92,7 @@
     {
         if (empresa.PkidEmpresa <= 0)
         {
-            Snackbar.Add("No se pudo identificar la empresa para crear el departamento.", Severity.Warning);
+            Snackbar.Add("No se pudo identificar la entidad para crear el departamento.", Severity.Warning);
             return;
         }
 

@@ -26,7 +26,7 @@
         <div class="sidebar-group-row @(hasDashboardShortcut && !IsCollapsed ? "has-dashboard" : string.Empty)">
             <button type="button"
                     class="@groupHeaderCss"
-                    title="@(IsCollapsed ? Item.Nombre : null)"
+                    title="@(IsCollapsed ? DisplayName : null)"
                     aria-expanded="@isExpanded"
                     aria-controls="@childrenId"
                     disabled="@IsNavigationLocked"
@@ -35,7 +35,7 @@
                     <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
                     @if (!IsCollapsed)
                     {
-                        <span class="menu-label">@Item.Nombre</span>
+                        <span class="menu-label">@DisplayName</span>
                         @if (isDirectlyActive)
                         {
                             <span class="selected-indicator" aria-hidden="true"></span>
@@ -53,8 +53,8 @@
             {
                 <button type="button"
                         class="@dashboardCss"
-                        title="@($"Dashboard {Item.Nombre}")"
-                        aria-label="@($"Abrir dashboard de {Item.Nombre}")"
+                        title="@($"Dashboard {DisplayName}")"
+                        aria-label="@($"Abrir dashboard de {DisplayName}")"
                         disabled="@IsNavigationLocked"
                         @onclick="@(() => HandleDashboardNavigateAsync(dashboardRoute))">
                     <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Small" />
@@ -87,17 +87,17 @@
 }
 else if (Item.AbrirEnNuevaVentana)
 {
-    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
+    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty)" title="@(IsCollapsed ? DisplayName : null)">
         <a class="@linkCss"
            href="@Href"
            target="_blank"
            rel="noopener noreferrer"
-           aria-label="@Item.Nombre"
+           aria-label="@DisplayName"
            aria-current="@(isActive ? "page" : null)">
             <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
             @if (!IsCollapsed)
             {
-                <span class="menu-label">@Item.Nombre</span>
+                <span class="menu-label">@DisplayName</span>
                 @if (isDirectlyActive)
                 {
                     <span class="selected-indicator" aria-hidden="true"></span>
@@ -109,17 +109,17 @@ else if (Item.AbrirEnNuevaVentana)
 }
 else
 {
-    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty) @(hasDashboardShortcut && !IsCollapsed ? "sidebar-item-with-dashboard" : string.Empty)" title="@(IsCollapsed ? Item.Nombre : null)">
+    <div class="sidebar-item @(IsCollapsed ? "sidebar-item-collapsed" : string.Empty) @(hasDashboardShortcut && !IsCollapsed ? "sidebar-item-with-dashboard" : string.Empty)" title="@(IsCollapsed ? DisplayName : null)">
         <a class="@linkCss"
            href="@Href"
-           aria-label="@Item.Nombre"
+           aria-label="@DisplayName"
            aria-current="@(isActive ? "page" : null)"
            @onclick:preventDefault="true"
            @onclick="HandleNavigateAsync">
             <MudIcon Icon="@iconClass" Class="sidebar-icon" Size="Size.Small" />
             @if (!IsCollapsed)
             {
-                <span class="menu-label">@Item.Nombre</span>
+                <span class="menu-label">@DisplayName</span>
                 @if (isDirectlyActive)
                 {
                     <span class="selected-indicator" aria-hidden="true"></span>
@@ -130,8 +130,8 @@ else
         {
             <button type="button"
                     class="@dashboardCss"
-                    title="@($"Dashboard {Item.Nombre}")"
-                    aria-label="@($"Abrir dashboard de {Item.Nombre}")"
+                    title="@($"Dashboard {DisplayName}")"
+                    aria-label="@($"Abrir dashboard de {DisplayName}")"
                     disabled="@IsNavigationLocked"
                     @onclick="@(() => HandleDashboardNavigateAsync(dashboardRoute))">
                 <MudIcon Icon="@Icons.Material.Filled.SpaceDashboard" Size="Size.Small" />
@@ -154,6 +154,7 @@ else
     [Parameter] public EventCallback<string> OnDashboardNavigate { get; set; }
 
     private string Href => string.IsNullOrWhiteSpace(Item.Ruta) ? "#" : Item.Ruta;
+    private string DisplayName => UiTerminology.Display(Item.Nombre);
 
     private void ToggleExpand()
     {

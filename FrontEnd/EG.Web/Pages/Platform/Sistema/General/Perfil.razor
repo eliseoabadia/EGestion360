@@ -257,14 +257,14 @@
                                       Margin="Margin.Dense"
                                       Disabled="@ProfileFieldsDisabled" />
 
-                        <MudSelect Label="Empresa"
+                        <MudSelect Label="Entidad"
                                    Value="@userProfile.PkidEmpresa"
                                    ValueChanged="OnEmpresaChanged"
                                    T="int"
                                    Required="true"
                                    Margin="Margin.Dense"
                                    Disabled="@ProfileFieldsDisabled">
-                            <MudSelectItem T="int" Value="0">Seleccione una empresa</MudSelectItem>
+                            <MudSelectItem T="int" Value="0">Seleccione una entidad</MudSelectItem>
                             @foreach (var empresa in empresas)
                             {
                                 <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>

@@ -6,7 +6,7 @@
     {
         @if (item.Children?.Any() == true)
         {
-            <MudNavGroup Title="@item.Nombre"
+            <MudNavGroup Title="@UiTerminology.Display(item.Nombre)"
                          Icon="@GetIcon(item.ImageUrl)"
                          Expanded="@GetExpandedState(item.PkidMenu)"
                          ExpandedChanged="@(EventCallback.Factory.Create<bool>(this, (v) => OnExpandedChanged.InvokeAsync((item.PkidMenu, v))))">
@@ -21,7 +21,7 @@
             <MudNavLink Href="@item.Ruta"
                         Match="@(item.Ruta == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
                         Icon="@GetIcon(item.ImageUrl)">
-                @item.Nombre
+                @UiTerminology.Display(item.Nombre)
             </MudNavLink>
         }
     }

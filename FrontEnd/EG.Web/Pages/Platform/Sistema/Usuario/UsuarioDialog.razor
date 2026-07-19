@@ -34,15 +34,15 @@
             <MudTabPanel Text="Datos" Icon="@Icons.Material.Filled.Person">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
-                <MudSelect Label="Empresa predeterminada"
+                <MudSelect Label="Entidad predeterminada"
                            Value="@usuario.IdEmpresa"
                            ValueChanged="OnEmpresaChanged"
                            T="int"
                            Variant="Variant.Outlined"
                            Required="true"
-                           RequiredError="Debe seleccionar una empresa predeterminada"
+                           RequiredError="Debe seleccionar una entidad predeterminada"
                            For="@(() => usuario.IdEmpresa)">
-                    <MudSelectItem T="int" Value="0">Seleccione una empresa predeterminada</MudSelectItem>
+                    <MudSelectItem T="int" Value="0">Seleccione una entidad predeterminada</MudSelectItem>
                     @foreach (var empresa in listadoEmpresas)
                     {
                         <MudSelectItem T="int" Value="@empresa.PkidEmpresa">@empresa.EmpresaNombre</MudSelectItem>

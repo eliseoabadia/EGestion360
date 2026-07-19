@@ -9,7 +9,7 @@
                     NavigateToHome="NavigateToHome">
     <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
         <PageHeader Title="Gestion de Sucursales"
-                    Subtitle="Administra las sedes operativas por empresa"
+                    Subtitle="Administra las sedes operativas por entidad"
                     Icon="@Icons.Material.Filled.Store"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -18,7 +18,7 @@
         <GenericDataGrid TItem="SucursalResponse"
                       @ref="table"
                       Title="Lista de Sucursales"
-                      SearchPlaceholder="Buscar por nombre, codigo, empresa, ciudad o estado..."
+                      SearchPlaceholder="Buscar por nombre, codigo, entidad, ciudad o estado..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -31,7 +31,7 @@
                 <PropertyColumn T="SucursalResponse" TProperty="int" Property="x => x.PkidSucursal" Title="ID" Identifier="PkidSucursal" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.CodigoSucursal" Title="Código" Identifier="CodigoSucursal" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.Nombre" Title="Sucursal" Identifier="Nombre" />
-                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEmpresa" Title="Empresa" Identifier="NombreEmpresa" />
+                <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEmpresa" Title="Entidad" Identifier="NombreEmpresa" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.Ciudad" Title="Ciudad" Identifier="Ciudad" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEstado" Title="Estado" Identifier="NombreEstado" />
                 <TemplateColumn Resizable="true" T="SucursalResponse" Title="Matriz" Identifier="EsMatriz"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@(context.Item.EsMatriz ? Color.Info : Color.Default)">@(context.Item.EsMatriz ? "Sí" : "No")</MudChip></CellTemplate></TemplateColumn>

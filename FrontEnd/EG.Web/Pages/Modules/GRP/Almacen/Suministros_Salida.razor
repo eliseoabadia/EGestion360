@@ -26,7 +26,7 @@
             <div><span>Solicitudes visibles</span><strong>@TotalCount.ToString("N0", NumberCulture)</strong></div>
             <div><span>Pendiente visible</span><strong>@Qty(Elements.Sum(x => x.TotalPendiente))</strong></div>
             <div><span>Entregado visible</span><strong>@Qty(Elements.Sum(x => x.TotalEntregado))</strong></div>
-            <div><span>Empresa</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong></div>
+            <div><span>Entidad</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong></div>
         </div>
 
         <div class="split-shell">
