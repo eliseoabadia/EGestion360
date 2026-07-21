@@ -2213,3 +2213,33 @@ body,
         overflow: visible;
     }
 }
+
+/* Read-only record viewer. MudDialog creates this container outside the
+   component's CSS-isolation tree, so its shell overrides must remain global. */
+.mud-dialog.cinematic-record-dialog {
+    width: min(1320px, calc(100vw - 34px)) !important;
+    max-width: calc(100vw - 34px) !important;
+    max-height: calc(100dvh - 30px) !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(239, 68, 68, .58) !important;
+    border-radius: 4px !important;
+    background: #05080d !important;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .72), 0 0 48px rgba(220, 38, 38, .12) !important;
+}
+
+.mud-dialog.cinematic-record-dialog > .mud-dialog-title {
+    display: none !important;
+}
+
+.mud-dialog.cinematic-record-dialog > .mud-dialog-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #05080d !important;
+}
+
+@media (max-width: 560px) {
+    .mud-dialog.cinematic-record-dialog {
+        width: calc(100vw - 12px) !important;
+        max-width: calc(100vw - 12px) !important;
+    }
+}

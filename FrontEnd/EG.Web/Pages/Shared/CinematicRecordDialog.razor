@@ -10,27 +10,31 @@
             <div class="mission-scan" aria-hidden="true"></div>
 
             <header class="mission-header">
-                <div class="mission-kicker">
-                    <span class="signal-dot" aria-hidden="true"></span>
-                    <span>@Record.Eyebrow</span>
-                    <span class="mission-separator">//</span>
-                    <span>@Record.Classification</span>
+                <div class="mission-primary">
+                    <div class="mission-kicker">
+                        <span class="signal-dot" aria-hidden="true"></span>
+                        <span>@Record.Eyebrow</span>
+                        <span class="mission-separator">//</span>
+                        <span>@Record.Classification</span>
+                    </div>
+
+                    <div class="mission-heading">
+                        <div class="mission-mark" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Radar" />
+                        </div>
+                        <div>
+                            <h2>@Record.Title</h2>
+                            <p>@ValueOrDash(Record.Subtitle)</p>
+                        </div>
+                    </div>
                 </div>
 
-                <MudIconButton Icon="@Icons.Material.Filled.Close"
-                               Size="Size.Small"
-                               OnClick="Close"
-                               Class="mission-close"
-                               aria-label="Cerrar detalle" />
-
-                <div class="mission-heading">
-                    <div class="mission-mark" aria-hidden="true">
-                        <MudIcon Icon="@Icons.Material.Filled.Radar" />
-                    </div>
-                    <div>
-                        <h2>@Record.Title</h2>
-                        <p>@ValueOrDash(Record.Subtitle)</p>
-                    </div>
+                <div class="mission-close-slot">
+                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                   Size="Size.Small"
+                                   OnClick="Close"
+                                   Class="mission-close"
+                                   aria-label="Cerrar detalle" />
                 </div>
 
                 <div class="mission-id-panel">
