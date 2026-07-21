@@ -16,7 +16,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column salida-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column salida-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Solicitudes de salida"
                     Subtitle="Solicitud, autorizacion y trazabilidad de bienes de almacen"
                     Icon="@Icons.Material.Filled.AssignmentTurnedIn"
@@ -221,72 +221,6 @@
         </div>
     </MudContainer>
 </AccessVerification>
-
-<style>
-    .salida-page .summary-strip {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin: 8px 0 12px;
-    }
-
-    .salida-page .summary-strip > div,
-    .salida-page .detail-header {
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
-        padding: 10px 12px;
-        background: var(--mud-palette-surface);
-        box-shadow: var(--mud-elevation-1);
-    }
-
-    .salida-page .split-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(430px, .85fr);
-        gap: 12px;
-        min-height: 0;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .salida-page .master-panel,
-    .salida-page .detail-panel {
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .salida-page .detail-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .salida-page .detail-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .salida-page span,
-    .salida-page td span {
-        display: block;
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-    }
-
-    .salida-page strong,
-    .salida-page .main-cell {
-        font-weight: 700;
-        line-height: 1.15;
-    }
-
-    @@media (max-width: 1200px) {
-        .salida-page .split-shell,
-        .salida-page .summary-strip {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
 
 @code {
     private GenericDataGrid<SolicitudSalidaResponse> table = null!;

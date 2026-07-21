@@ -28,7 +28,7 @@ internal sealed class InMemoryRepository<T>(IEnumerable<T> source) : IRepository
         throw new NotSupportedException();
     }
 
-    public Task UpdateAsync(T entity)
+    public Task UpdateAsync(T entity, byte[]? originalRowVersion = null)
     {
         throw new NotSupportedException();
     }

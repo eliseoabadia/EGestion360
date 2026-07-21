@@ -12,7 +12,7 @@ namespace EG.Domain.Interfaces
 
         Task AddAsync(T entity);
 
-        Task UpdateAsync(T entity);
+        Task UpdateAsync(T entity, byte[]? originalRowVersion = null);
 
         Task DeleteAsync(int id);
 

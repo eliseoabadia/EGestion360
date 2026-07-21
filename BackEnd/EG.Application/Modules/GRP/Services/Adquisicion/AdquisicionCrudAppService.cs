@@ -6,6 +6,7 @@ using EG.Common;
 using EG.Common.Enums;
 using EG.Common.Exceptions;
 using EG.Common.GenericModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -60,6 +61,12 @@ namespace EG.Application.Services.Adquisicion
             if (result == null)
             {
                 return NotFound(id);
+            }
+
+            var concurrencySource = await _service.GetByIdAsync(id);
+            if (concurrencySource != null)
+            {
+                CopyProperty(concurrencySource, result, "RowVersion");
             }
 
             return new PagedResult<TResponse>
@@ -135,6 +142,12 @@ namespace EG.Application.Services.Adquisicion
             catch (KeyNotFoundException)
             {
                 return NotFound(id);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Failure<TResponse>(
+                    "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente.",
+                    "CONCURRENCY_CONFLICT");
             }
             catch (UserVisibleException ex)
             {

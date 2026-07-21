@@ -95,7 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.CuentaContables.AsNoTracking()
-                .Where(x => x.Activo && x.IsCuentaDetalle == 1 && x.ClaveOrd.Replace(" ", "").StartsWith("2112"))
+                .Where(x => x.Activo && x.IsCuentaDetalle == 1 && x.ClaveOrdNormalizada.StartsWith("2112"))
                 .OrderBy(x => x.ClaveOrd)
                 .Select(x => new LookupItem { Id = x.PkidCuentaContable, Text = x.ClaveOrd + " - " + x.Descripcion });
             return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));

@@ -45,5 +45,6 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int TotalPartidas { get; set; }
         public bool EstaAutorizada => FkidEstatusOrdenCompraOrco > 1;
         public bool PuedeModificar => Activo && FkidEstatusOrdenCompraOrco == 1;
+        public byte[]? RowVersion { get; set; }
     }
 }

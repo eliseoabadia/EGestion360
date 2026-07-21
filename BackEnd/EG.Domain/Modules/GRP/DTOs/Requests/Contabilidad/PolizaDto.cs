@@ -20,5 +20,6 @@ namespace EG.Domain.DTOs.Requests.Contabilidad
         public bool? Autorizado { get; set; }
         public DateTime? FechaSolicitud { get; set; }
         public DateTime? FechaAutorizacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 }

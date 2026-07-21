@@ -1,0 +1,243 @@
+@page "/ayuda"
+@inject HttpClient Http
+
+<PageTitle>Centro de ayuda | EGestion360</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="help-page">
+    <main class="help-shell">
+        <header class="help-hero">
+            <div class="help-hero-copy">
+                <span class="help-eyebrow">
+                    <MudIcon Icon="@Icons.Material.Filled.SupportAgent" Size="Size.Small" />
+                    Centro de soporte operativo
+                </span>
+                <h1>Ayuda para trabajar con confianza.</h1>
+                <p>
+                    Consulta el flujo institucional, las protecciones activas y los cambios incluidos
+                    en la versión instalada de EGestion360.
+                </p>
+
+                <nav class="help-quick-links" aria-label="Secciones de ayuda">
+                    <a href="#novedades">Novedades</a>
+                    <a href="#flujo">Flujo completo</a>
+                    <a href="#protecciones">Protecciones</a>
+                    <a href="#operacion">Operación</a>
+                </nav>
+            </div>
+
+            <aside class="help-version-card" aria-label="Versión instalada">
+                <span>Versión instalada</span>
+                <strong>@_version</strong>
+                <small>Estabilización para producción</small>
+                <div class="help-version-state">
+                    <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.Small" />
+                    Publicada el 19 de julio de 2026
+                </div>
+            </aside>
+        </header>
+
+        <section id="novedades" class="help-section" aria-labelledby="novedades-title">
+            <div class="help-section-heading">
+                <span class="help-section-icon"><MudIcon Icon="@Icons.Material.Filled.NewReleases" /></span>
+                <div>
+                    <span>Actualización</span>
+                    <h2 id="novedades-title">Novedades de la versión @_version</h2>
+                    <p>Mejoras enfocadas en velocidad, consistencia de datos y continuidad operativa.</p>
+                </div>
+            </div>
+
+            <div class="help-feature-grid">
+                <article class="help-feature-card help-feature-card--speed">
+                    <MudIcon Icon="@Icons.Material.Filled.Speed" />
+                    <div>
+                        <h3>Consultas más rápidas</h3>
+                        <p>Se optimizaron accesos, menú, búsquedas y claves contables para reducir lecturas innecesarias.</p>
+                    </div>
+                </article>
+                <article class="help-feature-card help-feature-card--safe">
+                    <MudIcon Icon="@Icons.Material.Filled.SyncLock" />
+                    <div>
+                        <h3>Edición protegida</h3>
+                        <p>Los registros críticos detectan cambios simultáneos y evitan sobrescribir información de otro usuario.</p>
+                    </div>
+                </article>
+                <article class="help-feature-card help-feature-card--data">
+                    <MudIcon Icon="@Icons.Material.Filled.FactCheck" />
+                    <div>
+                        <h3>Datos consistentes</h3>
+                        <p>Se reforzaron folios, UUID, números de cheque y claves de póliza para impedir duplicados.</p>
+                    </div>
+                </article>
+                <article class="help-feature-card help-feature-card--backup">
+                    <MudIcon Icon="@Icons.Material.Filled.Backup" />
+                    <div>
+                        <h3>Recuperación preparada</h3>
+                        <p>Quedó disponible la estrategia de respaldos completos, diferenciales y de transacciones con verificación.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="flujo" class="help-section" aria-labelledby="flujo-title">
+            <div class="help-section-heading">
+                <span class="help-section-icon"><MudIcon Icon="@Icons.Material.Filled.AccountTree" /></span>
+                <div>
+                    <span>Guía operativa</span>
+                    <h2 id="flujo-title">Flujo completo del egreso</h2>
+                    <p>Cada etapa parte de información autorizada en la etapa anterior.</p>
+                </div>
+            </div>
+
+            <ol class="help-flow">
+                @foreach (var step in FlowSteps)
+                {
+                    <li>
+                        <span class="help-flow-icon"><MudIcon Icon="@step.Icon" /></span>
+                        <div>
+                            <strong>@step.Title</strong>
+                            <p>@step.Description</p>
+                        </div>
+                    </li>
+                }
+            </ol>
+
+            <div class="help-callout">
+                <MudIcon Icon="@Icons.Material.Filled.GppGood" />
+                <div>
+                    <strong>Regla de autorización</strong>
+                    <p>Todo registro nuevo inicia pendiente. La autorización debe realizarla después un usuario con el permiso correspondiente.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="protecciones" class="help-section" aria-labelledby="protecciones-title">
+            <div class="help-section-heading">
+                <span class="help-section-icon"><MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" /></span>
+                <div>
+                    <span>Control de producción</span>
+                    <h2 id="protecciones-title">Protecciones activas</h2>
+                    <p>Controles técnicos que trabajan en segundo plano sin cambiar el flujo del usuario.</p>
+                </div>
+            </div>
+
+            <div class="help-status-grid">
+                @foreach (var item in ProtectionItems)
+                {
+                    <article>
+                        <span class="help-status-mark"><MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" /></span>
+                        <div>
+                            <strong>@item.Title</strong>
+                            <p>@item.Description</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <section id="operacion" class="help-section" aria-labelledby="operacion-title">
+            <div class="help-section-heading">
+                <span class="help-section-icon"><MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" /></span>
+                <div>
+                    <span>Administración</span>
+                    <h2 id="operacion-title">Puesta en marcha</h2>
+                    <p>Comprobaciones recomendadas antes y durante la operación productiva.</p>
+                </div>
+            </div>
+
+            <div class="help-operation-grid">
+                <article>
+                    <span>01</span>
+                    <h3>Activar SQL Server Agent</h3>
+                    <p>Debe quedar iniciado y en modo automático para ejecutar los respaldos programados.</p>
+                </article>
+                <article>
+                    <span>02</span>
+                    <h3>Vigilar respaldos</h3>
+                    <p>Revisar diariamente el historial de los trabajos y realizar pruebas periódicas de restauración.</p>
+                </article>
+                <article>
+                    <span>03</span>
+                    <h3>Supervisar rendimiento</h3>
+                    <p>Observar consultas lentas, crecimiento de archivos, bloqueos y consumo de almacenamiento.</p>
+                </article>
+            </div>
+
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="help-agent-alert">
+                <strong>Acción administrativa pendiente:</strong> el servicio SQL Server Agent requiere iniciarse con permisos de administrador en el servidor.
+            </MudAlert>
+        </section>
+
+        <section class="help-section help-faq" aria-labelledby="faq-title">
+            <div class="help-section-heading">
+                <span class="help-section-icon"><MudIcon Icon="@Icons.Material.Filled.LiveHelp" /></span>
+                <div>
+                    <span>Preguntas frecuentes</span>
+                    <h2 id="faq-title">Respuestas rápidas</h2>
+                </div>
+            </div>
+
+            <details>
+                <summary>¿Qué hago si otro usuario modificó el mismo registro?</summary>
+                <p>Actualiza la vista, revisa la información vigente y vuelve a aplicar únicamente tus cambios.</p>
+            </details>
+            <details>
+                <summary>¿Puedo autorizar un registro al crearlo?</summary>
+                <p>No. Las altas se guardan pendientes para conservar la separación entre captura y autorización.</p>
+            </details>
+            <details>
+                <summary>¿Los históricos deben moverse inmediatamente a otra base?</summary>
+                <p>No es necesario por ahora. Primero se recomienda medir crecimiento y uso real; el archivado se aplica con una política de retención aprobada.</p>
+            </details>
+        </section>
+    </main>
+</MudContainer>
+
+@code {
+    private string _version = "3.7.0";
+
+    private static readonly IReadOnlyList<HelpFlowStep> FlowSteps =
+    [
+        new("Anteproyecto de egreso", "Captura la planeación anual por partida, área, programa y calendario mensual.", Icons.Material.Filled.EditCalendar),
+        new("Presupuesto autorizado", "Formaliza el techo aprobado y deja disponible el saldo para su ejercicio.", Icons.Material.Filled.AccountBalance),
+        new("Requisición", "Registra la necesidad de bienes o servicios, cantidades, justificación y área solicitante.", Icons.Material.Filled.RequestQuote),
+        new("Solicitud de autorización", "Envía la requisición a revisión; el responsable aprueba o devuelve con observaciones.", Icons.Material.Filled.Approval),
+        new("Orden de compra", "Selecciona proveedor y condiciones comerciales, y compromete el importe autorizado.", Icons.Material.Filled.ShoppingCartCheckout),
+        new("Entrada de bienes", "Recibe físicamente, valida cantidades y documenta diferencias contra la orden.", Icons.Material.Filled.Inventory),
+        new("Factura", "Relaciona el comprobante fiscal con la recepción y valida importes, impuestos y UUID.", Icons.Material.Filled.ReceiptLong),
+        new("Cheque o pago", "Genera el egreso final con cuenta bancaria, beneficiario y autorización correspondiente.", Icons.Material.Filled.Payments)
+    ];
+
+    private static readonly IReadOnlyList<HelpProtectionItem> ProtectionItems =
+    [
+        new("Lectura concurrente", "Las consultas ya no bloquean innecesariamente las operaciones de captura."),
+        new("Control de versiones", "Pólizas, requisiciones, órdenes, presupuestos, facturas y cheques validan edición simultánea."),
+        new("Índices optimizados", "Las rutas de búsqueda y los accesos más frecuentes cuentan con estructuras específicas."),
+        new("Integridad reforzada", "Las claves operativas únicas se validan también directamente en la base de datos."),
+        new("Errores controlados", "Un conflicto de edición responde de forma identificable sin ocultar el registro vigente."),
+        new("Verificación de base", "La comprobación de integridad concluyó sin errores y existen respaldos verificados.")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<VersionApiResult>("api/Navigate/version");
+            if (!string.IsNullOrWhiteSpace(response?.Version))
+            {
+                _version = response.Version;
+            }
+        }
+        catch
+        {
+            // La ayuda conserva la versión compilada cuando el API aún no está disponible.
+        }
+    }
+
+    private sealed record HelpFlowStep(string Title, string Description, string Icon);
+    private sealed record HelpProtectionItem(string Title, string Description);
+
+    private sealed class VersionApiResult
+    {
+        public string Version { get; set; } = string.Empty;
+    }
+}

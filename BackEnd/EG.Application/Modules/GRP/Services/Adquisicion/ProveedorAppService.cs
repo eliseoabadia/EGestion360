@@ -509,7 +509,7 @@ namespace EG.Application.Services.Adquisicion
                 cuenta.PkidCuentaContable == cuentaId.Value &&
                 cuenta.Activo &&
                 cuenta.IsCuentaDetalle == 1 &&
-                cuenta.ClaveOrd.Replace(" ", "").StartsWith("2112"));
+                cuenta.ClaveOrdNormalizada.StartsWith("2112"));
 
             if (!valid)
                 throw new ArgumentException("La cuenta seleccionada debe ser una cuenta activa de detalle bajo 2.1.1.2 Proveedores por pagar a corto plazo.");

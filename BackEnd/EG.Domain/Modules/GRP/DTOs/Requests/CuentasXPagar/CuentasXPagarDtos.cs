@@ -73,6 +73,7 @@ namespace EG.Domain.DTOs.Requests.CuentasXPagar
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 
     public class FacturaDetalleDto
@@ -171,6 +172,7 @@ namespace EG.Domain.DTOs.Requests.CuentasXPagar
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 
     public class ChequePartidaDto

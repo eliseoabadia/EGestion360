@@ -317,11 +317,11 @@ private void ConfigureService()
 
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
                 {
-                    var filtro = request.Filtro.ToLower();
+                    var filtro = request.Filtro.Trim();
                     query = query.Where(e =>
-                        (e.Descripcion != null && e.Descripcion.ToLower().Contains(filtro)) ||
-                        (e.AreaNombre != null && e.AreaNombre.ToLower().Contains(filtro)) ||
-                        (e.ResponsableCompleto != null && e.ResponsableCompleto.ToLower().Contains(filtro)));
+                        (e.Descripcion != null && e.Descripcion.Contains(filtro)) ||
+                        (e.AreaNombre != null && e.AreaNombre.Contains(filtro)) ||
+                        (e.ResponsableCompleto != null && e.ResponsableCompleto.Contains(filtro)));
                 }
 
                 if (!string.IsNullOrEmpty(request.SortLabel))

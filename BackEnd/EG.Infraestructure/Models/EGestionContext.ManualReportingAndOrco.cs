@@ -127,5 +127,28 @@ public partial class EGestionContext
                 .HasForeignKey(d => d.UsuarioModificacion);
         });
 
+        ConfigureRowVersion<Poliza>(modelBuilder);
+        ConfigureRowVersion<Requisicion>(modelBuilder);
+        ConfigureRowVersion<EgresoAutorizado>(modelBuilder);
+        ConfigureRowVersion<EgresoProyectado>(modelBuilder);
+        ConfigureRowVersion<OrdenCompra>(modelBuilder);
+        ConfigureRowVersion<Factura>(modelBuilder);
+        ConfigureRowVersion<Cheque>(modelBuilder);
+
+        modelBuilder.Entity<CuentaContable>(entity =>
+        {
+            entity.Property(e => e.ClaveOrdNormalizada)
+                .HasComputedColumnSql("(replace([ClaveOrd],N' ',N''))", stored: true);
+        });
+
+    }
+
+    private static void ConfigureRowVersion<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class
+    {
+        modelBuilder.Entity<TEntity>()
+            .Property<byte[]>("RowVersion")
+            .IsRowVersion()
+            .IsConcurrencyToken();
     }
 }

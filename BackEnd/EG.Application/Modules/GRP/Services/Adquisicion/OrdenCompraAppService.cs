@@ -122,7 +122,12 @@ namespace EG.Application.Services.Adquisicion
 
             try
             {
-                var spResult = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
+                var spResult = await StoredProcedureExecutor.ExecuteConcurrencyCheckedAsync<OrdenCompra>(
+                    _context,
+                    id,
+                    response.RowVersion,
+                    "Orden de compra",
+                    () => ExecuteMantenimientoAsync(2, id, response, usuarioActual));
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
                 return result;

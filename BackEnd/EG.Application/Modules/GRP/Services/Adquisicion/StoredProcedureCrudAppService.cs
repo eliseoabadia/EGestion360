@@ -4,6 +4,8 @@ using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -110,10 +112,24 @@ namespace EG.Application.Services.Adquisicion
             {
                 _service.ApplyCurrentEmpresaIfPresent(response);
 
+                await using var transaction = action == UpdateAction
+                    ? await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable)
+                    : null;
+
+                if (action == UpdateAction && id.HasValue)
+                {
+                    await EnsureCurrentRowVersionAsync(id.Value, response);
+                }
+
                 var result = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
                     _storedProcedure,
                     _buildParameters(action, id, response, usuarioActual));
+
+                if (transaction != null)
+                {
+                    await transaction.CommitAsync();
+                }
 
                 var resolvedId = result.GetId();
                 if (!resolvedId.HasValue)
@@ -157,6 +173,31 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<TResponse>(
                     UserFacingMessages.OperationFailed($"{operationInfinitive} {_entityName}"),
                     "ERROR");
+            }
+        }
+
+        private async Task EnsureCurrentRowVersionAsync(int id, TResponse response)
+        {
+            var responseProperty = typeof(TResponse).GetProperty("RowVersion");
+            var expected = responseProperty?.GetValue(response) as byte[];
+            if (expected is not { Length: > 0 })
+            {
+                return;
+            }
+
+            var entity = await _context.Set<TEntity>().FindAsync(id);
+            if (entity == null)
+            {
+                throw new UserVisibleException($"{_entityName} no encontrado.", "NOT_FOUND");
+            }
+
+            var entityProperty = typeof(TEntity).GetProperty("RowVersion");
+            var current = entityProperty?.GetValue(entity) as byte[];
+            if (current == null || !current.SequenceEqual(expected))
+            {
+                throw new UserVisibleException(
+                    "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente.",
+                    "CONCURRENCY_CONFLICT");
             }
         }
     }

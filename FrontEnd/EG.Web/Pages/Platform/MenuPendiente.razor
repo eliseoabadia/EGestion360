@@ -1,4 +1,3 @@
-@page "/ayuda"
 @page "/configuracion/presupuestales/programa-presupuestal"
 @page "/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos"
 @page "/Presupuesto/Tesoreria/Planeacion_Gastos"
@@ -47,13 +46,6 @@
     private static readonly IReadOnlyDictionary<string, PendingMenuItem> ItemsByPath =
         new Dictionary<string, PendingMenuItem>(StringComparer.OrdinalIgnoreCase)
         {
-            ["/ayuda"] = new(
-                "Ayuda",
-                "Modulo de soporte",
-                "Plataforma",
-                "Pendiente",
-                "La ruta ya esta registrada para evitar pagina no encontrada; falta definir contenido funcional de ayuda.",
-                Severity.Info),
             ["/configuracion/presupuestales/programa-presupuestal"] = new(
                 "Clave del Programa",
                 "Contenedor de catalogos presupuestales",

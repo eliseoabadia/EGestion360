@@ -3,6 +3,7 @@ using System.Text.Json;
 using EG.Common;
 using EG.Common.Enums;
 using EG.Common.Util;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Middleware;
 
@@ -31,7 +32,8 @@ public sealed class ApiExceptionMiddleware
                 throw;
             }
 
-            var isBusinessRule = ex is InvalidOperationException;
+            var isConcurrencyConflict = ex is DbUpdateConcurrencyException;
+            var isBusinessRule = ex is InvalidOperationException || isConcurrencyConflict;
             var isInvalidRequest = ex is ArgumentException;
 
             if (isBusinessRule || isInvalidRequest)
@@ -56,6 +58,8 @@ public sealed class ApiExceptionMiddleware
                 success = false,
                 message = isInvalidRequest
                     ? "La informacion enviada no es valida. Revisa los datos e intenta nuevamente."
+                    : isConcurrencyConflict
+                        ? "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente."
                     : isBusinessRule
                         ? UserFacingMessageSanitizer.SafeOrFallback(
                             ex.Message,
@@ -63,6 +67,8 @@ public sealed class ApiExceptionMiddleware
                         : UserFacingMessages.UnexpectedError,
                 code = isInvalidRequest
                     ? ApiResponseCode.InvalidData.ToCode()
+                    : isConcurrencyConflict
+                        ? "CONCURRENCY_CONFLICT"
                     : isBusinessRule
                         ? "BUSINESS_RULE"
                         : ApiResponseCode.Error.ToCode(),

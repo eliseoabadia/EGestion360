@@ -113,7 +113,7 @@ namespace EG.Infrastructure
         }
 
 
-        public async Task UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity, byte[]? originalRowVersion = null)
         {
             var entry = _context.Entry(entity);
             if (entry.State == EntityState.Detached)
@@ -123,6 +123,7 @@ namespace EG.Infrastructure
             }
 
             MarkPrimaryKeyPropertiesUnmodified(entry);
+            ApplyOriginalRowVersion(entry, originalRowVersion);
 
             if (TryGetInactiveEntityId(entity, out var id))
             {
@@ -132,6 +133,24 @@ namespace EG.Infrastructure
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        private static void ApplyOriginalRowVersion(EntityEntry entry, byte[]? originalRowVersion)
+        {
+            if (originalRowVersion is not { Length: > 0 })
+            {
+                return;
+            }
+
+            var rowVersion = entry.Metadata.FindProperty("RowVersion");
+            if (rowVersion == null || !rowVersion.IsConcurrencyToken)
+            {
+                return;
+            }
+
+            var propertyEntry = entry.Property("RowVersion");
+            propertyEntry.OriginalValue = originalRowVersion;
+            propertyEntry.IsModified = false;
         }
 
         public async Task<IEnumerable<T>> GetAllWithIncludesAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes)

@@ -8,7 +8,8 @@ namespace EG.Business.Services
         private static readonly string[] DefaultPreservedProperties =
         [
             "UsuarioCreacion",
-            "FechaCreacion"
+            "FechaCreacion",
+            "RowVersion"
         ];
 
         public static void Apply<TDto, TEntity>(

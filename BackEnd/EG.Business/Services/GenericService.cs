@@ -462,6 +462,7 @@ namespace EG.Business.Services
 
         public virtual async Task UpdateAsync(int id, TDto dto)
         {
+            var originalRowVersion = GetRowVersion(dto);
             var existing = await _repository.GetByIdAsync(id);
             if (existing == null)
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
@@ -472,7 +473,15 @@ namespace EG.Business.Services
             EntityUpdateMapper.Apply(dto, existing);
             ApplyModificationAuditIfPresent(existing);
             ApplyCurrentEmpresaIfPresent(existing);
-            await _repository.UpdateAsync(existing);
+            await _repository.UpdateAsync(existing, originalRowVersion);
+        }
+
+        private static byte[]? GetRowVersion(object source)
+        {
+            var property = source.GetType().GetProperty(
+                "RowVersion",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            return property?.GetValue(source) as byte[];
         }
 
         public virtual async Task DeleteAsync(int id)
@@ -857,14 +866,21 @@ namespace EG.Business.Services
             if (targetType == typeof(string))
             {
                 var notNullCheck = Expression.NotEqual(propertyAccess, Expression.Constant(null, propertyType));
-                var containsMethod = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) });
-                if (containsMethod == null)
+                var normalizedName = property.Name.ToLowerInvariant();
+                var usePrefixSearch = normalizedName.Contains("clave", StringComparison.Ordinal)
+                    || normalizedName.Contains("codigo", StringComparison.Ordinal)
+                    || normalizedName.Contains("numero", StringComparison.Ordinal)
+                    || normalizedName.Contains("folio", StringComparison.Ordinal);
+                var method = typeof(string).GetMethod(
+                    usePrefixSearch ? nameof(string.StartsWith) : nameof(string.Contains),
+                    new[] { typeof(string) });
+                if (method == null)
                 {
                     return null;
                 }
 
-                var containsExpression = Expression.Call(propertyAccess, containsMethod, Expression.Constant(filter));
-                return Expression.AndAlso(notNullCheck, containsExpression);
+                var searchExpression = Expression.Call(propertyAccess, method, Expression.Constant(filter));
+                return Expression.AndAlso(notNullCheck, searchExpression);
             }
 
             if (!TryConvertSearchValue(filter, targetType, out var convertedValue))

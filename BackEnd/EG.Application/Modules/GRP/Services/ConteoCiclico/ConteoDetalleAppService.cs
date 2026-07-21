@@ -53,13 +53,12 @@ namespace EG.Application.Services.ConteoCiclico
 
                 if (!string.IsNullOrWhiteSpace(filtro))
                 {
-                    filtro = filtro.ToLower();
                     bienes = bienes.Where(b =>
-                        (b.Clave?.ToLower().Contains(filtro) ?? false) ||
-                        (b.ClaveAnt?.ToLower().Contains(filtro) ?? false) ||
-                        (b.Descripcion?.ToLower().Contains(filtro) ?? false) ||
-                        (b.Serie?.ToLower().Contains(filtro) ?? false) ||
-                        (b.Modelo?.ToLower().Contains(filtro) ?? false)
+                        (b.Clave?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (b.ClaveAnt?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (b.Descripcion?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (b.Serie?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (b.Modelo?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false)
                     ).ToList();
                 }
 

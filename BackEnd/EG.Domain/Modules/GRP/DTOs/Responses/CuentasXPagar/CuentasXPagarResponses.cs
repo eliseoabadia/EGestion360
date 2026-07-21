@@ -96,6 +96,7 @@ namespace EG.Domain.DTOs.Responses.CuentasXPagar
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 
     public class FacturaDetalleResponse
@@ -227,6 +228,7 @@ namespace EG.Domain.DTOs.Responses.CuentasXPagar
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 
     public class ChequePartidaResponse

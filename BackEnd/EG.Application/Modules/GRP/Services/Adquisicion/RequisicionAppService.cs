@@ -1,5 +1,6 @@
 using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
+using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
@@ -112,10 +113,25 @@ namespace EG.Application.Services.Adquisicion
                     return InvalidProyectoResult(response.FkidProyectoOrco);
                 }
 
-                var spResult = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
+                var spResult = await StoredProcedureExecutor.ExecuteConcurrencyCheckedAsync<Requisicion>(
+                    _context,
+                    id,
+                    response.RowVersion,
+                    "Requisición",
+                    () => ExecuteMantenimientoAsync(2, id, response, usuarioActual));
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
                 return result;
+            }
+            catch (UserVisibleException ex)
+            {
+                return new PagedResult<RequisicionResponse>
+                {
+                    Success = false,
+                    Message = ex.UserMessage,
+                    Code = ex.Code,
+                    TotalCount = 0
+                };
             }
             catch (ArgumentException ex)
             {

@@ -15,7 +15,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column suministro-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column suministro-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Suministros de salida"
                     Subtitle="Seguimiento de bienes entregados y pendientes por solicitud"
                     Icon="@Icons.Material.Filled.LocalShipping"
@@ -147,58 +147,6 @@
         </div>
     </MudContainer>
 </AccessVerification>
-
-<style>
-    .suministro-page .summary-strip,
-    .suministro-page .split-shell {
-        display: grid;
-        gap: 10px;
-    }
-
-    .suministro-page .summary-strip {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        margin: 8px 0 12px;
-    }
-
-    .suministro-page .split-shell {
-        grid-template-columns: minmax(0, 1fr) minmax(420px, .8fr);
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .suministro-page .summary-strip > div,
-    .suministro-page .detail-header {
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
-        padding: 10px 12px;
-        background: var(--mud-palette-surface);
-    }
-
-    .suministro-page .master-panel,
-    .suministro-page .detail-panel {
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .suministro-page .detail-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .suministro-page span,
-    .suministro-page td span {
-        display: block;
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-    }
-
-    .suministro-page strong,
-    .suministro-page .main-cell {
-        font-weight: 700;
-    }
-</style>
 
 @code {
     private GenericDataGrid<SolicitudSalidaResponse> table = null!;

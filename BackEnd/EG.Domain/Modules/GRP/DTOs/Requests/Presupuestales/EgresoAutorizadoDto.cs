@@ -34,5 +34,6 @@ namespace EG.Domain.DTOs.Requests.Presupuestales
         public int? UsuarioModificacion { get; set; }
         public DateTime? FechaAutorizacion { get; set; }
         public int? UsuarioAutorizacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 }

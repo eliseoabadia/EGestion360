@@ -131,6 +131,10 @@
                         <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Class="mr-2" />
                         Perfil
                     </MudMenuItem>
+                    <MudMenuItem OnClick="@NavigateToHelp">
+                        <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Class="mr-2" />
+                        Ayuda
+                    </MudMenuItem>
                     <MudDivider />
                     <MudMenuItem OnClick="@Logout">
                         <MudIcon Icon="@Icons.Material.Filled.Logout" Class="mr-2" />
@@ -398,6 +402,11 @@
     private void NavigateToProfile()
     {
         NavigationManager.NavigateTo("/perfil");
+    }
+
+    private void NavigateToHelp()
+    {
+        NavigationManager.NavigateTo("/ayuda");
     }
 
     private async Task SelectThemeOption(AppThemeOption option)

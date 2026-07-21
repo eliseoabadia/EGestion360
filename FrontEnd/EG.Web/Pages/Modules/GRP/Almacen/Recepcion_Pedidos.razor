@@ -18,7 +18,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Recepcion de pedidos"
                     Subtitle="Recepcion contra orden de compra con entradas de almacen trazables"
                     Icon="@Icons.Material.Filled.MoveToInbox"
@@ -197,61 +197,6 @@
         </div>
     </MudContainer>
 </AccessVerification>
-
-<style>
-    .recepcion-page .split-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(500px, .95fr);
-        gap: 12px;
-        min-height: 0;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .recepcion-page .orders-panel,
-    .recepcion-page .detail-panel {
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .recepcion-page .detail-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .recepcion-page .detail-header {
-        border: 1px solid var(--mud-palette-lines-default);
-        border-radius: 8px;
-        padding: 10px 12px;
-        background: var(--mud-palette-surface);
-    }
-
-    .recepcion-page span,
-    .recepcion-page td span {
-        display: block;
-        color: var(--mud-palette-text-secondary);
-        font-size: .78rem;
-    }
-
-    .recepcion-page strong,
-    .recepcion-page .main-cell {
-        font-weight: 700;
-    }
-
-    @@media (max-width: 1500px) {
-        .recepcion-page .split-shell {
-            grid-template-columns: minmax(0, 1fr);
-            overflow-y: auto;
-        }
-
-        .recepcion-page .orders-panel,
-        .recepcion-page .detail-panel {
-            min-height: 420px;
-            overflow: visible;
-        }
-    }
-</style>
 
 @code {
     private GenericDataGrid<OrdenCompraResponse> table = null!;

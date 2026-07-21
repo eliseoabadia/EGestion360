@@ -59,5 +59,6 @@ namespace EG.Domain.DTOs.Responses.Presupuestales
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 }

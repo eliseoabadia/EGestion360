@@ -321,7 +321,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 var normalized = NormalizeText(header.TipoPoliza);
                 var tipo = await _context.TipoPolizas.AsNoTracking()
                     .Where(x => x.Activo)
-                    .FirstOrDefaultAsync(x => x.Descripcion.ToLower().Contains(header.TipoPoliza!.Trim().ToLower()));
+                    .FirstOrDefaultAsync(x => x.Descripcion.Contains(header.TipoPoliza!.Trim()));
                 if (tipo == null)
                 {
                     var tipos = await _context.TipoPolizas.AsNoTracking().Where(x => x.Activo).ToListAsync();

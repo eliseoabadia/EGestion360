@@ -29,5 +29,6 @@ namespace EG.Domain.DTOs.Requests.Adquisicion
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public byte[]? RowVersion { get; set; }
     }
 }

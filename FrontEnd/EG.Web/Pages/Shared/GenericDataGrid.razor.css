@@ -1,4 +1,6 @@
 .eg-generic-data-grid {
+    container-name: eg-data-grid;
+    container-type: inline-size;
     position: relative;
     display: flex;
     flex: 0 0 auto;
@@ -182,6 +184,7 @@
 
 .eg-data-grid-title {
     display: flex;
+    flex: 1 1 210px;
     align-items: center;
     gap: 11px;
     min-width: min(180px, 100%);
@@ -212,6 +215,7 @@
 
 .eg-data-grid-title-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     min-width: 0;
@@ -244,6 +248,18 @@
 .eg-data-grid-count .mud-icon-root {
     color: var(--mud-palette-primary);
     font-size: .82rem;
+}
+
+.eg-data-grid-tools {
+    display: flex;
+    flex: 1 1 420px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    min-width: 0;
+    max-width: 100%;
+    margin-left: auto;
 }
 
 .eg-data-grid-search-shell {
@@ -377,6 +393,66 @@
 
     .eg-data-grid-search-shell {
         order: 3;
+        flex-basis: 100%;
+        width: 100%;
+        min-width: 100%;
+    }
+}
+
+/* Responde al ancho real del grid, incluso dentro de paneles estrechos. */
+@container eg-data-grid (max-width: 720px) {
+    .eg-generic-data-grid ::deep .mud-table-toolbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: center;
+        min-height: 0;
+        padding: 11px 12px;
+        gap: 8px;
+    }
+
+    .eg-data-grid-title {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .eg-data-grid-tools {
+        width: 100%;
+        justify-content: flex-end;
+        margin-left: 0;
+    }
+
+    .eg-data-grid-search-shell {
+        flex: 1 1 220px;
+        width: min(100%, 360px);
+        min-width: min(180px, 100%);
+    }
+
+    .eg-data-grid-columns-button {
+        width: 40px;
+        min-width: 40px;
+        padding-right: 0;
+        padding-left: 0;
+        overflow: hidden;
+        font-size: 0;
+    }
+
+    .eg-data-grid-columns-button ::deep .mud-button-icon-start {
+        margin: 0;
+    }
+}
+
+@container eg-data-grid (max-width: 470px) {
+    .eg-data-grid-title-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .eg-data-grid-tools {
+        justify-content: flex-start;
+    }
+
+    .eg-data-grid-search-shell {
+        order: 10;
         flex-basis: 100%;
         width: 100%;
         min-width: 100%;

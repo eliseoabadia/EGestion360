@@ -73,5 +73,6 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string ClaveNombre { get; set; } = string.Empty;
         public int CotizacionesActivas { get; set; }
         public bool BloqueadaPorCotizacion => CotizacionesActivas > 0;
+        public byte[]? RowVersion { get; set; }
     }
 }
