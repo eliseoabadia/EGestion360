@@ -11,15 +11,16 @@ using EG.Infraestructure.Models;
 
 namespace EG.Business.Services
 {
-    public class EmployeeService(IRepository<Usuario> repositorySP) : IEmployeeService
+    public class EmployeeService(IRepository<Usuario> repositorySP, IUserContextService userContext) : IEmployeeService
     {
         private readonly IRepository<Usuario> _repository = repositorySP;
+        private readonly IUserContextService _userContext = userContext;
 
 
         public async Task<IList<UsuarioResponse>> GetAllUsersAsync()
         {
             var items = await _repository.GetAllWithIncludes2Async(
-                u => u.Activo,
+                u => u.Activo && u.FkidEmpresaSis == _userContext.GetCurrentEmpresaId(),
                 u => u.FkidPersonaNomNavigation,
                 u => u.FkidEmpresaSisNavigation
             );
@@ -30,7 +31,7 @@ namespace EG.Business.Services
         {
             // Obtener IQueryable directamente
             var query = _repository.QueryWithIncludes(
-                u => u.Activo,
+                u => u.Activo && u.FkidEmpresaSis == _userContext.GetCurrentEmpresaId(),
                 u => u.FkidPersonaNomNavigation,
                 u => u.FkidEmpresaSisNavigation);
 
@@ -96,11 +97,14 @@ namespace EG.Business.Services
         public async Task<UsuarioResponse?> GetEmployeeByIdAsync(int empId)
         {
             var emp = await _repository.GetByIdAsync(empId);
-            return emp != null ? emp.Adapt<UsuarioResponse>() : null;
+            return emp != null && emp.FkidEmpresaSis == _userContext.GetCurrentEmpresaId()
+                ? emp.Adapt<UsuarioResponse>()
+                : null;
         }
 
         public async Task<bool> AddEmployeeAsync(UsuarioDto dto)
         {
+            dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var emp = dto.Adapt<Usuario>();
             await _repository.AddAsync(emp);
             return true;
@@ -112,7 +116,10 @@ namespace EG.Business.Services
             var existingEmp = await _repository.GetByIdAsync(empId);
             if (existingEmp == null)
                 throw new KeyNotFoundException($"User with ID {empId} not found.");
+            if (existingEmp.FkidEmpresaSis != _userContext.GetCurrentEmpresaId())
+                throw new UnauthorizedAccessException("El usuario no pertenece a la empresa activa.");
 
+            dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             EntityUpdateMapper.Apply(dto, existingEmp);
             await _repository.UpdateAsync(existingEmp);
             return true;
@@ -123,6 +130,8 @@ namespace EG.Business.Services
             var emp = await _repository.GetByIdAsync(empId);
             if (emp == null)
                 throw new KeyNotFoundException($"User  with ID {empId} not found.");
+            if (emp.FkidEmpresaSis != _userContext.GetCurrentEmpresaId())
+                throw new UnauthorizedAccessException("El usuario no pertenece a la empresa activa.");
 
             emp.Activo = false;
             emp.FechaModificacion = System.DateTime.Now;

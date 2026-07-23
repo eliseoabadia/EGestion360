@@ -105,7 +105,9 @@ namespace EG.Application.Services.FirmaDocumental
             if (!provider.Disponible || !enabled)
                 throw new InvalidOperationException($"Proveedor de firma no disponible: {provider.Codigo}.");
 
-            var document = await soporteDocumental.ObtenerContenidoAsync(request.DocumentoId)
+            var empresaId = request.FkidEmpresaSis
+                ?? throw new InvalidOperationException("La empresa activa es requerida para firmar.");
+            var document = await soporteDocumental.ObtenerContenidoAsync(request.DocumentoId, empresaId)
                 ?? throw new InvalidOperationException("El documento no existe en soporte documental.");
 
             var hashHex = Convert.ToHexString(SHA256.HashData(document.Contenido));

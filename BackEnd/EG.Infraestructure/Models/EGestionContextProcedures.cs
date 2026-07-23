@@ -7937,12 +7937,12 @@ namespace EG.Infraestructure.Models
                 parameterId,
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<SP_MantenimientoTipoBienResult>("EXEC @returnValue = [ALMA].[SP_MantenimientoTipoBien] @Action = @Action, @PKIdTipoBien = @PKIdTipoBien, @FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA = @FKIdNivel_ALMA, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA, @FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente, @CodigoClave = @CodigoClave, @Descripcion = @Descripcion, @DepreciacionAnual = @DepreciacionAnual, @Consecutivo = @Consecutivo, @CABMS = @CABMS, @Identificador = @Identificador, @ExistenciaMinima = @ExistenciaMinima, @ExistenciaMaxima = @ExistenciaMaxima, @TiempoVida = @TiempoVida, @Pk_IdTratadoInt = @Pk_IdTratadoInt, @Cuota = @Cuota, @ProveeduriaNac = @ProveeduriaNac, @CatalogoBasico = @CatalogoBasico, @CUCOP_PLUS = @CUCOP_PLUS, @Cantidad_Equivalente = @Cantidad_Equivalente, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
+            await _context.Database.ExecuteSqlRawAsync("EXEC @returnValue = [ALMA].[SP_MantenimientoTipoBien] @Action = @Action, @PKIdTipoBien = @PKIdTipoBien, @FKIdGrupoBien_ALMA = @FKIdGrupoBien_ALMA, @FKIdNivel_ALMA = @FKIdNivel_ALMA, @FKIdPartida_CONTA = @FKIdPartida_CONTA, @FKIdCuentaContable_CONTA = @FKIdCuentaContable_CONTA, @FKIdUnidades_ALMA = @FKIdUnidades_ALMA, @FKIdLocalizacion_ALMA = @FKIdLocalizacion_ALMA, @FKIdUnidades_Equivalente = @FKIdUnidades_Equivalente, @CodigoClave = @CodigoClave, @Descripcion = @Descripcion, @DepreciacionAnual = @DepreciacionAnual, @Consecutivo = @Consecutivo, @CABMS = @CABMS, @Identificador = @Identificador, @ExistenciaMinima = @ExistenciaMinima, @ExistenciaMaxima = @ExistenciaMaxima, @TiempoVida = @TiempoVida, @Pk_IdTratadoInt = @Pk_IdTratadoInt, @Cuota = @Cuota, @ProveeduriaNac = @ProveeduriaNac, @CatalogoBasico = @CatalogoBasico, @CUCOP_PLUS = @CUCOP_PLUS, @Cantidad_Equivalente = @Cantidad_Equivalente, @IdUser = @IdUser, @Id = @Id OUTPUT", sqlParameters, cancellationToken);
 
             id?.SetValue(parameterId.Value);
             returnValue?.SetValue(parameterreturnValue.Value);
 
-            return _;
+            return new List<SP_MantenimientoTipoBienResult>();
         }
 
         public virtual async Task<int> sp_NotificacionActualizarEstadoAsync(long? pk_IdNotificacionDestino, int? fk_IdUsuario, int? fk_IdNotificacionEstado, int? idUser, OutputParameter<int> returnValue = null, CancellationToken cancellationToken = default)

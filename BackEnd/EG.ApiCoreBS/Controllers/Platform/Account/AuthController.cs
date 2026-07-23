@@ -4,6 +4,7 @@ using EG.Common.Enums;
 using EG.Common.Util;
 using EG.Domain.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EG.ApiCoreBS.Controllers.Account
@@ -25,6 +26,7 @@ namespace EG.ApiCoreBS.Controllers.Account
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
         {
             var clientIp = _userIpService.GetUserIpAddress(HttpContext);

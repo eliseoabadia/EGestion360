@@ -35,8 +35,9 @@ public sealed class ApiExceptionMiddleware
             var isConcurrencyConflict = ex is DbUpdateConcurrencyException;
             var isBusinessRule = ex is InvalidOperationException || isConcurrencyConflict;
             var isInvalidRequest = ex is ArgumentException;
+            var isForbidden = ex is UnauthorizedAccessException;
 
-            if (isBusinessRule || isInvalidRequest)
+            if (isBusinessRule || isInvalidRequest || isForbidden)
             {
                 LogControlledException(context, userIpService, ex);
             }
@@ -46,7 +47,9 @@ public sealed class ApiExceptionMiddleware
             }
 
             context.Response.Clear();
-            context.Response.StatusCode = isInvalidRequest
+            context.Response.StatusCode = isForbidden
+                ? StatusCodes.Status403Forbidden
+                : isInvalidRequest
                 ? StatusCodes.Status400BadRequest
                 : isBusinessRule
                     ? StatusCodes.Status409Conflict
@@ -56,7 +59,9 @@ public sealed class ApiExceptionMiddleware
             var response = new
             {
                 success = false,
-                message = isInvalidRequest
+                message = isForbidden
+                    ? "No tienes permiso para acceder a este recurso."
+                    : isInvalidRequest
                     ? "La informacion enviada no es valida. Revisa los datos e intenta nuevamente."
                     : isConcurrencyConflict
                         ? "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente."
@@ -65,7 +70,9 @@ public sealed class ApiExceptionMiddleware
                             ex.Message,
                             "La operacion no puede completarse por el estado actual de la informacion.")
                         : UserFacingMessages.UnexpectedError,
-                code = isInvalidRequest
+                code = isForbidden
+                    ? "FORBIDDEN"
+                    : isInvalidRequest
                     ? ApiResponseCode.InvalidData.ToCode()
                     : isConcurrencyConflict
                         ? "CONCURRENCY_CONFLICT"

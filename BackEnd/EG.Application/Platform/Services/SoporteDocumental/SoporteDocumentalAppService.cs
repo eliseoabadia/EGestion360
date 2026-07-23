@@ -189,8 +189,11 @@ namespace EG.Application.Services.SoporteDocumental
             }
         }
 
-        public async Task<DocumentoDownloadResponse?> ObtenerContenidoAsync(long documentoId)
+        public async Task<DocumentoDownloadResponse?> ObtenerContenidoAsync(long documentoId, int empresaId)
         {
+            if (!await DocumentoPerteneceAEmpresaAsync(documentoId, empresaId))
+                return null;
+
             await using var command = await CreateCommandAsync("SIS.spDocumentoObtenerContenido", CommandType.StoredProcedure);
             command.Parameters.Add(Param("@PkidDocumento", documentoId));
 
@@ -226,8 +229,10 @@ namespace EG.Application.Services.SoporteDocumental
             return response;
         }
 
-        public async Task<PagedResult<bool>> EliminarAsync(long documentoId, int usuarioActual)
+        public async Task<PagedResult<bool>> EliminarAsync(long documentoId, int usuarioActual, int empresaId)
         {
+            EnsureDocumentAccess(await ObtenerDocumentoAsync(documentoId), empresaId);
+
             await ExecuteResultJsonAsync(
                 "SIS.spDocumentoEliminar",
                 Param("@PkidDocumento", documentoId),
@@ -244,8 +249,10 @@ namespace EG.Application.Services.SoporteDocumental
             };
         }
 
-        public async Task<PagedResult<DocumentoAnotacionResponse>> ObtenerAnotacionesAsync(long documentoId, bool incluirInactivos = false)
+        public async Task<PagedResult<DocumentoAnotacionResponse>> ObtenerAnotacionesAsync(long documentoId, int empresaId, bool incluirInactivos = false)
         {
+            EnsureDocumentAccess(await ObtenerDocumentoAsync(documentoId), empresaId);
+
             var items = new List<DocumentoAnotacionResponse>();
             await using var command = await CreateCommandAsync("SIS.spDocumentoAnotacionObtener", CommandType.StoredProcedure);
             command.Parameters.Add(Param("@FkidDocumento", documentoId));
@@ -265,8 +272,10 @@ namespace EG.Application.Services.SoporteDocumental
             };
         }
 
-        public async Task<PagedResult<DocumentoAnotacionResponse>> CrearAnotacionAsync(DocumentoAnotacionCrearRequest request, int usuarioActual)
+        public async Task<PagedResult<DocumentoAnotacionResponse>> CrearAnotacionAsync(DocumentoAnotacionCrearRequest request, int usuarioActual, int empresaId)
         {
+            EnsureDocumentAccess(await ObtenerDocumentoAsync(request.FkidDocumento), empresaId);
+
             var idParam = new SqlParameter("@PkidDocumentoAnotacion", SqlDbType.BigInt)
             {
                 Direction = ParameterDirection.InputOutput,
@@ -289,7 +298,7 @@ namespace EG.Application.Services.SoporteDocumental
                 idParam);
 
             var anotacionId = GetResultId(result, idParam);
-            var annotations = await ObtenerAnotacionesAsync(request.FkidDocumento);
+            var annotations = await ObtenerAnotacionesAsync(request.FkidDocumento, empresaId);
             var item = annotations.Items.FirstOrDefault(x => x.PkidDocumentoAnotacion == anotacionId);
 
             return new PagedResult<DocumentoAnotacionResponse>
@@ -303,8 +312,11 @@ namespace EG.Application.Services.SoporteDocumental
             };
         }
 
-        public async Task<PagedResult<bool>> EliminarAnotacionAsync(long anotacionId, int usuarioActual)
+        public async Task<PagedResult<bool>> EliminarAnotacionAsync(long anotacionId, int usuarioActual, int empresaId)
         {
+            if (!await AnotacionPerteneceAEmpresaAsync(anotacionId, empresaId))
+                throw new UnauthorizedAccessException("La anotacion no pertenece a la empresa activa.");
+
             await ExecuteResultJsonAsync(
                 "SIS.spDocumentoAnotacionEliminar",
                 Param("@PkidDocumentoAnotacion", anotacionId),
@@ -332,6 +344,31 @@ namespace EG.Application.Services.SoporteDocumental
 
             await using var reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapDocumento(reader) : null;
+        }
+
+        private async Task<bool> DocumentoPerteneceAEmpresaAsync(long documentoId, int empresaId)
+        {
+            var document = await ObtenerDocumentoAsync(documentoId);
+            return document?.FkidEmpresaSis == empresaId;
+        }
+
+        private static void EnsureDocumentAccess(DocumentoResponse? document, int empresaId)
+        {
+            if (document?.FkidEmpresaSis != empresaId)
+                throw new UnauthorizedAccessException("El documento no pertenece a la empresa activa.");
+        }
+
+        private async Task<bool> AnotacionPerteneceAEmpresaAsync(long anotacionId, int empresaId)
+        {
+            await using var command = await CreateCommandAsync("""
+                SELECT TOP 1 FkidEmpresaSis
+                FROM SIS.Vw_DocumentoAnotacion
+                WHERE PkidDocumentoAnotacion = @PkidDocumentoAnotacion
+                """, CommandType.Text);
+            command.Parameters.Add(Param("@PkidDocumentoAnotacion", anotacionId));
+
+            var value = await command.ExecuteScalarAsync();
+            return value != null && value != DBNull.Value && Convert.ToInt32(value) == empresaId;
         }
 
         private async Task<JsonElement> ExecuteResultJsonAsync(string storedProcedure, params SqlParameter[] parameters)

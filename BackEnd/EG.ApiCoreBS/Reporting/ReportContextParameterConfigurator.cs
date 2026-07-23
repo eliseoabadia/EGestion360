@@ -4,6 +4,7 @@ using DevExpress.DataAccess.Sql;
 using DevExpress.XtraReports.Parameters;
 using DevExpress.XtraReports.UI;
 using EG.Common;
+using EG.Domain.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace EG.ApiCoreBS.Reporting;
@@ -17,11 +18,15 @@ public sealed class ReportContextParameterConfigurator
     ];
 
     private readonly IConfiguration _configuration;
+    private readonly IUserContextService _userContext;
     private readonly ConcurrentDictionary<string, IReadOnlySet<string>> _storedProcedureParameters = new(StringComparer.OrdinalIgnoreCase);
 
-    public ReportContextParameterConfigurator(IConfiguration configuration)
+    public ReportContextParameterConfigurator(
+        IConfiguration configuration,
+        IUserContextService userContext)
     {
         _configuration = configuration;
+        _userContext = userContext;
     }
 
     public void Apply(XtraReport report, ReportRequest request)
@@ -72,7 +77,18 @@ public sealed class ReportContextParameterConfigurator
 
         parameter.Type = typeof(int);
         parameter.Visible = false;
-        parameter.Value = TryResolveIntValue(request, parameterName, out var value) ? value : 0;
+        parameter.Value = ResolveContextValue(parameterName, request);
+    }
+
+    private int ResolveContextValue(string parameterName, ReportRequest request)
+    {
+        if (string.Equals(parameterName, "IdEmpresa", StringComparison.OrdinalIgnoreCase))
+            return _userContext.GetCurrentEmpresaId();
+
+        if (string.Equals(parameterName, "IdEmpleado", StringComparison.OrdinalIgnoreCase))
+            return _userContext.GetCurrentUserId();
+
+        return TryResolveIntValue(request, parameterName, out var value) ? value : 0;
     }
 
     private static bool TryResolveIntValue(ReportRequest request, string parameterName, out int value)

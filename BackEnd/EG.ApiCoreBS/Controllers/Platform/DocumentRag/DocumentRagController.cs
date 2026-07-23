@@ -23,7 +23,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
         [HttpPost("sessions")]
         public async Task<ActionResult<PagedResult<DocumentRagSessionResponse>>> CreateSession([FromBody] DocumentRagSessionRequest request)
         {
-            request.FkidEmpresaSis = userContext.TryGetCurrentEmpresaId() ?? request.FkidEmpresaSis;
+            request.FkidEmpresaSis = userContext.GetCurrentEmpresaId();
             return Ok(await service.CreateSessionAsync(request, userContext.GetCurrentUserId()));
         }
 

@@ -1,4 +1,5 @@
 using DevExpress.XtraReports.Services;
+using EG.ApiCoreBS.Reporting;
 using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
@@ -14,19 +15,32 @@ public sealed class ReportingExportController : ControllerBase
 {
     private readonly IReportProvider _reportProvider;
     private readonly IUserContextService _userContext;
+    private readonly IAuthorizationService _authorization;
 
-    public ReportingExportController(IReportProvider reportProvider, IUserContextService userContext)
+    public ReportingExportController(
+        IReportProvider reportProvider,
+        IUserContextService userContext,
+        IAuthorizationService authorization)
     {
         _reportProvider = reportProvider;
         _userContext = userContext;
+        _authorization = authorization;
     }
 
     [HttpGet("pdf")]
-    public IActionResult ExportPdf([FromQuery] string report)
+    public async Task<IActionResult> ExportPdf([FromQuery] string report)
     {
         if (string.IsNullOrWhiteSpace(report))
         {
             return BadRequest("El nombre del reporte es requerido.");
+        }
+
+        var reportName = report.Split('?', 2, StringSplitOptions.TrimEntries)[0];
+        var requiredPolicy = GetReportPolicy(reportName);
+        if (requiredPolicy == null ||
+            !(await _authorization.AuthorizeAsync(User, null, requiredPolicy)).Succeeded)
+        {
+            return Forbid();
         }
 
         var enrichedReport = AddRequestContextParameters(report);
@@ -53,8 +67,8 @@ public sealed class ReportingExportController : ControllerBase
             }
         }
 
-        TrySetContextParameter(parameters, "IdEmpleado", GetUserId());
-        TrySetContextParameter(parameters, "IdEmpresa", _userContext.TryGetCurrentEmpresaId()?.ToString());
+        SetContextParameter(parameters, "IdEmpleado", GetUserId());
+        SetContextParameter(parameters, "IdEmpresa", _userContext.GetCurrentEmpresaId().ToString());
 
         var query = BuildQuery(parameters);
         return string.IsNullOrWhiteSpace(query) ? reportName : $"{reportName}?{query}";
@@ -67,7 +81,7 @@ public sealed class ReportingExportController : ControllerBase
         ?? User.FindFirstValue("Id")
         ?? User.FindFirstValue("id");
 
-    private static void TrySetContextParameter(
+    private static void SetContextParameter(
         IDictionary<string, string?> parameters,
         string parameterName,
         string? contextValue)
@@ -77,15 +91,15 @@ public sealed class ReportingExportController : ControllerBase
             return;
         }
 
-        if (parameters.TryGetValue(parameterName, out var currentValue) &&
-            int.TryParse(currentValue, out var currentNumber) &&
-            currentNumber > 0)
-        {
-            return;
-        }
-
         parameters[parameterName] = contextValue;
     }
+
+    private static string? GetReportPolicy(string reportName) => reportName switch
+    {
+        ReportKeys.Poliza => "Reportes_Contabilidad|Polizas|CanExportToExcel",
+        ReportKeys.PaaasHelloWorld => "PBR|PBR|CanExportToExcel",
+        _ => null
+    };
 
     private static string BuildQuery(IReadOnlyDictionary<string, string?> values) =>
         string.Join("&",

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EG.ApiCoreBS.Controllers.PBR
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "PBR|PBR|view")]
     public abstract class PbrCrudController<TResponse> : ControllerBase
         where TResponse : class
     {
@@ -36,6 +36,7 @@ namespace EG.ApiCoreBS.Controllers.PBR
         }
 
         [HttpPost]
+        [Authorize(Policy = "PBR|PBR|new")]
         public async Task<ActionResult<PagedResult<TResponse>>> Create([FromBody] TResponse response)
         {
             var result = await _service.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -43,6 +44,7 @@ namespace EG.ApiCoreBS.Controllers.PBR
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Policy = "PBR|PBR|update")]
         public async Task<ActionResult<PagedResult<TResponse>>> Update(int id, [FromBody] TResponse response)
         {
             var result = await _service.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -55,6 +57,7 @@ namespace EG.ApiCoreBS.Controllers.PBR
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Policy = "PBR|PBR|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _service.DeleteAsync(id);

@@ -108,7 +108,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
         [HttpPost("ai-import/confirm")]
         public async Task<ActionResult<PagedResult<EgresoProyectadoAiImportPreviewResponse>>> ConfirmAiImport([FromBody] EgresoProyectadoAiImportConfirmRequest request)
         {
-            request.Header.FkidEmpresaSis = _userContext.TryGetCurrentEmpresaId() ?? request.Header.FkidEmpresaSis;
+            request.Header.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var result = await _appService.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }

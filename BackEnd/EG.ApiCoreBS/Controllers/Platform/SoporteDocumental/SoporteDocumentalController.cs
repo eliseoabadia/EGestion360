@@ -21,7 +21,7 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
         [HttpPost("entidad")]
         public async Task<ActionResult<PagedResult<DocumentoResponse>>> ObtenerPorEntidad([FromBody] DocumentoEntidadRequest request)
         {
-            request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
+            request.FkidEmpresaSis = userContext.GetCurrentEmpresaId();
             var result = await service.ObtenerPorEntidadAsync(request);
             await MarcarDocumentosProtegidosAsync(result);
             return Ok(result);
@@ -30,7 +30,7 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
         [HttpPost("resumen")]
         public async Task<ActionResult<PagedResult<DocumentoResumenResponse>>> ObtenerResumen([FromBody] DocumentoEntidadRequest request)
         {
-            request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
+            request.FkidEmpresaSis = userContext.GetCurrentEmpresaId();
             return Ok(await service.ObtenerResumenAsync(request));
         }
 
@@ -69,7 +69,7 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
                 Controlador = request.Controlador,
                 Servicio = request.Servicio,
                 EntidadId = request.EntidadId,
-                FkidEmpresaSis = request.FkidEmpresaSis ?? userContext.TryGetCurrentEmpresaId(),
+                FkidEmpresaSis = userContext.GetCurrentEmpresaId(),
                 Titulo = request.Titulo,
                 Descripcion = request.Descripcion,
                 NombreOriginal = request.File.FileName,
@@ -84,7 +84,7 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
         [HttpGet("{id:long}/download")]
         public async Task<IActionResult> Descargar(long id)
         {
-            var document = await service.ObtenerContenidoAsync(id);
+            var document = await service.ObtenerContenidoAsync(id, userContext.GetCurrentEmpresaId());
             if (document == null)
                 return NotFound();
 
@@ -108,20 +108,20 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
                 });
             }
 
-            return Ok(await service.EliminarAsync(id, userContext.GetCurrentUserId()));
+            return Ok(await service.EliminarAsync(id, userContext.GetCurrentUserId(), userContext.GetCurrentEmpresaId()));
         }
 
         [HttpGet("{id:long}/anotaciones")]
         public async Task<ActionResult<PagedResult<DocumentoAnotacionResponse>>> ObtenerAnotaciones(long id, [FromQuery] bool incluirInactivos = false)
-            => Ok(await service.ObtenerAnotacionesAsync(id, incluirInactivos));
+            => Ok(await service.ObtenerAnotacionesAsync(id, userContext.GetCurrentEmpresaId(), incluirInactivos));
 
         [HttpPost("anotaciones")]
         public async Task<ActionResult<PagedResult<DocumentoAnotacionResponse>>> CrearAnotacion([FromBody] DocumentoAnotacionCrearRequest request)
-            => Ok(await service.CrearAnotacionAsync(request, userContext.GetCurrentUserId()));
+            => Ok(await service.CrearAnotacionAsync(request, userContext.GetCurrentUserId(), userContext.GetCurrentEmpresaId()));
 
         [HttpDelete("anotaciones/{id:long}")]
         public async Task<ActionResult<PagedResult<bool>>> EliminarAnotacion(long id)
-            => Ok(await service.EliminarAnotacionAsync(id, userContext.GetCurrentUserId()));
+            => Ok(await service.EliminarAnotacionAsync(id, userContext.GetCurrentUserId(), userContext.GetCurrentEmpresaId()));
 
         private async Task MarcarDocumentosProtegidosAsync(PagedResult<DocumentoResponse> result)
         {

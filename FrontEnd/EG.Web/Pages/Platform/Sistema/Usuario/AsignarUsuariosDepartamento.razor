@@ -72,7 +72,8 @@
             </ChildContent>
             <ItemRenderer>
                 <MudPaper Class="pa-2 mb-2 item-card" Elevation="1" Style="cursor: grab;">
-                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudAvatar Size="Size.Small" Color="Color.Primary">
                             @ObtenerIniciales(context.Nombre)
                         </MudAvatar>
@@ -87,6 +88,14 @@
                                 </MudText>
                             }
                         </MudStack>
+                        </MudStack>
+                        <MudTooltip Text="@(context.Zona == "asignadas" ? "Quitar sucursal" : "Asignar sucursal")">
+                            <MudIconButton Icon="@(context.Zona == "asignadas" ? Icons.Material.Filled.RemoveCircleOutline : Icons.Material.Filled.AddCircleOutline)"
+                                           Color="@(context.Zona == "asignadas" ? Color.Error : Color.Primary)"
+                                           Size="Size.Small"
+                                           Disabled="@_processing"
+                                           OnClick="@(() => CambiarAsignacionAsync(context))" />
+                        </MudTooltip>
                     </MudStack>
                 </MudPaper>
             </ItemRenderer>
@@ -180,6 +189,19 @@
         var item = dropInfo.Item;
         var nuevaZona = dropInfo.DropzoneIdentifier;
 
+        if (_processing || item.Zona == nuevaZona) return;
+
+        await GuardarAsignacionAsync(item, nuevaZona);
+    }
+
+    private Task CambiarAsignacionAsync(SucursalItem item)
+    {
+        var nuevaZona = item.Zona == "asignadas" ? "no-asignadas" : "asignadas";
+        return GuardarAsignacionAsync(item, nuevaZona);
+    }
+
+    private async Task GuardarAsignacionAsync(SucursalItem item, string nuevaZona)
+    {
         if (_processing || item.Zona == nuevaZona) return;
 
         try

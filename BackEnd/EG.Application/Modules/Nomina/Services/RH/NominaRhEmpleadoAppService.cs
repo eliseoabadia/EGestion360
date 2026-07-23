@@ -116,7 +116,7 @@ namespace EG.Application.Services.Nomina
                 var filtro = request.Filtro ?? request.SearchString ?? string.Empty;
                 var sortLabel = string.IsNullOrWhiteSpace(request.SortLabel) ? "NombreCompleto" : request.SortLabel;
                 var sortDirection = string.IsNullOrWhiteSpace(request.SortDirection) ? "Ascending" : request.SortDirection;
-                var requestEmpresaId = ReadIntFilter(request, "EmpresaId") ?? empresaId;
+                var requestEmpresaId = empresaId;
 
                 await using var command = CreateCommand("[NOM].[spRhEmpleado_List]");
                 command.Parameters.Add(Param("@EmpresaId", SqlDbType.Int, requestEmpresaId));
@@ -161,7 +161,7 @@ namespace EG.Application.Services.Nomina
 
             try
             {
-                var effectiveEmpresaId = response.EmpresaId ?? empresaId;
+                var effectiveEmpresaId = empresaId ?? response.EmpresaId;
                 await using var command = CreateCommand("[NOM].[spRhEmpleado_Save]");
                 var idParameter = new SqlParameter("@Id", SqlDbType.Int)
                 {
@@ -543,7 +543,7 @@ namespace EG.Application.Services.Nomina
                 var filtro = request.Filtro ?? request.SearchString ?? string.Empty;
                 var sortLabel = string.IsNullOrWhiteSpace(request.SortLabel) ? "Fecha" : request.SortLabel;
                 var sortDirection = string.IsNullOrWhiteSpace(request.SortDirection) ? "Descending" : request.SortDirection;
-                var requestEmpresaId = NominaRhEmpleadoAppService.ReadIntFilter(request, "EmpresaId") ?? empresaId;
+                var requestEmpresaId = empresaId;
                 var personaId = NominaRhEmpleadoAppService.ReadIntFilter(request, "PersonaId");
                 var seccion = ReadTextFilter(request, "Seccion");
 

@@ -27,14 +27,11 @@ namespace EG.ApiCoreBS.Controllers.General
         public async Task<ActionResult<PerfilUsuarioResponse>> GetProfileImage(int id)
         {
             var result = await _appService.GetProfileImageAsync(id);
-            return Ok(result ?? new PerfilUsuarioResponse
-            {
-                FkidUsuarioSis = id,
-                Fotografia = Array.Empty<byte>()
-            });
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpPost("CreateProfile")]
+        [Authorize(Policy = "Sistema|Usuario|new")]
         public async Task<IActionResult> CreateProfile([FromBody] UsuarioDto user)
         {
             var result = await _appService.CreateProfileAsync(user);
@@ -42,6 +39,7 @@ namespace EG.ApiCoreBS.Controllers.General
         }
 
         [HttpPost("SetProfile/{id}")]
+        [Authorize(Policy = "Sistema|Usuario|update")]
         public async Task<IActionResult> SetProfile(int id, [FromBody] UsuarioDto user)
         {
             var result = await _appService.SetProfileAsync(id, user);
@@ -62,6 +60,7 @@ namespace EG.ApiCoreBS.Controllers.General
         }
 
         [HttpPost("DeleteProfile/{id}")]
+        [Authorize(Policy = "Sistema|Usuario|delete")]
         public async Task<IActionResult> DeleteProfile(int id)
         {
             var result = await _appService.DeleteProfileAsync(id);
@@ -71,27 +70,33 @@ namespace EG.ApiCoreBS.Controllers.General
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuarioResponse>> GetProfileUser(int id)
         {
-            return Ok(await _appService.GetProfileUserAsync(id));
+            var result = await _appService.GetProfileUserAsync(id);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpGet("")]
+        [Authorize(Policy = "Sistema|Usuario|view")]
         public async Task<ActionResult<IList<UsuarioResponse>>> GetAllUser()
         {
             return Ok(await _appService.GetAllUsersAsync());
         }
 
         [HttpPost("GetAllUserPaginado")]
+        [Authorize(Policy = "Sistema|Usuario|view")]
         public async Task<ActionResult<IList<UsuarioResponse>>> GetAllUserPaginado([FromBody] PagedRequest _params)
         {
             return Ok(await _appService.GetAllUsersPaginadoAsync(_params));
         }
 
         [HttpPost]
+        [Authorize(Policy = "Sistema|MiPerfil|update")]
         [RequestSizeLimit(2 * 1024 * 1024)]
         public async Task<IActionResult> UploadImage(PerfilUsuarioResponse fotografia)
         {
             if (fotografia == null)
                 return BadRequest("No se recibió archivo.");
+            if (fotografia.FkidUsuarioSis != _userContext.GetCurrentUserId())
+                return Forbid();
             await _appService.UploadImageAsync(fotografia);
             return Ok(new { Message = "Imagen guardada correctamente" });
         }

@@ -114,7 +114,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         [HttpPost("ai-import/confirm")]
         public async Task<ActionResult<PagedResult<PolizaAiImportPreviewResponse>>> ConfirmAiImport([FromBody] PolizaAiImportConfirmRequest request)
         {
-            request.Header.FkidEmpresaSis = _userContext.TryGetCurrentEmpresaId() ?? request.Header.FkidEmpresaSis;
+            request.Header.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var result = await _service.ConfirmAiImportAsync(request, _userContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }

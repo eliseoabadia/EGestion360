@@ -16,9 +16,11 @@ using DevExpress.XtraReports.Web.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
 using System.IO.Compression;
+using System.Threading.RateLimiting;
 using System.Text;
 
 var logger = LoggerFactory.Create(config =>
@@ -76,7 +78,7 @@ try
     });
     builder.Services.AddScoped<IReportProvider, GenericReportProvider>();
     builder.Services.AddSingleton<ReportConnectionConfigurator>();
-    builder.Services.AddSingleton<ReportContextParameterConfigurator>();
+    builder.Services.AddScoped<ReportContextParameterConfigurator>();
     builder.Services.AddSingleton<StoredProcedureReportRegistry>();
     builder.Services.AddSingleton<StoredProcedureReportFactory>();
     builder.Services.AddScoped<ReportLogoConfigurator>();
@@ -123,7 +125,7 @@ try
         x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     }).AddJwtBearer(x =>
     {
-        x.RequireHttpsMetadata = false;
+        x.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
         x.SaveToken = true;
         x.TokenValidationParameters = new TokenValidationParameters
         {
@@ -141,6 +143,40 @@ try
     });
 
     builder.Services.AddMemoryCache();
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.AddPolicy("login", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                }));
+        options.OnRejected = async (context, cancellationToken) =>
+        {
+            var rateLimitLogger = context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("LoginRateLimit");
+            rateLimitLogger.LogWarning(
+                "Solicitud limitada. TraceId={TraceId}; Path={Path}; ClientIp={ClientIp}",
+                context.HttpContext.TraceIdentifier,
+                context.HttpContext.Request.Path,
+                context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
+            context.HttpContext.Response.ContentType = "application/problem+json";
+            await context.HttpContext.Response.WriteAsJsonAsync(new
+            {
+                success = false,
+                code = "RATE_LIMITED",
+                message = "Demasiados intentos. Intente nuevamente más tarde.",
+                traceId = context.HttpContext.TraceIdentifier
+            }, cancellationToken);
+        };
+    });
     builder.Services.AddResponseCompression(options =>
     {
         options.EnableForHttps = true;
@@ -156,7 +192,14 @@ try
         options.Level = CompressionLevel.Fastest);
     builder.Services.Configure<GzipCompressionProviderOptions>(options =>
         options.Level = CompressionLevel.Fastest);
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        // Denegación por defecto: todo endpoint requiere identidad autenticada,
+        // salvo que declare explícitamente [AllowAnonymous].
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    });
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
     builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
     builder.Services.AddOpenApi();
@@ -169,11 +212,34 @@ try
         app.UseSwaggerUI();
     }
 
-    //app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHsts();
+        app.UseHttpsRedirection();
+    }
+
+    app.Use(async (context, next) =>
+    {
+        context.Response.OnStarting(() =>
+        {
+            var headers = context.Response.Headers;
+            headers["X-Content-Type-Options"] = "nosniff";
+            headers["X-Frame-Options"] = "DENY";
+            headers["Referrer-Policy"] = "no-referrer";
+            headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+            headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+            headers["Cache-Control"] = "no-store";
+            return Task.CompletedTask;
+        });
+
+        await next(context);
+    });
+
     app.UseResponseCompression();
     app.UseCors("AllowFrontend");
     app.UseMiddleware<ApiExceptionMiddleware>();
     app.UseMiddleware<RequestPerformanceMiddleware>();
+    app.UseRateLimiter();
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();

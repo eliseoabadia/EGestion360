@@ -8,6 +8,8 @@ using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace EG.Business.Services
 {
@@ -57,11 +59,44 @@ namespace EG.Business.Services
 
                 var usuarioSP = result.First();
 
+                var identityUser = await _context.AspNetUsers
+                    .SingleOrDefaultAsync(x => x.PkIdUsuario == usuarioSP.PkIdUsuario);
+                var utcNow = DateTime.UtcNow;
+
+                if (identityUser?.LockoutEndDateUtc > utcNow)
+                {
+                    _logger.LogWarning(
+                        "Intento de acceso a cuenta bloqueada. UsuarioId={UsuarioId}; BloqueadaHasta={BloqueadaHasta}",
+                        usuarioSP.PkIdUsuario,
+                        identityUser.LockoutEndDateUtc);
+                    return null;
+                }
+
                 // 🔧 VALIDAR CONTRASEÑA ENCRIPTADA
                 string encryptedPassword = CriptoSecurity.Encrypt(loginRequest.Password);
-                
-                if (usuarioSP.PasswordHash != encryptedPassword)
-                    return null; // Contraseña incorrecta
+
+                if (!FixedTimeEquals(usuarioSP.PasswordHash, encryptedPassword))
+                {
+                    if (identityUser != null)
+                    {
+                        identityUser.LockoutEnabled = true;
+                        identityUser.AccessFailedCount++;
+                        identityUser.LockoutEndDateUtc = GetProgressiveLockoutEnd(
+                            identityUser.AccessFailedCount,
+                            utcNow);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    return null;
+                }
+
+                if (identityUser != null &&
+                    (identityUser.AccessFailedCount != 0 || identityUser.LockoutEndDateUtc.HasValue))
+                {
+                    identityUser.AccessFailedCount = 0;
+                    identityUser.LockoutEndDateUtc = null;
+                    await _context.SaveChangesAsync();
+                }
 
                 var usuario = await _repository.GetByIdAsync(usuarioSP.PkIdUsuario);
                 usuarioSP.FkidEmpresaSis = usuario?.FkidEmpresaSis;
@@ -74,6 +109,25 @@ namespace EG.Business.Services
 
                 throw;
             }
+        }
+
+        private static DateTime? GetProgressiveLockoutEnd(int failedCount, DateTime utcNow) => failedCount switch
+        {
+            >= 10 => utcNow.AddMinutes(30),
+            >= 8 => utcNow.AddMinutes(10),
+            >= 5 => utcNow.AddMinutes(2),
+            _ => null
+        };
+
+        private static bool FixedTimeEquals(string? left, string? right)
+        {
+            if (left == null || right == null)
+                return false;
+
+            var leftBytes = Encoding.UTF8.GetBytes(left);
+            var rightBytes = Encoding.UTF8.GetBytes(right);
+            return leftBytes.Length == rightBytes.Length &&
+                   CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
         }
 
         /// <summary>

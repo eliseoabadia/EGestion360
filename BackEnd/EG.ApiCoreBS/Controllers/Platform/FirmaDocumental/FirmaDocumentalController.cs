@@ -54,7 +54,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
                 Password = request.Password ?? string.Empty,
                 Contenido = memory.ToArray(),
                 TamanoBytes = request.File.Length,
-                FkidEmpresaSis = request.FkidEmpresaSis ?? userContext.TryGetCurrentEmpresaId()
+                FkidEmpresaSis = userContext.GetCurrentEmpresaId()
             };
 
             return Ok(await service.RegistrarCertificadoAsync(dto, userContext.GetCurrentUserId()));
@@ -62,19 +62,19 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
 
         [HttpGet("certificados")]
         public async Task<ActionResult<PagedResult<FirmaCertificadoUsuarioResponse>>> ObtenerCertificados([FromQuery] int? empresaId = null)
-            => Ok(await service.ObtenerCertificadosAsync(userContext.GetCurrentUserId(), empresaId ?? userContext.TryGetCurrentEmpresaId()));
+            => Ok(await service.ObtenerCertificadosAsync(userContext.GetCurrentUserId(), userContext.GetCurrentEmpresaId()));
 
         [HttpPost("firmar")]
         public async Task<ActionResult<PagedResult<FirmaDocumentoResponse>>> FirmarDocumento([FromBody] FirmaDocumentoCrearRequest request)
         {
-            request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
+            request.FkidEmpresaSis = userContext.GetCurrentEmpresaId();
             return Ok(await service.FirmarDocumentoAsync(request, userContext.GetCurrentUserId()));
         }
 
         [HttpPost("firmas")]
         public async Task<ActionResult<PagedResult<FirmaDocumentoResponse>>> ObtenerFirmas([FromBody] FirmaDocumentoEntidadRequest request)
         {
-            request.FkidEmpresaSis ??= userContext.TryGetCurrentEmpresaId();
+            request.FkidEmpresaSis = userContext.GetCurrentEmpresaId();
             return Ok(await service.ObtenerFirmasAsync(request, userContext.GetCurrentUserId()));
         }
 

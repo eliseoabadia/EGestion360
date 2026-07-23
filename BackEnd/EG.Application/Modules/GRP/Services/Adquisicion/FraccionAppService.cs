@@ -148,6 +148,14 @@ namespace EG.Application.Services.Adquisicion
                 dto.UsuarioModificacion = usuarioActual;
                 dto.FechaModificacion = DateTime.UtcNow;
 
+                // Algunos registros historicos no exponen la clave en la vista. Al editar
+                // otro campo se debe conservar la clave almacenada en vez de intentar
+                // guardar una cadena vacia.
+                dto.Clave = string.IsNullOrWhiteSpace(dto.Clave)
+                    ? entity.Clave
+                    : dto.Clave.Trim();
+                dto.Descripcion = (dto.Descripcion ?? string.Empty).Trim();
+
                 var duplicate = await _repository.GetAllWithIncludesAsync(e => e.Clave.ToLower() == dto.Clave.ToLower() && e.PkidFraccion != id && e.Activo);
                 if (duplicate.Any())
                 {

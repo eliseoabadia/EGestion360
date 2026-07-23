@@ -12,7 +12,7 @@ namespace EG.ApiCoreBS.Controllers.General;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "Sistema|Configurar_Accesos|view")]
 public sealed class AccessConfigurationController(
     IAccessConfigurationAppService appService,
     IUserContextService userContext) : ControllerBase
@@ -89,6 +89,7 @@ public sealed class AccessConfigurationController(
     }
 
     [HttpPost("roles/save")]
+    [Authorize(Policy = "Sistema|Configurar_Accesos|update")]
     public async Task<ActionResult<PagedResult<AccessRoleDetailResponse>>> SaveRole([FromBody] SaveAccessRoleRequest request)
     {
         try
@@ -112,6 +113,7 @@ public sealed class AccessConfigurationController(
     }
 
     [HttpPost("users/save-roles")]
+    [Authorize(Policy = "Sistema|Configurar_Accesos|update")]
     public async Task<ActionResult<PagedResult<AccessUserRoleDetailResponse>>> SaveUserRoles([FromBody] SaveAccessUserRolesRequest request)
     {
         try
@@ -135,6 +137,7 @@ public sealed class AccessConfigurationController(
     }
 
     [HttpPost("synchronize-menu-roles")]
+    [Authorize(Policy = "Sistema|Configurar_Accesos|update")]
     public async Task<ActionResult<PagedResult<int>>> SynchronizeMenuRoles()
     {
         try

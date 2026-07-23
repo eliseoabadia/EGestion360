@@ -5,10 +5,12 @@ using DevExpress.AspNetCore.Reporting.ReportDesigner.Native.Services;
 using DevExpress.AspNetCore.Reporting.WebDocumentViewer;
 using DevExpress.AspNetCore.Reporting.WebDocumentViewer.Native.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EG.ApiCoreBS.Controllers.Reporting;
 
 [ApiExplorerSettings(IgnoreApi = true)]
+[Authorize]
 public class CustomWebDocumentViewerController : WebDocumentViewerController
 {
     public CustomWebDocumentViewerController(IWebDocumentViewerMvcControllerService controllerService)
@@ -18,6 +20,7 @@ public class CustomWebDocumentViewerController : WebDocumentViewerController
 }
 
 [ApiExplorerSettings(IgnoreApi = true)]
+[Authorize(Policy = "Sistema|Configurar_Accesos|update")]
 public class CustomReportDesignerController : ReportDesignerController
 {
     public CustomReportDesignerController(IReportDesignerMvcControllerService controllerService)
@@ -27,6 +30,7 @@ public class CustomReportDesignerController : ReportDesignerController
 }
 
 [ApiExplorerSettings(IgnoreApi = true)]
+[Authorize(Policy = "Sistema|Configurar_Accesos|update")]
 public class CustomQueryBuilderController : QueryBuilderController
 {
     public CustomQueryBuilderController(IQueryBuilderMvcControllerService controllerService)

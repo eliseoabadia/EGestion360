@@ -78,13 +78,20 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<CuentaContableResponse?> UpdateAsync(int id, CuentaContableResponse response, int usuarioId)
         {
+            var existing = await _service.GetByIdAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"Cuenta contable con ID {id} no encontrada");
+
             var dto = response.Adapt<CuentaContableDto>();
             dto.PkidCuentaContable = id;
             dto.UsuarioModificacion = usuarioId;
             dto.FechaModificacion = DateTime.Now;
             await NormalizeAsync(dto);
 
-            if (!await _service.CanUpdateAsync(id, dto))
+            // Bases heredadas pueden contener cuentas duplicadas. No se debe bloquear la
+            // edicion de la descripcion cuando el valor de Cuenta permanece sin cambios.
+            var cuentaCambio = !string.Equals(existing.Cuenta?.Trim(), dto.Cuenta, StringComparison.OrdinalIgnoreCase);
+            if (cuentaCambio && !await _service.CanUpdateAsync(id, dto))
                 throw new InvalidOperationException("Ya existe otra cuenta contable con esa cuenta");
 
             await _service.UpdateAsync(id, dto);
