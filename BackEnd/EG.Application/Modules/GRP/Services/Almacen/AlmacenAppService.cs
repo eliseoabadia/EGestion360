@@ -392,9 +392,20 @@ namespace EG.Application.Services.Almacen
                 return Failure<AlmacenResponse>("Debe seleccionar un bien o servicio.");
             }
 
-            if (!await _context.TipoBiens.AnyAsync(x => x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo))
+            var tipoBien = await _context.TipoBiens
+                .AsNoTracking()
+                .Where(x => x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo)
+                .Select(x => new { x.FkidUnidadesAlma })
+                .FirstOrDefaultAsync();
+
+            if (tipoBien == null)
             {
                 return Failure<AlmacenResponse>("El bien o servicio seleccionado no existe o esta inactivo.");
+            }
+
+            if (response.FkidUnidadesAlma is not > 0)
+            {
+                response.FkidUnidadesAlma = tipoBien.FkidUnidadesAlma;
             }
 
             if (response.Cantidad <= 0)

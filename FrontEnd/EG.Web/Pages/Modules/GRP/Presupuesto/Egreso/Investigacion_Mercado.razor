@@ -244,13 +244,23 @@
                         Size="Size.Small"
                         OnClick="@(() => PrintDetallePending(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Enviar solicitud por mail">
+                        <MudTooltip Text="@SendSolicitudTooltip(cell.Item)">
                         <MudIconButton Icon="@Icons.Material.Filled.Email"
                         Color="Color.Primary"
                         Size="Size.Small"
-                        Disabled="@(_emailingDetalleId == cell.Item.PkidEstudioMercadoDetalle || cell.Item.SolicitudesCotizacion <= 0)"
+                        Disabled="@(_emailingDetalleId == cell.Item.PkidEstudioMercadoDetalle || cell.Item.SolicitudesCotizacion <= 0 || !cell.Item.PuedeEnviarCotizacion)"
                         OnClick="@(() => SendSolicitudCorreo(cell.Item))" />
                         </MudTooltip>
+                        @if (cell.Item.PuedeRechazarCotizacion)
+                        {
+                        <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
+                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                        Color="Color.Warning"
+                        Size="Size.Small"
+                        Disabled="@(_emailingDetalleId == cell.Item.PkidEstudioMercadoDetalle)"
+                        OnClick="@(() => RejectSolicitudCorreo(cell.Item))" />
+                        </MudTooltip>
+                        }
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
@@ -301,6 +311,16 @@
                         <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Outlined">
                         @cell.Item.SolicitudesCotizacion.ToString("N0")
                         </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Envío" Identifier="EstadoEnvioCotizacion" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@WorkflowStatusColor(cell.Item.EstadoEnvioCotizacion)" Size="Size.Small">
+                        @WorkflowStatusText(cell.Item.EstadoEnvioCotizacion)
+                        </MudChip>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @cell.Item.SolicitudesEnviadas.ToString("N0") / @cell.Item.SolicitudesCotizacion.ToString("N0")
+                        </MudText>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Cotizaciones" Identifier="__column_7" Sortable="false" Filterable="false">
@@ -852,6 +872,7 @@
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
                 Snackbar.Add(result.Message ?? "Solicitudes enviadas por correo.", Severity.Success);
+                await ReloadDetalles();
                 return;
             }
 
@@ -860,6 +881,49 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al enviar correo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+        finally
+        {
+            _emailingDetalleId = null;
+        }
+    }
+
+    private async Task RejectSolicitudCorreo(EstudioMercadoDetalleResponse detalle)
+    {
+        if (SelectedEstudio == null)
+        {
+            return;
+        }
+
+        var confirm = await JS.InvokeAsync<bool>(
+            "confirm",
+            "¿Rechazar las solicitudes enviadas de este bien? Se habilitará un nuevo envío.");
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            _emailingDetalleId = detalle.PkidEstudioMercadoDetalle;
+            var url =
+                $"api/EstudioMercadoDetalle/cotizaciones/solicitudes/{SelectedEstudio.PkidEstudioMercado}/rechazar-envio?estudioMercadoDetalleId={detalle.PkidEstudioMercadoDetalle}";
+            var response = await Http.PostAsJsonAsync(
+                url,
+                "Rechazado desde investigación de mercado");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<EstudioMercadoCotizacionSolicitudResponse>>();
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Solicitudes rechazadas.", Severity.Success);
+                await ReloadDetalles();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudieron rechazar las solicitudes.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al rechazar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -1018,6 +1082,29 @@
             ? Color.Success
             : Color.Info;
     }
+
+    private static string SendSolicitudTooltip(EstudioMercadoDetalleResponse item) =>
+        item.PuedeEnviarCotizacion
+            ? "Enviar solicitudes pendientes o rechazadas"
+            : $"Envío bloqueado: estado {WorkflowStatusText(item.EstadoEnvioCotizacion)}";
+
+    private static string WorkflowStatusText(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => "Procesando",
+        "ENVIADO" => "Enviado",
+        "RECHAZADO" => "Rechazado",
+        "PARCIAL" => "Parcial",
+        _ => "Pendiente"
+    };
+
+    private static Color WorkflowStatusColor(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => Color.Info,
+        "ENVIADO" => Color.Success,
+        "RECHAZADO" => Color.Warning,
+        "PARCIAL" => Color.Info,
+        _ => Color.Default
+    };
 
     private static string StatusText(int estatus) => estatus switch
     {

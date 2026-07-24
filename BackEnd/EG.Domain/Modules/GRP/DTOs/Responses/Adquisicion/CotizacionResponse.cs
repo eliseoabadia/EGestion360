@@ -23,6 +23,11 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int? FkidContenedorMultiCotOrco { get; set; }
         public int TotalDetalles { get; set; }
         public decimal TotalCotizado { get; set; }
+        public string EstadoEnvio { get; set; } = "PENDIENTE";
+        public DateTime? FechaEnvio { get; set; }
+        public DateTime? FechaRechazoEnvio { get; set; }
+        public bool PuedeEnviar { get; set; } = true;
+        public bool PuedeRechazar { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }

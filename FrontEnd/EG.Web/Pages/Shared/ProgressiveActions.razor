@@ -1,0 +1,137 @@
+@using EG.Web.Models
+@using MudBlazor
+
+<div class="@RootClass" @onclick:stopPropagation="true">
+    @if (PrimaryAction is { } primary)
+    {
+        <MudTooltip Text="@GetActionTooltip(primary)">
+            <span class="eg-progressive-primary-shell">
+                @if (Compact)
+                {
+                    <MudIconButton Icon="@primary.Icon"
+                                   Color="@primary.Color"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   Disabled="@IsDisabled(primary)"
+                                   OnClick="@(() => ExecuteAsync(primary))"
+                                   aria-label="@primary.Label"
+                                   Class="eg-progressive-primary-icon" />
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="@primary.Color"
+                               Size="Size.Small"
+                               StartIcon="@primary.Icon"
+                               Disabled="@IsDisabled(primary)"
+                               OnClick="@(() => ExecuteAsync(primary))"
+                               Class="eg-progressive-primary-button">
+                        @primary.Label
+                    </MudButton>
+                }
+            </span>
+        </MudTooltip>
+    }
+
+    @if (SupplementalActions is not null)
+    {
+        <div class="eg-progressive-supplemental">
+            @SupplementalActions
+        </div>
+    }
+
+    @if (SecondaryActions.Count > 0)
+    {
+        <MudTooltip Text="@MenuLabel">
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                     Color="Color.Default"
+                     Size="Size.Small"
+                     Dense="true"
+                     Disabled="@_executing"
+                     AriaLabel="@MenuLabel"
+                     AnchorOrigin="Origin.BottomRight"
+                     TransformOrigin="Origin.TopRight"
+                     Class="eg-progressive-menu"
+                     PopoverClass="eg-progressive-popover">
+                @foreach (var action in SecondaryActions)
+                {
+                    <MudMenuItem Icon="@action.Icon"
+                                 IconColor="@(action.IsDestructive ? Color.Error : action.Color)"
+                                 Disabled="@IsDisabled(action)"
+                                 OnClick="@(() => ExecuteAsync(action))"
+                                 Class="@(action.IsDestructive ? "eg-progressive-menu-item is-destructive" : "eg-progressive-menu-item")">
+                        <div class="eg-progressive-menu-copy">
+                            <span>@action.Label</span>
+                            @if (!action.Enabled && !string.IsNullOrWhiteSpace(action.DisabledReason))
+                            {
+                                <small>@action.DisabledReason</small>
+                            }
+                        </div>
+                    </MudMenuItem>
+                }
+            </MudMenu>
+        </MudTooltip>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyCollection<ProgressiveAction> Actions { get; set; } = Array.Empty<ProgressiveAction>();
+    [Parameter] public RenderFragment? SupplementalActions { get; set; }
+    [Parameter] public bool Compact { get; set; } = true;
+    [Parameter] public string MenuLabel { get; set; } = "Mas acciones";
+    [Parameter] public string? Class { get; set; }
+
+    private bool _executing;
+
+    private IReadOnlyList<ProgressiveAction> VisibleActions =>
+        Actions
+            .Where(action => action.Visible)
+            .OrderBy(action => action.Order)
+            .ToList();
+
+    private ProgressiveAction? PrimaryAction =>
+        VisibleActions.FirstOrDefault(action => action.IsPrimary)
+        ?? VisibleActions.FirstOrDefault(action => action.Enabled)
+        ?? VisibleActions.FirstOrDefault();
+
+    private IReadOnlyList<ProgressiveAction> SecondaryActions
+    {
+        get
+        {
+            var primary = PrimaryAction;
+            return VisibleActions
+                .Where(action => primary == null || !string.Equals(action.Id, primary.Id, StringComparison.Ordinal))
+                .ToList();
+        }
+    }
+
+    private string RootClass =>
+        $"eg-progressive-actions{(Compact ? " is-compact" : " is-expanded")}{(string.IsNullOrWhiteSpace(Class) ? string.Empty : $" {Class}")}";
+
+    private bool IsDisabled(ProgressiveAction action) =>
+        _executing || !action.Enabled || action.ExecuteAsync is null;
+
+    private static string GetActionTooltip(ProgressiveAction action) =>
+        action.Enabled || string.IsNullOrWhiteSpace(action.DisabledReason)
+            ? action.Label
+            : $"{action.Label}: {action.DisabledReason}";
+
+    private async Task ExecuteAsync(ProgressiveAction action)
+    {
+        if (IsDisabled(action))
+        {
+            return;
+        }
+
+        _executing = true;
+
+        try
+        {
+            await action.ExecuteAsync!();
+        }
+        finally
+        {
+            _executing = false;
+        }
+    }
+}

@@ -8,6 +8,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +21,14 @@ namespace EG.Application.Services.Adquisicion
     {
         private readonly EGestionContext _context;
         private readonly IEmailService _emailService;
+        private readonly IEnvioWorkflowService _envioWorkflow;
 
         public EstudioMercadoDetalleService(
             GenericService<EstudioMercadoDetalle, EstudioMercadoDetalleDto, EstudioMercadoDetalleResponse> service,
             GenericService<VwEstudioMercadoDetalle, EstudioMercadoDetalleDto, EstudioMercadoDetalleResponse> serviceView,
             EGestionContext context,
-            IEmailService emailService)
+            IEmailService emailService,
+            IEnvioWorkflowService envioWorkflow)
             : base(
                 service,
                 serviceView,
@@ -35,6 +38,29 @@ namespace EG.Application.Services.Adquisicion
         {
             _context = context;
             _emailService = emailService;
+            _envioWorkflow = envioWorkflow;
+        }
+
+        public override async Task<PagedResult<EstudioMercadoDetalleResponse>> GetAllAsync()
+        {
+            var result = await base.GetAllAsync();
+            if (result.Success && result.Items.Any())
+            {
+                await PopulateCotizacionSummaryAsync(result.Items);
+            }
+
+            return result;
+        }
+
+        public override async Task<PagedResult<EstudioMercadoDetalleResponse>> GetByIdAsync(int id)
+        {
+            var result = await base.GetByIdAsync(id);
+            if (result.Success && result.Data != null)
+            {
+                await PopulateCotizacionSummaryAsync(new List<EstudioMercadoDetalleResponse> { result.Data });
+            }
+
+            return result;
         }
 
         public override async Task<PagedResult<EstudioMercadoDetalleResponse>> CreateAsync(EstudioMercadoDetalleResponse response, int usuarioActual)
@@ -673,7 +699,8 @@ namespace EG.Application.Services.Adquisicion
                     var emailSummary = await SendSolicitudCotizacionEmailsAsync(
                         estudio,
                         solicitudByProvider,
-                        detalleByPaaas);
+                        detalleByPaaas,
+                        usuarioActual);
 
                     result.Message = BuildEmailSummaryMessage(emailSummary, "Solicitudes de cotizacion generadas");
                 }
@@ -789,7 +816,10 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        public async Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> SendSolicitudesCotizacionEmailAsync(int estudioMercadoId, int? estudioMercadoDetalleId)
+        public async Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> SendSolicitudesCotizacionEmailAsync(
+            int estudioMercadoId,
+            int? estudioMercadoDetalleId,
+            int usuarioActual)
         {
             try
             {
@@ -853,7 +883,11 @@ namespace EG.Application.Services.Adquisicion
                     return CotizacionSolicitudValidationFailure("No hay solicitudes de cotizacion para el bien seleccionado.");
                 }
 
-                var emailSummary = await SendSolicitudCotizacionEmailsAsync(estudio, solicitudes, detalles);
+                var emailSummary = await SendSolicitudCotizacionEmailsAsync(
+                    estudio,
+                    solicitudes,
+                    detalles,
+                    usuarioActual);
                 var result = await GetSolicitudesCotizacionAsync(estudioMercadoId);
                 result.Message = BuildEmailSummaryMessage(emailSummary, "Envio de solicitudes procesado");
                 return result;
@@ -864,6 +898,59 @@ namespace EG.Application.Services.Adquisicion
                 {
                     Success = false,
                     Message = $"Error al enviar solicitudes de cotizacion: {ex.Message}",
+                    Code = "ERROR",
+                    TotalCount = 0
+                };
+            }
+        }
+
+        public async Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> RejectSolicitudesCotizacionEmailAsync(
+            int estudioMercadoId,
+            int? estudioMercadoDetalleId,
+            int usuarioActual,
+            string? motivo)
+        {
+            try
+            {
+                var linkedIds = await GetLinkedSolicitudIdsAsync(estudioMercadoId, estudioMercadoDetalleId);
+                if (linkedIds.Count == 0)
+                {
+                    return CotizacionSolicitudValidationFailure(
+                        "No hay solicitudes de cotizacion para rechazar.");
+                }
+
+                var states = await _envioWorkflow.GetManyAsync(
+                    EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                    linkedIds.Select(x => (long)x));
+                var sentIds = linkedIds
+                    .Where(x => states[x].Estado == EnvioWorkflowEstados.Enviado)
+                    .ToList();
+                if (sentIds.Count == 0)
+                {
+                    return CotizacionSolicitudValidationFailure(
+                        "Solo se pueden rechazar solicitudes que se encuentren ENVIADAS.");
+                }
+
+                foreach (var solicitudId in sentIds)
+                {
+                    await _envioWorkflow.RejectAsync(
+                        EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                        solicitudId,
+                        usuarioActual,
+                        motivo);
+                }
+
+                var result = await GetSolicitudesCotizacionAsync(estudioMercadoId);
+                result.Message =
+                    $"Se rechazaron {sentIds.Count:N0} solicitudes; el envío quedó habilitado nuevamente.";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<EstudioMercadoCotizacionSolicitudResponse>
+                {
+                    Success = false,
+                    Message = $"Error al rechazar solicitudes de cotizacion: {ex.Message}",
                     Code = "ERROR",
                     TotalCount = 0
                 };
@@ -1024,7 +1111,8 @@ namespace EG.Application.Services.Adquisicion
         private async Task<EmailSendSummary> SendSolicitudCotizacionEmailsAsync(
             EstudioMercado estudio,
             List<SolicitudCotizacion> solicitudes,
-            List<EstudioMercadoDetalle> detalles)
+            List<EstudioMercadoDetalle> detalles,
+            int usuarioActual)
         {
             var summary = new EmailSendSummary();
             if (!solicitudes.Any() || !detalles.Any())
@@ -1054,6 +1142,16 @@ namespace EG.Application.Services.Adquisicion
                 }
 
                 summary.Intentados++;
+                var claim = await _envioWorkflow.TryBeginAsync(
+                    EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                    solicitud.PkidSolicitudCotizacion,
+                    usuarioActual);
+                if (!claim.Claimed || !claim.OperationToken.HasValue)
+                {
+                    summary.Omitidos++;
+                    continue;
+                }
+
                 var email = new EmailMessageRequest
                 {
                     To = new List<string> { proveedor.Email },
@@ -1062,13 +1160,40 @@ namespace EG.Application.Services.Adquisicion
                     IsHtml = true
                 };
 
-                var result = await _emailService.SendAsync(email);
-                if (result.Success)
+                try
                 {
-                    summary.Enviados++;
+                    var result = await _emailService.SendAsync(email);
+                    if (result.Success)
+                    {
+                        await _envioWorkflow.CompleteAsync(
+                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                            solicitud.PkidSolicitudCotizacion,
+                            claim.OperationToken.Value);
+                        summary.Enviados++;
+                    }
+                    else
+                    {
+                        await _envioWorkflow.CancelAsync(
+                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                            solicitud.PkidSolicitudCotizacion,
+                            claim.OperationToken.Value);
+                        summary.Errores++;
+                    }
                 }
-                else
+                catch
                 {
+                    try
+                    {
+                        await _envioWorkflow.CancelAsync(
+                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                            solicitud.PkidSolicitudCotizacion,
+                            claim.OperationToken.Value);
+                    }
+                    catch
+                    {
+                        // Conserva el resultado de error del proveedor de correo.
+                    }
+
                     summary.Errores++;
                 }
             }
@@ -1080,17 +1205,24 @@ namespace EG.Application.Services.Adquisicion
         {
             if (summary.Enviados > 0 && summary.Errores == 0 && summary.SinEmail == 0)
             {
-                return $"{baseMessage}. Correos enviados: {summary.Enviados:N0}.";
+                return summary.Omitidos == 0
+                    ? $"{baseMessage}. Correos enviados: {summary.Enviados:N0}."
+                    : $"{baseMessage}. Correos enviados: {summary.Enviados:N0}; ya enviados y omitidos: {summary.Omitidos:N0}.";
             }
 
             if (summary.Enviados > 0)
             {
-                return $"{baseMessage}. Correos enviados: {summary.Enviados:N0}; sin email: {summary.SinEmail:N0}; con error: {summary.Errores:N0}.";
+                return $"{baseMessage}. Correos enviados: {summary.Enviados:N0}; ya enviados y omitidos: {summary.Omitidos:N0}; sin email: {summary.SinEmail:N0}; con error: {summary.Errores:N0}.";
             }
 
             if (summary.Errores > 0)
             {
                 return $"{baseMessage}, pero no se pudo enviar correo. Errores: {summary.Errores:N0}; sin email: {summary.SinEmail:N0}.";
+            }
+
+            if (summary.Omitidos > 0)
+            {
+                return $"{baseMessage}. No se reenviaron {summary.Omitidos:N0} solicitudes porque ya estaban enviadas o en proceso.";
             }
 
             return $"{baseMessage}. No se enviaron correos porque los proveedores no tienen email capturado.";
@@ -1263,6 +1395,14 @@ namespace EG.Application.Services.Adquisicion
                 })
                 .ToListAsync();
 
+            var solicitudIds = cotizaciones
+                .Select(x => x.FkidSolicitudCotizacionOrco)
+                .Distinct()
+                .ToList();
+            var envioStates = await _envioWorkflow.GetManyAsync(
+                EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                solicitudIds.Select(x => (long)x));
+
             var summaryByDetalle = cotizaciones
                 .GroupBy(x => x.FkidEstudioMercadoDetalleOrco)
                 .ToDictionary(
@@ -1270,6 +1410,7 @@ namespace EG.Application.Services.Adquisicion
                     x => new
                     {
                         Solicitudes = x.Select(y => y.FkidSolicitudCotizacionOrco).Distinct().Count(),
+                        SolicitudIds = x.Select(y => y.FkidSolicitudCotizacionOrco).Distinct().ToList(),
                         Recibidas = x.Count(y => y.PrecioUnitario.HasValue),
                         MenorPrecio = x.Where(y => y.PrecioUnitario.HasValue).Select(y => y.PrecioUnitario).DefaultIfEmpty().Min(),
                         UltimaCotizacion = x.Where(y => y.FechaRespuesta.HasValue).Select(y => y.FechaRespuesta).DefaultIfEmpty().Max(),
@@ -1294,6 +1435,14 @@ namespace EG.Application.Services.Adquisicion
                 }
 
                 item.SolicitudesCotizacion = summary.Solicitudes;
+                var detailStates = summary.SolicitudIds
+                    .Select(x => envioStates[x])
+                    .ToList();
+                item.SolicitudesEnviadas = detailStates.Count(x => x.Estado == EnvioWorkflowEstados.Enviado);
+                item.SolicitudesRechazadas = detailStates.Count(x => x.Estado == EnvioWorkflowEstados.Rechazado);
+                item.PuedeEnviarCotizacion = detailStates.Any(x => x.PuedeEnviar);
+                item.PuedeRechazarCotizacion = detailStates.Any(x => x.PuedeRechazar);
+                item.EstadoEnvioCotizacion = ResolveAggregateState(detailStates);
                 item.CotizacionesRecibidas = summary.Recibidas;
                 item.MenorPrecioUnitario = summary.MenorPrecio;
                 item.ImporteMenorCotizacion = summary.MenorPrecio.HasValue
@@ -1302,6 +1451,66 @@ namespace EG.Application.Services.Adquisicion
                 item.UltimaCotizacion = summary.UltimaCotizacion;
                 item.ProveedoresCotizacion = summary.Proveedores;
             }
+        }
+
+        private async Task<List<int>> GetLinkedSolicitudIdsAsync(
+            int estudioMercadoId,
+            int? estudioMercadoDetalleId)
+        {
+            var query =
+                from costo in _context.EstudioMercadoDetalleCostos.AsNoTracking()
+                join detalle in _context.EstudioMercadoDetalles.AsNoTracking()
+                    on costo.FkidEstudioMercadoDetalleOrco equals detalle.PkidEstudioMercadoDetalle
+                join solicitud in _context.SolicitudCotizacions.AsNoTracking()
+                    on costo.FkidSolicitudCotizacionOrco equals solicitud.PkidSolicitudCotizacion
+                where costo.Activo &&
+                      detalle.Activo &&
+                      solicitud.Activo &&
+                      detalle.FkidEstudioMercadoOrco == estudioMercadoId
+                select new
+                {
+                    detalle.PkidEstudioMercadoDetalle,
+                    solicitud.PkidSolicitudCotizacion
+                };
+
+            if (estudioMercadoDetalleId.HasValue && estudioMercadoDetalleId.Value > 0)
+            {
+                query = query.Where(x =>
+                    x.PkidEstudioMercadoDetalle == estudioMercadoDetalleId.Value);
+            }
+
+            return await query
+                .Select(x => x.PkidSolicitudCotizacion)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        private static string ResolveAggregateState(
+            IReadOnlyCollection<EnvioWorkflowEstadoResponse> states)
+        {
+            if (states.Count == 0)
+            {
+                return EnvioWorkflowEstados.Pendiente;
+            }
+
+            if (states.All(x => x.Estado == EnvioWorkflowEstados.Enviado))
+            {
+                return EnvioWorkflowEstados.Enviado;
+            }
+
+            if (states.All(x => x.Estado == EnvioWorkflowEstados.Rechazado))
+            {
+                return EnvioWorkflowEstados.Rechazado;
+            }
+
+            if (states.Any(x => x.Estado == EnvioWorkflowEstados.Procesando))
+            {
+                return EnvioWorkflowEstados.Procesando;
+            }
+
+            return states.Any(x => x.Estado != EnvioWorkflowEstados.Pendiente)
+                ? EnvioWorkflowEstados.Parcial
+                : EnvioWorkflowEstados.Pendiente;
         }
 
         private async Task UpdateSolicitudStatusesAsync(List<int> solicitudIds, int usuarioActual, DateTime now)
@@ -1356,6 +1565,7 @@ namespace EG.Application.Services.Adquisicion
         {
             public int Intentados { get; set; }
             public int Enviados { get; set; }
+            public int Omitidos { get; set; }
             public int SinEmail { get; set; }
             public int Errores { get; set; }
         }

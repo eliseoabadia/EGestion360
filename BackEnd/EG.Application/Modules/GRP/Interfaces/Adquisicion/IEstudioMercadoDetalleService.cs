@@ -14,7 +14,15 @@ namespace EG.Application.Interfaces.Adquisicion
         Task<PagedResult<EstudioMercadoDetalleResponse>> CreateBatchAsync(EstudioMercadoDetalleBatchRequest request, int usuarioActual);
         Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> CreateSolicitudesCotizacionAsync(EstudioMercadoCotizacionRequest request, int usuarioActual);
         Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> GetSolicitudesCotizacionAsync(int estudioMercadoId);
-        Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> SendSolicitudesCotizacionEmailAsync(int estudioMercadoId, int? estudioMercadoDetalleId);
+        Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> SendSolicitudesCotizacionEmailAsync(
+            int estudioMercadoId,
+            int? estudioMercadoDetalleId,
+            int usuarioActual);
+        Task<PagedResult<EstudioMercadoCotizacionSolicitudResponse>> RejectSolicitudesCotizacionEmailAsync(
+            int estudioMercadoId,
+            int? estudioMercadoDetalleId,
+            int usuarioActual,
+            string? motivo);
         Task<PagedResult<EstudioMercadoCotizacionRecepcionResponse>> GetRecepcionCotizacionesAsync(int estudioMercadoId, int? proveedorId);
         Task<PagedResult<EstudioMercadoCotizacionRecepcionResponse>> SaveRecepcionCotizacionesAsync(EstudioMercadoCotizacionRecepcionRequest request, int usuarioActual);
     }

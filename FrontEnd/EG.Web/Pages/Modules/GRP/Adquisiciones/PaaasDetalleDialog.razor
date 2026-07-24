@@ -8,6 +8,7 @@
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IGenericCrudService<UnidadeResponse> UnidadesService
+@inject TipoBienDefaultsService TipoBienDefaultsService
 
 <BaseCrudDialog TItem="PaaasdetalleResponse"
                 Title="@dialogTitle"
@@ -25,7 +26,7 @@
 
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_selectedTipoBien"
-                                   ValueChanged="value => _selectedTipoBien = value"
+                                   ValueChanged="OnTipoBienChanged"
                                    Label="Tipo de Bien"
                                    Required="true"
                                    RequiredError="Debe seleccionar un tipo de bien"
@@ -105,25 +106,43 @@
             return;
         }
 
-        await LoadDefaultUnidad();
+        _selectedUnidad = null;
     }
 
-    private async Task LoadDefaultUnidad()
+    private async Task OnTipoBienChanged(LookupItem? value)
     {
+        _selectedTipoBien = value;
+        _selectedUnidad = null;
+
+        if (value == null)
+        {
+            return;
+        }
+
         try
         {
-            var response = await UnidadesService.GetAllPaginadoAsync(1, 50, "PIEZA", "Descripcion", SortDirection.Ascending);
-            var pieza = response?.Items?.FirstOrDefault(x =>
-                x.Descripcion?.Contains("PIEZA", StringComparison.OrdinalIgnoreCase) == true);
-            if (pieza != null)
+            var unidad = await TipoBienDefaultsService.GetUnidadPrincipalAsync(value.Id);
+            if (_selectedTipoBien?.Id != value.Id)
             {
-                _selectedUnidad = new LookupItem { Id = pieza.PkidUnidades, Text = pieza.Descripcion };
+                return;
+            }
+
+            _selectedUnidad = unidad;
+            if (unidad == null)
+            {
+                Snackbar.Add("El bien no tiene una unidad principal configurada; selecciona una manualmente.", Severity.Info);
             }
         }
         catch (Exception ex)
         {
+            if (_selectedTipoBien?.Id != value.Id)
+            {
+                return;
+            }
+
             AppLoggerFactory.CreateLogger("PaaasDetalleDialog")
-                .LogDebug(ex, "No se pudo resolver la unidad Pieza por su clave; se intentara otro criterio.");
+                .LogWarning(ex, "No se pudo cargar la unidad principal del tipo de bien {TipoBienId}.", value.Id);
+            Snackbar.Add("No se pudo cargar la unidad principal; selecciona una manualmente.", Severity.Warning);
         }
     }
 

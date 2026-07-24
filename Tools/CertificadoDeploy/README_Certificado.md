@@ -1,55 +1,55 @@
-# Certificado HTTPS gratis para EGestion360
+# Certificado HTTPS para EGestion360
 
-Este paquete prepara la emision de un certificado publico gratuito con Let's Encrypt para la API:
+El ejecutable `EGestion360-Certificado.exe` emite, instala y renueva el certificado público de Let's Encrypt para:
 
-- IP: `74.208.88.178`
-- Puerto API: `8440`
-- Front: `https://74.208.88.178/login`
+- IP pública: `74.208.88.178`
+- Frontend: puerto `443`
+- API: puerto `8440`
 
-## Importante
+## Uso recomendado
 
-Un certificado valido para internet no se puede generar offline. Debe emitirse desde el servidor publico, porque Let's Encrypt necesita validar que la IP responde desde internet.
+1. Copia `EGestion360-Certificado.exe` al servidor y déjalo en una ruta permanente.
+2. Abre el ejecutable con doble clic.
+3. Acepta la solicitud de permisos de administrador.
+4. Escribe el correo que se registrará en Let's Encrypt.
 
-Para certificados por IP, Let's Encrypt emite certificados de vida corta, normalmente de 6 dias. Por eso es obligatorio automatizar la renovacion.
-
-## Requisitos en el servidor
-
-1. Ejecutar PowerShell como administrador.
-2. Tener abierto el puerto `80` desde internet durante la validacion.
-3. Instalar Certbot 5.4 o superior.
-4. Permitir que Certbot use temporalmente el puerto `80` si se usa modo `standalone`.
-
-## Paso 1: prueba con staging
-
-Ejecuta primero:
+También se puede ejecutar desde PowerShell o CMD:
 
 ```powershell
-.\01_EmitirCertificadoIP.ps1 -Email "tu-correo@dominio.com" -Staging
+.\EGestion360-Certificado.exe --email "tu-correo@dominio.com"
 ```
 
-Si termina correctamente, emite el certificado real:
+El ejecutable es autónomo para Windows x64. No necesita instalar .NET, OpenSSL ni Certbot. Incluye el cliente ACME `lego` 5.3.1 y valida su SHA-256 antes de utilizarlo.
+
+## Requisitos del servidor
+
+- El puerto TCP `80` debe estar abierto desde internet y dirigido a este servidor durante la emisión y las renovaciones.
+- Los puertos HTTPS `443` y `8440` deben estar publicados según corresponda.
+- El ejecutable debe ejecutarse con permisos de administrador.
+
+Let's Encrypt emite los certificados para direcciones IP con una vigencia aproximada de seis días. Por eso el ejecutable crea la tarea diaria `EGestion360 Renovar Certificado IP`.
+
+La configuración, la cuenta ACME y las claves se guardan en:
+
+```text
+C:\ProgramData\EGestion360\CertificateRepair
+```
+
+El resultado detallado se guarda en `EGestion360-Certificado.log`, junto al ejecutable cuando la carpeta tiene permisos de escritura.
+
+## Verificación
+
+Al terminar, el ejecutable comprueba el thumbprint instalado en HTTP.sys y el certificado servido por los puertos configurados. También se puede verificar manualmente:
 
 ```powershell
-.\01_EmitirCertificadoIP.ps1 -Email "tu-correo@dominio.com"
+Invoke-WebRequest "https://74.208.88.178/login" -UseBasicParsing
+Invoke-WebRequest "https://74.208.88.178:8440/api/Navigate/ping" -UseBasicParsing
+Get-ScheduledTaskInfo -TaskName "EGestion360 Renovar Certificado IP"
 ```
 
-## Paso 2: instalar en IIS/API
+## Componente de terceros
 
-Despues de emitir el certificado real:
+El ejecutable incorpora `lego` 5.3.1, distribuido bajo licencia MIT:
 
-```powershell
-.\02_InstalarCertificadoIIS.ps1
-```
-
-El script exporta un `.pfx`, lo instala en `Cert:\LocalMachine\My` y crea o actualiza el binding HTTPS para `0.0.0.0:8440`.
-
-## Renovacion
-
-Como el certificado por IP dura pocos dias, deja una tarea programada ejecutando:
-
-```powershell
-.\03_RenovarCertificadoIP.ps1
-```
-
-Idealmente cada dia. Si usas un dominio en el futuro, el certificado puede durar mas y el mantenimiento sera mas simple.
-
+- Proyecto: <https://github.com/go-acme/lego>
+- Licencia incluida en `EGestion360.CertificateRepair\Assets\LEGO-LICENSE.txt`

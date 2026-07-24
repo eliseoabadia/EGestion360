@@ -1003,7 +1003,7 @@
 }
 
 .form-header::before {
-    content: "ACCESO SEGURO  //  PCI";
+    content: "ACCESO INSTITUCIONAL";
     position: absolute;
     top: 0;
     left: 0;
@@ -1060,4 +1060,3 @@
         padding: 20px;
     }
 }
-

@@ -14,13 +14,15 @@
 @inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
 @inject IGenericCrudService<TipoBienResponse> TipoBienService
 @inject IGenericCrudService<UnidadeResponse> UnidadeService
+@inject TipoBienDefaultsService TipoBienDefaultsService
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="RequisicionDetalleResponse"
                 Title="@dialogTitle"
-                MaxWidth="MaxWidth.Medium"
+                MaxWidth="MaxWidth.Small"
+                DialogClass="crud-dialog-compact requisicion-detalle-dialog"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -70,7 +72,7 @@
 
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_selectedTipoBien"
-                                   ValueChanged="value => _selectedTipoBien = value"
+                                   ValueChanged="OnTipoBienChanged"
                                    Label="Bien o servicio"
                                    Required="true"
                                    RequiredError="El bien o servicio es requerido"
@@ -198,6 +200,8 @@
         {
             _selectedPartida = null;
             _selectedTipoBien = null;
+            _selectedUnidad = null;
+            item.FkidUnidadesAlma = null;
         }
 
         return Task.CompletedTask;
@@ -207,7 +211,48 @@
     {
         _selectedPartida = value;
         _selectedTipoBien = null;
+        _selectedUnidad = null;
+        item.FkidUnidadesAlma = null;
         return Task.CompletedTask;
+    }
+
+    private async Task OnTipoBienChanged(LookupItem? value)
+    {
+        _selectedTipoBien = value;
+        _selectedUnidad = null;
+        item.FkidUnidadesAlma = null;
+
+        if (value == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var unidad = await TipoBienDefaultsService.GetUnidadPrincipalAsync(value.Id);
+            if (_selectedTipoBien?.Id != value.Id)
+            {
+                return;
+            }
+
+            _selectedUnidad = unidad;
+            item.FkidUnidadesAlma = unidad?.Id;
+            if (unidad == null)
+            {
+                Snackbar.Add("El bien no tiene una unidad principal configurada; selecciona una manualmente.", Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (_selectedTipoBien?.Id != value.Id)
+            {
+                return;
+            }
+
+            AppLoggerFactory.CreateLogger("RequisicionDetalleDialog")
+                .LogWarning(ex, "No se pudo cargar la unidad principal del tipo de bien {TipoBienId}.", value.Id);
+            Snackbar.Add("No se pudo cargar la unidad principal; selecciona una manualmente.", Severity.Warning);
+        }
     }
 
     private async Task GuardarCambiosAsync()

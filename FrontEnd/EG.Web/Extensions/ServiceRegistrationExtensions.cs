@@ -257,6 +257,7 @@ public static class ApiServiceExtensions
         services.AddScoped<IPbrDashboardService, PbrDashboardService>();
         services.AddScoped<IAccessConfigurationService, AccessConfigurationService>();
         services.AddScoped<IEmpresaLogoService, EmpresaLogoService>();
+        services.AddScoped<TipoBienDefaultsService>();
 
         return services;
     }

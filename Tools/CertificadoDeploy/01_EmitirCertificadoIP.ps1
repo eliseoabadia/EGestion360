@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Email,
     [switch]$Staging,
+    [switch]$ForceRenewal,
     [string]$CertbotPath = "C:\Program Files\Certbot\bin\certbot.exe"
 )
 
@@ -32,6 +33,7 @@ $certbotArgs = @(
     "--standalone",
     "--preferred-profile", "shortlived",
     "--ip-address", $IpAddress,
+    "--cert-name", $IpAddress,
     "--agree-tos",
     "--email", $Email,
     "--non-interactive"
@@ -39,6 +41,10 @@ $certbotArgs = @(
 
 if ($Staging) {
     $certbotArgs += "--staging"
+}
+
+if ($ForceRenewal) {
+    $certbotArgs += "--force-renewal"
 }
 
 Write-Host "Solicitando certificado para IP $IpAddress..." -ForegroundColor Cyan

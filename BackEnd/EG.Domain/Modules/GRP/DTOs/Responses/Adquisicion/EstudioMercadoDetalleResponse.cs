@@ -19,6 +19,11 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public decimal? ImporteEstimado { get; set; }
         public List<EstudioMercadoDetalleProveedorResponse> ProveedoresCotizacion { get; set; } = new();
         public int SolicitudesCotizacion { get; set; }
+        public int SolicitudesEnviadas { get; set; }
+        public int SolicitudesRechazadas { get; set; }
+        public string EstadoEnvioCotizacion { get; set; } = "PENDIENTE";
+        public bool PuedeEnviarCotizacion { get; set; }
+        public bool PuedeRechazarCotizacion { get; set; }
         public int CotizacionesRecibidas { get; set; }
         public decimal? MenorPrecioUnitario { get; set; }
         public decimal? ImporteMenorCotizacion { get; set; }

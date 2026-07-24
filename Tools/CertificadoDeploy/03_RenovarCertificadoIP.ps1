@@ -1,6 +1,7 @@
 param(
     [string]$IpAddress = "74.208.88.178",
-    [int]$Port = 8440,
+    [Alias("Port")]
+    [int[]]$Ports = @(443, 8440),
     [string]$CertbotPath = "C:\Program Files\Certbot\bin\certbot.exe"
 )
 
@@ -31,7 +32,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Certbot renew termino con codigo $LASTEXITCODE."
 }
 
-& "$PSScriptRoot\02_InstalarCertificadoIIS.ps1" -IpAddress $IpAddress -Port $Port
+& "$PSScriptRoot\02_InstalarCertificadoIIS.ps1" -IpAddress $IpAddress -Ports $Ports
 
-Write-Host "Renovacion aplicada correctamente." -ForegroundColor Green
+Write-Host "Renovacion aplicada correctamente en los puertos: $($Ports -join ', ')." -ForegroundColor Green
 

@@ -2,13 +2,13 @@ namespace EG.Web.Pages.Shared;
 
 public sealed class CinematicRecordModel
 {
-    public string Eyebrow { get; init; } = "EXPEDIENTE OPERATIVO";
+    public string Eyebrow { get; init; } = "DETALLE DEL REGISTRO";
     public string Title { get; init; } = "Detalle del registro";
     public string Subtitle { get; init; } = string.Empty;
     public string RecordCode { get; init; } = "SIN-CÓDIGO";
     public string Status { get; init; } = "CONSULTA";
     public string StatusTone { get; init; } = "info";
-    public string Classification { get; init; } = "SOLO LECTURA";
+    public string Classification { get; init; } = "CONSULTA";
     public string? HeroLabel { get; init; }
     public string? HeroValue { get; init; }
     public IReadOnlyList<CinematicRecordSection> Sections { get; init; } = [];

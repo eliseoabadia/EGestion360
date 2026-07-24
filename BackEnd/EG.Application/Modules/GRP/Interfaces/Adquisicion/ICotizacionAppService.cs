@@ -7,6 +7,7 @@ namespace EG.Application.Interfaces.Adquisicion
     public interface ICotizacionAppService : IAdquisicionCrudAppService<CotizacionResponse>
     {
         Task<PagedResult<CotizacionResponse>> SendCotizacionEmailAsync(int cotizacionId, int usuarioActual);
+        Task<PagedResult<CotizacionResponse>> RejectCotizacionEmailAsync(int cotizacionId, int usuarioActual, string? motivo);
         Task<PagedResult<CotizacionDetalleResponse>> GetRecepcionCotizacionAsync(int cotizacionId);
         Task<PagedResult<CotizacionDetalleResponse>> SaveRecepcionCotizacionAsync(CotizacionRecepcionRequest request, int usuarioActual);
     }

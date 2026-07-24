@@ -68,13 +68,23 @@
                                                        EntidadId="@context.Item.PkidPoliza"
                                                        RegistroTitulo="@TextOrDash(context.Item.ClavePoliza)"
                                                        RegistroDescripcion="@TextOrDash(context.Item.NombrePoliza)" />
-                                <MudTooltip Text="Enviar a firma">
+                                <MudTooltip Text="@FirmaTooltip(context.Item)">
                                     <MudIconButton Icon="@Icons.Material.Filled.Send"
                                                    Color="Color.Success"
                                                    Size="Size.Small"
-                                                   Disabled="@(_preparingFirmaPolizaId == context.Item.PkidPoliza)"
+                                                   Disabled="@(_preparingFirmaPolizaId == context.Item.PkidPoliza || !context.Item.PuedeEnviarFirma)"
                                                    OnClick="@(() => PrepararPolizaParaFirma(context.Item, true))" />
                                 </MudTooltip>
+                                @if (context.Item.PuedeRechazarFirma)
+                                {
+                                    <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                                       Color="Color.Warning"
+                                                       Size="Size.Small"
+                                                       Disabled="@(_preparingFirmaPolizaId == context.Item.PkidPoliza)"
+                                                       OnClick="@(() => RechazarEnvioFirma(context.Item))" />
+                                    </MudTooltip>
+                                }
                                 <ReportOpenButton ReportName="@PolizaReportName"
                                                   EntityId="@context.Item.PkidPoliza"
                                                   Title="@($"Reporte poliza {context.Item.ClavePoliza}")"
@@ -140,6 +150,13 @@
                                     </MudChip>
                                 </CellTemplate>
                             </PropertyColumn>
+                            <TemplateColumn T="PolizaResponse" Title="Firma" Identifier="EstadoFirma" Sortable="false" Filterable="false">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="@WorkflowStatusColor(context.Item.EstadoFirma)" Size="Size.Small">
+                                        @WorkflowStatusText(context.Item.EstadoFirma)
+                                    </MudChip>
+                                </CellTemplate>
+                            </TemplateColumn>
                         </Columns>
                     </GenericDataGrid>
                 </div>
@@ -169,20 +186,34 @@
                     <MudChip T="string" Size="Size.Small" Color="@(SelectedPoliza.Autorizado == true ? Color.Success : Color.Default)" Class="ml-1">
                         @(SelectedPoliza.Autorizado == true ? "Autorizada" : "Sin autorizar")
                     </MudChip>
+                    <MudChip T="string" Size="Size.Small" Color="@WorkflowStatusColor(SelectedPoliza.EstadoFirma)" Class="ml-1">
+                        Firma: @WorkflowStatusText(SelectedPoliza.EstadoFirma)
+                    </MudChip>
                     <DocumentSupportButton Modulo="Contabilidad"
                                            SubModulo="Polizas"
                                            Controlador="Poliza"
                                            EntidadId="@SelectedPoliza.PkidPoliza"
                                            RegistroTitulo="@TextOrDash(SelectedPoliza.ClavePoliza)"
                                            RegistroDescripcion="@TextOrDash(SelectedPoliza.NombrePoliza)" />
-                    <MudTooltip Text="Generar reporte oficial y enviarlo a firma">
+                    <MudTooltip Text="@FirmaTooltip(SelectedPoliza)">
                         <MudIconButton Icon="@Icons.Material.Filled.Send"
                                        Color="Color.Success"
                                        Size="Size.Small"
-                                       Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza)"
+                                       Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza || !SelectedPoliza.PuedeEnviarFirma)"
                                        OnClick="@(() => PrepararPolizaParaFirma(SelectedPoliza, true))"
                                        Class="ml-1" />
                     </MudTooltip>
+                    @if (SelectedPoliza.PuedeRechazarFirma)
+                    {
+                        <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
+                            <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza)"
+                                           OnClick="@(() => RechazarEnvioFirma(SelectedPoliza))"
+                                           Class="ml-1" />
+                        </MudTooltip>
+                    }
                     <ReportOpenButton ReportName="@PolizaReportName"
                                       EntityId="@SelectedPoliza.PkidPoliza"
                                       Title="@($"Reporte poliza {SelectedPoliza.ClavePoliza}")"
@@ -605,6 +636,15 @@
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
                 Snackbar.Add("Reporte oficial generado y enviado a firma.", Severity.Success);
+                if (SelectedPoliza?.PkidPoliza == poliza.PkidPoliza)
+                {
+                    await RefreshSelectedPoliza();
+                }
+                else if (table != null)
+                {
+                    await table.ReloadData();
+                }
+
                 if (abrirSoporte)
                 {
                     await OpenPolizaSupportDialog(poliza);
@@ -618,6 +658,50 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al preparar firma: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+        finally
+        {
+            _preparingFirmaPolizaId = null;
+        }
+    }
+
+    private async Task RechazarEnvioFirma(PolizaResponse poliza)
+    {
+        var confirm = await JsRuntime.InvokeAsync<bool>(
+            "confirm",
+            "¿Rechazar el envío a firma? La acción de enviar se habilitará nuevamente.");
+        if (!confirm)
+        {
+            return;
+        }
+
+        _preparingFirmaPolizaId = poliza.PkidPoliza;
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                $"api/FirmaDocumental/polizas/{poliza.PkidPoliza}/rechazar-envio",
+                "Rechazado desde la pantalla de pólizas");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Envío a firma rechazado.", Severity.Success);
+                if (SelectedPoliza?.PkidPoliza == poliza.PkidPoliza)
+                {
+                    await RefreshSelectedPoliza();
+                }
+                else if (table != null)
+                {
+                    await table.ReloadData();
+                }
+
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudo rechazar el envío a firma.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al rechazar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -684,6 +768,27 @@
 
     private static Color DiferenciaColor(decimal? diferencia) =>
         decimal.Round(diferencia ?? 0m, 2) == 0m ? Color.Success : Color.Warning;
+
+    private static string FirmaTooltip(PolizaResponse item) =>
+        item.PuedeEnviarFirma
+            ? "Generar reporte oficial y enviarlo a firma"
+            : $"Envío bloqueado: estado {WorkflowStatusText(item.EstadoFirma)}";
+
+    private static string WorkflowStatusText(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => "Procesando",
+        "ENVIADO" => "Enviado",
+        "RECHAZADO" => "Rechazado",
+        _ => "Pendiente"
+    };
+
+    private static Color WorkflowStatusColor(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => Color.Info,
+        "ENVIADO" => Color.Success,
+        "RECHAZADO" => Color.Warning,
+        _ => Color.Default
+    };
 
     private async Task LoadCurrencyAsync()
     {

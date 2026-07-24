@@ -7,6 +7,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,14 @@ namespace EG.Application.Services.Adquisicion
     {
         private readonly EGestionContext _context;
         private readonly IEmailService _emailService;
+        private readonly IEnvioWorkflowService _envioWorkflow;
 
         public CotizacionAppService(
             GenericService<Cotizacion, CotizacionDto, CotizacionResponse> service,
             GenericService<VwCotizacion, CotizacionDto, CotizacionResponse> serviceView,
             EGestionContext context,
-            IEmailService emailService)
+            IEmailService emailService,
+            IEnvioWorkflowService envioWorkflow)
             : base(
                 service,
                 serviceView,
@@ -34,6 +37,32 @@ namespace EG.Application.Services.Adquisicion
         {
             _context = context;
             _emailService = emailService;
+            _envioWorkflow = envioWorkflow;
+        }
+
+        public override async Task<PagedResult<CotizacionResponse>> GetAllAsync()
+        {
+            var result = await base.GetAllAsync();
+            await PopulateEnvioStateAsync(result.Items);
+            return result;
+        }
+
+        public override async Task<PagedResult<CotizacionResponse>> GetByIdAsync(int id)
+        {
+            var result = await base.GetByIdAsync(id);
+            if (result.Success && result.Data != null)
+            {
+                await PopulateEnvioStateAsync(new[] { result.Data });
+            }
+
+            return result;
+        }
+
+        public override async Task<PagedResult<CotizacionResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            var result = await base.GetAllPaginadoAsync(request);
+            await PopulateEnvioStateAsync(result.Items);
+            return result;
         }
 
         public override async Task<PagedResult<CotizacionResponse>> CreateAsync(CotizacionResponse response, int usuarioActual)
@@ -154,6 +183,7 @@ namespace EG.Application.Services.Adquisicion
 
         public async Task<PagedResult<CotizacionResponse>> SendCotizacionEmailAsync(int cotizacionId, int usuarioActual)
         {
+            EnvioWorkflowClaimResult? claim = null;
             try
             {
                 var cotizacion = await _context.Cotizacions
@@ -185,6 +215,17 @@ namespace EG.Application.Services.Adquisicion
                     return Failure<CotizacionResponse>("La requisicion no tiene bienes para solicitar cotizacion.");
                 }
 
+                claim = await _envioWorkflow.TryBeginAsync(
+                    EnvioWorkflowProcesos.CotizacionCorreo,
+                    cotizacion.PkidCotizacion,
+                    usuarioActual);
+                if (!claim.Claimed || !claim.OperationToken.HasValue)
+                {
+                    return Failure<CotizacionResponse>(
+                        $"La solicitud no puede enviarse porque su estado actual es {claim.State.Estado}.",
+                        "ALREADY_SENT");
+                }
+
                 var email = new EmailMessageRequest
                 {
                     To = new List<string> { cotizacion.FkidProveedorSisNavigation.Email },
@@ -196,8 +237,18 @@ namespace EG.Application.Services.Adquisicion
                 var emailResult = await _emailService.SendAsync(email);
                 if (!emailResult.Success)
                 {
+                    await _envioWorkflow.CancelAsync(
+                        EnvioWorkflowProcesos.CotizacionCorreo,
+                        cotizacion.PkidCotizacion,
+                        claim.OperationToken.Value);
                     return Failure<CotizacionResponse>(emailResult.Message);
                 }
+
+                await _envioWorkflow.CompleteAsync(
+                    EnvioWorkflowProcesos.CotizacionCorreo,
+                    cotizacion.PkidCotizacion,
+                    claim.OperationToken.Value);
+                claim = null;
 
                 var result = await GetByIdAsync(cotizacion.PkidCotizacion);
                 result.Message = "Solicitud de cotizacion enviada por correo.";
@@ -205,7 +256,57 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
+                if (claim?.Claimed == true && claim.OperationToken.HasValue)
+                {
+                    try
+                    {
+                        await _envioWorkflow.CancelAsync(
+                            EnvioWorkflowProcesos.CotizacionCorreo,
+                            cotizacionId,
+                            claim.OperationToken.Value);
+                    }
+                    catch
+                    {
+                        // Conserva la excepción original; el token evita completar otro envío.
+                    }
+                }
+
                 return Failure<CotizacionResponse>($"Error al enviar cotizacion por correo: {ex.Message}");
+            }
+        }
+
+        public async Task<PagedResult<CotizacionResponse>> RejectCotizacionEmailAsync(
+            int cotizacionId,
+            int usuarioActual,
+            string? motivo)
+        {
+            try
+            {
+                var exists = await _context.Cotizacions
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidCotizacion == cotizacionId && x.Activo);
+                if (!exists)
+                {
+                    return Failure<CotizacionResponse>("La cotizacion no existe o esta inactiva.", "NOT_FOUND");
+                }
+
+                await _envioWorkflow.RejectAsync(
+                    EnvioWorkflowProcesos.CotizacionCorreo,
+                    cotizacionId,
+                    usuarioActual,
+                    motivo);
+
+                var result = await GetByIdAsync(cotizacionId);
+                result.Message = "El envío fue rechazado; la acción de enviar quedó habilitada nuevamente.";
+                return result;
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Failure<CotizacionResponse>(ex.Message, "INVALID_STATUS");
+            }
+            catch (Exception ex)
+            {
+                return Failure<CotizacionResponse>($"Error al rechazar el envío: {ex.Message}");
             }
         }
 
@@ -352,6 +453,29 @@ namespace EG.Application.Services.Adquisicion
             response.Comentarios ??= string.Empty;
 
             return null;
+        }
+
+        private async Task PopulateEnvioStateAsync(IEnumerable<CotizacionResponse> items)
+        {
+            var list = items.Where(x => x.PkidCotizacion > 0).ToList();
+            if (list.Count == 0)
+            {
+                return;
+            }
+
+            var states = await _envioWorkflow.GetManyAsync(
+                EnvioWorkflowProcesos.CotizacionCorreo,
+                list.Select(x => (long)x.PkidCotizacion));
+
+            foreach (var item in list)
+            {
+                var state = states[item.PkidCotizacion];
+                item.EstadoEnvio = state.Estado;
+                item.FechaEnvio = state.FechaEnvio;
+                item.FechaRechazoEnvio = state.FechaRechazo;
+                item.PuedeEnviar = state.PuedeEnviar;
+                item.PuedeRechazar = state.PuedeRechazar;
+            }
         }
 
         private async Task<int> SeedDetallesFromRequisicionAsync(int cotizacionId, int requisicionId, int usuarioActual, DateTime now)

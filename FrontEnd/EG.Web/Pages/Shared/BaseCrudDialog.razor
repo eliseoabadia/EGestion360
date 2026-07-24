@@ -7,8 +7,7 @@
         <div class="crud-dialog-title">
             <div class="crud-dialog-operation" aria-label="Tipo de operación">
                 <span class="crud-dialog-operation-pulse" aria-hidden="true"></span>
-                <span>OPERACIÓN // @OperationState</span>
-                <span class="crud-dialog-operation-code">@OperationCode</span>
+                <span>@OperationState</span>
             </div>
             @if (!string.IsNullOrWhiteSpace(EffectiveTitleIcon))
             {
@@ -127,16 +126,6 @@
         "autorizacion" => "VALIDACIÓN",
         _ => "GESTIÓN DE REGISTRO"
     };
-    private string OperationCode => OperationKey switch
-    {
-        "alta" => "A-01",
-        "cambio" => "C-02",
-        "baja" => "B-03",
-        "consulta" => "Q-04",
-        "autorizacion" => "V-05",
-        _ => "G-00"
-    };
-
     private bool IsCatalogRoute()
     {
         var path = Navigation.ToBaseRelativePath(Navigation.Uri);

@@ -148,7 +148,24 @@ namespace EG.ApiCoreBS.Controllers.Planeacion
         [HttpPost("cotizaciones/solicitudes/{estudioMercadoId}/enviar-correo")]
         public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionSolicitudResponse>>> SendSolicitudesCotizacionEmail(int estudioMercadoId, [FromQuery] int? estudioMercadoDetalleId)
         {
-            var result = await _service.SendSolicitudesCotizacionEmailAsync(estudioMercadoId, estudioMercadoDetalleId);
+            var result = await _service.SendSolicitudesCotizacionEmailAsync(
+                estudioMercadoId,
+                estudioMercadoDetalleId,
+                _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("cotizaciones/solicitudes/{estudioMercadoId}/rechazar-envio")]
+        public async Task<ActionResult<PagedResult<EstudioMercadoCotizacionSolicitudResponse>>> RejectSolicitudesCotizacionEmail(
+            int estudioMercadoId,
+            [FromQuery] int? estudioMercadoDetalleId,
+            [FromBody] string? motivo = null)
+        {
+            var result = await _service.RejectSolicitudesCotizacionEmailAsync(
+                estudioMercadoId,
+                estudioMercadoDetalleId,
+                _userContext.GetCurrentUserId(),
+                motivo);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

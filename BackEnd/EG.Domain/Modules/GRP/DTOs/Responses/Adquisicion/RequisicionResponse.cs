@@ -72,7 +72,15 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string PautorizoCompleto { get; set; } = string.Empty;
         public string ClaveNombre { get; set; } = string.Empty;
         public int CotizacionesActivas { get; set; }
+        public int PartidasActivas { get; set; }
+        public int DetallesActivos { get; set; }
+        public int DetallesCotizados { get; set; }
+        public int DetallesEnSuficiencia { get; set; }
         public bool BloqueadaPorCotizacion => CotizacionesActivas > 0;
+        public bool TodosLosDetallesCotizados =>
+            DetallesActivos > 0 && DetallesCotizados >= DetallesActivos;
+        public bool TodosLosDetallesEnSuficiencia =>
+            DetallesActivos > 0 && DetallesEnSuficiencia >= DetallesActivos;
         public byte[]? RowVersion { get; set; }
     }
 }

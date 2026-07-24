@@ -17,13 +17,13 @@ public static class CinematicRecordFactory
         string currencySymbol,
         string currencyName) => new()
     {
-        Eyebrow = "MISIÓN PRESUPUESTAL",
+        Eyebrow = "ANTEPROYECTO PRESUPUESTAL",
         Title = "Anteproyecto de egresos",
         Subtitle = Text(item.Descripcion),
         RecordCode = $"ANT-{item.PkidEgresoProyectado:000000}",
         Status = item.EstaAutorizado ? "AUTORIZADO" : "PROYECTADO",
         StatusTone = item.EstaAutorizado ? "success" : "info",
-        Classification = "SOLO LECTURA",
+        Classification = "CONSULTA",
         HeroLabel = $"Total proyectado · {currencyName}",
         HeroValue = Money(item.Total, currencySymbol),
         Sections =
@@ -101,7 +101,7 @@ public static class CinematicRecordFactory
 
     public static CinematicRecordModel ForRequisicion(RequisicionResponse item, string currencySymbol = "$") => new()
     {
-        Eyebrow = "OPERACIÓN DE ADQUISICIONES",
+        Eyebrow = "REQUISICIÓN DE COMPRA",
         Title = "Requisición",
         Subtitle = Text(item.Descripcion),
         RecordCode = $"REQ-{item.PkidRequisicion:000000}",
@@ -141,7 +141,7 @@ public static class CinematicRecordFactory
 
     public static CinematicRecordModel ForMatrizConversion(MatrizConversionResponse item) => new()
     {
-        Eyebrow = "PROTOCOLO CONTABLE",
+        Eyebrow = "MATRIZ CONTABLE",
         Title = "Matriz de conversión",
         Subtitle = Join(item.ProgramaClave, item.PartidaDescripcion),
         RecordCode = $"MCV-{item.PkidMatrizConversion:000000}",
@@ -170,7 +170,7 @@ public static class CinematicRecordFactory
 
     public static CinematicRecordModel ForMatrizIngreso(MatrizIngresoResponse item) => new()
     {
-        Eyebrow = "PROTOCOLO CONTABLE",
+        Eyebrow = "MATRIZ CONTABLE",
         Title = "Matriz de conversión de ingresos",
         Subtitle = Join(item.ProgramaClave, item.ProgramaDescripcion),
         RecordCode = $"MCI-{item.PkidMatrizIngreso:000000}",
@@ -254,7 +254,7 @@ public static class CinematicRecordFactory
 
     public static CinematicRecordModel ForCotizacion(CotizacionResponse item, string currencySymbol = "$") => new()
     {
-        Eyebrow = "INTELIGENCIA DE MERCADO",
+        Eyebrow = "COTIZACIÓN DE PROVEEDOR",
         Title = "Cotización de proveedor",
         Subtitle = Text(item.RequisicionDescripcion),
         RecordCode = $"COT-{item.PkidCotizacion:000000}",
@@ -285,7 +285,7 @@ public static class CinematicRecordFactory
 
     public static CinematicRecordModel ForOrdenCompra(OrdenCompraResponse item) => new()
     {
-        Eyebrow = "ORDEN DE OPERACIÓN",
+        Eyebrow = "ORDEN DE COMPRA",
         Title = "Orden de compra",
         Subtitle = Text(item.Descripcion),
         RecordCode = Text(item.NumeroOrdenCompra) == "—" ? $"OC-{item.PkidOrdenCompra:000000}" : item.NumeroOrdenCompra,

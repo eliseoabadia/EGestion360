@@ -9,7 +9,7 @@
     <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
     <RunAOTCompilation>false</RunAOTCompilation>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <WasmInitialHeapSize>67108864</WasmInitialHeapSize>
   </PropertyGroup>
@@ -24,6 +24,14 @@
     <Content Remove="Services\Almacen\**" />
     <EmbeddedResource Remove="Services\Almacen\**" />
     <None Remove="Services\Almacen\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Solo bootstrap.min.css se referencia desde index.html. Evita publicar
+         variantes RTL, JavaScript y mapas de fuente que el navegador no usa. -->
+    <Content Update="wwwroot\lib\bootstrap\dist\**\*" CopyToPublishDirectory="Never" />
+    <Content Update="wwwroot\lib\bootstrap\dist\css\bootstrap.min.css"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

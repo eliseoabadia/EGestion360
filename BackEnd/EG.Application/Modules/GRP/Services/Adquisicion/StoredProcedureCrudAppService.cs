@@ -112,24 +112,24 @@ namespace EG.Application.Services.Adquisicion
             {
                 _service.ApplyCurrentEmpresaIfPresent(response);
 
-                await using var transaction = action == UpdateAction
-                    ? await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable)
-                    : null;
-
-                if (action == UpdateAction && id.HasValue)
+                async Task<StoredProcedureResult> ExecuteAsync(CancellationToken cancellationToken)
                 {
-                    await EnsureCurrentRowVersionAsync(id.Value, response);
+                    if (action == UpdateAction && id.HasValue)
+                    {
+                        await EnsureCurrentRowVersionAsync(id.Value, response, cancellationToken);
+                    }
+
+                    return await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context,
+                        _storedProcedure,
+                        _buildParameters(action, id, response, usuarioActual));
                 }
 
-                var result = await StoredProcedureExecutor.ExecuteResultAsync(
-                    _context,
-                    _storedProcedure,
-                    _buildParameters(action, id, response, usuarioActual));
-
-                if (transaction != null)
-                {
-                    await transaction.CommitAsync();
-                }
+                var result = action == UpdateAction
+                    ? await _context.ExecuteResilientTransactionAsync(
+                        ExecuteAsync,
+                        IsolationLevel.Serializable)
+                    : await ExecuteAsync(CancellationToken.None);
 
                 var resolvedId = result.GetId();
                 if (!resolvedId.HasValue)
@@ -176,7 +176,10 @@ namespace EG.Application.Services.Adquisicion
             }
         }
 
-        private async Task EnsureCurrentRowVersionAsync(int id, TResponse response)
+        private async Task EnsureCurrentRowVersionAsync(
+            int id,
+            TResponse response,
+            CancellationToken cancellationToken)
         {
             var responseProperty = typeof(TResponse).GetProperty("RowVersion");
             var expected = responseProperty?.GetValue(response) as byte[];
@@ -185,7 +188,7 @@ namespace EG.Application.Services.Adquisicion
                 return;
             }
 
-            var entity = await _context.Set<TEntity>().FindAsync(id);
+            var entity = await _context.Set<TEntity>().FindAsync([id], cancellationToken);
             if (entity == null)
             {
                 throw new UserVisibleException($"{_entityName} no encontrado.", "NOT_FOUND");

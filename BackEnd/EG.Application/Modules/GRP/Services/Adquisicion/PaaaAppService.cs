@@ -497,7 +497,9 @@ namespace EG.Application.Services.Adquisicion
 
                 var entity = dto.Adapt<Paaasdetalle>();
                 entity.FkidEmpresaSis = dto.FkidEmpresaSis > 0 ? dto.FkidEmpresaSis : partida.FkidEmpresaSis;
-                entity.FkidUnidadesAlma = dto.FkidUnidadesAlma ?? tipoBien.FkidUnidadesAlma;
+                entity.FkidUnidadesAlma = dto.FkidUnidadesAlma is > 0
+                    ? dto.FkidUnidadesAlma
+                    : tipoBien.FkidUnidadesAlma;
                 entity.Activo = true;
                 entity.FechaCreacion = DateTime.Now;
                 entity.UsuarioCreacion = usuarioActual;
@@ -548,7 +550,9 @@ namespace EG.Application.Services.Adquisicion
                     var tipoBien = await _context.TipoBiens.AsNoTracking()
                         .FirstOrDefaultAsync(x => x.PkidTipoBien == dto.FkidTipoBienAlma && x.Activo);
 
-                    entity.FkidUnidadesAlma = dto.FkidUnidadesAlma ?? tipoBien?.FkidUnidadesAlma;
+                    entity.FkidUnidadesAlma = dto.FkidUnidadesAlma is > 0
+                        ? dto.FkidUnidadesAlma
+                        : tipoBien?.FkidUnidadesAlma;
                     entity.FkidTipoBienAlma = dto.FkidTipoBienAlma;
                 }
 

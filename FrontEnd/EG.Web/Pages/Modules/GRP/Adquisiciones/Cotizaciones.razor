@@ -136,6 +136,13 @@
                         </MudChip>
                     </CellTemplate>
                 </TemplateColumn>
+                <TemplateColumn T="CotizacionResponse" Title="Envío" Identifier="EstadoEnvio" Sortable="false" Filterable="false">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Color="@WorkflowStatusColor(cell.Item.EstadoEnvio)" Size="Size.Small">
+                            @WorkflowStatusText(cell.Item.EstadoEnvio)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
             </Columns>
         </GenericDataGrid>
                 </div>
@@ -163,6 +170,9 @@
                     <MudChip T="string" Color="@(SelectedCotizacion.Servicio ? Color.Info : Color.Primary)" Size="Size.Small" Class="ml-1">
                         @(SelectedCotizacion.Servicio ? "Servicio" : "Bien")
                     </MudChip>
+                    <MudChip T="string" Color="@WorkflowStatusColor(SelectedCotizacion.EstadoEnvio)" Size="Size.Small" Class="ml-1">
+                        Envío: @WorkflowStatusText(SelectedCotizacion.EstadoEnvio)
+                    </MudChip>
                     <MudTooltip Text="Editar cotizacion">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
@@ -185,14 +195,25 @@
                                        OnClick="AddDetalle"
                                        Class="ml-1" />
                     </MudTooltip>
-                    <MudTooltip Text="Enviar solicitud por mail">
+                    <MudTooltip Text="@SendTooltip(SelectedCotizacion)">
                         <MudIconButton Icon="@Icons.Material.Filled.Email"
                                        Color="Color.Primary"
                                        Size="Size.Small"
-                                       Disabled="@(_sendingCotizacionEmail || SelectedCotizacion.TotalDetalles <= 0)"
+                                       Disabled="@(_sendingCotizacionEmail || SelectedCotizacion.TotalDetalles <= 0 || !SelectedCotizacion.PuedeEnviar)"
                                        OnClick="SendCotizacionCorreo"
                                        Class="ml-1" />
                     </MudTooltip>
+                    @if (SelectedCotizacion.PuedeRechazar)
+                    {
+                        <MudTooltip Text="Rechazar el envío y habilitar un nuevo intento">
+                            <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           Disabled="@_sendingCotizacionEmail"
+                                           OnClick="RejectCotizacionCorreo"
+                                           Class="ml-1" />
+                        </MudTooltip>
+                    }
                     <MudTooltip Text="Recibir montos cotizados">
                         <MudIconButton Icon="@Icons.Material.Filled.AttachMoney"
                                        Color="Color.Success"
@@ -725,6 +746,47 @@
         }
     }
 
+    private async Task RejectCotizacionCorreo()
+    {
+        if (SelectedCotizacion == null)
+        {
+            return;
+        }
+
+        var confirm = await JS.InvokeAsync<bool>(
+            "confirm",
+            "¿Rechazar este envío? La acción de enviar se habilitará nuevamente.");
+        if (!confirm)
+        {
+            return;
+        }
+
+        try
+        {
+            _sendingCotizacionEmail = true;
+            var response = await Http.PostAsJsonAsync(
+                $"api/Cotizacion/{SelectedCotizacion.PkidCotizacion}/rechazar-envio",
+                "Rechazado desde la pantalla de cotizaciones");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CotizacionResponse>>();
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                Snackbar.Add(result.Message ?? "Envío rechazado.", Severity.Success);
+                await RefreshSelectedAndDetails();
+                return;
+            }
+
+            Snackbar.Add(result?.Message ?? "No se pudo rechazar el envío.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al rechazar: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+        finally
+        {
+            _sendingCotizacionEmail = false;
+        }
+    }
+
     private async Task OpenRecepcionCotizacion()
     {
         if (SelectedCotizacion == null)
@@ -864,6 +926,29 @@
             AppSnackbar.Add("No se pudo confirmar la moneda de la empresa; se mostrara la moneda predeterminada.", Severity.Warning);
         }
     }
+
+    private static string SendTooltip(CotizacionResponse item) =>
+        item.PuedeEnviar
+            ? "Enviar solicitud por mail"
+            : $"Envío bloqueado: estado {WorkflowStatusText(item.EstadoEnvio)}";
+
+    private static string WorkflowStatusText(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => "Procesando",
+        "ENVIADO" => "Enviado",
+        "RECHAZADO" => "Rechazado",
+        "PARCIAL" => "Parcial",
+        _ => "Pendiente"
+    };
+
+    private static Color WorkflowStatusColor(string? status) => status?.ToUpperInvariant() switch
+    {
+        "PROCESANDO" => Color.Info,
+        "ENVIADO" => Color.Success,
+        "RECHAZADO" => Color.Warning,
+        "PARCIAL" => Color.Info,
+        _ => Color.Default
+    };
 
     private void OnAnioChanged(int? anioId)
     {

@@ -95,6 +95,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IDashboardAppService, DashboardAppService>();
             services.AddScoped<INotificacionAppService, NotificacionAppService>();
             services.AddScoped<IUserProfileAppService, UserProfileAppService>();
+            services.AddScoped<IEnvioWorkflowService, EnvioWorkflowService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
             services.AddScoped<IUsuarioDepartamentoAppService, UsuarioDepartamentoAppService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();

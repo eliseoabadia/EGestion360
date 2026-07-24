@@ -83,6 +83,20 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> SendCotizacionEmail(int id)
         {
             var result = await _appService.SendCotizacionEmailAsync(id, _userContext.GetCurrentUserId());
+            return result.Success
+                ? Ok(result)
+                : result.Code == "ALREADY_SENT" ? Conflict(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id}/rechazar-envio")]
+        public async Task<ActionResult<PagedResult<CotizacionResponse>>> RejectCotizacionEmail(
+            int id,
+            [FromBody] string? motivo = null)
+        {
+            var result = await _appService.RejectCotizacionEmailAsync(
+                id,
+                _userContext.GetCurrentUserId(),
+                motivo);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

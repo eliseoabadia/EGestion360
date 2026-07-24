@@ -1,9 +1,11 @@
 using EG.Application.Interfaces.Contabilidad;
+using EG.Application.Interfaces.General;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses.Contabilidad;
+using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +19,14 @@ namespace EG.ApiCoreBS.Services.Contabilidad
     {
         private readonly EGestionContext _context;
         private readonly ILogger<PolizaService> _logger;
+        private readonly IEnvioWorkflowService _envioWorkflow;
 
         public PolizaService(
             GenericService<Poliza, PolizaDto, PolizaResponse> service,
             GenericService<VwPoliza, PolizaDto, PolizaResponse> serviceView,
             EGestionContext context,
-            ILogger<PolizaService> logger)
+            ILogger<PolizaService> logger,
+            IEnvioWorkflowService envioWorkflow)
             : base(
                 service,
                 serviceView,
@@ -32,6 +36,32 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             _context = context;
             _logger = logger;
+            _envioWorkflow = envioWorkflow;
+        }
+
+        public override async Task<PagedResult<PolizaResponse>> GetAllAsync()
+        {
+            var result = await base.GetAllAsync();
+            await PopulateFirmaStateAsync(result.Items);
+            return result;
+        }
+
+        public override async Task<PagedResult<PolizaResponse>> GetByIdAsync(int id)
+        {
+            var result = await base.GetByIdAsync(id);
+            if (result.Success && result.Data != null)
+            {
+                await PopulateFirmaStateAsync(new[] { result.Data });
+            }
+
+            return result;
+        }
+
+        public override async Task<PagedResult<PolizaResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            var result = await base.GetAllPaginadoAsync(request);
+            await PopulateFirmaStateAsync(result.Items);
+            return result;
         }
 
         public override Task<PagedResult<PolizaResponse>> CreateAsync(PolizaResponse response, int usuarioActual)
@@ -43,6 +73,29 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             response.Autorizado = false;
 
             return base.CreateAsync(response, usuarioActual);
+        }
+
+        private async Task PopulateFirmaStateAsync(IEnumerable<PolizaResponse> items)
+        {
+            var list = items.Where(x => x.PkidPoliza > 0).ToList();
+            if (list.Count == 0)
+            {
+                return;
+            }
+
+            var states = await _envioWorkflow.GetManyAsync(
+                EnvioWorkflowProcesos.PolizaFirma,
+                list.Select(x => (long)x.PkidPoliza));
+
+            foreach (var item in list)
+            {
+                var state = states[item.PkidPoliza];
+                item.EstadoFirma = state.Estado;
+                item.FechaEnvioFirma = state.FechaEnvio;
+                item.FechaRechazoFirma = state.FechaRechazo;
+                item.PuedeEnviarFirma = state.PuedeEnviar;
+                item.PuedeRechazarFirma = state.PuedeRechazar;
+            }
         }
 
         public async Task<PagedResult<bool>> DeleteAsync(int id, int usuarioActual)

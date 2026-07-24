@@ -4,6 +4,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -46,6 +47,7 @@ namespace EG.Application.Services.Adquisicion
 
             try
             {
+                await ApplyTipoBienDefaultsAsync(response);
                 var spResult = await ExecuteDetalleAsync(4, null, response, usuarioActual);
                 var id = spResult.GetId() ?? 0;
                 var result = await GetByIdAsync(id);
@@ -75,6 +77,7 @@ namespace EG.Application.Services.Adquisicion
 
             try
             {
+                await ApplyTipoBienDefaultsAsync(response);
                 var spResult = await ExecuteDetalleAsync(5, id, response, usuarioActual);
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
@@ -161,6 +164,20 @@ namespace EG.Application.Services.Adquisicion
                     x.FkidRequisicionOrco == requisicionId &&
                     x.FkidTipoBienAlma == tipoBienId &&
                     (!excludeId.HasValue || x.PkidRequisicionDetalle != excludeId.Value));
+        }
+
+        private async Task ApplyTipoBienDefaultsAsync(RequisicionDetalleResponse response)
+        {
+            if (response.FkidUnidadesAlma is > 0 || response.FkidTipoBienAlma <= 0)
+            {
+                return;
+            }
+
+            response.FkidUnidadesAlma = await _context.TipoBiens
+                .AsNoTracking()
+                .Where(x => x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo)
+                .Select(x => x.FkidUnidadesAlma)
+                .FirstOrDefaultAsync();
         }
 
         private bool IsRequisicionLocked(int requisicionId)

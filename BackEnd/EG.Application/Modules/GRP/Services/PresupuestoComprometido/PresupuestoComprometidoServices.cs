@@ -35,63 +35,94 @@ namespace EG.Application.Services.PresupuestoComprometido
             if (validation != null)
                 return validation;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            var strategy = _context.Database.CreateExecutionStrategy();
             try
             {
-                var budgetValidation = await ValidateBudgetAvailabilityAsync(response.FkidSolicitudSuficienciaPres);
-                if (budgetValidation != null)
-                    return budgetValidation;
-
-                var result = await base.CreateAsync(response, usuarioActual);
-                if (!result.Success)
-                    return result;
-
-                var authorizationId = result.Data?.PkidAutorizacionSuficiencia
-                    ?? result.Items?.FirstOrDefault()?.PkidAutorizacionSuficiencia
-                    ?? 0;
-                if (authorizationId <= 0)
-                    throw new InvalidOperationException("No se recupero el identificador de la autorizacion.");
-
-                var requestedDetails = await _context.SolicitudSuficienciaDetalles.AsNoTracking()
-                    .Where(x => x.FkidSolicitudSuficienciaPres == response.FkidSolicitudSuficienciaPres && x.Activo)
-                    .ToListAsync();
-
-                foreach (var detail in requestedDetails)
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    _context.AutorizacionSuficienciaDetalles.Add(new AutorizacionSuficienciaDetalle
+                    await using var transaction = await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable);
+                    try
                     {
-                        FkidEmpresaSis = response.FkidEmpresaSis,
-                        FkidAutorizacionSuficienciaPres = authorizationId,
-                        FkidSolicitudSuficienciaDetallePres = detail.PkidSolicitudSuficienciaDetalle,
-                        FkidPartidaConta = detail.FkidPartidaConta,
-                        Enero = detail.Enero,
-                        Febrero = detail.Febrero,
-                        Marzo = detail.Marzo,
-                        Abril = detail.Abril,
-                        Mayo = detail.Mayo,
-                        Junio = detail.Junio,
-                        Julio = detail.Julio,
-                        Agosto = detail.Agosto,
-                        Septiembre = detail.Septiembre,
-                        Octubre = detail.Octubre,
-                        Noviembre = detail.Noviembre,
-                        Diciembre = detail.Diciembre,
-                        Observaciones = detail.Observaciones ?? string.Empty,
-                        Activo = true,
-                        FechaCreacion = DateTime.UtcNow,
-                        UsuarioCreacion = usuarioActual
-                    });
-                }
+                        var budgetValidation = await ValidateBudgetAvailabilityAsync(
+                            response.FkidSolicitudSuficienciaPres);
+                        if (budgetValidation != null)
+                        {
+                            await transaction.RollbackAsync();
+                            return budgetValidation;
+                        }
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                result.Message = "Suficiencia autorizada y reservada en una sola transaccion.";
-                return result;
+                        var result = await base.CreateAsync(response, usuarioActual);
+                        if (!result.Success)
+                        {
+                            await transaction.RollbackAsync();
+                            return result;
+                        }
+
+                        var authorizationId = result.Data?.PkidAutorizacionSuficiencia
+                            ?? result.Items?.FirstOrDefault()?.PkidAutorizacionSuficiencia
+                            ?? 0;
+                        if (authorizationId <= 0)
+                        {
+                            throw new InvalidOperationException(
+                                "No se recupero el identificador de la autorizacion.");
+                        }
+
+                        var requestedDetails = await _context.SolicitudSuficienciaDetalles
+                            .AsNoTracking()
+                            .Where(x =>
+                                x.FkidSolicitudSuficienciaPres == response.FkidSolicitudSuficienciaPres &&
+                                x.Activo)
+                            .ToListAsync();
+
+                        foreach (var detail in requestedDetails)
+                        {
+                            _context.AutorizacionSuficienciaDetalles.Add(
+                                new AutorizacionSuficienciaDetalle
+                                {
+                                    FkidEmpresaSis = response.FkidEmpresaSis,
+                                    FkidAutorizacionSuficienciaPres = authorizationId,
+                                    FkidSolicitudSuficienciaDetallePres =
+                                        detail.PkidSolicitudSuficienciaDetalle,
+                                    FkidPartidaConta = detail.FkidPartidaConta,
+                                    Enero = detail.Enero,
+                                    Febrero = detail.Febrero,
+                                    Marzo = detail.Marzo,
+                                    Abril = detail.Abril,
+                                    Mayo = detail.Mayo,
+                                    Junio = detail.Junio,
+                                    Julio = detail.Julio,
+                                    Agosto = detail.Agosto,
+                                    Septiembre = detail.Septiembre,
+                                    Octubre = detail.Octubre,
+                                    Noviembre = detail.Noviembre,
+                                    Diciembre = detail.Diciembre,
+                                    Observaciones = detail.Observaciones ?? string.Empty,
+                                    Activo = true,
+                                    FechaCreacion = DateTime.UtcNow,
+                                    UsuarioCreacion = usuarioActual
+                                });
+                        }
+
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        result.Message =
+                            "Suficiencia autorizada y reservada en una sola transaccion.";
+                        return result;
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return Failure<AutorizacionSuficienciaResponse>($"No fue posible reservar la suficiencia: {ex.Message}", "BUDGET_ERROR");
+                LogException("reservar suficiencia", ex);
+                return Failure<AutorizacionSuficienciaResponse>(
+                    "No fue posible reservar la suficiencia. Intenta nuevamente; si el problema continúa, consulta el registro técnico.",
+                    "BUDGET_ERROR");
             }
         }
 

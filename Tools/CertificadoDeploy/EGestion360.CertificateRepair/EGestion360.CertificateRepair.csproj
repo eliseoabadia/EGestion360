@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>EGestion360-Certificado</AssemblyName>
+    <RootNamespace>EGestion360.CertificateRepair</RootNamespace>
+    <Version>1.1.0</Version>
+    <AssemblyTitle>EGestion360 - Reparación de certificado</AssemblyTitle>
+    <Description>Renueva e instala el certificado HTTPS de EGestion360 en Windows Server.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\lego.exe" LogicalName="EGestion360.CertificateRepair.lego.exe" />
+    <EmbeddedResource Include="Assets\LEGO-LICENSE.txt" LogicalName="EGestion360.CertificateRepair.LEGO-LICENSE.txt" />
+  </ItemGroup>
+</Project>

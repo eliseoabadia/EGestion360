@@ -22,6 +22,11 @@ namespace EG.Domain.DTOs.Responses.Contabilidad
         public bool? Autorizado { get; set; }
         public DateTime? FechaSolicitud { get; set; }
         public DateTime? FechaAutorizacion { get; set; }
+        public string EstadoFirma { get; set; } = "PENDIENTE";
+        public DateTime? FechaEnvioFirma { get; set; }
+        public DateTime? FechaRechazoFirma { get; set; }
+        public bool PuedeEnviarFirma { get; set; } = true;
+        public bool PuedeRechazarFirma { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public int UsuarioCreacion { get; set; }

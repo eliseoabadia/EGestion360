@@ -2243,3 +2243,20 @@ body,
         max-width: calc(100vw - 12px) !important;
     }
 }
+/* Acciones contextuales compartidas. El popover de MudBlazor se renderiza
+   fuera del arbol del componente, por eso estas reglas deben ser globales. */
+.eg-progressive-popover {
+    min-width: 250px;
+    max-width: min(330px, calc(100vw - 24px));
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, var(--mud-palette-primary));
+    border-radius: 12px;
+    box-shadow: var(--mud-elevation-8);
+}
+
+.eg-progressive-popover .eg-progressive-menu-item {
+    min-height: 45px;
+}
+
+.eg-progressive-popover .eg-progressive-menu-item.is-destructive {
+    color: var(--mud-palette-error);
+}

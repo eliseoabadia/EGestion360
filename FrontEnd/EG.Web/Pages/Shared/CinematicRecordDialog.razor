@@ -14,7 +14,7 @@
                     <div class="mission-kicker">
                         <span class="signal-dot" aria-hidden="true"></span>
                         <span>@Record.Eyebrow</span>
-                        <span class="mission-separator">//</span>
+                        <span class="mission-separator">·</span>
                         <span>@Record.Classification</span>
                     </div>
 
@@ -39,7 +39,7 @@
 
                 <div class="mission-id-panel">
                     <div>
-                        <span>Código de archivo</span>
+                        <span>Folio</span>
                         <strong>@Record.RecordCode</strong>
                     </div>
                     <span class="mission-status @StatusClass">@Record.Status</span>
@@ -51,7 +51,7 @@
                 <section class="mission-hero">
                     <span>@ValueOrDash(Record.HeroLabel)</span>
                     <strong>@Record.HeroValue</strong>
-                    <small>INFORMACIÓN VERIFICADA · MODO CONSULTA</small>
+                    <small>RESUMEN DEL REGISTRO · SOLO CONSULTA</small>
                 </section>
             }
 
@@ -78,13 +78,13 @@
             </div>
 
             <footer class="mission-footer">
-                <span><MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" /> VISUALIZACIÓN SEGURA</span>
-                <span>NO SE REALIZARÁN CAMBIOS EN ESTE REGISTRO</span>
+                <span><MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" /> MODO DE CONSULTA</span>
+                <span>ESTA VISTA NO MODIFICA EL REGISTRO</span>
                 <MudButton Variant="Variant.Outlined"
                            StartIcon="@Icons.Material.Filled.Lock"
                            OnClick="Close"
                            Class="mission-close-button">
-                    Cerrar expediente
+                    Cerrar
                 </MudButton>
             </footer>
         </article>

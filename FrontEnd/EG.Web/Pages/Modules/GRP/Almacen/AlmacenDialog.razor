@@ -15,6 +15,7 @@
 @inject IGenericCrudService<UnidadeResponse> UnidadService
 @inject IGenericCrudService<MotivoEsResponse> MotivoService
 @inject SucursalStateService SucursalStateService
+@inject TipoBienDefaultsService TipoBienDefaultsService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="AlmacenResponse"
@@ -274,19 +275,39 @@
     private async Task OnTipoBienChanged(LookupItem? value)
     {
         _selectedTipoBien = value;
+        _selectedUnidad = null;
+        item.FkidUnidadesAlma = null;
+
         if (value == null)
         {
             return;
         }
 
-        var response = await TipoBienService.GetByIdAsync(value.Id);
-        if (response?.Success == true && response.Data != null)
+        try
         {
-            var tipo = response.Data;
-            if (tipo.FkidUnidadesAlma.HasValue)
+            var unidad = await TipoBienDefaultsService.GetUnidadPrincipalAsync(value.Id);
+            if (_selectedTipoBien?.Id != value.Id)
             {
-                _selectedUnidad = new LookupItem { Id = tipo.FkidUnidadesAlma.Value, Text = tipo.UnidadMedida };
+                return;
             }
+
+            _selectedUnidad = unidad;
+            item.FkidUnidadesAlma = unidad?.Id;
+            if (unidad == null)
+            {
+                Snackbar.Add("El bien no tiene una unidad principal configurada; selecciona una manualmente.", Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (_selectedTipoBien?.Id != value.Id)
+            {
+                return;
+            }
+
+            AppLoggerFactory.CreateLogger("AlmacenDialog")
+                .LogWarning(ex, "No se pudo cargar la unidad principal del tipo de bien {TipoBienId}.", value.Id);
+            Snackbar.Add("No se pudo cargar la unidad principal; selecciona una manualmente.", Severity.Warning);
         }
     }
 

@@ -69,7 +69,7 @@ namespace EG.Application.Services.Adquisicion
         public override async Task<PagedResult<RequisicionResponse>> GetAllAsync()
         {
             var result = await base.GetAllAsync();
-            ApplyCotizacionLocks(result.Items);
+            await ApplyWorkflowStateAsync(result.Items);
             return result;
         }
 
@@ -78,11 +78,11 @@ namespace EG.Application.Services.Adquisicion
             var result = await base.GetByIdAsync(id);
             if (result.Success)
             {
-                ApplyCotizacionLocks(result.Items);
-                if (result.Data != null)
-                {
-                    result.Data.CotizacionesActivas = CountActiveCotizaciones(id);
-                }
+                var records = (result.Items ?? new List<RequisicionResponse>()).ToList();
+                if (result.Data != null && records.All(item => !ReferenceEquals(item, result.Data)))
+                    records.Add(result.Data);
+
+                await ApplyWorkflowStateAsync(records);
             }
 
             return result;
@@ -91,7 +91,7 @@ namespace EG.Application.Services.Adquisicion
         public override async Task<PagedResult<RequisicionResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
             var result = await base.GetAllPaginadoAsync(request);
-            ApplyCotizacionLocks(result.Items);
+            await ApplyWorkflowStateAsync(result.Items);
             return result;
         }
 
@@ -275,7 +275,7 @@ namespace EG.Application.Services.Adquisicion
                 .Count(x => x.FkidRequisicionOrco == requisicionId);
         }
 
-        private void ApplyCotizacionLocks(IList<RequisicionResponse>? items)
+        private async Task ApplyWorkflowStateAsync(IList<RequisicionResponse>? items)
         {
             if (items == null || items.Count == 0)
             {
@@ -283,14 +283,62 @@ namespace EG.Application.Services.Adquisicion
             }
 
             var requisicionIds = items.Select(x => x.PkidRequisicion).Distinct().ToList();
-            var counts = _cotizacionService.GetQueryWithIncludes()
+            var counts = await _cotizacionService.GetQueryWithIncludes()
                 .Where(x => requisicionIds.Contains(x.FkidRequisicionOrco))
                 .GroupBy(x => x.FkidRequisicionOrco)
-                .ToDictionary(x => x.Key, x => x.Count());
+                .ToDictionaryAsync(x => x.Key, x => x.Count());
+
+            var partidas = await _context.RequisicionPartida
+                .AsNoTracking()
+                .Where(x => x.Activo && requisicionIds.Contains(x.FkidRequisicionOrco))
+                .GroupBy(x => x.FkidRequisicionOrco)
+                .ToDictionaryAsync(x => x.Key, x => x.Count());
+
+            var detalles = await _context.RequisicionDetalles
+                .AsNoTracking()
+                .Where(x => x.Activo && requisicionIds.Contains(x.FkidRequisicionOrco))
+                .GroupBy(x => x.FkidRequisicionOrco)
+                .ToDictionaryAsync(x => x.Key, x => x.Count());
+
+            var cotizados = await _context.CotizacionDetalles
+                .AsNoTracking()
+                .Where(x =>
+                    x.Activo &&
+                    x.PrecioUnitario.HasValue &&
+                    x.PrecioUnitario.Value > 0 &&
+                    x.FkidCotizacionOrcoNavigation.Activo &&
+                    x.FkidRequisicionDetalleOrcoNavigation.Activo &&
+                    requisicionIds.Contains(x.FkidRequisicionDetalleOrcoNavigation.FkidRequisicionOrco))
+                .GroupBy(x => x.FkidRequisicionDetalleOrcoNavigation.FkidRequisicionOrco)
+                .Select(group => new
+                {
+                    RequisicionId = group.Key,
+                    Total = group.Select(x => x.FkidRequisicionDetalleOrco).Distinct().Count()
+                })
+                .ToDictionaryAsync(x => x.RequisicionId, x => x.Total);
+
+            var enSuficiencia = await _context.SolicitudSuficienciaDetalles
+                .AsNoTracking()
+                .Where(x =>
+                    x.Activo &&
+                    x.FkidSolicitudSuficienciaPresNavigation.Activo &&
+                    x.FkidRequisicionDetalleOrcoNavigation.Activo &&
+                    requisicionIds.Contains(x.FkidRequisicionDetalleOrcoNavigation.FkidRequisicionOrco))
+                .GroupBy(x => x.FkidRequisicionDetalleOrcoNavigation.FkidRequisicionOrco)
+                .Select(group => new
+                {
+                    RequisicionId = group.Key,
+                    Total = group.Select(x => x.FkidRequisicionDetalleOrco).Distinct().Count()
+                })
+                .ToDictionaryAsync(x => x.RequisicionId, x => x.Total);
 
             foreach (var item in items)
             {
                 item.CotizacionesActivas = counts.TryGetValue(item.PkidRequisicion, out var count) ? count : 0;
+                item.PartidasActivas = partidas.TryGetValue(item.PkidRequisicion, out var partidaCount) ? partidaCount : 0;
+                item.DetallesActivos = detalles.TryGetValue(item.PkidRequisicion, out var detalleCount) ? detalleCount : 0;
+                item.DetallesCotizados = cotizados.TryGetValue(item.PkidRequisicion, out var cotizadoCount) ? cotizadoCount : 0;
+                item.DetallesEnSuficiencia = enSuficiencia.TryGetValue(item.PkidRequisicion, out var suficienciaCount) ? suficienciaCount : 0;
             }
         }
 

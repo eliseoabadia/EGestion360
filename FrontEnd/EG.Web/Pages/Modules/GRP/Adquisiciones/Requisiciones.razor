@@ -49,55 +49,17 @@
             <Columns>
                 <TemplateColumn T="RequisicionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        aria-label="Ver detalle de la requisicion"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        Disabled="@openingRequisicion"
-                        OnClick="@(() => OpenRequisicionDetail(cell.Item))" />
-                        </MudTooltip>
-                        <DocumentSupportButton Modulo="Adquisiciones"
-                        SubModulo="Requisicion"
-                        Controlador="Requisicion"
-                        EntidadId="@cell.Item.PkidRequisicion"
-                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
-                        RegistroTitulo="@cell.Item.Descripcion"
-                        RegistroDescripcion="@($"Requisicion {cell.Item.PkidRequisicion} | {TextOrDash(cell.Item.AreaNombre)}")" />
-                        <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        aria-label="Editar requisicion"
-                        Visible="@CanUpdate"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        Disabled="@IsLocked(cell.Item)"
-                        OnClick="@(() => EditItem(cell.Item.PkidRequisicion))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        aria-label="Eliminar requisicion"
-                        Visible="@CanDelete"
-                        Color="Color.Error"
-                        Size="Size.Small"
-                        Disabled="@IsLocked(cell.Item)"
-                        OnClick="@(() => DeleteItem(cell.Item.PkidRequisicion))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Generar cotizacion">
-                        <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
-                        aria-label="Generar cotizacion"
-                        Visible="@CanCreate"
-                        Color="Color.Success"
-                        Size="Size.Small"
-                        OnClick="@(() => OpenCotizacionFromRequisicion(cell.Item))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Enviar a suficiencia y autorizacion">
-                        <MudIconButton Icon="@Icons.Material.Filled.RuleFolder"
-                        aria-label="Enviar a suficiencia y autorizacion"
-                        Visible="@CanCreate"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        OnClick="@(() => OpenSolicitudSuficienciaFromRequisicion(cell.Item))" />
-                        </MudTooltip>
+                        <ProgressiveActions Actions="@BuildRequisicionActions(cell.Item)" Compact="true">
+                            <SupplementalActions>
+                                <DocumentSupportButton Modulo="Adquisiciones"
+                                                       SubModulo="Requisicion"
+                                                       Controlador="Requisicion"
+                                                       EntidadId="@cell.Item.PkidRequisicion"
+                                                       FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
+                                                       RegistroTitulo="@cell.Item.Descripcion"
+                                                       RegistroDescripcion="@($"Requisicion {cell.Item.PkidRequisicion} | {TextOrDash(cell.Item.AreaNombre)}")" />
+                            </SupplementalActions>
+                        </ProgressiveActions>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionResponse" Title="ID" Identifier="PkidRequisicion" PropertyName="PkidRequisicion" SortBy="x => x.PkidRequisicion">
@@ -148,10 +110,10 @@
                 <TemplateColumn T="RequisicionResponse" Title="Flujo" Identifier="__column_9" Sortable="false" Filterable="false">
                     <CellTemplate Context="cell">
                         <MudChip T="string"
-                        Color="@(IsLocked(cell.Item) ? Color.Warning : Color.Success)"
+                        Color="@GetWorkflowColor(cell.Item)"
                         Variant="Variant.Outlined"
                         Size="Size.Small">
-                        @(IsLocked(cell.Item) ? $"En cotizacion ({cell.Item.CotizacionesActivas})" : "Libre")
+                        @GetWorkflowLabel(cell.Item)
                         </MudChip>
                     </CellTemplate>
                 </TemplateColumn>
@@ -178,62 +140,24 @@
                     </MudChip>
                     <MudChip T="string"
                              Size="Size.Small"
-                             Color="@(IsSelectedLocked ? Color.Warning : Color.Success)"
+                             Color="@GetWorkflowColor(SelectedRequisicion)"
                              Variant="Variant.Outlined"
                              Class="ml-1">
-                        @(IsSelectedLocked ? $"En cotizacion ({SelectedRequisicion.CotizacionesActivas})" : "Libre")
+                        @GetWorkflowLabel(SelectedRequisicion)
                     </MudChip>
-                    <MudTooltip Text="Editar requisicion">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Visible="@CanUpdate"
-                                       Disabled="@IsSelectedLocked"
-                                       OnClick="@(() => EditItem(SelectedRequisicion.PkidRequisicion))"
-                                       Class="ml-2" />
-                    </MudTooltip>
-                    <DocumentSupportButton Modulo="Adquisiciones"
-                                           SubModulo="Requisicion"
-                                           Controlador="Requisicion"
-                                           EntidadId="@SelectedRequisicion.PkidRequisicion"
-                                           FkidEmpresaSis="@SelectedRequisicion.FkidEmpresaSis"
-                                           RegistroTitulo="@SelectedRequisicion.Descripcion"
-                                           RegistroDescripcion="@($"Requisicion {SelectedRequisicion.PkidRequisicion} | {TextOrDash(SelectedRequisicion.AreaNombre)}")" />
-                    <MudTooltip Text="Agregar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       Disabled="@IsSelectedLocked"
-                                       OnClick="AddPartida"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="Agregar detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       Disabled="@(SelectedPartida == null || IsSelectedLocked)"
-                                       OnClick="AddDetalle"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="Generar cotizacion">
-                        <MudIconButton Icon="@Icons.Material.Filled.RequestQuote"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       OnClick="@(() => OpenCotizacionFromRequisicion(SelectedRequisicion))"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="Exportar requisicion a Excel">
-                        <MudIconButton Icon="@Icons.Material.Filled.FileDownload"
-                                       aria-label="Exportar requisicion a Excel"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanExport"
-                                       OnClick="@(() => ExportSelectedRequisicionToExcel(SelectedRequisicion))"
-                                       Class="ml-1" />
-                    </MudTooltip>
+                    <ProgressiveActions Actions="@BuildSelectedRequisicionActions()"
+                                        Compact="false"
+                                        Class="ml-2">
+                        <SupplementalActions>
+                            <DocumentSupportButton Modulo="Adquisiciones"
+                                                   SubModulo="Requisicion"
+                                                   Controlador="Requisicion"
+                                                   EntidadId="@SelectedRequisicion.PkidRequisicion"
+                                                   FkidEmpresaSis="@SelectedRequisicion.FkidEmpresaSis"
+                                                   RegistroTitulo="@SelectedRequisicion.Descripcion"
+                                                   RegistroDescripcion="@($"Requisicion {SelectedRequisicion.PkidRequisicion} | {TextOrDash(SelectedRequisicion.AreaNombre)}")" />
+                        </SupplementalActions>
+                    </ProgressiveActions>
                 </MudPaper>
 
                 <MudCard Elevation="1" Style="flex-shrink: 0;">
@@ -303,28 +227,7 @@
             <Columns>
                 <TemplateColumn T="RequisicionPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Seleccionar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        Color="@(IsSelectedPartida(cell.Item) ? Color.Success : Color.Info)"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectPartida(cell.Item))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Editar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        Disabled="@IsSelectedLocked"
-                        OnClick="@(() => EditPartida(cell.Item.PkidRequisicionPartida))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
-                        Color="Color.Error"
-                        Size="Size.Small"
-                        Disabled="@IsSelectedLocked"
-                        OnClick="@(() => DeletePartida(cell.Item))" />
-                        </MudTooltip>
+                        <ProgressiveActions Actions="@BuildPartidaActions(cell.Item)" Compact="true" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionPartidaResponse" Title="Clave" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
@@ -369,22 +272,7 @@
             <Columns>
                 <TemplateColumn T="RequisicionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar bien o servicio">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        Disabled="@IsSelectedLocked"
-                        OnClick="@(() => EditDetalle(cell.Item.PkidRequisicionDetalle))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar bien o servicio">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
-                        Color="Color.Error"
-                        Size="Size.Small"
-                        Disabled="@IsSelectedLocked"
-                        OnClick="@(() => DeleteDetalle(cell.Item))" />
-                        </MudTooltip>
+                        <ProgressiveActions Actions="@BuildDetalleActions(cell.Item)" Compact="true" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionDetalleResponse" Title="Clave" Identifier="TipoBienCodigoClave" PropertyName="TipoBienCodigoClave" SortBy="x => x.TipoBienCodigoClave">
@@ -933,7 +821,7 @@
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            await ReloadPartidas();
+            await RefreshSelectedRequisicion();
         }
     }
 
@@ -1001,8 +889,7 @@
                 {
                     SelectedPartida = null;
                 }
-                await ReloadPartidas();
-                await ReloadDetalles();
+                await RefreshSelectedRequisicion();
                 return;
             }
 
@@ -1045,12 +932,12 @@
         var dialog = await DialogService.ShowAsync<RequisicionDetalleDialog>(
             "Agregar Detalle",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            await ReloadDetalles();
+            await RefreshSelectedRequisicion();
         }
     }
 
@@ -1070,8 +957,13 @@
 
         if (!HasCompleteBudgetClassification(requisicion))
         {
-            Snackbar.Add($"No se puede generar la cotizacion. {BuildMissingBudgetClassificationMessage(requisicion)}", Severity.Error);
-            return;
+            var completedRequisicion = await CompleteBudgetClassificationAsync(requisicion);
+            if (completedRequisicion == null)
+            {
+                return;
+            }
+
+            requisicion = completedRequisicion;
         }
 
         if (!HasSelectedAnio())
@@ -1110,6 +1002,70 @@
                 await table.ReloadData();
             }
         }
+    }
+
+    private async Task<RequisicionResponse?> CompleteBudgetClassificationAsync(RequisicionResponse requisicion)
+    {
+        if (!CanUpdate)
+        {
+            Snackbar.Add(
+                $"No se puede generar la cotizacion. {BuildMissingBudgetClassificationMessage(requisicion)} " +
+                "No tienes permisos para editarla.",
+                Severity.Error);
+            return null;
+        }
+
+        if (await IsRequisicionLockedAsync(requisicion.PkidRequisicion, "completar su clasificacion presupuestal"))
+        {
+            return null;
+        }
+
+        Snackbar.Add(
+            $"{BuildMissingBudgetClassificationMessage(requisicion)} Se abrira el formulario para completarla.",
+            Severity.Info);
+
+        var parameters = new DialogParameters
+        {
+            ["Id"] = requisicion.PkidRequisicion,
+            ["EmpresaId"] = requisicion.FkidEmpresaSis,
+            ["AnioId"] = AnioStateService.AnioId ?? requisicion.FkidAnioSis
+        };
+
+        var dialog = await DialogService.ShowAsync<RequisicionDialog>(
+            "Completar clasificacion presupuestal",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is not { Canceled: false })
+        {
+            return null;
+        }
+
+        var refreshed = await Service.GetByIdAsync(requisicion.PkidRequisicion);
+        var updated = refreshed?.Success == true ? refreshed.Data : null;
+        if (updated == null)
+        {
+            Snackbar.Add("La requisicion se guardo, pero no fue posible recargarla.", Severity.Warning);
+            return null;
+        }
+
+        if (!HasCompleteBudgetClassification(updated))
+        {
+            Snackbar.Add(
+                $"La requisicion sigue incompleta. {BuildMissingBudgetClassificationMessage(updated)}",
+                Severity.Warning);
+            return null;
+        }
+
+        if (SelectedRequisicion?.PkidRequisicion == updated.PkidRequisicion)
+        {
+            SelectedRequisicion = updated;
+        }
+
+        await ReloadData();
+        Snackbar.Add("Clasificacion completa. Continuando con la cotizacion.", Severity.Success);
+        return updated;
     }
 
     private static bool HasCompleteBudgetClassification(RequisicionResponse item) =>
@@ -1272,12 +1228,12 @@
         var dialog = await DialogService.ShowAsync<RequisicionDetalleDialog>(
             "Editar Detalle",
             parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
-            await ReloadDetalles();
+            await RefreshSelectedRequisicion();
         }
     }
 
@@ -1302,7 +1258,7 @@
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
                 Snackbar.Add("Detalle eliminado correctamente", Severity.Success);
-                await ReloadDetalles();
+                await RefreshSelectedRequisicion();
                 return;
             }
 
@@ -1312,6 +1268,408 @@
         {
             Snackbar.Add($"Error: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
+    }
+
+    private IReadOnlyCollection<ProgressiveAction> BuildRequisicionActions(RequisicionResponse requisicion)
+    {
+        var classificationComplete = HasCompleteBudgetClassification(requisicion);
+        var hasPartidas = requisicion.PartidasActivas > 0;
+        var hasDetalles = requisicion.DetallesActivos > 0;
+        var hasCotizacion = requisicion.CotizacionesActivas > 0;
+        var isLocked = IsLocked(requisicion);
+
+        var primaryActionId = !classificationComplete
+            ? "edit"
+            : !hasPartidas || !hasDetalles
+                ? "open"
+                : !hasCotizacion
+                    ? "quote"
+                    : !requisicion.TodosLosDetallesCotizados
+                        ? "cotizaciones"
+                        : !requisicion.TodosLosDetallesEnSuficiencia
+                            ? "sufficiency"
+                            : "open";
+
+        var openLabel = !classificationComplete
+            ? "Consultar requisicion"
+            : !hasPartidas
+                ? "Agregar partida"
+                : !hasDetalles
+                    ? "Agregar bien o servicio"
+                    : requisicion.TodosLosDetallesEnSuficiencia
+                        ? "Consultar flujo"
+                        : "Abrir requisicion";
+
+        var openIcon = !hasPartidas
+            ? Icons.Material.Filled.PlaylistAdd
+            : !hasDetalles
+                ? Icons.Material.Filled.AddShoppingCart
+                : Icons.Material.Filled.OpenInFull;
+
+        return new List<ProgressiveAction>
+        {
+            new()
+            {
+                Id = "open",
+                Label = openLabel,
+                Icon = openIcon,
+                Color = Color.Info,
+                Order = 10,
+                IsPrimary = primaryActionId == "open",
+                Enabled = !openingRequisicion,
+                DisabledReason = openingRequisicion ? "La requisicion se esta abriendo." : null,
+                ExecuteAsync = () =>
+                {
+                    OpenRequisicionDetail(requisicion);
+                    return Task.CompletedTask;
+                }
+            },
+            new()
+            {
+                Id = "edit",
+                Label = classificationComplete ? "Editar requisicion" : "Completar clasificacion",
+                Icon = Icons.Material.Filled.Edit,
+                Color = classificationComplete ? Color.Primary : Color.Warning,
+                Order = 20,
+                IsPrimary = primaryActionId == "edit",
+                Visible = CanUpdate,
+                Enabled = !isLocked,
+                DisabledReason = isLocked ? "Ya existe una cotizacion activa." : null,
+                ExecuteAsync = () => EditItem(requisicion.PkidRequisicion)
+            },
+            new()
+            {
+                Id = "quote",
+                Label = "Generar cotizacion",
+                Icon = Icons.Material.Filled.RequestQuote,
+                Color = Color.Success,
+                Order = 30,
+                IsPrimary = primaryActionId == "quote",
+                Visible = CanCreate,
+                Enabled = classificationComplete && hasDetalles && !hasCotizacion,
+                DisabledReason = GetQuoteDisabledReason(requisicion),
+                ExecuteAsync = () => OpenCotizacionFromRequisicion(requisicion)
+            },
+            new()
+            {
+                Id = "cotizaciones",
+                Label = requisicion.TodosLosDetallesCotizados ? "Ver cotizaciones" : "Completar montos cotizados",
+                Icon = Icons.Material.Filled.AttachMoney,
+                Color = requisicion.TodosLosDetallesCotizados ? Color.Info : Color.Warning,
+                Order = 40,
+                IsPrimary = primaryActionId == "cotizaciones",
+                Visible = hasCotizacion,
+                Enabled = true,
+                ExecuteAsync = NavigateToCotizacionesAsync
+            },
+            new()
+            {
+                Id = "sufficiency",
+                Label = requisicion.TodosLosDetallesEnSuficiencia
+                    ? "Suficiencia enviada"
+                    : "Enviar a suficiencia",
+                Icon = Icons.Material.Filled.RuleFolder,
+                Color = Color.Primary,
+                Order = 50,
+                IsPrimary = primaryActionId == "sufficiency",
+                Visible = CanCreate,
+                Enabled = hasCotizacion &&
+                          requisicion.TodosLosDetallesCotizados &&
+                          !requisicion.TodosLosDetallesEnSuficiencia,
+                DisabledReason = GetSufficiencyDisabledReason(requisicion),
+                ExecuteAsync = () => OpenSolicitudSuficienciaFromRequisicion(requisicion)
+            },
+            new()
+            {
+                Id = "delete",
+                Label = "Eliminar requisicion",
+                Icon = Icons.Material.Filled.Delete,
+                Color = Color.Error,
+                Order = 90,
+                Visible = CanDelete,
+                Enabled = !isLocked,
+                IsDestructive = true,
+                DisabledReason = isLocked ? "No se puede eliminar mientras tenga una cotizacion activa." : null,
+                ExecuteAsync = () => DeleteItem(requisicion.PkidRequisicion)
+            }
+        };
+    }
+
+    private IReadOnlyCollection<ProgressiveAction> BuildSelectedRequisicionActions()
+    {
+        if (SelectedRequisicion == null)
+        {
+            return Array.Empty<ProgressiveAction>();
+        }
+
+        var requisicion = SelectedRequisicion;
+        var classificationComplete = HasCompleteBudgetClassification(requisicion);
+        var hasPartidas = requisicion.PartidasActivas > 0;
+        var hasDetalles = requisicion.DetallesActivos > 0;
+        var hasCotizacion = requisicion.CotizacionesActivas > 0;
+
+        var primaryActionId = !classificationComplete
+            ? "edit"
+            : !hasPartidas
+                ? "add-partida"
+                : !hasDetalles
+                    ? SelectedPartida == null ? "select-partida" : "add-detail"
+                    : !hasCotizacion
+                        ? "quote"
+                        : !requisicion.TodosLosDetallesCotizados
+                            ? "cotizaciones"
+                            : !requisicion.TodosLosDetallesEnSuficiencia
+                                ? "sufficiency"
+                                : CanExport ? "export" : "cotizaciones";
+
+        return new List<ProgressiveAction>
+        {
+            new()
+            {
+                Id = "edit",
+                Label = classificationComplete ? "Editar requisicion" : "Completar clasificacion",
+                Icon = Icons.Material.Filled.Edit,
+                Color = classificationComplete ? Color.Primary : Color.Warning,
+                Order = 10,
+                IsPrimary = primaryActionId == "edit",
+                Visible = CanUpdate,
+                Enabled = !IsSelectedLocked,
+                DisabledReason = IsSelectedLocked ? "Ya existe una cotizacion activa." : null,
+                ExecuteAsync = () => EditItem(requisicion.PkidRequisicion)
+            },
+            new()
+            {
+                Id = "add-partida",
+                Label = "Agregar partida",
+                Icon = Icons.Material.Filled.PlaylistAdd,
+                Color = Color.Success,
+                Order = 20,
+                IsPrimary = primaryActionId == "add-partida",
+                Visible = CanCreate,
+                Enabled = classificationComplete && !IsSelectedLocked,
+                DisabledReason = !classificationComplete
+                    ? "Completa primero la clasificacion presupuestal."
+                    : IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = AddPartida
+            },
+            new()
+            {
+                Id = "select-partida",
+                Label = "Selecciona una partida",
+                Icon = Icons.Material.Filled.TouchApp,
+                Color = Color.Warning,
+                Order = 25,
+                IsPrimary = primaryActionId == "select-partida",
+                Visible = hasPartidas && !hasDetalles && SelectedPartida == null,
+                Enabled = false,
+                DisabledReason = "Selecciona una fila en la tabla Partidas para continuar."
+            },
+            new()
+            {
+                Id = "add-detail",
+                Label = "Agregar bien o servicio",
+                Icon = Icons.Material.Filled.AddShoppingCart,
+                Color = Color.Success,
+                Order = 30,
+                IsPrimary = primaryActionId == "add-detail",
+                Visible = CanCreate,
+                Enabled = classificationComplete && SelectedPartida != null && !IsSelectedLocked,
+                DisabledReason = SelectedPartida == null
+                    ? "Selecciona primero una partida."
+                    : IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = AddDetalle
+            },
+            new()
+            {
+                Id = "quote",
+                Label = "Generar cotizacion",
+                Icon = Icons.Material.Filled.RequestQuote,
+                Color = Color.Success,
+                Order = 40,
+                IsPrimary = primaryActionId == "quote",
+                Visible = CanCreate,
+                Enabled = classificationComplete && hasDetalles && !hasCotizacion,
+                DisabledReason = GetQuoteDisabledReason(requisicion),
+                ExecuteAsync = () => OpenCotizacionFromRequisicion(requisicion)
+            },
+            new()
+            {
+                Id = "cotizaciones",
+                Label = requisicion.TodosLosDetallesCotizados ? "Ver cotizaciones" : "Completar montos cotizados",
+                Icon = Icons.Material.Filled.AttachMoney,
+                Color = requisicion.TodosLosDetallesCotizados ? Color.Info : Color.Warning,
+                Order = 50,
+                IsPrimary = primaryActionId == "cotizaciones",
+                Visible = hasCotizacion,
+                Enabled = true,
+                ExecuteAsync = NavigateToCotizacionesAsync
+            },
+            new()
+            {
+                Id = "sufficiency",
+                Label = requisicion.TodosLosDetallesEnSuficiencia
+                    ? "Suficiencia enviada"
+                    : "Enviar a suficiencia",
+                Icon = Icons.Material.Filled.RuleFolder,
+                Color = Color.Primary,
+                Order = 60,
+                IsPrimary = primaryActionId == "sufficiency",
+                Visible = CanCreate,
+                Enabled = hasCotizacion &&
+                          requisicion.TodosLosDetallesCotizados &&
+                          !requisicion.TodosLosDetallesEnSuficiencia,
+                DisabledReason = GetSufficiencyDisabledReason(requisicion),
+                ExecuteAsync = () => OpenSolicitudSuficienciaFromRequisicion(requisicion)
+            },
+            new()
+            {
+                Id = "export",
+                Label = "Exportar requisicion",
+                Icon = Icons.Material.Filled.FileDownload,
+                Color = Color.Success,
+                Order = 70,
+                IsPrimary = primaryActionId == "export",
+                Visible = CanExport,
+                ExecuteAsync = () => ExportSelectedRequisicionToExcel(requisicion)
+            }
+        };
+    }
+
+    private IReadOnlyCollection<ProgressiveAction> BuildPartidaActions(RequisicionPartidaResponse partida) =>
+        new List<ProgressiveAction>
+        {
+            new()
+            {
+                Id = "select",
+                Label = IsSelectedPartida(partida) ? "Partida seleccionada" : "Seleccionar partida",
+                Icon = IsSelectedPartida(partida) ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.OpenInFull,
+                Color = IsSelectedPartida(partida) ? Color.Success : Color.Info,
+                Order = 10,
+                IsPrimary = true,
+                ExecuteAsync = () => SelectPartida(partida)
+            },
+            new()
+            {
+                Id = "edit",
+                Label = "Editar partida",
+                Icon = Icons.Material.Filled.Edit,
+                Color = Color.Primary,
+                Order = 20,
+                Visible = CanUpdate,
+                Enabled = !IsSelectedLocked,
+                DisabledReason = IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = () => EditPartida(partida.PkidRequisicionPartida)
+            },
+            new()
+            {
+                Id = "delete",
+                Label = "Eliminar partida",
+                Icon = Icons.Material.Filled.Delete,
+                Color = Color.Error,
+                Order = 90,
+                Visible = CanDelete,
+                Enabled = !IsSelectedLocked,
+                IsDestructive = true,
+                DisabledReason = IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = () => DeletePartida(partida)
+            }
+        };
+
+    private IReadOnlyCollection<ProgressiveAction> BuildDetalleActions(RequisicionDetalleResponse detalle) =>
+        new List<ProgressiveAction>
+        {
+            new()
+            {
+                Id = "edit",
+                Label = "Editar bien o servicio",
+                Icon = Icons.Material.Filled.Edit,
+                Color = Color.Primary,
+                Order = 10,
+                IsPrimary = true,
+                Visible = CanUpdate,
+                Enabled = !IsSelectedLocked,
+                DisabledReason = IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = () => EditDetalle(detalle.PkidRequisicionDetalle)
+            },
+            new()
+            {
+                Id = "delete",
+                Label = "Eliminar bien o servicio",
+                Icon = Icons.Material.Filled.Delete,
+                Color = Color.Error,
+                Order = 90,
+                Visible = CanDelete,
+                Enabled = !IsSelectedLocked,
+                IsDestructive = true,
+                DisabledReason = IsSelectedLocked ? "La requisicion esta en cotizacion." : null,
+                ExecuteAsync = () => DeleteDetalle(detalle)
+            }
+        };
+
+    private static string? GetQuoteDisabledReason(RequisicionResponse requisicion)
+    {
+        if (!HasCompleteBudgetClassification(requisicion))
+            return "Completa la clasificacion presupuestal.";
+        if (requisicion.DetallesActivos <= 0)
+            return "Agrega al menos un bien o servicio.";
+        if (requisicion.CotizacionesActivas > 0)
+            return "Ya existe una cotizacion activa.";
+
+        return null;
+    }
+
+    private static string? GetSufficiencyDisabledReason(RequisicionResponse requisicion)
+    {
+        if (requisicion.CotizacionesActivas <= 0)
+            return "Genera primero una cotizacion.";
+        if (!requisicion.TodosLosDetallesCotizados)
+            return "Captura el monto de todos los bienes cotizados.";
+        if (requisicion.TodosLosDetallesEnSuficiencia)
+            return "Todos los bienes ya fueron enviados a suficiencia.";
+
+        return null;
+    }
+
+    private static string GetWorkflowLabel(RequisicionResponse requisicion)
+    {
+        if (!HasCompleteBudgetClassification(requisicion))
+            return "Falta clasificacion";
+        if (requisicion.PartidasActivas <= 0)
+            return "Falta partida";
+        if (requisicion.DetallesActivos <= 0)
+            return "Faltan bienes";
+        if (requisicion.CotizacionesActivas <= 0)
+            return "Lista para cotizar";
+        if (!requisicion.TodosLosDetallesCotizados)
+            return "Cotizacion pendiente";
+        if (!requisicion.TodosLosDetallesEnSuficiencia)
+            return "Lista para suficiencia";
+
+        return "En suficiencia";
+    }
+
+    private static Color GetWorkflowColor(RequisicionResponse requisicion)
+    {
+        if (!HasCompleteBudgetClassification(requisicion) ||
+            requisicion.PartidasActivas <= 0 ||
+            requisicion.DetallesActivos <= 0)
+        {
+            return Color.Warning;
+        }
+
+        if (requisicion.CotizacionesActivas <= 0 ||
+            requisicion.TodosLosDetallesCotizados && !requisicion.TodosLosDetallesEnSuficiencia)
+        {
+            return Color.Success;
+        }
+
+        return requisicion.TodosLosDetallesEnSuficiencia ? Color.Info : Color.Primary;
+    }
+
+    private Task NavigateToCotizacionesAsync()
+    {
+        NavigationManager.NavigateTo("/Adquisiciones/Cotizacion");
+        return Task.CompletedTask;
     }
 
     private async Task ReloadPartidas()

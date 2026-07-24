@@ -131,29 +131,32 @@ namespace EG.Application.Services.Adquisicion
             Func<Task<StoredProcedureResult>> operation)
             where TEntity : class
         {
-            await using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-
-            var entity = await context.Set<TEntity>().FindAsync(id);
-            if (entity == null)
-            {
-                throw new UserVisibleException($"{entityName} no encontrado.", "NOT_FOUND");
-            }
-
-            if (expectedRowVersion is { Length: > 0 })
-            {
-                var property = typeof(TEntity).GetProperty("RowVersion");
-                var currentRowVersion = property?.GetValue(entity) as byte[];
-                if (currentRowVersion == null || !currentRowVersion.SequenceEqual(expectedRowVersion))
+            return await context.ExecuteResilientTransactionAsync(
+                async cancellationToken =>
                 {
-                    throw new UserVisibleException(
-                        "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente.",
-                        "CONCURRENCY_CONFLICT");
-                }
-            }
+                    var entity = await context.Set<TEntity>().FindAsync(
+                        [id],
+                        cancellationToken);
+                    if (entity == null)
+                    {
+                        throw new UserVisibleException($"{entityName} no encontrado.", "NOT_FOUND");
+                    }
 
-            var result = await operation();
-            await transaction.CommitAsync();
-            return result;
+                    if (expectedRowVersion is { Length: > 0 })
+                    {
+                        var property = typeof(TEntity).GetProperty("RowVersion");
+                        var currentRowVersion = property?.GetValue(entity) as byte[];
+                        if (currentRowVersion == null || !currentRowVersion.SequenceEqual(expectedRowVersion))
+                        {
+                            throw new UserVisibleException(
+                                "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente.",
+                                "CONCURRENCY_CONFLICT");
+                        }
+                    }
+
+                    return await operation();
+                },
+                IsolationLevel.Serializable);
         }
     }
 }

@@ -1,0 +1,68 @@
+.eg-progressive-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    max-width: 100%;
+}
+
+.eg-progressive-primary-shell {
+    display: inline-flex;
+    min-width: 0;
+}
+
+.eg-progressive-actions ::deep .eg-progressive-primary-icon,
+.eg-progressive-actions ::deep .eg-progressive-menu {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+}
+
+.eg-progressive-actions ::deep .eg-progressive-primary-button {
+    min-height: 34px;
+    border-radius: 9px;
+    font-weight: 750;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.eg-progressive-supplemental {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.eg-progressive-supplemental ::deep .mud-icon-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+}
+
+.eg-progressive-menu-copy {
+    display: grid;
+    min-width: 0;
+    gap: 1px;
+    padding: 2px 0;
+    line-height: 1.2;
+}
+
+.eg-progressive-menu-copy > span {
+    font-size: .82rem;
+    font-weight: 650;
+}
+
+.eg-progressive-menu-copy > small {
+    overflow: hidden;
+    max-width: 230px;
+    color: var(--mud-palette-text-disabled);
+    font-size: .66rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .eg-progressive-actions.is-expanded ::deep .eg-progressive-primary-button {
+        max-width: 210px;
+    }
+}

@@ -1,6 +1,7 @@
 using EG.ApiCoreBS.Extensions;
 using EG.ApiCoreBS.Auth;
 using EG.ApiCoreBS.Filters;
+using EG.ApiCoreBS.Initialization;
 using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
 using EG.Business.Mapping.General;
@@ -205,6 +206,9 @@ try
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
+
+    await EnvioWorkflowInitializer.EnsureAsync(app.Services, logger);
+    await RequiredCatalogInitializer.EnsureAsync(app.Services, logger);
 
     if (app.Environment.IsDevelopment())
     {
