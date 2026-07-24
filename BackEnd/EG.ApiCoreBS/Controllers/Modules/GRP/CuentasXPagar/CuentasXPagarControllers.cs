@@ -3,6 +3,7 @@ using EG.Application.Interfaces.CuentasXPagar;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
+using EG.Domain.DTOs.Requests.CuentasXPagar;
 using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -109,8 +110,21 @@ namespace EG.ApiCoreBS.Controllers.CuentasXPagar
         : CuentasXPagarControllerBase<CLCFacturaResponse>(service, userContext);
 
     [Route("api/[controller]")]
-    public class ChequeController(IAdquisicionCrudAppService<ChequeResponse> service, IUserContextService userContext)
-        : CuentasXPagarControllerBase<ChequeResponse>(service, userContext);
+    public class ChequeController(IChequeAppService service, IUserContextService userContext)
+        : CuentasXPagarControllerBase<ChequeResponse>(service, userContext)
+    {
+        [HttpPost("{id:int}/regresar-solicitud-suficiencia")]
+        public async Task<ActionResult<PagedResult<ChequeResponse>>> RegresarASolicitudSuficiencia(
+            int id,
+            [FromBody] RegresarChequeSuficienciaRequest request)
+        {
+            var result = await service.RegresarASolicitudSuficienciaAsync(id, request.Motivo);
+            if (result.Success)
+                return Ok(result);
+
+            return result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
+        }
+    }
 
     [Route("api/[controller]")]
     public class ChequePartidaController(IAdquisicionCrudAppService<ChequePartidaResponse> service, IUserContextService userContext)

@@ -23,7 +23,7 @@
 
             <div class="hero-status">
                 <span>@Current.Signal</span>
-                <strong>@AccessibleStageCount de @Current.Stages.Count accesos</strong>
+                <strong>Etapa @(RecommendedStageIndex + 1) de @Current.Stages.Count</strong>
             </div>
         </header>
 
@@ -41,31 +41,108 @@
             }
         </section>
 
+        @if (RecommendedStage is { } recommendedStage)
+        {
+            <section class="guide-panel" aria-label="Guía de avance del módulo">
+                <div class="guide-heading">
+                    <div class="guide-title">
+                        <span class="guide-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span>Ayuda del proceso</span>
+                            <strong>Qué llevas, qué sigue y qué falta</strong>
+                            <p>Usa esta ruta como guía; abre cada etapa para consultar el estado de sus expedientes.</p>
+                        </div>
+                    </div>
+                    <button type="button"
+                            class="next-button guide-cta"
+                            @onclick="OpenNextAction"
+                            disabled="@(!CanOpenStage(recommendedStage))">
+                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" />
+                        <span>@Current.NextAction</span>
+                    </button>
+                </div>
+
+                <div class="guide-progress" style="@GuideProgressStyle">
+                    <div class="guide-progress-bar" aria-hidden="true">
+                        <span></span>
+                    </div>
+                    <small>@AccessibleStageCount pantallas disponibles de @Current.Stages.Count en esta ruta</small>
+                </div>
+
+                <div class="guide-summary">
+                    <article class="guide-summary-card completed">
+                        <span>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" />
+                            Ya recorrido
+                        </span>
+                        <strong>@CompletedStageCount @(CompletedStageCount == 1 ? "etapa" : "etapas")</strong>
+                        <p>@CompletedStagesText</p>
+                    </article>
+
+                    <article class="guide-summary-card current">
+                        <span>
+                            <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Size="Size.Small" />
+                            Haz esto ahora
+                        </span>
+                        <strong>@recommendedStage.Title</strong>
+                        <p>@recommendedStage.Detail</p>
+                        <div class="guide-requirements">
+                            <small><b>Necesitas:</b> @GetStageRequirement(RecommendedStageIndex)</small>
+                            <small><b>Obtienes:</b> @GetStageResult(RecommendedStageIndex)</small>
+                        </div>
+                    </article>
+
+                    <article class="guide-summary-card pending">
+                        <span>
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" />
+                            Falta después
+                        </span>
+                        <strong>@PendingStageCount @(PendingStageCount == 1 ? "etapa" : "etapas")</strong>
+                        <p>@PendingStagesText</p>
+                    </article>
+                </div>
+            </section>
+        }
+
         <section class="module-grid">
             <article class="workflow-panel">
                 <div class="panel-heading">
                     <div>
-                        <span>Workflow</span>
+                        <span>Ruta completa</span>
                         <strong>@Current.FlowName</strong>
                     </div>
-                    <button type="button" class="next-button" @onclick="OpenNextAction" disabled="@(!Current.Stages.Any(CanOpenStage))">
-                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" />
-                        <span>@Current.NextAction</span>
-                    </button>
+                    <div class="workflow-legend" aria-label="Estados de la ruta">
+                        <span class="completed"><i></i>Recorrido</span>
+                        <span class="current"><i></i>Ahora</span>
+                        <span class="pending"><i></i>Después</span>
+                    </div>
                 </div>
 
                 <div class="stage-lane">
                     @for (var index = 0; index < Current.Stages.Count; index++)
                     {
                         var stage = Current.Stages[index];
-                        <article class="stage-card" style="@ToneStyle(stage.Tone)">
-                            <span class="stage-number">@((index + 1).ToString("00"))</span>
+                        var progress = GetStageProgress(index);
+                        <article class="stage-card @progress.CssClass" style="@ToneStyle(progress.Tone)">
+                            <div class="stage-marker">
+                                <span class="stage-number">@((index + 1).ToString("00"))</span>
+                                <span class="stage-progress-state">
+                                    <MudIcon Icon="@progress.Icon" Size="Size.Small" />
+                                    @progress.Label
+                                </span>
+                            </div>
                             <div class="stage-body">
                                 <div class="stage-title">
                                     <MudIcon Icon="@stage.Icon" Size="Size.Small" />
                                     <strong>@stage.Title</strong>
                                 </div>
                                 <p>@stage.Detail</p>
+                                <div class="stage-guidance">
+                                    <small><b>Entrada:</b> @GetStageRequirement(index)</small>
+                                    <small><b>Salida:</b> @GetStageResult(index)</small>
+                                </div>
                                 <div class="stage-meta">
                                     <span>@stage.Status</span>
                                     <span>@stage.Document</span>
@@ -74,8 +151,15 @@
                                 {
                                     <button type="button" class="stage-action" @onclick="@(() => OpenStage(stage))">
                                         <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
-                                        Abrir
+                                        @GetStageActionLabel(index)
                                     </button>
+                                }
+                                else
+                                {
+                                    <span class="stage-no-access">
+                                        <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                                        Sin acceso asignado
+                                    </span>
                                 }
                             </div>
                         </article>
@@ -93,7 +177,7 @@
             <aside class="side-rail">
                 <article class="focus-panel">
                     <div class="panel-heading compact">
-                        <span>Cuellos de botella</span>
+                        <span>Qué requiere atención</span>
                         <MudIcon Icon="@Icons.Material.Filled.Troubleshoot" Size="Size.Small" />
                     </div>
                     <div class="insight-list">
@@ -117,11 +201,13 @@
                         <MudIcon Icon="@Icons.Material.Filled.FolderCopy" Size="Size.Small" />
                     </div>
                     <div class="document-stack">
-                        @foreach (var document in Current.Documents)
+                        @for (var documentIndex = 0; documentIndex < Current.Documents.Count; documentIndex++)
                         {
+                            var document = Current.Documents[documentIndex];
                             <span style="@ToneStyle(document.Tone)">
                                 <MudIcon Icon="@document.Icon" Size="Size.Small" />
-                                @document.Title
+                                <b>@document.Title</b>
+                                <small>@GetDocumentStatus(documentIndex)</small>
                             </span>
                         }
                     </div>
@@ -130,7 +216,7 @@
                 <article class="assistant-card" style="@ToneStyle(Current.AssistantTone)">
                     <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
                     <div>
-                        <span>Asistente de proceso</span>
+                        <span>Antes de continuar</span>
                         <strong>@Current.AssistantMessage</strong>
                     </div>
                 </article>
@@ -145,6 +231,33 @@
     private ModuleModel Current { get; set; } = Catalog["default"];
 
     private int AccessibleStageCount => Current.Stages.Count(CanOpenStage);
+    private int RecommendedStageIndex =>
+        Current.Stages.Count == 0
+            ? -1
+            : Math.Clamp(Current.GuideStageIndex, 0, Current.Stages.Count - 1);
+    private StageModel? RecommendedStage =>
+        RecommendedStageIndex >= 0 ? Current.Stages[RecommendedStageIndex] : null;
+    private int CompletedStageCount => Math.Max(RecommendedStageIndex, 0);
+    private int PendingStageCount =>
+        RecommendedStageIndex < 0 ? 0 : Math.Max(Current.Stages.Count - RecommendedStageIndex - 1, 0);
+    private string CompletedStagesText =>
+        CompletedStageCount == 0
+            ? "Esta es la primera etapa de la ruta."
+            : string.Join(" · ", Current.Stages.Take(CompletedStageCount).Select(stage => stage.Title));
+    private string PendingStagesText =>
+        PendingStageCount == 0
+            ? "Al concluir este paso habrás completado la ruta."
+            : string.Join(" · ", Current.Stages.Skip(RecommendedStageIndex + 1).Select(stage => stage.Title));
+    private string GuideProgressStyle
+    {
+        get
+        {
+            var percentage = Current.Stages.Count == 0
+                ? 0
+                : ((RecommendedStageIndex + 1d) / Current.Stages.Count) * 100d;
+            return $"--guide-progress:{percentage.ToString("0.##", CultureInfo.InvariantCulture)}%;";
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -155,7 +268,13 @@
 
     private void OpenNextAction()
     {
-        var stage = Current.Stages.FirstOrDefault(CanOpenStage);
+        var stage = RecommendedStage is { } recommended && CanOpenStage(recommended)
+            ? recommended
+            : Current.Stages
+                .Skip(Math.Max(RecommendedStageIndex, 0))
+                .FirstOrDefault(CanOpenStage)
+              ?? Current.Stages.FirstOrDefault(CanOpenStage);
+
         if (stage != null)
         {
             OpenStage(stage);
@@ -187,6 +306,47 @@
 
     private bool HasPermission(string module, string subModule, string action) =>
         AuthProvider.HasPermission(module, subModule, action);
+
+    private StageProgressView GetStageProgress(int index) =>
+        index < RecommendedStageIndex
+            ? new("Recorrido", "completed", "success", Icons.Material.Filled.CheckCircle)
+            : index == RecommendedStageIndex
+                ? new("Ahora", "current", "warning", Icons.Material.Filled.PlayCircle)
+                : new("Después", "pending", "neutral", Icons.Material.Filled.Schedule);
+
+    private string GetStageRequirement(int index)
+    {
+        if (index <= 0 || Current.Stages.Count == 0)
+            return "Datos base, periodo activo y permisos para operar el módulo.";
+
+        var previous = Current.Stages[index - 1];
+        return $"{previous.Document} validado desde {previous.Title}.";
+    }
+
+    private string GetStageResult(int index)
+    {
+        if (index < 0 || index >= Current.Stages.Count)
+            return "Documento de la etapa.";
+
+        var stage = Current.Stages[index];
+        return index == Current.Stages.Count - 1
+            ? $"{stage.Document} integrado para cerrar el proceso."
+            : $"{stage.Document} listo para continuar a {Current.Stages[index + 1].Title}.";
+    }
+
+    private string GetStageActionLabel(int index) =>
+        index < RecommendedStageIndex
+            ? "Consultar"
+            : index == RecommendedStageIndex
+                ? "Continuar"
+                : "Preparar";
+
+    private string GetDocumentStatus(int index) =>
+        index < RecommendedStageIndex
+            ? "Integrado"
+            : index == RecommendedStageIndex
+                ? "En integración"
+                : "Pendiente";
 
     private static ModuleModel ResolveModule(string? slug)
     {
@@ -249,6 +409,7 @@
                 "Del autorizado al comprometido, ejercido y pagado.",
                 "Momentos presupuestales",
                 "Revisar suficiencias",
+                2,
                 "Falta suficiencia en solicitudes listas para comprometer.",
                 "warning",
                 [
@@ -279,6 +440,7 @@
                 "De la requisicion al contrato, factura y pago.",
                 "Compra integral",
                 "Solicitar suficiencia",
+                2,
                 "La orden no avanza si falta autorizacion presupuestal.",
                 "warning",
                 [
@@ -309,6 +471,7 @@
                 "Polizas, auxiliares, libros y estados financieros.",
                 "Ciclo contable",
                 "Revisar polizas",
+                0,
                 "La evidencia debe cuadrar antes de cerrar el periodo.",
                 "info",
                 [
@@ -340,6 +503,7 @@
                 "Bienes, resguardos, bajas e inventarios fisicos.",
                 "Control patrimonial",
                 "Revisar resguardos",
+                1,
                 "Los bienes sin resguardo deben asignarse antes del inventario.",
                 "warning",
                 [
@@ -369,6 +533,7 @@
                 "Entradas, existencias, pedidos y salidas.",
                 "Control de almacen",
                 "Recibir pedidos",
+                0,
                 "La salida requiere existencia registrada y solicitud activa.",
                 "success",
                 [
@@ -398,6 +563,7 @@
                 "Cuentas por pagar, cuentas por cobrar, inversiones y saldos.",
                 "Ciclo financiero",
                 "Revisar pagos",
+                2,
                 "Las facturas deben provisionarse antes de liberar cheque o transferencia.",
                 "info",
                 [
@@ -429,6 +595,7 @@
                 "Periodo, incidencias, pre-calculo, calculo, recibos, timbrado y cierre.",
                 "Generacion de quincena",
                 "Validar periodo",
+                0,
                 "Si no hay periodo quincenal abierto, inicia en Periodos; si hay incidencias sin justificar, no corras el calculo final.",
                 "warning",
                 [
@@ -465,6 +632,7 @@
                 "Ingreso estimado, devengado, recaudado y conciliado.",
                 "Seguimiento de ingreso",
                 "Revisar depositos",
+                2,
                 "Los depositos deben conciliarse contra CLC y poliza.",
                 "info",
                 [
@@ -493,6 +661,7 @@
                 "Anteproyectos, MIR, indicadores y presupuesto por programa.",
                 "Ciclo PBR",
                 "Revisar indicadores",
+                2,
                 "Los indicadores deben mantener meta, avance y evidencia.",
                 "info",
                 [
@@ -522,6 +691,7 @@
                 "Usuarios, menus, catalogos y permisos del sistema.",
                 "Administracion",
                 "Revisar accesos",
+                2,
                 "Los permisos deben seguir el menu operativo visible.",
                 "neutral",
                 [
@@ -552,6 +722,7 @@
             "Selecciona un dashboard desde el icono del menu principal.",
             "Workflow",
             "Volver al inicio",
+            0,
             "Sin modulo reconocido para esta ruta.",
             "neutral",
             [new("Modulo", "N/D", "Ruta no configurada", Icons.Material.Filled.Info, "neutral")],
@@ -590,6 +761,7 @@
         string Summary,
         string FlowName,
         string NextAction,
+        int GuideStageIndex,
         string AssistantMessage,
         string AssistantTone,
         IReadOnlyList<MetricModel> Metrics,
@@ -609,6 +781,8 @@
         string Route,
         IReadOnlyList<string> PermissionModules,
         string PermissionSubModule);
+
+    private sealed record StageProgressView(string Label, string CssClass, string Tone, string Icon);
 
     private sealed record InsightModel(string Title, string Detail, string Count, string Tone);
 
@@ -637,6 +811,7 @@
 
     .module-hero,
     .metric-strip,
+    .guide-panel,
     .workflow-panel,
     .focus-panel,
     .assistant-card {
@@ -816,6 +991,168 @@
         white-space: nowrap;
     }
 
+    .guide-panel {
+        min-width: 0;
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+        border-left: 4px solid var(--module-accent);
+        background:
+            linear-gradient(120deg, color-mix(in srgb, var(--module-accent) 7%, transparent), transparent 48%),
+            var(--eg-surface-raised, var(--mud-palette-surface));
+    }
+
+    .guide-heading,
+    .guide-title,
+    .guide-title > div,
+    .guide-summary-card > span,
+    .workflow-legend,
+    .stage-marker,
+    .stage-progress-state,
+    .stage-no-access {
+        display: flex;
+        align-items: center;
+    }
+
+    .guide-heading {
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .guide-title {
+        min-width: 0;
+        gap: 10px;
+    }
+
+    .guide-title > div {
+        min-width: 0;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .guide-title > div > span,
+    .guide-summary-card > span,
+    .stage-progress-state {
+        color: var(--mud-palette-text-secondary);
+        font-size: .7rem;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .guide-title strong {
+        color: var(--mud-palette-text-primary);
+        font-size: 1rem;
+    }
+
+    .guide-title p {
+        font-size: .78rem;
+    }
+
+    .guide-icon {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 12%, transparent);
+    }
+
+    .guide-cta {
+        flex: 0 0 auto;
+    }
+
+    .guide-progress {
+        display: grid;
+        grid-template-columns: minmax(150px, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .guide-progress-bar {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--module-accent) 10%, var(--mud-palette-background));
+    }
+
+    .guide-progress-bar span {
+        width: var(--guide-progress);
+        height: 100%;
+        display: block;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--eg-status-success), var(--module-accent));
+        transition: width 220ms ease;
+    }
+
+    .guide-progress small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        font-weight: 750;
+    }
+
+    .guide-summary {
+        display: grid;
+        grid-template-columns: minmax(0, .8fr) minmax(280px, 1.4fr) minmax(0, .8fr);
+        gap: 9px;
+    }
+
+    .guide-summary-card {
+        min-width: 0;
+        display: grid;
+        align-content: start;
+        gap: 5px;
+        padding: 11px;
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--guide-tone) 4%, var(--mud-palette-surface));
+    }
+
+    .guide-summary-card.completed {
+        --guide-tone: var(--eg-status-success);
+    }
+
+    .guide-summary-card.current {
+        --guide-tone: var(--module-accent);
+        border-color: color-mix(in srgb, var(--module-accent) 46%, var(--mud-palette-lines-default));
+        box-shadow: inset 3px 0 0 var(--module-accent);
+    }
+
+    .guide-summary-card.pending {
+        --guide-tone: #667085;
+    }
+
+    .guide-summary-card > span {
+        gap: 5px;
+        color: var(--guide-tone);
+    }
+
+    .guide-summary-card strong {
+        color: var(--mud-palette-text-primary);
+        font-size: .92rem;
+    }
+
+    .guide-summary-card p {
+        color: var(--mud-palette-text-secondary);
+        font-size: .76rem;
+    }
+
+    .guide-requirements {
+        display: grid;
+        gap: 4px;
+        margin-top: 2px;
+        padding-top: 7px;
+        border-top: 1px dashed color-mix(in srgb, var(--module-accent) 26%, var(--mud-palette-lines-default));
+    }
+
+    .guide-requirements small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+    }
+
     .module-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 330px;
@@ -864,6 +1201,37 @@
         color: var(--module-accent);
     }
 
+    .workflow-legend {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .workflow-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--mud-palette-text-secondary);
+        font-size: .68rem;
+        font-weight: 800;
+    }
+
+    .workflow-legend i {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #667085;
+    }
+
+    .workflow-legend .completed i {
+        background: var(--eg-status-success);
+    }
+
+    .workflow-legend .current i {
+        background: var(--module-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--module-accent) 18%, transparent);
+    }
+
     .next-button {
         min-width: 0;
         gap: 8px;
@@ -890,11 +1258,16 @@
     }
 
     .stage-card {
-        width: 218px;
-        min-height: 222px;
-        flex: 0 0 218px;
+        width: 236px;
+        min-height: 294px;
+        flex: 0 0 236px;
         display: grid;
         grid-template-rows: 30px 1fr;
+        gap: 8px;
+    }
+
+    .stage-marker {
+        justify-content: space-between;
         gap: 8px;
     }
 
@@ -911,8 +1284,17 @@
         font-weight: 900;
     }
 
+    .stage-progress-state {
+        gap: 4px;
+        color: var(--tone-color);
+    }
+
+    .stage-progress-state .mud-icon-root {
+        font-size: 1rem;
+    }
+
     .stage-body {
-        min-height: 184px;
+        min-height: 256px;
         display: flex;
         flex-direction: column;
         gap: 9px;
@@ -922,6 +1304,15 @@
         background: color-mix(in srgb, var(--tone-color) 3%, var(--mud-palette-surface));
         box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tone-color) 22%, transparent);
         transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .stage-card.current .stage-body {
+        border-color: color-mix(in srgb, var(--module-accent) 52%, var(--mud-palette-lines-default));
+        box-shadow: inset 3px 0 0 var(--module-accent), 0 12px 24px var(--eg-shell-shadow, rgba(2, 8, 23, .12));
+    }
+
+    .stage-card.pending .stage-body {
+        opacity: .86;
     }
 
     .stage-card:hover .stage-body {
@@ -947,8 +1338,23 @@
     }
 
     .stage-body p {
-        flex: 1 1 auto;
         font-size: .78rem;
+    }
+
+    .stage-guidance {
+        flex: 1 1 auto;
+        display: grid;
+        align-content: start;
+        gap: 5px;
+        padding: 8px;
+        border-radius: 7px;
+        background: color-mix(in srgb, var(--tone-color) 6%, transparent);
+    }
+
+    .stage-guidance small {
+        color: var(--mud-palette-text-secondary);
+        font-size: .7rem;
+        line-height: 1.35;
     }
 
     .stage-meta {
@@ -977,6 +1383,15 @@
         border-radius: 8px;
         font-size: .78rem;
         font-weight: 850;
+    }
+
+    .stage-no-access {
+        gap: 5px;
+        align-self: flex-start;
+        min-height: 30px;
+        color: var(--mud-palette-text-disabled);
+        font-size: .74rem;
+        font-weight: 750;
     }
 
     .stage-connector {
@@ -1057,6 +1472,20 @@
         font-weight: 750;
     }
 
+    .document-stack span b {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .document-stack span small {
+        margin-left: auto;
+        color: var(--tone-color);
+        font-size: .66rem;
+        white-space: nowrap;
+    }
+
     .document-stack .mud-icon-root {
         color: var(--tone-color);
     }
@@ -1078,12 +1507,23 @@
         background: color-mix(in srgb, var(--tone-color) 12%, transparent);
     }
 
+    .assistant-card strong {
+        overflow: visible;
+        line-height: 1.35;
+        text-overflow: clip;
+        white-space: normal;
+    }
+
     @@media (max-width: 1180px) {
         .module-grid {
             grid-template-columns: 1fr;
         }
 
         .side-rail {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .guide-summary {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
@@ -1102,6 +1542,17 @@
             justify-content: flex-start;
         }
 
+        .guide-heading {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .guide-cta {
+            align-self: flex-start;
+        }
+
+        .guide-progress,
+        .guide-summary,
         .metric-strip,
         .side-rail {
             grid-template-columns: 1fr;

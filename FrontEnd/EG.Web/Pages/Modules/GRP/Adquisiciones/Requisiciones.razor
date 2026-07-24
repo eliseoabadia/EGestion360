@@ -47,10 +47,32 @@
                                   OnSearch="OnSearch"
                                   OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
-                <TemplateColumn T="RequisicionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                <TemplateColumn T="RequisicionResponse"
+                                Title="Acciones"
+                                Identifier="__actions"
+                                Sortable="false"
+                                Filterable="false"
+                                Hideable="false"
+                                Resizable="false"
+                                CellStyle="min-width: 158px; width: 158px;"
+                                HeaderStyle="min-width: 158px; width: 158px;">
                     <CellTemplate Context="cell">
                         <ProgressiveActions Actions="@BuildRequisicionActions(cell.Item)" Compact="true">
                             <SupplementalActions>
+                                @if (CanUpdate && HasCompleteBudgetClassification(cell.Item))
+                                {
+                                    <MudTooltip Text="@GetEditTooltip(cell.Item)">
+                                        <span>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Color="Color.Primary"
+                                                           Variant="Variant.Outlined"
+                                                           Size="Size.Small"
+                                                           Disabled="@IsLocked(cell.Item)"
+                                                           OnClick="@(() => EditItem(cell.Item.PkidRequisicion))"
+                                                           aria-label="Editar requisicion" />
+                                        </span>
+                                    </MudTooltip>
+                                }
                                 <DocumentSupportButton Modulo="Adquisiciones"
                                                        SubModulo="Requisicion"
                                                        Controlador="Requisicion"
@@ -1332,7 +1354,7 @@
                 Color = classificationComplete ? Color.Primary : Color.Warning,
                 Order = 20,
                 IsPrimary = primaryActionId == "edit",
-                Visible = CanUpdate,
+                Visible = CanUpdate && !classificationComplete,
                 Enabled = !isLocked,
                 DisabledReason = isLocked ? "Ya existe una cotizacion activa." : null,
                 ExecuteAsync = () => EditItem(requisicion.PkidRequisicion)
@@ -1617,6 +1639,11 @@
 
         return null;
     }
+
+    private static string GetEditTooltip(RequisicionResponse requisicion) =>
+        IsLocked(requisicion)
+            ? "No se puede editar porque ya existe una cotizacion activa."
+            : "Editar requisicion; disponible hasta generar la cotizacion.";
 
     private static string? GetSufficiencyDisabledReason(RequisicionResponse requisicion)
     {

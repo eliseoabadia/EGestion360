@@ -45,6 +45,14 @@
                                                        RegistroDescripcion="@TextOrDash(context.Item.Concepto)" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidCheque))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidCheque))" />
+                                <MudTooltip Text="Regresar hasta solicitud de suficiencia y generar pólizas de reversión">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                                   Visible="@(CanUpdate && IsLocked(context.Item))"
+                                                   Disabled="@(returningChequeId.HasValue)"
+                                                   Color="Color.Warning"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => RegresarASolicitud(context.Item))" />
+                                </MudTooltip>
                             </CellTemplate></TemplateColumn>
                             <PropertyColumn T="ChequeResponse" TProperty="string" Property="x => x.NumeroCheque" Title="Número" Identifier="NumeroCheque" />
                             <PropertyColumn T="ChequeResponse" TProperty="string" Property="x => x.NumClc" Title="CLC" Identifier="NumClc" />
@@ -66,6 +74,15 @@
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedCheque.Estatus)">@TextOrDash(SelectedCheque.EstatusDescripcion)</MudChip>
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" Class="ml-2" />
+                    <MudTooltip Text="Regresar hasta solicitud de suficiencia y generar pólizas de reversión">
+                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                       Visible="@(CanUpdate && IsLocked(SelectedCheque))"
+                                       Disabled="@(returningChequeId.HasValue)"
+                                       Color="Color.Warning"
+                                       Size="Size.Small"
+                                       OnClick="@(() => RegresarASolicitud(SelectedCheque))"
+                                       Class="ml-2" />
+                    </MudTooltip>
                 </MudPaper>
                 <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
                     <MudGrid><MudItem xs="4"><MudText Typo="Typo.caption">Importe</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedCheque.ImporteTotal)</MudText></MudItem><MudItem xs="8"><MudText Typo="Typo.caption">Poliza</MudText><MudText Typo="Typo.body2">@TextOrDash(SelectedCheque.ClavePoliza)</MudText></MudItem></MudGrid>
@@ -95,6 +112,7 @@
     private GenericDataGrid<ChequeResponse> table = null!;
     private GenericDataGrid<ChequePartidaResponse> partidaTable = null!;
     private ChequeResponse? SelectedCheque;
+    private int? returningChequeId;
     private string partidaSearch = string.Empty;
     private static readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
 
@@ -138,6 +156,48 @@
         if ((await d.Result) is { Canceled: false }) await ReloadPartidas();
     }
     private async Task DeletePartida(int id) { await PartidaService.DeleteAsync(id); await ReloadPartidas(); }
+
+    private async Task RegresarASolicitud(ChequeResponse cheque)
+    {
+        if (returningChequeId.HasValue)
+            return;
+
+        var parameters = new DialogParameters
+        {
+            ["NumeroCheque"] = TextOrDash(cheque.NumeroCheque)
+        };
+        var dialog = await DialogService.ShowAsync<RegresarChequeSuficienciaDialog>(
+            "Regresar cheque a solicitud de suficiencia",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not string motivo || string.IsNullOrWhiteSpace(motivo))
+            return;
+
+        returningChequeId = cheque.PkidCheque;
+        try
+        {
+            var response = await Service.PostActionAsync(
+                $"{cheque.PkidCheque}/regresar-solicitud-suficiencia",
+                new { motivo });
+
+            if (!response.Success)
+            {
+                Snackbar.Add(response.Message ?? "No fue posible regresar el cheque.", Severity.Error);
+                return;
+            }
+
+            Snackbar.Add(response.Message, Severity.Success);
+            SelectedCheque = null;
+            await table.ReloadData();
+        }
+        finally
+        {
+            returningChequeId = null;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 
     private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
     public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;

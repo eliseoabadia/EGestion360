@@ -439,7 +439,7 @@ namespace EG.Application.Services.CuentasXPagar
         }
     }
 
-    public class ChequeAppService : StoredProcedureCrudAppService<Cheque, VwCheque, ChequeDto, ChequeResponse>
+    public class ChequeAppService : StoredProcedureCrudAppService<Cheque, VwCheque, ChequeDto, ChequeResponse>, IChequeAppService
     {
         private readonly EGestionContext _context;
         private readonly IUserContextService _userContext;
@@ -503,6 +503,64 @@ namespace EG.Application.Services.CuentasXPagar
                 return Failure<bool>("La provision de pago ya fue autorizada y no puede eliminarse.", "LOCKED");
 
             return await base.DeleteAsync(id);
+        }
+
+        public async Task<PagedResult<ChequeResponse>> RegresarASolicitudSuficienciaAsync(int id, string motivo)
+        {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+                return Failure<ChequeResponse>("No se encontró la empresa activa en la sesión.", "EMPRESA_REQUIRED");
+
+            motivo = motivo?.Trim() ?? string.Empty;
+            if (motivo.Length < 10)
+                return Failure<ChequeResponse>("Capture un motivo de al menos 10 caracteres para regresar el cheque.", "VALIDATION");
+
+            var cheque = await _context.Cheques.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidCheque == id && x.FkidEmpresaSis == empresaId.Value);
+
+            if (cheque == null)
+                return Failure<ChequeResponse>("Cheque o transferencia no encontrado.", "NOT_FOUND");
+
+            if (cheque.Estatus < 2)
+                return Failure<ChequeResponse>("El cheque todavía es editable; el regreso completo aplica después de su autorización.", "BUSINESS_RULE");
+
+            try
+            {
+                var executionStrategy = _context.Database.CreateExecutionStrategy();
+                await executionStrategy.ExecuteAsync(async () =>
+                {
+                    var parameters = new[]
+                    {
+                        StoredProcedureExecutor.Param("@PKIdCheque", id),
+                        StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", empresaId.Value),
+                        StoredProcedureExecutor.Param("@Motivo", motivo),
+                        StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId())
+                    };
+
+                    await _context.Database.ExecuteSqlRawAsync(
+                        "EXEC PRES.SP_RegresarChequeASolicitudSuficiencia @PKIdCheque, @FKIdEmpresa_SIS, @Motivo, @IdUser",
+                        parameters);
+                });
+
+                return new PagedResult<ChequeResponse>
+                {
+                    Success = true,
+                    Code = "SUCCESS",
+                    Message = "Cheque regresado a solicitud de suficiencia. Se canceló la cadena posterior y se generaron las pólizas de reversión.",
+                    TotalCount = 0
+                };
+            }
+            catch (SqlException ex)
+            {
+                var message = ex.Message.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+                    ?? "No fue posible regresar el cheque a solicitud de suficiencia.";
+                return Failure<ChequeResponse>(message, "BUSINESS_RULE");
+            }
+            catch (Exception ex)
+            {
+                LogException("regresar a solicitud de suficiencia", ex);
+                return Failure<ChequeResponse>("No fue posible regresar el cheque a solicitud de suficiencia.", "ERROR");
+            }
         }
 
         private async Task<PagedResult<ChequeResponse>?> ValidateChequeAsync(ChequeResponse response, int? currentId)

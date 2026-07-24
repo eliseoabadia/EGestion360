@@ -198,40 +198,14 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             int? fkidPolizaConta,
             string? descripcion)
         {
-            try
+            var response = new EgresoAutorizadoResponse
             {
-                var result = await _context.Procedures.spAutorizarEgresoProyectadoAsync(
-                    pkidEgresoProyectado,
-                    usuarioActual,
-                    fkidPolizaConta,
-                    descripcion ?? string.Empty);
+                FkidEgresoProyectadoPres = pkidEgresoProyectado,
+                FkidPolizaConta = fkidPolizaConta,
+                Descripcion = descripcion
+            };
 
-                var autorizadoId = result.FirstOrDefault()?.PKIdEgresoAutorizado ?? 0;
-                if (autorizadoId <= 0)
-                {
-                    return new PagedResult<EgresoAutorizadoResponse>
-                    {
-                        Success = false,
-                        Message = "No se pudo autorizar el anteproyecto.",
-                        Code = "ERROR",
-                        TotalCount = 0
-                    };
-                }
-
-                await NotifyPresupuestoAutorizadoAsync(autorizadoId, pkidEgresoProyectado, usuarioActual);
-
-                return await GetByIdAsync(autorizadoId);
-            }
-            catch (Exception ex)
-            {
-                return new PagedResult<EgresoAutorizadoResponse>
-                {
-                    Success = false,
-                    Message = $"Error al autorizar el anteproyecto: {ex.Message}",
-                    Code = "ERROR",
-                    TotalCount = 0
-                };
-            }
+            return await CrearAutorizacionCapturadaAsync(response, usuarioActual);
         }
 
         private async Task<PagedResult<EgresoAutorizadoResponse>> CrearAutorizacionCapturadaAsync(
@@ -261,50 +235,35 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     return await GetByIdAsync(existingId.Value);
                 }
 
-                var now = DateTime.Now;
-                var autorizado = new EgresoAutorizado
-                {
-                    FkidEgresoProyectadoPres = pkidEgresoProyectado,
-                    FkidProgramaPres = proyectado.FkidProgramaPres,
-                    FkidPartidaConta = proyectado.FkidPartidaConta,
-                    FkidAreaSis = proyectado.FkidAreaSis,
-                    FkidFuenteFinanciamientoPres = proyectado.FkidFuenteFinanciamientoPres,
-                    FkidTipoGastoPres = proyectado.FkidTipoGastoPres,
-                    FkidDigitoIdentificadorPres = proyectado.FkidDigitoIdentificadorPres,
-                    FkidDestinoGastoPres = proyectado.FkidDestinoGastoPres,
-                    FkidPyPres = proyectado.FkidPyPres,
-                    Descripcion = proyectado.Descripcion,
-                    Fecha = proyectado.Fecha,
-                    FkidPolizaConta = response.FkidPolizaConta,
-                    Enero = proyectado.Enero,
-                    Febrero = proyectado.Febrero,
-                    Marzo = proyectado.Marzo,
-                    Abril = proyectado.Abril,
-                    Mayo = proyectado.Mayo,
-                    Junio = proyectado.Junio,
-                    Julio = proyectado.Julio,
-                    Agosto = proyectado.Agosto,
-                    Septiembre = proyectado.Septiembre,
-                    Octubre = proyectado.Octubre,
-                    Noviembre = proyectado.Noviembre,
-                    Diciembre = proyectado.Diciembre,
-                    Total = proyectado.Total,
-                    FechaAutorizacion = now,
-                    UsuarioAutorizacion = usuarioActual,
-                    Activo = true,
-                    FechaCreacion = now,
-                    UsuarioCreacion = usuarioActual
-                };
+                response.FkidProgramaPres = proyectado.FkidProgramaPres;
+                response.FkidPartidaConta = proyectado.FkidPartidaConta;
+                response.FkidAreaSis = proyectado.FkidAreaSis;
+                response.FkidFuenteFinanciamientoPres = proyectado.FkidFuenteFinanciamientoPres;
+                response.FkidTipoGastoPres = proyectado.FkidTipoGastoPres;
+                response.FkidDigitoIdentificadorPres = proyectado.FkidDigitoIdentificadorPres;
+                response.FkidDestinoGastoPres = proyectado.FkidDestinoGastoPres;
+                response.FkidPyPres = proyectado.FkidPyPres;
+                response.Descripcion = proyectado.Descripcion;
+                response.Fecha = proyectado.Fecha;
+                response.Enero = proyectado.Enero;
+                response.Febrero = proyectado.Febrero;
+                response.Marzo = proyectado.Marzo;
+                response.Abril = proyectado.Abril;
+                response.Mayo = proyectado.Mayo;
+                response.Junio = proyectado.Junio;
+                response.Julio = proyectado.Julio;
+                response.Agosto = proyectado.Agosto;
+                response.Septiembre = proyectado.Septiembre;
+                response.Octubre = proyectado.Octubre;
+                response.Noviembre = proyectado.Noviembre;
+                response.Diciembre = proyectado.Diciembre;
+                response.Total = proyectado.Total;
+                response.FechaAutorizacion = DateTime.Now;
+                response.UsuarioAutorizacion = usuarioActual;
 
-                _context.EgresoAutorizados.Add(autorizado);
-                await _context.SaveChangesAsync();
-
-                await NotifyPresupuestoAutorizadoAsync(
-                    autorizado.PkidEgresoAutorizado,
-                    autorizado.FkidEgresoProyectadoPres,
-                    usuarioActual);
-
-                return await GetByIdAsync(autorizado.PkidEgresoAutorizado);
+                // Esta ruta debe pasar por el mismo procedimiento transaccional que
+                // genera la póliza y sus movimientos contables.
+                return await base.CreateAsync(response, usuarioActual);
             }
             catch (Exception ex)
             {

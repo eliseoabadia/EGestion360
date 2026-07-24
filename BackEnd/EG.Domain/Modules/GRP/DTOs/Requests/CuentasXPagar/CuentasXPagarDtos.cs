@@ -191,6 +191,11 @@ namespace EG.Domain.DTOs.Requests.CuentasXPagar
         public int? UsuarioModificacion { get; set; }
     }
 
+    public class RegresarChequeSuficienciaRequest
+    {
+        public string Motivo { get; set; } = string.Empty;
+    }
+
     public class DepositoDto
     {
         public int PkidDeposito { get; set; }

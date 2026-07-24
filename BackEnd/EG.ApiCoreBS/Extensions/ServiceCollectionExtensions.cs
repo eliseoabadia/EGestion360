@@ -171,7 +171,8 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IAdquisicionCrudAppService<CLCResponse>, CLCAppService>();
             services.AddScoped<IAdquisicionCrudAppService<CLCDetalleResponse>, CLCDetalleAppService>();
             services.AddScoped<IAdquisicionCrudAppService<CLCFacturaResponse>, CLCFacturaAppService>();
-            services.AddScoped<IAdquisicionCrudAppService<ChequeResponse>, ChequeAppService>();
+            services.AddScoped<IChequeAppService, ChequeAppService>();
+            services.AddScoped<IAdquisicionCrudAppService<ChequeResponse>>(sp => sp.GetRequiredService<IChequeAppService>());
             services.AddScoped<IAdquisicionCrudAppService<ChequePartidaResponse>, ChequePartidaAppService>();
             services.AddScoped<IDepositoAppService, DepositoAppService>();
             services.AddScoped<IAdquisicionCrudAppService<DepositoResponse>>(sp => sp.GetRequiredService<IDepositoAppService>());
