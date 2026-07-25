@@ -57,6 +57,6 @@ public class ConteoDetalleEscaneoController : ControllerBase
     {
         var usuarioActual = _userContext.GetCurrentUserId();
         var result = await _appService.CreateAsync(request, usuarioActual);
-        return Ok(result);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 }

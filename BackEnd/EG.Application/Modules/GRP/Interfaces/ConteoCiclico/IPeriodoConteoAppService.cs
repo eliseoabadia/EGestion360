@@ -12,5 +12,12 @@ namespace EG.Application.Interfaces.ConteoCiclico
         Task<PeriodoConteoResponse> UpdateAsync(int id, PeriodoConteoDto dto, int usuarioActual);
         Task<bool> DeleteAsync(int id);
         Task<PagedResult<PeriodoConteoResponse>> GetAllPaginadoAsync(PagedRequest pageRequest);
+        Task<PeriodoConteoResponse> IniciarAsync(int id, int usuarioActual);
+        Task<PeriodoConteoResponse> CompletarAsync(int id, int usuarioActual);
+        Task<PeriodoConteoResponse> CerrarAsync(int id, int usuarioActual);
+        Task<IReadOnlyList<ConteoPlanificacionResponse>> GetPlanificacionAsync();
+        Task<IReadOnlyList<ConteoPlanificacionResponse>> ActualizarClasificacionAbcAsync(int usuarioActual);
+        Task<ConteoPlanificacionResponse> ActualizarPlanAsync(int id, ConteoPlanificacionUpdateRequest request, int usuarioActual);
+        Task<int> GenerarConteosSugeridosAsync(int periodoId, int usuarioActual);
     }
 }

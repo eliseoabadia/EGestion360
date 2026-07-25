@@ -32,35 +32,29 @@ namespace EG.Application.Services.ConteoCiclico
         {
             try
             {
-                var request = new PagedRequest
-                {
-                    Page = page,
-                    PageSize = pageSize,
-                    Filtro = filtro ?? string.Empty,
-                    SortLabel = "Clave",
-                    SortDirection = "Ascending"
-                };
-
-                var result = await _bienService.GetAllPaginadoAsync(request);
-                var bienes = result.Items.ToList();
-
+                var query = _context.VwBiens.AsNoTracking().Where(b => b.Activo);
                 if (!string.IsNullOrWhiteSpace(tipoBienCodigo))
-                {
-                    bienes = bienes.Where(b =>
-                        b.TipoBienCodigoClave?.Equals(tipoBienCodigo, StringComparison.OrdinalIgnoreCase) == true
-                    ).ToList();
-                }
+                    query = query.Where(b => b.TipoBienCodigoClave == tipoBienCodigo);
 
                 if (!string.IsNullOrWhiteSpace(filtro))
                 {
-                    bienes = bienes.Where(b =>
-                        (b.Clave?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (b.ClaveAnt?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (b.Descripcion?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (b.Serie?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (b.Modelo?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false)
-                    ).ToList();
+                    var term = filtro.Trim();
+                    query = query.Where(b =>
+                        (b.Clave != null && b.Clave.Contains(term)) ||
+                        (b.ClaveAnt != null && b.ClaveAnt.Contains(term)) ||
+                        (b.Descripcion != null && b.Descripcion.Contains(term)) ||
+                        (b.Serie != null && b.Serie.Contains(term)) ||
+                        (b.Modelo != null && b.Modelo.Contains(term)));
                 }
+
+                page = Math.Max(1, page);
+                pageSize = Math.Clamp(pageSize, 1, 100);
+                var total = await query.CountAsync();
+                var entities = await query.OrderBy(b => b.Clave)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+                var bienes = await MapBienesAsync(entities);
 
                 return new PagedResult<BienResponse>
                 {
@@ -68,7 +62,7 @@ namespace EG.Application.Services.ConteoCiclico
                     Message = "Bienes obtenidos correctamente",
                     Code = "SUCCESS",
                     Items = bienes,
-                    TotalCount = bienes.Count
+                    TotalCount = total
                 };
             }
             catch (Exception ex)
@@ -86,24 +80,18 @@ namespace EG.Application.Services.ConteoCiclico
         {
             try
             {
-                var filtro = codigo.ToLower();
-                var request = new PagedRequest
-                {
-                    Page = 1,
-                    PageSize = 50,
-                    Filtro = string.Empty,
-                    SortLabel = "Clave",
-                    SortDirection = "Ascending"
-                };
+                var value = (codigo ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("El codigo del bien es requerido.");
 
-                var result = await _bienService.GetAllPaginadoAsync(request);
-                var bienes = result.Items.Where(b =>
-                    (b.Clave?.ToLower() == filtro ||
-                    b.ClaveAnt?.ToLower() == filtro ||
-                    b.Serie?.ToLower() == filtro) &&
-                    (string.IsNullOrWhiteSpace(tipoBienCodigo) ||
-                     b.TipoBienCodigoClave?.Equals(tipoBienCodigo, StringComparison.OrdinalIgnoreCase) == true)
-                ).ToList();
+                var query = _context.VwBiens.AsNoTracking().Where(b =>
+                    b.Activo && (b.Clave == value || b.ClaveAnt == value || b.Serie == value));
+
+                if (!string.IsNullOrWhiteSpace(tipoBienCodigo))
+                    query = query.Where(b => b.TipoBienCodigoClave == tipoBienCodigo);
+
+                var entities = await query.OrderBy(b => b.PkidBien).Take(10).ToListAsync();
+                var bienes = await MapBienesAsync(entities);
 
                 return new PagedResult<BienResponse>
                 {
@@ -123,6 +111,37 @@ namespace EG.Application.Services.ConteoCiclico
                     Code = "ERROR"
                 };
             }
+        }
+
+        private async Task<List<BienResponse>> MapBienesAsync(List<VwBien> entities)
+        {
+            var ids = entities.Select(b => b.PkidBien).ToList();
+            var tipoIds = await _context.Biens.AsNoTracking()
+                .Where(b => ids.Contains(b.PkidBien))
+                .ToDictionaryAsync(b => b.PkidBien, b => b.FkidTipoBienAlma);
+
+            return entities.Select(b => new BienResponse
+            {
+                PkidBien = b.PkidBien,
+                FkidTipoBienAlma = tipoIds.GetValueOrDefault(b.PkidBien),
+                Clave = b.Clave,
+                ClaveAnt = b.ClaveAnt,
+                Descripcion = b.Descripcion,
+                Modelo = b.Modelo,
+                Serie = b.Serie,
+                Costo = b.Costo,
+                FechaAdq = b.FechaAdq,
+                Factura = b.Factura,
+                Ubicacion = b.Ubicacion,
+                Estatus = b.Estatus,
+                Activo = b.Activo,
+                GrupoBienDescripcion = b.GrupoBienDescripcion,
+                GrupoBienClave = b.GrupoBienClave,
+                TipoBienCodigoClave = b.TipoBienCodigoClave,
+                TipoBienDescripcion = b.TipoBienDescripcion,
+                MarcaDescripcion = b.MarcaDescripcion,
+                EstadoBienDescripcionGeneral = b.EstadoBienDescripcionGeneral
+            }).ToList();
         }
 
         public async Task<PagedResult<ConteoDetalleResponse>> AgregarBien(AgregarBienConteoDto dto, int usuarioActual)

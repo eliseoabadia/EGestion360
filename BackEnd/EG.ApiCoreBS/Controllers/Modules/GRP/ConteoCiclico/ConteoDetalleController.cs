@@ -5,12 +5,14 @@ using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EG.ApiCoreBS.Controllers.ConteoCiclico;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ConteoDetalleController : ControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class ConteoDetalleController : ControllerBase
 {
     private readonly IConteoDetalleAppService _appService;
     private readonly IUserContextService _userContext;

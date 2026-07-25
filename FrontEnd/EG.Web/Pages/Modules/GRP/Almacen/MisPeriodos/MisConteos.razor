@@ -25,6 +25,7 @@
                  ApplyEffectsToContainer="true"
                  PanelClass="pa-4"
                  Class="mt-2"
+                 ActivePanelIndex="@tabActivo"
                  ActivePanelIndexChanged="OnTabChanged">
 
             <!-- ========== TAB 1: CONTEOS ========== -->
@@ -47,6 +48,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.QrCodeScanner"
                         Color="Color.Success"
                         Size="Size.Small"
+                        Disabled="@(!EsEstatus(cell.Item, "En Proceso"))"
                         OnClick="@(() => AbrirScanner(cell.Item))" />
                         </MudTooltip>
                         <DocumentSupportButton Modulo="conteociclico"
@@ -58,6 +60,7 @@
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
+                        Disabled="@(!PuedeEditarConteo(cell.Item))"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidConteo))" />
@@ -65,6 +68,7 @@
                         <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
+                        Disabled="@(!PuedeEditarConteo(cell.Item))"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeleteItem(cell.Item.PkidConteo))" />
@@ -134,7 +138,16 @@
                 </TemplateColumn>
                 <TemplateColumn T="ConteoResponse" Title="Cantidad Inventario" Identifier="CantidadInventario" PropertyName="CantidadInventario" SortBy="x => x.CantidadInventario">
                     <CellTemplate Context="cell">
-                        <MudText Align="Align.Right">@Quantity(cell.Item.CantidadInventario)</MudText>
+                        @if (EsEstatus(cell.Item, "En Proceso"))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.VisibilityOff">
+                                Conteo ciego
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Right">@Quantity(cell.Item.CantidadInventario)</MudText>
+                        }
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="ConteoResponse" Title="Lecturas" Identifier="TotalLecturas" PropertyName="TotalLecturas" SortBy="x => x.TotalLecturas">
@@ -142,6 +155,20 @@
                         <MudBadge Content="@cell.Item.TotalLecturas" Color="Color.Info" Overlap="true">
                         <MudIcon Icon="@Icons.Material.Filled.DocumentScanner" Size="Size.Small" />
                         </MudBadge>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="ConteoResponse" Title="Diferencia" Identifier="Diferencia">
+                    <CellTemplate Context="cell">
+                        @if (EsEstatus(cell.Item, "Completado") || EsEstatus(cell.Item, "Cerrado"))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="@GetDifferenceColor(cell.Item)" Variant="Variant.Outlined">
+                                @FormatDifference(cell.Item)
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Disponible al completar</MudText>
+                        }
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="ConteoResponse" Title="Personas" Identifier="PersonasParticipantes" PropertyName="PersonasParticipantes" SortBy="x => x.PersonasParticipantes">
@@ -292,19 +319,40 @@
             string sortLabel = state.SortLabel ?? "FechaEscaneo";
             var sortDir = state.SortDirection;
 
+            if (conteoSeleccionado != null)
+            {
+                var selectedResponse = await EscaneoService.GetActionAsync($"ByConteo/{conteoSeleccionado.PkidConteo}");
+                if (selectedResponse?.Success != true || selectedResponse.Items == null)
+                    return new TableData<ConteoDetalleEscaneoResponse> { Items = new List<ConteoDetalleEscaneoResponse>(), TotalItems = 0 };
+
+                var selectedItems = selectedResponse.Items.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(SearchStringEscaneos))
+                {
+                    selectedItems = selectedItems.Where(e =>
+                        (e.CodigoBarras?.Contains(SearchStringEscaneos, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (e.BienClave?.Contains(SearchStringEscaneos, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (e.BienDescripcion?.Contains(SearchStringEscaneos, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (e.PersonaNombre?.Contains(SearchStringEscaneos, StringComparison.OrdinalIgnoreCase) ?? false));
+                }
+
+                var filteredItems = selectedItems.ToList();
+                TotalEscaneos = filteredItems.Count;
+                Escaneos = filteredItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                return new TableData<ConteoDetalleEscaneoResponse>
+                {
+                    Items = Escaneos,
+                    TotalItems = TotalEscaneos
+                };
+            }
+
             var response = await EscaneoService.GetAllPaginadoAsync(
                 page, pageSize, SearchStringEscaneos, sortLabel, sortDir);
 
             if (response?.Success == true && response.Items != null)
             {
-                // Filtrar por conteo seleccionado si aplica
                 var items = response.Items.ToList();
-                if (conteoSeleccionado != null)
-                {
-                    items = items.Where(e => e.FkidConteoAlma == conteoSeleccionado.PkidConteo).ToList();
-                }
                 Escaneos = items;
-                TotalEscaneos = conteoSeleccionado != null ? items.Count : response.TotalCount;
+                TotalEscaneos = response.TotalCount;
 
                 return new TableData<ConteoDetalleEscaneoResponse>
                 {
@@ -342,6 +390,7 @@
     private async Task VerEscaneosDeConteo(ConteoResponse conteo)
     {
         conteoSeleccionado = conteo;
+        tabActivo = 1;
         StateHasChanged();
         // Cambiar al tab de escaneos
         if (tableEscaneos != null)
@@ -475,12 +524,30 @@
 
     private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 
+    private static decimal Difference(ConteoResponse conteo)
+        => conteo.TotalLecturas - conteo.CantidadInventario;
+
+    private static string FormatDifference(ConteoResponse conteo)
+    {
+        var difference = Difference(conteo);
+        return difference > 0 ? $"+{Quantity(difference)}" : Quantity(difference);
+    }
+
+    private static Color GetDifferenceColor(ConteoResponse conteo)
+        => Difference(conteo) == 0 ? Color.Success : Color.Error;
+
+    private static bool EsEstatus(ConteoResponse conteo, string estatus)
+        => string.Equals(conteo.EstatusPeriodo?.Trim(), estatus, StringComparison.OrdinalIgnoreCase);
+
+    private static bool PuedeEditarConteo(ConteoResponse conteo)
+        => conteo.TotalLecturas == 0 &&
+           (EsEstatus(conteo, "Pendiente") || EsEstatus(conteo, "En Proceso"));
+
     private async Task AbrirScanner(ConteoResponse conteo)
     {
         var parameters = new DialogParameters
         {
             ["ConteoId"] = conteo.PkidConteo,
-            ["PersonaId"] = 1,
             ["FkidTipoBienAlma"] = conteo.IdTipoBien ?? 0,
             ["CodigoClaveTipoBien"] = conteo.CodigoClaveTipoBien,
             ["DescripcionTipoBien"] = conteo.DescripcionTipoBien ?? "Sin tipo de bien"

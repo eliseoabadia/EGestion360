@@ -4,6 +4,7 @@
 @using EG.Web.Shared
 @using MudBlazor
 @inherits BaseCrudPage<PeriodoConteoResponse, PeriodoConteoResponse>
+@inject IGenericCrudService<ConteoPlanificacionResponse> PlanService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -15,6 +16,87 @@
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
+
+        <MudPaper Class="pa-3 mt-2 mb-3" Elevation="1">
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Ruta recomendada del conteo</MudText>
+            <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap;">
+                <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.AssignmentInd">1. Planificar y asignar</MudChip>
+                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.QrCodeScanner">2. Contar a ciegas</MudChip>
+                <MudChip T="string" Color="Color.Secondary" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Rule">3. Revisar diferencias</MudChip>
+                <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Verified">4. Aprobar y cerrar</MudChip>
+            </MudStack>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                La persona responsable realiza el conteo sin ver la existencia esperada. Las diferencias quedan visibles para revisión antes del cierre.
+            </MudText>
+        </MudPaper>
+
+        <MudExpansionPanels Class="mb-3">
+            <MudExpansionPanel Text="Planeación inteligente ABC, ubicación y umbrales"
+                               Icon="@Icons.Material.Filled.AutoGraph">
+                <MudStack Row="true" Spacing="2" Class="mb-3" Style="flex-wrap: wrap; align-items: center;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Calculate"
+                               Disabled="planCargando" OnClick="ActualizarClasificacionAbc">
+                        Recalcular ABC
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Refresh"
+                               Disabled="planCargando" OnClick="CargarPlanificacion">
+                        Actualizar vista
+                    </MudButton>
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined">A: @planes.Count(p => p.ClasificacionAbc == "A") · cada 30 días sugeridos</MudChip>
+                    <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined">B: @planes.Count(p => p.ClasificacionAbc == "B") · cada 90 días sugeridos</MudChip>
+                    <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined">C: @planes.Count(p => p.ClasificacionAbc == "C") · cada 180 días sugeridos</MudChip>
+                    <MudChip T="string" Color="Color.Secondary">@planes.Count(p => p.EstaVencido || p.RequiereConteoPorUmbral) requieren atención</MudChip>
+                </MudStack>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+                    ABC prioriza por valor de inventario actual. Puedes ajustar la ubicación, frecuencia y próxima fecha por artículo.
+                    En un período pendiente usa el icono de varita para crear solamente los conteos vencidos o bajo existencia mínima.
+                </MudAlert>
+
+                @if (planCargando)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else if (planes.Count == 0)
+                {
+                    <MudText Typo="Typo.body2">Aún no hay una clasificación. Pulsa <b>Recalcular ABC</b> para crear el plan.</MudText>
+                }
+                else
+                {
+                    <MudTable T="ConteoPlanificacionResponse" Items="planes" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>Acción</MudTh>
+                            <MudTh>ABC</MudTh>
+                            <MudTh>Artículo</MudTh>
+                            <MudTh>Ubicación</MudTh>
+                            <MudTh>Existencia / mínimo</MudTh>
+                            <MudTh>Frecuencia</MudTh>
+                            <MudTh>Próximo conteo</MudTh>
+                            <MudTh>Motivo</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Acción">
+                                <MudTooltip Text="Editar programación">
+                                    <MudIconButton Icon="@Icons.Material.Filled.EditCalendar" Size="Size.Small" Color="Color.Primary"
+                                                   OnClick="@(() => EditarPlan(context))" />
+                                </MudTooltip>
+                            </MudTd>
+                            <MudTd DataLabel="ABC"><MudChip T="string" Size="Size.Small" Color="@GetAbcColor(context.ClasificacionAbc)">@context.ClasificacionAbc</MudChip></MudTd>
+                            <MudTd DataLabel="Artículo">@context.TipoBien</MudTd>
+                            <MudTd DataLabel="Ubicación">@context.Ubicacion</MudTd>
+                            <MudTd DataLabel="Existencia / mínimo">@context.ExistenciaActual.ToString("N2") / @(context.ExistenciaMinima?.ToString("N2") ?? "Sin mínimo")</MudTd>
+                            <MudTd DataLabel="Frecuencia">Cada @context.FrecuenciaDias días</MudTd>
+                            <MudTd DataLabel="Próximo conteo">@context.ProximaFechaConteo.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd DataLabel="Motivo">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(context.RequiereConteoPorUmbral ? Color.Error : context.EstaVencido ? Color.Warning : Color.Success)">
+                                    @(context.RequiereConteoPorUmbral ? "Bajo mínimo" : context.EstaVencido ? "Fecha vencida" : "Programado")
+                                </MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent><MudTablePager PageSizeOptions="new int[] { 5, 10, 25 }" /></PagerContent>
+                    </MudTable>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
 
         <GenericDataGrid TItem="PeriodoConteoResponse"
                       @ref="table"
@@ -28,14 +110,71 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn Resizable="false" T="PeriodoConteoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPeriodoConteo))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPeriodoConteo))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="PeriodoConteoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
+                    <CellTemplate>
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate"
+                                           Disabled="@(!EsEstatus(context.Item, "Pendiente"))"
+                                           Color="Color.Primary" Size="Size.Small"
+                                           OnClick="@(() => EditItem(context.Item.PkidPeriodoConteo))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Eliminar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete"
+                                           Disabled="@(!EsEstatus(context.Item, "Pendiente"))"
+                                           Color="Color.Error" Size="Size.Small"
+                                           OnClick="@(() => DeleteItem(context.Item.PkidPeriodoConteo))" />
+                        </MudTooltip>
+                        @if (EsEstatus(context.Item, "Pendiente"))
+                        {
+                            <MudTooltip Text="Generar conteos sugeridos ABC / umbral">
+                                <MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Color="Color.Secondary" Size="Size.Small"
+                                               OnClick="@(() => GenerarSugeridos(context.Item))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Iniciar conteo">
+                                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Small"
+                                               OnClick="@(() => EjecutarTransicion(context.Item, "IniciarConteo", "Iniciar", "iniciar", Color.Success))" />
+                            </MudTooltip>
+                        }
+                        else if (EsEstatus(context.Item, "En Proceso"))
+                        {
+                            <MudTooltip Text="Completar conteo">
+                                <MudIconButton Icon="@Icons.Material.Filled.TaskAlt" Color="Color.Warning" Size="Size.Small"
+                                               OnClick="@(() => EjecutarTransicion(context.Item, "CompletarConteo", "Completar", "completar", Color.Warning))" />
+                            </MudTooltip>
+                        }
+                        else if (EsEstatus(context.Item, "Completado"))
+                        {
+                            <MudTooltip Text="Cerrar o aprobar conteo">
+                                <MudIconButton Icon="@Icons.Material.Filled.Lock" Color="Color.Error" Size="Size.Small"
+                                               OnClick="@(() => EjecutarTransicion(context.Item, "CerrarConteo", "Cerrar", "cerrar", Color.Error))" />
+                            </MudTooltip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
                 <PropertyColumn T="PeriodoConteoResponse" TProperty="int" Property="x => x.PkidPeriodoConteo" Title="ID" Identifier="PkidPeriodoConteo" />
                 <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.CodigoPeriodo" Title="Código" Identifier="CodigoPeriodo" />
                 <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
                 <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.Sucursal" Title="Sucursal" Identifier="Sucursal" />
                 <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.TipoConteo" Title="Tipo" Identifier="TipoConteo" />
+                <PropertyColumn T="PeriodoConteoResponse" TProperty="string" Property="x => x.Responsable" Title="Responsable" Identifier="Responsable" />
                 <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Inicio" Identifier="FechaInicio"><CellTemplate>@context.Item.FechaInicio.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Vence" Identifier="FechaFin"><CellTemplate>@(context.Item.FechaFin?.ToString("dd/MM/yyyy") ?? "Sin fecha")</CellTemplate></TemplateColumn>
                 <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Estatus" Identifier="EstatusPeriodo"><CellTemplate><MudChip T="string" Color="@GetEstatusColor(context.Item.EstatusPeriodo)" Size="Size.Small">@context.Item.EstatusPeriodo</MudChip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Avance" Identifier="Avance">
+                    <CellTemplate>
+                        <div style="min-width: 130px;">
+                            <MudProgressLinear Value="@GetProgress(context.Item)" Color="@GetProgressColor(context.Item)" Rounded="true" Size="Size.Small" />
+                            <MudText Typo="Typo.caption">@(context.Item.ArticulosConcluidos ?? 0) de @(context.Item.TotalArticulos ?? 0)</MudText>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Resizable="true" T="PeriodoConteoResponse" Title="Atención" Identifier="Atencion">
+                    <CellTemplate>
+                        <MudChip T="string" Color="@GetAttentionColor(context.Item)" Size="Size.Small" Variant="Variant.Outlined">
+                            @GetAttentionText(context.Item)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
             </Columns>
         </GenericDataGrid>
     </MudContainer>
@@ -43,6 +182,8 @@
 
 @code {
     private GenericDataGrid<PeriodoConteoResponse> table = null!;
+    private readonly List<ConteoPlanificacionResponse> planes = new();
+    private bool planCargando;
 
     protected override string ModuleName => "Almacen";
     protected override string SubModuleName => "Conteo_Periodo";
@@ -52,6 +193,86 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<PeriodoConteoResponse>);
 
     protected override string GetDefaultSortLabel() => "Nombre";
+
+    protected override async Task VerifyAccess()
+    {
+        await base.VerifyAccess();
+        if (HasAccess)
+            await CargarPlanificacion();
+    }
+
+    private async Task CargarPlanificacion()
+    {
+        planCargando = true;
+        try
+        {
+            var response = await PlanService.GetActionAsync("Planificacion");
+            planes.Clear();
+            if (response?.Success == true && response.Items != null)
+                planes.AddRange(response.Items);
+        }
+        finally
+        {
+            planCargando = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ActualizarClasificacionAbc()
+    {
+        planCargando = true;
+        try
+        {
+            var response = await PlanService.PostActionAsync("ActualizarClasificacionABC");
+            if (response?.Success == true)
+            {
+                planes.Clear();
+                if (response.Items != null)
+                    planes.AddRange(response.Items);
+                Snackbar.Add(response.Message ?? "Clasificación actualizada.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No fue posible calcular la clasificación ABC.", Severity.Error);
+            }
+        }
+        finally
+        {
+            planCargando = false;
+        }
+    }
+
+    private async Task EditarPlan(ConteoPlanificacionResponse plan)
+    {
+        var parameters = new DialogParameters<PlanConteoCiclicoDialog> { { x => x.Plan, plan } };
+        var dialog = await DialogService.ShowAsync<PlanConteoCiclicoDialog>("Programar conteo", parameters,
+            new DialogOptions { CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+            await CargarPlanificacion();
+    }
+
+    private async Task GenerarSugeridos(PeriodoConteoResponse periodo)
+    {
+        var response = await PlanService.PostActionAsync($"GenerarSugeridos/{periodo.PkidPeriodoConteo}");
+        if (response?.Success == true)
+        {
+            Snackbar.Add(response.Message ?? "Conteos sugeridos generados.", Severity.Success);
+            await table.ReloadData();
+        }
+        else
+        {
+            Snackbar.Add(response?.Message ?? "No fue posible generar los conteos sugeridos.", Severity.Error);
+        }
+    }
+
+    private static Color GetAbcColor(string clasificacion)
+        => clasificacion switch
+        {
+            "A" => Color.Error,
+            "B" => Color.Warning,
+            _ => Color.Info
+        };
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<PeriodoConteoResponse> items)
     {
@@ -95,15 +316,20 @@
         }
     }
 
-    private async Task IniciarConteo(int id, string nombre)
+    private async Task EjecutarTransicion(
+        PeriodoConteoResponse periodo,
+        string accion,
+        string titulo,
+        string verbo,
+        Color color)
     {
         var parameters = new DialogParameters
         {
-            ["Title"] = "Iniciar Conteo",
-            ["Message"] = $"¿Está seguro de iniciar el conteo para el período '{nombre}'? Se cargarán los artículos y el período estará listo para contar.",
-            ["ConfirmText"] = "Iniciar",
-            ["ConfirmColor"] = Color.Success,
-            ["Id"] = id
+            ["Title"] = $"{titulo} conteo",
+            ["Message"] = $"¿Está seguro de {verbo} el período '{periodo.Nombre}'?",
+            ["ConfirmText"] = titulo,
+            ["ConfirmColor"] = color,
+            ["Id"] = periodo.PkidPeriodoConteo
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmIniciarConteoDialog>("", parameters,
@@ -115,10 +341,10 @@
         {
             try
             {
-                var response = await Service.IniciarConteoAsync(id);
+                var response = await Service.PostActionAsync($"{accion}/{periodo.PkidPeriodoConteo}");
                 if (response?.Success == true)
                 {
-                    Snackbar.Add(response.Message ?? "Conteo iniciado correctamente", Severity.Success);
+                    Snackbar.Add(response.Message ?? "Transición realizada correctamente", Severity.Success);
                     await table.ReloadData();
                 }
                 else
@@ -133,6 +359,41 @@
         }
     }
 
+    private static bool EsEstatus(PeriodoConteoResponse periodo, string estatus)
+        => string.Equals(periodo.EstatusPeriodo?.Trim(), estatus, StringComparison.OrdinalIgnoreCase);
+
+    private static double GetProgress(PeriodoConteoResponse periodo)
+    {
+        var total = periodo.TotalArticulos.GetValueOrDefault();
+        return total <= 0 ? 0 : Math.Clamp(periodo.ArticulosConcluidos.GetValueOrDefault() * 100d / total, 0, 100);
+    }
+
+    private static Color GetProgressColor(PeriodoConteoResponse periodo)
+        => periodo.ArticulosConDiferencia.GetValueOrDefault() > 0 ? Color.Warning : Color.Success;
+
+    private static string GetAttentionText(PeriodoConteoResponse periodo)
+    {
+        if (periodo.ArticulosConDiferencia.GetValueOrDefault() > 0)
+            return $"{periodo.ArticulosConDiferencia} diferencia(s)";
+        if (EsEstatus(periodo, "Completado"))
+            return "Pendiente de aprobación";
+        if (!EsEstatus(periodo, "Cerrado") && periodo.FechaFin.HasValue && periodo.FechaFin.Value < DateOnly.FromDateTime(DateTime.Today))
+            return "Vencido";
+        if (EsEstatus(periodo, "Pendiente"))
+            return "Falta iniciar";
+        return EsEstatus(periodo, "Cerrado") ? "Finalizado" : "En tiempo";
+    }
+
+    private static Color GetAttentionColor(PeriodoConteoResponse periodo)
+    {
+        var text = GetAttentionText(periodo);
+        if (text.Contains("diferencia", StringComparison.OrdinalIgnoreCase) || text == "Vencido")
+            return Color.Error;
+        if (text.Contains("aprobación", StringComparison.OrdinalIgnoreCase) || text == "Falta iniciar")
+            return Color.Warning;
+        return Color.Success;
+    }
+
     private Color GetEstatusColor(string estatus)
     {
         return estatus?.ToLower() switch
@@ -140,6 +401,7 @@
             "abierto" or "abierta" => Color.Success,
             "cerrado" or "cerrada" => Color.Error,
             "en proceso" or "proceso" => Color.Warning,
+            "completado" or "completada" => Color.Secondary,
             "pendiente" => Color.Info,
             _ => Color.Default
         };

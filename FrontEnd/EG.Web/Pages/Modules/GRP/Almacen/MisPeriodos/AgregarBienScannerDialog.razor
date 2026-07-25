@@ -362,7 +362,6 @@
 
 @code {
     [Parameter] public int ConteoId { get; set; }
-    [Parameter] public int PersonaId { get; set; }
     [Parameter] public int FkidTipoBienAlma { get; set; }
     [Parameter] public string? CodigoClaveTipoBien { get; set; }
     [Parameter] public string? DescripcionTipoBien { get; set; }
@@ -608,7 +607,8 @@
                 var request = new ConteoDetalleEscaneoResponse
                 {
                     FkidConteoAlma = ConteoId,
-                    FkidPersonaNom = PersonaId,
+                    // El backend obtiene la persona desde el usuario autenticado.
+                    FkidPersonaNom = 0,
                     FkidBienAlma = bien.PkidBien,
                     FkidTipoBienAlma = FkidTipoBienAlma,
                     CodigoBarras = bien.Serie ?? bien.Clave

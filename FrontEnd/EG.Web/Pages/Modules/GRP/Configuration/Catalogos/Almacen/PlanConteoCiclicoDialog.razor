@@ -1,0 +1,99 @@
+@using EG.Domain.DTOs.Responses.ConteoCiclico
+@using EG.Domain.DTOs.Responses.General
+@using EG.Web.Contracts
+@using MudBlazor
+
+@inject IGenericCrudService<ConteoPlanificacionResponse> PlanService
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Programar conteo</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle1" Class="mb-3">@Plan.TipoBien</MudText>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudSelect T="int?" @bind-Value="request.IdArea" Label="Ubicación física / área"
+                           Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var area in areas)
+                    {
+                        <MudSelectItem T="int?" Value="area.PkidArea">@area.Descripcion</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="int" @bind-Value="request.FrecuenciaDias" Label="Frecuencia (días)"
+                                 Variant="Variant.Outlined" Min="1" Max="3650" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudDatePicker @bind-Date="proximaFecha" Label="Próximo conteo"
+                               Variant="Variant.Outlined" MinDate="DateTime.Today" Required="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSwitch T="bool" @bind-Value="request.GenerarPorUmbral" Color="Color.Warning">
+                    Generar conteo espontáneo si la existencia llega al mínimo
+                </MudSwitch>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="guardando" OnClick="SaveAsync">
+            @(guardando ? "Guardando..." : "Guardar programación")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter, EditorRequired] public ConteoPlanificacionResponse Plan { get; set; } = null!;
+
+    private readonly List<AreaResponse> areas = new();
+    private ConteoPlanificacionUpdateRequest request = new();
+    private DateTime? proximaFecha;
+    private bool guardando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        request = new ConteoPlanificacionUpdateRequest
+        {
+            IdArea = Plan.IdArea,
+            FrecuenciaDias = Plan.FrecuenciaDias,
+            ProximaFechaConteo = Plan.ProximaFechaConteo,
+            GenerarPorUmbral = Plan.GenerarPorUmbral
+        };
+        proximaFecha = Plan.ProximaFechaConteo.ToDateTime(TimeOnly.MinValue);
+
+        var result = await AreaService.GetAllAsync();
+        if (result?.Success == true && result.Items != null)
+            areas.AddRange(result.Items.Where(a => a.Activo).OrderBy(a => a.Descripcion));
+    }
+
+    private async Task SaveAsync()
+    {
+        if (request.FrecuenciaDias < 1 || !proximaFecha.HasValue)
+        {
+            Snackbar.Add("Captura una frecuencia y una próxima fecha válidas.", Severity.Warning);
+            return;
+        }
+
+        guardando = true;
+        request.ProximaFechaConteo = DateOnly.FromDateTime(proximaFecha.Value);
+        var result = await PlanService.PostActionAsync($"ActualizarPlan/{Plan.PkidPlanConteoCiclico}", request);
+        guardando = false;
+
+        if (result?.Success == true)
+        {
+            Snackbar.Add(result.Message ?? "Programación actualizada.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add(result?.Message ?? "No fue posible actualizar la programación.", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

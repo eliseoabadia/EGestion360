@@ -1,11 +1,13 @@
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Domain.DTOs.Responses.General
+@using EG.Dommain.DTOs.Responses
 @using EG.Web.Contracts
 @using EG.Web.Models.ConteoCiclico
 @using MudBlazor
 
 @inject IGenericCrudService<PeriodoConteoResponse> _service
 @inject IGenericCrudService<SucursalResponse> _sucursalService
+@inject IGenericCrudService<UsuarioResponse> _usuarioService
 @inject SucursalStateService _sucursalState
 @inject ISnackbar Snackbar
 
@@ -86,6 +88,21 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
+                <MudSelect T="int?" @bind-Value="periodo.IdResponsable"
+                           Label="Responsable del conteo"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Seleccione a la persona responsable">
+                    @foreach (var usuario in responsables)
+                    {
+                        <MudSelectItem T="int?" Value="usuario.PkIdUsuario">
+                            @usuario.NombreCompleto
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
                 <MudDatePicker @bind-Date="fechaInicio"
                                Label="Fecha de Inicio"
                                Variant="Variant.Outlined"
@@ -115,6 +132,24 @@
                            Label="Requiere Aprobación de Supervisor" />
             </MudItem>
 
+            @if (periodo.RequiereAprobacionSupervisor)
+            {
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int?" @bind-Value="periodo.IdSupervisor"
+                               Label="Supervisor responsable"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Seleccione al supervisor que cerrará el período">
+                        @foreach (var usuario in supervisores)
+                        {
+                            <MudSelectItem T="int?" Value="usuario.PkIdUsuario">
+                                @usuario.NombreCompleto
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+
         </MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
@@ -132,6 +167,8 @@
 
     private List<SucursalResponse> sucursales = new();
     private List<TipoConteoResponse> tiposConteo = new();
+    private List<UsuarioResponse> responsables = new();
+    private List<UsuarioResponse> supervisores = new();
 
     private string dialogTitle => Id.HasValue ? "Editar Período de Conteo" : "Nuevo Período de Conteo";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -141,6 +178,7 @@
     {
         await CargarSucursales();
         await CargarTiposConteo();
+        await CargarSupervisores();
 
         if (Id.HasValue)
         {
@@ -181,12 +219,38 @@
             {
                 new() { PkidTipoConteo = 1, Nombre = "Cíclico" },
                 new() { PkidTipoConteo = 2, Nombre = "Anual" },
-                new() { PkidTipoConteo = 3, Nombre = "Extraordinario" }
+                new() { PkidTipoConteo = 3, Nombre = "Auditoría" },
+                new() { PkidTipoConteo = 4, Nombre = "Aleatorio" }
             };
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar tipos de conteo: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+    }
+
+    private async Task CargarSupervisores()
+    {
+        try
+        {
+            var response = await _usuarioService.GetAllAsync();
+            if (response?.Success == true && response.Items != null)
+            {
+                responsables = response.Items
+                    .Where(u => u.UsuarioActivo)
+                    .GroupBy(u => u.PkIdUsuario)
+                    .Select(g => g.First())
+                    .OrderBy(u => u.NombreCompleto)
+                    .ToList();
+
+                supervisores = responsables
+                    .Where(u => u.EsSupervisor || u.EsAdministrador)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"No fue posible cargar supervisores: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Warning);
         }
     }
 
@@ -243,6 +307,30 @@
         if (!periodo.IdTipoConteo.HasValue || periodo.IdTipoConteo <= 0)
         {
             Snackbar.Add("Seleccione un tipo de conteo", Severity.Warning);
+            return;
+        }
+
+        if (!periodo.IdResponsable.HasValue || periodo.IdResponsable <= 0)
+        {
+            Snackbar.Add("Seleccione a la persona responsable del conteo", Severity.Warning);
+            return;
+        }
+
+        if (fechaInicio.HasValue && fechaFin.HasValue && fechaFin.Value.Date < fechaInicio.Value.Date)
+        {
+            Snackbar.Add("La fecha fin no puede ser anterior a la fecha de inicio", Severity.Warning);
+            return;
+        }
+
+        if (periodo.MaximoConteosPorArticulo is < 1 or > 10)
+        {
+            Snackbar.Add("El máximo de conteos debe estar entre 1 y 10", Severity.Warning);
+            return;
+        }
+
+        if (periodo.RequiereAprobacionSupervisor && periodo.IdSupervisor.GetValueOrDefault() <= 0)
+        {
+            Snackbar.Add("Seleccione al supervisor que aprobará el cierre", Severity.Warning);
             return;
         }
 

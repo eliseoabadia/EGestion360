@@ -55,8 +55,9 @@
             <MudItem xs="12" md="6">
                 <MudSelect T="int?" @bind-Value="conteo.IdPeriodoConteo"
                            Label="Período de Conteo"
-                           Variant="Variant.Outlined">
-                    <MudSelectItem T="int?" Value="null">— Sin período —</MudSelectItem>
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Seleccione un período de conteo">
                     @foreach (var item in periodos)
                     {
                         <MudSelectItem T="int?" Value="item.PkidPeriodoConteo">
@@ -153,7 +154,10 @@
             var response = await _periodoService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Nombre", SortDirection.Ascending);
             if (response?.Success == true && response.Items != null)
             {
-                periodos = response.Items.ToList();
+                periodos = response.Items
+                    .Where(p => string.Equals(p.EstatusPeriodo, "Pendiente", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(p.EstatusPeriodo, "En Proceso", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
         }
         catch (Exception ex)
@@ -206,9 +210,21 @@
             return;
         }
 
+        if (!conteo.IdPeriodoConteo.HasValue || conteo.IdPeriodoConteo <= 0)
+        {
+            Snackbar.Add("Seleccione un período de conteo", Severity.Warning);
+            return;
+        }
+
         if (conteo.CantidadInventario <= 0)
         {
             Snackbar.Add("La cantidad de inventario debe ser mayor a 0", Severity.Warning);
+            return;
+        }
+
+        if (fechaInicio.HasValue && fechaFin.HasValue && fechaFin.Value < fechaInicio.Value)
+        {
+            Snackbar.Add("La fecha fin no puede ser anterior a la fecha de inicio", Severity.Warning);
             return;
         }
 

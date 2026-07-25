@@ -186,5 +186,149 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                 });
             }
         }
+
+        [HttpPost("IniciarConteo/{id}")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> IniciarConteo(int id)
+            => await ExecuteTransitionAsync(id, _appService.IniciarAsync, "Periodo iniciado correctamente");
+
+        [HttpPost("CompletarConteo/{id}")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> CompletarConteo(int id)
+            => await ExecuteTransitionAsync(id, _appService.CompletarAsync, "Periodo completado correctamente");
+
+        [HttpPost("CerrarConteo/{id}")]
+        public async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> CerrarConteo(int id)
+            => await ExecuteTransitionAsync(id, _appService.CerrarAsync, "Periodo cerrado correctamente");
+
+        [HttpGet("Planificacion")]
+        public async Task<ActionResult<PagedResult<ConteoPlanificacionResponse>>> GetPlanificacion()
+        {
+            try
+            {
+                var items = await _appService.GetPlanificacionAsync();
+                return Ok(PlanResult(items, "Planificacion obtenida correctamente"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(PlanFailure(ex.Message));
+            }
+        }
+
+        [HttpPost("ActualizarClasificacionABC")]
+        public async Task<ActionResult<PagedResult<ConteoPlanificacionResponse>>> ActualizarClasificacionABC()
+        {
+            try
+            {
+                var items = await _appService.ActualizarClasificacionAbcAsync(_userContext.GetCurrentUserId());
+                return Ok(PlanResult(items, $"Clasificacion ABC actualizada para {items.Count} articulos"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(PlanFailure(ex.Message));
+            }
+        }
+
+        [HttpPost("ActualizarPlan/{id}")]
+        public async Task<ActionResult<PagedResult<ConteoPlanificacionResponse>>> ActualizarPlan(
+            int id,
+            [FromBody] ConteoPlanificacionUpdateRequest request)
+        {
+            try
+            {
+                var item = await _appService.ActualizarPlanAsync(id, request, _userContext.GetCurrentUserId());
+                return Ok(PlanResult(new[] { item }, "Programacion del conteo actualizada correctamente"));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(PlanFailure(ex.Message, "NOT_FOUND"));
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                return BadRequest(PlanFailure(ex.Message, "INVALID_OPERATION"));
+            }
+        }
+
+        [HttpPost("GenerarSugeridos/{id}")]
+        public async Task<ActionResult<PagedResult<ConteoPlanificacionResponse>>> GenerarSugeridos(int id)
+        {
+            try
+            {
+                var generated = await _appService.GenerarConteosSugeridosAsync(id, _userContext.GetCurrentUserId());
+                var message = generated == 0
+                    ? "No hay articulos vencidos o bajo minimo pendientes de generar"
+                    : $"Se generaron {generated} conteos por programacion ABC o umbral de existencia";
+                return Ok(PlanResult(Array.Empty<ConteoPlanificacionResponse>(), message));
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                return BadRequest(PlanFailure(ex.Message, "INVALID_OPERATION"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(PlanFailure(ex.Message));
+            }
+        }
+
+        private static PagedResult<ConteoPlanificacionResponse> PlanResult(
+            IEnumerable<ConteoPlanificacionResponse> source,
+            string message)
+        {
+            var items = source.ToList();
+            return new PagedResult<ConteoPlanificacionResponse>
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Data = items.FirstOrDefault(),
+                Items = items,
+                TotalCount = items.Count
+            };
+        }
+
+        private static PagedResult<ConteoPlanificacionResponse> PlanFailure(string message, string code = "ERROR")
+            => new()
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                Items = new List<ConteoPlanificacionResponse>()
+            };
+
+        private async Task<ActionResult<PagedResult<PeriodoConteoResponse>>> ExecuteTransitionAsync(
+            int id,
+            Func<int, int, Task<PeriodoConteoResponse>> action,
+            string successMessage)
+        {
+            try
+            {
+                var result = await action(id, _userContext.GetCurrentUserId());
+                return Ok(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = true,
+                    Message = successMessage,
+                    Code = "SUCCESS",
+                    Data = result,
+                    Items = new List<PeriodoConteoResponse> { result },
+                    TotalCount = 1
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "NOT_FOUND"
+                });
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                return BadRequest(new PagedResult<PeriodoConteoResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "INVALID_OPERATION"
+                });
+            }
+        }
     }
 }
