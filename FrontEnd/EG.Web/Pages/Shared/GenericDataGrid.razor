@@ -6,7 +6,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<GenericDataGrid<TItem>> Logger
 
-<MudPaper Elevation="@Elevation" Class="@GridClass">
+<div class="@GridClass">
     @if (ShowBusyOverlay && actionInProgress)
     {
         <div class="eg-generic-data-grid-busy" role="status" aria-live="polite">
@@ -224,7 +224,7 @@
                               InfoFormat="{first_item}-{last_item} de {all_items}" />
         </PagerContent>
     </MudDataGrid>
-</MudPaper>
+</div>
 
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
@@ -287,7 +287,10 @@
     private string? lastLoadError;
 
     private bool IsGridBusy => isLoading || actionInProgress;
-    private string GridClass => $"themed-table eg-generic-data-grid{(OnRowDoubleClick.HasDelegate ? " eg-grid-has-detail" : string.Empty)}";
+    // El elemento raiz debe ser HTML nativo para que Blazor agregue el atributo
+    // de aislamiento CSS. MudPaper no propagaba ese atributo y dejaba sin efecto
+    // las reglas de altura, flex y overflow del grid compartido.
+    private string GridClass => $"mud-paper mud-elevation-{Elevation} themed-table eg-generic-data-grid{(OnRowDoubleClick.HasDelegate ? " eg-grid-has-detail" : string.Empty)}";
 
     private async Task HandleRowClickAsync(DataGridRowClickEventArgs<TItem> args)
     {

@@ -1263,18 +1263,15 @@
         min-height: 0;
         overflow-x: auto;
         overflow-y: auto;
-        padding: 14px 18px calc(var(--eg-footer-height) + 22px) 14px;
+        padding: 14px 18px 14px 14px;
         scrollbar-gutter: stable both-edges;
         overscroll-behavior: contain;
     }
 
     .content-wrapper > .mud-container,
     .content-wrapper > * > .mud-container {
-        min-height: 100%;
         width: 100%;
-        height: auto !important;
-        max-height: none !important;
-        overflow: visible !important;
+        min-height: 0;
     }
 
     .content-wrapper > .mud-container[style*="height: 100vh"],
@@ -1301,19 +1298,19 @@
     .content-wrapper .mud-container[style*="height:100dvh"],
     .content-wrapper .mud-container[style*="height: calc(100vh"],
     .content-wrapper .mud-container[style*="height:calc(100vh"] {
-        height: auto !important;
-        min-height: 100%;
-        max-height: none !important;
-        overflow: visible !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
     }
 
-    /* Las pantallas de consulta deben poder crecer. Encerrarlas en un viewport con
-       overflow:hidden recorta el paginador en resoluciones bajas y con zoom. */
-    .content-wrapper .mud-container:has(> .eg-page-header):has(> .eg-generic-data-grid) {
-        height: auto !important;
-        min-height: 100% !important;
-        max-height: none !important;
-        overflow: visible !important;
+    /* Las consultas trabajan dentro del espacio disponible entre la barra y el pie.
+       Una altura definida permite que el grid desplace sus filas sin ocultar el paginador. */
+    .content-wrapper .mud-container:has(.eg-page-header):has(.eg-generic-data-grid) {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
     }
 
     .version-footer {
