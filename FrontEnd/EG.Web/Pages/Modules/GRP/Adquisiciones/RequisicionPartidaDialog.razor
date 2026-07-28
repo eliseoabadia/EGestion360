@@ -2,6 +2,7 @@
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
@@ -10,7 +11,7 @@
 
 @inject IGenericCrudService<RequisicionPartidaResponse> Service
 @inject IGenericCrudService<RequisicionResponse> RequisicionService
-@inject IGenericCrudService<PartidaResponse> PartidaService
+@inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
@@ -38,7 +39,7 @@
                     <span>Requisicion</span>
                 </MudText>
                 <PagedAutocomplete Value="@_selectedRequisicion"
-                                   ValueChanged="value => _selectedRequisicion = value"
+                                   ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
                                    RequiredError="La requisicion es requerida"
@@ -48,10 +49,10 @@
 
             <MudItem xs="12">
                 <PagedAutocomplete Value="@_selectedPartida"
-                                   ValueChanged="value => _selectedPartida = value"
-                                   Label="Partida"
+                                   ValueChanged="OnPosicionChanged"
+                                   Label="Posicion presupuestal / partida"
                                    Required="true"
-                                   RequiredError="La partida es requerida"
+                                   RequiredError="La posicion presupuestal es requerida"
                                    LoadPage="LoadPartidasPageAsync" />
             </MudItem>
 
@@ -62,8 +63,20 @@
                                  Format="0.00"
                                  Culture="@NumberCulture"
                                  Adornment="Adornment.Start"
-                                 AdornmentText="$" />
+                                 AdornmentText="$"
+                                 Min="0.01m"
+                                 Required="true"
+                                 RequiredError="El monto es requerido" />
             </MudItem>
+
+            @if (_selectedDisponible != null)
+            {
+                <MudItem xs="12" md="6">
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        Disponible: <strong>@Money(_selectedDisponible.Total ?? 0m)</strong>
+                    </MudAlert>
+                </MudItem>
+            }
 
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Observaciones"
@@ -89,6 +102,8 @@
     private RequisicionPartidaResponse item = new() { Activo = true, Observaciones = string.Empty };
     private LookupItem? _selectedRequisicion;
     private LookupItem? _selectedPartida;
+    private RequisicionResponse? _requisicion;
+    private EgresoDisponibleResponse? _selectedDisponible;
 
     private string dialogTitle => Id.HasValue ? "Editar Partida de Requisicion" : "Nueva Partida de Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -112,6 +127,7 @@
                 Id = RequisicionId,
                 Text = TextOrDefault(RequisicionDescripcion, RequisicionId)
             };
+            await LoadRequisicionAsync(RequisicionId);
         }
     }
 
@@ -130,9 +146,12 @@
                 };
                 _selectedPartida = new LookupItem
                 {
-                    Id = item.FkidPartidaConta,
-                    Text = TextOrDefault(item.ClaveNombre, item.FkidPartidaConta)
+                    Id = item.FkidEgresoAutorizadoPres ?? 0,
+                    Text = TextOrDefault(item.EgresoAutorizadoDescripcion, item.FkidEgresoAutorizadoPres ?? item.FkidPartidaConta)
                 };
+                await LoadRequisicionAsync(item.FkidRequisicionOrco);
+                if (item.FkidEgresoAutorizadoPres.HasValue)
+                    await LoadDisponibleAsync(item.FkidEgresoAutorizadoPres.Value);
             }
         }
         catch (Exception ex)
@@ -162,15 +181,26 @@
             return;
         }
 
-        if (_selectedPartida == null)
+        if (_selectedPartida == null || _selectedDisponible == null)
         {
-            Snackbar.Add("Debe seleccionar una partida.", Severity.Warning);
+            Snackbar.Add("Debe seleccionar una posicion presupuestal disponible.", Severity.Warning);
+            return;
+        }
+        if (!item.Monto.HasValue || item.Monto.Value <= 0)
+        {
+            Snackbar.Add("El monto debe ser mayor a cero.", Severity.Warning);
+            return;
+        }
+        if (item.Monto.Value > (_selectedDisponible.Total ?? 0m))
+        {
+            Snackbar.Add("El monto no puede exceder el presupuesto disponible.", Severity.Warning);
             return;
         }
 
         item.FkidEmpresaSis = empresaId.Value;
         item.FkidRequisicionOrco = _selectedRequisicion.Id;
-        item.FkidPartidaConta = _selectedPartida.Id;
+        item.FkidEgresoAutorizadoPres = _selectedDisponible.PkidEgresoAutorizado;
+        item.FkidPartidaConta = _selectedDisponible.FkidPartidaConta;
         item.Observaciones ??= string.Empty;
 
         try
@@ -208,8 +238,68 @@
 
     private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPartida, Text = $"{x.Clave} - {x.Descripcion}" }), response?.TotalCount);
+        if (_requisicion == null)
+            return new ComboLookupResult();
+
+        var filters = new Dictionary<string, object>
+        {
+            ["FkidAnioSis"] = _requisicion.FkidAnioSis ?? 0,
+            ["FkidAreaSis"] = _requisicion.FkidAreaSis,
+            ["FkidProgramaPres"] = _requisicion.FkidProgramaPres ?? 0
+        };
+        if (_requisicion.FkidFuenteFinanciamientoPres.HasValue)
+            filters["FkidFuenteFinanciamientoPres"] = _requisicion.FkidFuenteFinanciamientoPres.Value;
+        if (_requisicion.FkidTipoGastoPres.HasValue)
+            filters["FkidTipoGastoPres"] = _requisicion.FkidTipoGastoPres.Value;
+        if (_requisicion.FkidDigitoIdentificadorPres.HasValue)
+            filters["FkidDigitoIdentificadorPres"] = _requisicion.FkidDigitoIdentificadorPres.Value;
+        if (_requisicion.FkidDestinoGastoPres.HasValue)
+            filters["FkidDestinoGastoPres"] = _requisicion.FkidDestinoGastoPres.Value;
+        if (_requisicion.FkidProyectoOrco.HasValue)
+            filters["FkidPyPres"] = _requisicion.FkidProyectoOrco.Value;
+
+        var response = await DisponibleService.GetAllPaginadoAsync(
+            page, pageSize, filter, "PartidaClave", SortDirection.Ascending, filters);
+        var partidas = response?.Items?
+            .Where(x => (x.Total ?? 0m) > 0m)
+            .Select(x => new LookupItem
+            {
+                Id = x.PkidEgresoAutorizado,
+                Text = $"{x.PartidaClaveNombre} · disponible {Money(x.Total ?? 0m)}"
+            });
+        return ToComboResult(partidas, response?.TotalCount);
+    }
+
+    private async Task OnRequisicionChanged(LookupItem? value)
+    {
+        _selectedRequisicion = value;
+        _selectedPartida = null;
+        _selectedDisponible = null;
+        _requisicion = null;
+        if (value != null)
+            await LoadRequisicionAsync(value.Id);
+    }
+
+    private async Task OnPosicionChanged(LookupItem? value)
+    {
+        _selectedPartida = value;
+        _selectedDisponible = null;
+        if (value != null)
+            await LoadDisponibleAsync(value.Id);
+    }
+
+    private async Task LoadRequisicionAsync(int id)
+    {
+        var response = await RequisicionService.GetByIdAsync(id);
+        if (response?.Success == true)
+            _requisicion = response.Data;
+    }
+
+    private async Task LoadDisponibleAsync(int id)
+    {
+        var response = await DisponibleService.GetByIdAsync(id);
+        if (response?.Success == true)
+            _selectedDisponible = response.Data;
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
@@ -227,4 +317,5 @@
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static string Money(decimal value) => value.ToString("C2", CultureInfo.GetCultureInfo("es-MX"));
 }

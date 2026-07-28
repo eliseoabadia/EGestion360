@@ -25,6 +25,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
@@ -32,6 +33,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
@@ -44,6 +46,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost]
+        [Authorize(Policy = "Adquisiciones|Requisicion|new")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Create([FromBody] RequisicionDetalleResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -56,6 +59,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|update")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Update(int id, [FromBody] RequisicionDetalleResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -73,6 +77,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
@@ -90,6 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
@@ -97,6 +103,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionDetalleResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

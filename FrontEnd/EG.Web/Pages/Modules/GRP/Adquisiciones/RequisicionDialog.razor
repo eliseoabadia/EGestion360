@@ -4,6 +4,7 @@
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Domain.DTOs.Responses.PresupuestoModificado
 @using EG.Web.Contracts
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
@@ -11,8 +12,8 @@
 @using MudBlazor
 
 @inject IGenericCrudService<RequisicionResponse> Service
-@inject IGenericCrudService<PersonaResponse> PersonaService
 @inject IGenericCrudService<UsuarioAreaResponse> AreaService
+@inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
 @inject IGenericCrudService<OrcoProyectoResponse> ProyectoService
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
 @inject IGenericCrudService<FuenteFinanciamientoResponse> FuenteService
@@ -52,16 +53,16 @@
                 <MudGrid GutterSize="2">
                     <MudItem xs="12">
                         <MudTextField @bind-Value="item.Descripcion"
-                                      Label="Descripcion"
+                                      Label="Folio"
                                       Variant="Variant.Outlined"
-                                      Required="true"
                                       MaxLength="100"
-                                      RequiredError="La descripcion es requerida" />
+                                      ReadOnly="true"
+                                      Placeholder="Se asigna automaticamente al guardar" />
                     </MudItem>
 
                     <MudItem xs="12" md="6">
                         <PagedAutocomplete Value="@_selectedArea"
-                                           ValueChanged="value => _selectedArea = value"
+                                           ValueChanged="OnAreaChanged"
                                            Label="Area"
                                            Required="true"
                                            RequiredError="El area es requerida"
@@ -86,13 +87,31 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
+                        <MudDatePicker @bind-Date="_fechaRequiereInicio"
+                                       Label="Inicio de suministro"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="La fecha de inicio es requerida" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="4">
+                        <MudDatePicker @bind-Date="_fechaRequiereFin"
+                                       Label="Fin de suministro"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="La fecha fin es requerida" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="4">
                         <MudNumericField @bind-Value="item.Importe"
                                          Label="Importe"
                                          Variant="Variant.Outlined"
                                          Format="0.00"
                                          Culture="@NumberCulture"
                                          Adornment="Adornment.Start"
-                                         AdornmentText="$" />
+                                         AdornmentText="$"
+                                         Min="0.01m"
+                                         Required="true" />
                     </MudItem>
 
                     <MudItem xs="12" md="4">
@@ -105,6 +124,19 @@
                                 <strong>@(item.Servicio ? "Servicio" : "Bien")</strong>
                             </div>
                             <MudSwitch T="bool" @bind-Value="item.Servicio" Label="Servicio" Color="Color.Primary" />
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" md="4">
+                        <div class="req-toggle-card">
+                            <span class="req-toggle-icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" />
+                            </span>
+                            <div class="req-toggle-copy">
+                                <span>Procedimiento</span>
+                                <strong>@(item.CompraDirecta == true ? "Compra directa" : "Ordinario")</strong>
+                            </div>
+                            <MudSwitch T="bool?" @bind-Value="item.CompraDirecta" Label="Directa" Color="Color.Primary" />
                         </div>
                     </MudItem>
                 </MudGrid>
@@ -122,11 +154,29 @@
                 </div>
 
                 <MudGrid GutterSize="2">
+                    <MudItem xs="12">
+                        <PagedAutocomplete Value="@_selectedPosicion"
+                                           ValueChanged="OnPosicionChanged"
+                                           Label="Posicion presupuestal disponible"
+                                           Required="true"
+                                           RequiredError="La posicion presupuestal es requerida"
+                                           Disabled="@(_selectedArea == null)"
+                                           LoadPage="LoadPosicionesPageAsync" />
+                        @if (_selectedDisponible != null)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="req-alert mt-2">
+                                Partida @_selectedDisponible.PartidaClave · disponible
+                                <strong>@Money(_selectedDisponible.Total ?? 0m)</strong>.
+                                La clasificacion se toma de esta posicion.
+                            </MudAlert>
+                        }
+                    </MudItem>
+
                     <MudItem xs="12" md="6">
                         <PagedAutocomplete Value="@_selectedProyecto"
                                            ValueChanged="value => _selectedProyecto = value"
                                            Label="Proyecto"
-                                           Clearable="true"
+                                           Disabled="true"
                                            LoadPage="LoadProyectosPageAsync" />
                     </MudItem>
 
@@ -134,7 +184,7 @@
                         <PagedAutocomplete Value="@_selectedPrograma"
                                            ValueChanged="value => _selectedPrograma = value"
                                            Label="Programa"
-                                           Clearable="true"
+                                           Disabled="true"
                                            LoadPage="LoadProgramasPageAsync" />
                     </MudItem>
 
@@ -142,7 +192,7 @@
                         <PagedAutocomplete Value="@_selectedFuente"
                                            ValueChanged="value => _selectedFuente = value"
                                            Label="Fuente de financiamiento"
-                                           Required="true"
+                                           Disabled="true"
                                            LoadPage="LoadFuentesPageAsync" />
                     </MudItem>
 
@@ -150,7 +200,7 @@
                         <PagedAutocomplete Value="@_selectedTipoGasto"
                                            ValueChanged="value => _selectedTipoGasto = value"
                                            Label="Tipo de gasto (TG)"
-                                           Required="true"
+                                           Disabled="true"
                                            LoadPage="LoadTiposGastoPageAsync" />
                     </MudItem>
 
@@ -158,7 +208,7 @@
                         <PagedAutocomplete Value="@_selectedDigito"
                                            ValueChanged="value => _selectedDigito = value"
                                            Label="Digito identificador (DI)"
-                                           Required="true"
+                                           Disabled="true"
                                            LoadPage="LoadDigitosPageAsync" />
                     </MudItem>
 
@@ -166,7 +216,7 @@
                         <PagedAutocomplete Value="@_selectedDestino"
                                            ValueChanged="value => _selectedDestino = value"
                                            Label="Destino del gasto (DG)"
-                                           Required="true"
+                                           Disabled="true"
                                            LoadPage="LoadDestinosPageAsync" />
                     </MudItem>
 
@@ -235,8 +285,14 @@
         FlFoto = string.Empty,
         Observaciones = string.Empty,
         Oficio = string.Empty
+        ,
+        FechaRequiereInicio = DateTime.Today,
+        FechaRequiereFin = DateTime.Today,
+        CompraDirecta = false
     };
     private DateTime? _fechaRequisicion = DateTime.Today;
+    private DateTime? _fechaRequiereInicio = DateTime.Today;
+    private DateTime? _fechaRequiereFin = DateTime.Today;
 
     private LookupItem? _selectedPersona;
     private LookupItem? _selectedArea;
@@ -246,6 +302,8 @@
     private LookupItem? _selectedTipoGasto;
     private LookupItem? _selectedDigito;
     private LookupItem? _selectedDestino;
+    private LookupItem? _selectedPosicion;
+    private EgresoDisponibleResponse? _selectedDisponible;
 
     private string dialogTitle => Id.HasValue ? "Editar Requisicion" : "Nueva Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -271,6 +329,8 @@
             {
                 item = response.Data;
                 _fechaRequisicion = item.FechaRequisicion;
+                _fechaRequiereInicio = item.FechaRequiereInicio;
+                _fechaRequiereFin = item.FechaRequiereFin;
                 _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, item.FkidPersonaNom) };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
 
@@ -292,6 +352,16 @@
                 _selectedTipoGasto = BuildLookup(item.FkidTipoGastoPres, $"{item.TipoGastoClave} - {item.TipoGastoDescripcion}");
                 _selectedDigito = BuildLookup(item.FkidDigitoIdentificadorPres, $"{item.DigitoIdentificadorClave} - {item.DigitoIdentificadorDescripcion}");
                 _selectedDestino = BuildLookup(item.FkidDestinoGastoPres, $"{item.DestinoGastoClave} - {item.DestinoGastoDescripcion}");
+                if (item.FkidEgresoAutorizadoPres.HasValue)
+                {
+                    await LoadDisponibleAsync(item.FkidEgresoAutorizadoPres.Value);
+                    _selectedPosicion = new LookupItem
+                    {
+                        Id = item.FkidEgresoAutorizadoPres.Value,
+                        Text = _selectedDisponible?.DescripcionRequisicion
+                            ?? item.FkidEgresoAutorizadoPres.Value.ToString()
+                    };
+                }
             }
         }
         catch (Exception ex)
@@ -327,10 +397,15 @@
             return;
         }
 
-        if (_selectedPrograma == null || _selectedFuente == null || _selectedTipoGasto == null ||
-            _selectedDigito == null || _selectedDestino == null)
+        if (_selectedPosicion == null || _selectedDisponible == null)
         {
-            Snackbar.Add("Selecciona la clasificacion presupuestaria completa: programa, FF, TG, DI y DG.", Severity.Warning);
+            Snackbar.Add("Debe seleccionar una posicion presupuestal disponible.", Severity.Warning);
+            return;
+        }
+
+        if (_selectedPrograma == null)
+        {
+            Snackbar.Add("La posicion seleccionada no contiene un programa presupuestal valido.", Severity.Warning);
             return;
         }
 
@@ -347,10 +422,13 @@
         item.FkidProyectoOrco = _selectedProyecto?.Id;
         item.FkidProgramaPres = _selectedPrograma?.Id;
         item.FkidFuenteFinanciamientoPres = _selectedFuente?.Id;
-        item.FkidTipoGastoPres = _selectedTipoGasto.Id;
-        item.FkidDigitoIdentificadorPres = _selectedDigito.Id;
-        item.FkidDestinoGastoPres = _selectedDestino.Id;
+        item.FkidTipoGastoPres = _selectedTipoGasto?.Id;
+        item.FkidDigitoIdentificadorPres = _selectedDigito?.Id;
+        item.FkidDestinoGastoPres = _selectedDestino?.Id;
+        item.FkidEgresoAutorizadoPres = _selectedDisponible.PkidEgresoAutorizado;
         item.FechaRequisicion = _fechaRequisicion ?? DateTime.Today;
+        item.FechaRequiereInicio = _fechaRequiereInicio;
+        item.FechaRequiereFin = _fechaRequiereFin;
         item.Observaciones ??= string.Empty;
         item.FlFoto ??= string.Empty;
         item.Oficio ??= string.Empty;
@@ -378,14 +456,32 @@
 
     private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await PersonaService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidPersona, Text = $"{x.Nombre} {x.Paterno} {x.Materno}".Trim() }), response?.TotalCount);
+        if (_selectedArea == null)
+            return new ComboLookupResult();
+
+        var response = await AreaService.GetAllAsync();
+        var items = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea == _selectedArea.Id && x.PkidPersona > 0 && x.EsSolicitante)
+            .Where(x => string.IsNullOrWhiteSpace(filter) ||
+                        $"{x.PersonaNombre} {x.PersonaPaterno} {x.PersonaMaterno}".Contains(filter, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(x => x.PkidPersona)
+            .Select(x => x.First())
+            .OrderBy(x => x.PersonaNombre)
+            .Select(x => new LookupItem
+            {
+                Id = x.PkidPersona,
+                Text = $"{x.PersonaNombre} {x.PersonaPaterno} {x.PersonaMaterno}".Trim()
+            });
+        return ToPagedComboResult(items, page, pageSize);
     }
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await AreaService.GetAllAsync();
         var items = FilterUsuarioAreas(response?.Items, filter)
+            .Where(x => x.EsSolicitante)
+            .GroupBy(x => x.PkidArea)
+            .Select(x => x.First())
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
@@ -423,6 +519,96 @@
 
     private Task<ComboLookupResult> LoadDestinosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
         => LoadHttpLookupPageAsync("api/EgresoProyectado/GetDestinoGastoLookupPaginado", page, pageSize, filter, ct);
+
+    private async Task<ComboLookupResult> LoadPosicionesPageAsync(
+        int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var anioFilter = GetAnioFilter();
+        if (_selectedArea == null || anioFilter == null)
+            return new ComboLookupResult();
+
+        anioFilter["FkidAreaSis"] = _selectedArea.Id;
+        var response = await DisponibleService.GetAllPaginadoAsync(
+            page, pageSize, filter, "DescripcionRequisicion", SortDirection.Ascending, anioFilter);
+        var items = response?.Items?
+            .Where(x => (x.Total ?? 0m) > 0m)
+            .Select(x => new LookupItem
+            {
+                Id = x.PkidEgresoAutorizado,
+                Text = $"{x.PartidaClaveNombre} · {Money(x.Total ?? 0m)} · {x.Descripcion}"
+            });
+        return ToComboResult(items, response?.TotalCount);
+    }
+
+    private Task OnAreaChanged(LookupItem? value)
+    {
+        _selectedArea = value;
+        _selectedPersona = null;
+        ClearPosicion();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnPosicionChanged(LookupItem? value)
+    {
+        _selectedPosicion = value;
+        _selectedDisponible = null;
+        if (value == null)
+        {
+            ClearClasificacion();
+            return;
+        }
+
+        await LoadDisponibleAsync(value.Id);
+        if (_selectedDisponible == null)
+            return;
+
+        item.FkidEgresoAutorizadoPres = _selectedDisponible.PkidEgresoAutorizado;
+        _selectedPrograma = new LookupItem
+        {
+            Id = _selectedDisponible.FkidProgramaPres,
+            Text = _selectedDisponible.ProgramaClaveNombre ?? _selectedDisponible.FkidProgramaPres.ToString()
+        };
+        _selectedFuente = BuildLookup(
+            _selectedDisponible.FkidFuenteFinanciamientoPres,
+            _selectedDisponible.FuenteFinanciamientoClaveNombre);
+        _selectedTipoGasto = BuildLookup(
+            _selectedDisponible.FkidTipoGastoPres,
+            _selectedDisponible.TipoGastoClaveNombre);
+        _selectedDigito = BuildLookup(
+            _selectedDisponible.FkidDigitoIdentificadorPres,
+            _selectedDisponible.DigitoIdentificadorClaveNombre);
+        _selectedDestino = BuildLookup(
+            _selectedDisponible.FkidDestinoGastoPres,
+            _selectedDisponible.DestinoGastoClaveNombre);
+        _selectedProyecto = BuildLookup(
+            _selectedDisponible.FkidPyPres,
+            _selectedDisponible.PyClaveNombre);
+    }
+
+    private async Task LoadDisponibleAsync(int id)
+    {
+        var response = await DisponibleService.GetByIdAsync(id);
+        if (response?.Success == true)
+            _selectedDisponible = response.Data;
+    }
+
+    private void ClearPosicion()
+    {
+        _selectedPosicion = null;
+        _selectedDisponible = null;
+        item.FkidEgresoAutorizadoPres = null;
+        ClearClasificacion();
+    }
+
+    private void ClearClasificacion()
+    {
+        _selectedProyecto = null;
+        _selectedPrograma = null;
+        _selectedFuente = null;
+        _selectedTipoGasto = null;
+        _selectedDigito = null;
+        _selectedDestino = null;
+    }
 
     private async Task<ComboLookupResult> LoadHttpLookupPageAsync(
         string url, int page, int pageSize, string filter, CancellationToken ct)
@@ -484,4 +670,5 @@
     }
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
+    private static string Money(decimal value) => value.ToString("C2", CultureInfo.GetCultureInfo("es-MX"));
 }

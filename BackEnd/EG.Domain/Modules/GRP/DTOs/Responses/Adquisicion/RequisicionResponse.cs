@@ -76,7 +76,8 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int DetallesActivos { get; set; }
         public int DetallesCotizados { get; set; }
         public int DetallesEnSuficiencia { get; set; }
-        public bool BloqueadaPorCotizacion => CotizacionesActivas > 0;
+        public int SuficienciasActivas { get; set; }
+        public bool BloqueadaPorCotizacion => CotizacionesActivas > 0 || SuficienciasActivas > 0;
         public bool TodosLosDetallesCotizados =>
             DetallesActivos > 0 && DetallesCotizados >= DetallesActivos;
         public bool TodosLosDetallesEnSuficiencia =>

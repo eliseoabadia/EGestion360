@@ -1356,7 +1356,7 @@
                 IsPrimary = primaryActionId == "edit",
                 Visible = CanUpdate && !classificationComplete,
                 Enabled = !isLocked,
-                DisabledReason = isLocked ? "Ya existe una cotizacion activa." : null,
+                DisabledReason = isLocked ? "La requisicion ya avanzo a cotizacion o suficiencia." : null,
                 ExecuteAsync = () => EditItem(requisicion.PkidRequisicion)
             },
             new()
@@ -1411,7 +1411,7 @@
                 Visible = CanDelete,
                 Enabled = !isLocked,
                 IsDestructive = true,
-                DisabledReason = isLocked ? "No se puede eliminar mientras tenga una cotizacion activa." : null,
+                DisabledReason = isLocked ? "No se puede eliminar despues de avanzar a cotizacion o suficiencia." : null,
                 ExecuteAsync = () => DeleteItem(requisicion.PkidRequisicion)
             }
         };
@@ -1456,7 +1456,7 @@
                 IsPrimary = primaryActionId == "edit",
                 Visible = CanUpdate,
                 Enabled = !IsSelectedLocked,
-                DisabledReason = IsSelectedLocked ? "Ya existe una cotizacion activa." : null,
+                DisabledReason = IsSelectedLocked ? "La requisicion ya avanzo a cotizacion o suficiencia." : null,
                 ExecuteAsync = () => EditItem(requisicion.PkidRequisicion)
             },
             new()
@@ -1635,14 +1635,14 @@
         if (requisicion.DetallesActivos <= 0)
             return "Agrega al menos un bien o servicio.";
         if (requisicion.CotizacionesActivas > 0)
-            return "Ya existe una cotizacion activa.";
+            return "La requisicion ya avanzo a cotizacion o suficiencia.";
 
         return null;
     }
 
     private static string GetEditTooltip(RequisicionResponse requisicion) =>
         IsLocked(requisicion)
-            ? "No se puede editar porque ya existe una cotizacion activa."
+            ? "No se puede editar porque la requisicion ya avanzo a cotizacion o suficiencia."
             : "Editar requisicion; disponible hasta generar la cotizacion.";
 
     private static string? GetSufficiencyDisabledReason(RequisicionResponse requisicion)
@@ -1738,7 +1738,7 @@
             return true;
         }
 
-        Snackbar.Add($"La requisicion esta en cotizacion. Liberala para {action}.", Severity.Warning);
+        Snackbar.Add($"La requisicion ya avanzo a cotizacion o suficiencia; no se puede {action}.", Severity.Warning);
         return false;
     }
 
@@ -1750,7 +1750,7 @@
             return false;
         }
 
-        Snackbar.Add($"La requisicion esta en cotizacion. Liberala para {action}.", Severity.Warning);
+        Snackbar.Add($"La requisicion ya avanzo a cotizacion o suficiencia; no se puede {action}.", Severity.Warning);
         return true;
     }
 

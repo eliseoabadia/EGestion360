@@ -25,6 +25,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
@@ -32,6 +33,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
@@ -93,6 +95,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
@@ -100,6 +103,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

@@ -8,6 +8,7 @@ using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.General;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,15 @@ namespace EG.Application.Services.Adquisicion
         private readonly EGestionContext _context;
         private readonly IEmailService _emailService;
         private readonly IEnvioWorkflowService _envioWorkflow;
+        private readonly IUserContextService _userContext;
 
         public CotizacionAppService(
             GenericService<Cotizacion, CotizacionDto, CotizacionResponse> service,
             GenericService<VwCotizacion, CotizacionDto, CotizacionResponse> serviceView,
             EGestionContext context,
             IEmailService emailService,
-            IEnvioWorkflowService envioWorkflow)
+            IEnvioWorkflowService envioWorkflow,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -38,6 +41,7 @@ namespace EG.Application.Services.Adquisicion
             _context = context;
             _emailService = emailService;
             _envioWorkflow = envioWorkflow;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<CotizacionResponse>> GetAllAsync()
@@ -152,6 +156,25 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+                var cotizacion = await _context.Cotizacions.AsNoTracking()
+                    .Where(x =>
+                        x.PkidCotizacion == id &&
+                        x.Activo &&
+                        x.FkidRequisicionOrcoNavigation.Activo &&
+                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == empresaId)
+                    .Select(x => new { x.FkidRequisicionOrco })
+                    .FirstOrDefaultAsync();
+                if (cotizacion == null)
+                    return Failure<bool>("La cotizacion no existe o no pertenece a la empresa actual.", "NOT_FOUND");
+
+                var hasSuficiencia = await _context.SolicitudSuficiencia.AsNoTracking().AnyAsync(x =>
+                    x.Activo && x.FkidRequisicionOrco == cotizacion.FkidRequisicionOrco);
+                if (hasSuficiencia)
+                    return Failure<bool>(
+                        "La cotizacion no puede eliminarse porque la requisicion ya tiene una solicitud de suficiencia activa.",
+                        "LOCKED");
+
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
                     "[ORCO].[SP_MantenimientoCotizacion]",
@@ -405,19 +428,20 @@ namespace EG.Application.Services.Adquisicion
 
             var requisicion = await _context.Requisicions
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidRequisicion == response.FkidRequisicionOrco && x.Activo);
+                .FirstOrDefaultAsync(x =>
+                    x.PkidRequisicion == response.FkidRequisicionOrco &&
+                    x.FkidEmpresaSis == RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext) &&
+                    x.Activo);
 
             if (requisicion == null)
             {
                 return Failure<CotizacionResponse>("La requisicion no existe o esta inactiva.");
             }
 
-            if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidFuenteFinanciamientoPres.HasValue ||
-                !requisicion.FkidTipoGastoPres.HasValue || !requisicion.FkidDigitoIdentificadorPres.HasValue ||
-                !requisicion.FkidDestinoGastoPres.HasValue)
+            if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidEgresoAutorizadoPres.HasValue)
             {
                 return Failure<CotizacionResponse>(
-                    "La requisicion debe tener programa, fuente de financiamiento, TG, DI y DG antes de cotizar.");
+                    "La requisicion debe tener una posicion presupuestal valida antes de cotizar.");
             }
 
             var proveedorExists = await _context.Proveedors
@@ -431,13 +455,38 @@ namespace EG.Application.Services.Adquisicion
 
             if (requireDetails)
             {
-                var hasDetails = await _context.RequisicionDetalles
+                var detalles = await _context.RequisicionDetalles
                     .AsNoTracking()
-                    .AnyAsync(x => x.FkidRequisicionOrco == requisicion.PkidRequisicion && x.Activo);
+                    .Where(x => x.FkidRequisicionOrco == requisicion.PkidRequisicion && x.Activo)
+                    .Select(x => new
+                    {
+                        x.PkidRequisicionDetalle,
+                        Partida = x.FkidTipoBienAlmaNavigation.FkidPartidaConta
+                    })
+                    .ToListAsync();
 
-                if (!hasDetails)
+                if (detalles.Count == 0)
                 {
                     return Failure<CotizacionResponse>("La requisicion debe tener al menos un bien para generar una cotizacion.");
+                }
+
+                var partidas = await _context.RequisicionPartida
+                    .AsNoTracking()
+                    .Where(x => x.FkidRequisicionOrco == requisicion.PkidRequisicion && x.Activo)
+                    .ToListAsync();
+                if (partidas.Count == 0 ||
+                    partidas.Any(x => !x.FkidEgresoAutorizadoPres.HasValue) ||
+                    partidas.Sum(x => x.Monto ?? 0m) != requisicion.Importe.GetValueOrDefault())
+                {
+                    return Failure<CotizacionResponse>(
+                        "Antes de cotizar, las partidas deben tener posicion presupuestal y sumar exactamente el importe de la requisicion.");
+                }
+
+                var partidasRegistradas = partidas.Select(x => x.FkidPartidaConta).ToHashSet();
+                if (detalles.Any(x => !x.Partida.HasValue || !partidasRegistradas.Contains(x.Partida.Value)))
+                {
+                    return Failure<CotizacionResponse>(
+                        "Todos los bienes deben pertenecer a una partida presupuestal registrada en la requisicion.");
                 }
             }
 

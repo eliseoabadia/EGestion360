@@ -4,6 +4,7 @@ using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +16,14 @@ namespace EG.Application.Services.Adquisicion
     {
         private readonly GenericService<Cotizacion, CotizacionDto, CotizacionResponse> _cotizacionService;
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public RequisicionAppService(
             GenericService<Requisicion, RequisicionDto, RequisicionResponse> service,
             GenericService<VwRequisicion, RequisicionDto, RequisicionResponse> serviceView,
             GenericService<Cotizacion, CotizacionDto, CotizacionResponse> cotizacionService,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -30,6 +33,7 @@ namespace EG.Application.Services.Adquisicion
         {
             _cotizacionService = cotizacionService;
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<RequisicionResponse>> CreateAsync(
@@ -38,6 +42,7 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                response.FkidEmpresaSis = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
                 await ValidateClasificacionAsync(response);
                 if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
                 {
@@ -100,14 +105,18 @@ namespace EG.Application.Services.Adquisicion
             RequisicionResponse response,
             int usuarioActual)
         {
-            if (IsLocked(id))
+            if (await RequisicionWorkflowGuard.GetOwnedRequisicionAsync(_context, _userContext, id) == null)
+                return NotFoundResult();
+
+            if (await RequisicionWorkflowGuard.IsLockedAsync(_context, id))
             {
                 return LockedResult("La requisicion ya esta vinculada a una cotizacion activa. Liberala para poder editarla.");
             }
 
             try
             {
-                await ValidateClasificacionAsync(response);
+                response.FkidEmpresaSis = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+                await ValidateClasificacionAsync(response, id);
                 if (!await OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, response.FkidProyectoOrco, usuarioActual))
                 {
                     return InvalidProyectoResult(response.FkidProyectoOrco);
@@ -154,7 +163,10 @@ namespace EG.Application.Services.Adquisicion
 
         public async Task<PagedResult<bool>> DeleteAsync(int id, int usuarioActual)
         {
-            if (IsLocked(id))
+            if (await RequisicionWorkflowGuard.GetOwnedRequisicionAsync(_context, _userContext, id) == null)
+                return NotFoundDeleteResult();
+
+            if (await RequisicionWorkflowGuard.IsLockedAsync(_context, id))
             {
                 return new PagedResult<bool>
                 {
@@ -244,29 +256,118 @@ namespace EG.Application.Services.Adquisicion
                 StoredProcedureExecutor.Param("@IdUser", usuarioActual));
         }
 
-        private bool IsLocked(int requisicionId) => CountActiveCotizaciones(requisicionId) > 0;
-
-        private async Task ValidateClasificacionAsync(RequisicionResponse response)
+        private async Task ValidateClasificacionAsync(RequisicionResponse response, int? requisicionId = null)
         {
+            if (string.IsNullOrWhiteSpace(response.Descripcion))
+                response.Descripcion = string.Empty;
+            if (response.FkidAreaSis <= 0)
+                throw new ArgumentException("El area solicitante es requerida.");
+            if (response.FkidPersonaNom <= 0)
+                throw new ArgumentException("El solicitante es requerido.");
             if (!response.FkidAnioSis.HasValue || response.FkidAnioSis.Value <= 0)
                 throw new ArgumentException("El anio presupuestal es requerido.");
             if (!response.FkidProgramaPres.HasValue ||
-                !await _context.Programas.AsNoTracking().AnyAsync(x => x.PkidPrograma == response.FkidProgramaPres.Value && x.Activo))
+                !await _context.Programas.AsNoTracking().AnyAsync(x =>
+                    x.PkidPrograma == response.FkidProgramaPres.Value &&
+                    x.FkidAnioSis == response.FkidAnioSis.Value &&
+                    x.Activo))
                 throw new ArgumentException("El programa presupuestario es requerido y debe estar activo.");
-            if (!response.FkidFuenteFinanciamientoPres.HasValue ||
+            if (response.FkidFuenteFinanciamientoPres.HasValue &&
                 !await _context.FuenteFinanciamientos.AsNoTracking().AnyAsync(x => x.PkidFuenteFinanciamiento == response.FkidFuenteFinanciamientoPres.Value && x.Activo))
-                throw new ArgumentException("La fuente de financiamiento es requerida y debe estar activa.");
-            if (!response.FkidTipoGastoPres.HasValue ||
+                throw new ArgumentException("La fuente de financiamiento seleccionada no esta activa.");
+            if (response.FkidTipoGastoPres.HasValue &&
                 !await _context.TipoGastos.AsNoTracking().AnyAsync(x => x.PkidTipoGasto == response.FkidTipoGastoPres.Value && x.Activo))
-                throw new ArgumentException("El tipo de gasto es requerido y debe estar activo.");
-            if (!response.FkidDigitoIdentificadorPres.HasValue ||
+                throw new ArgumentException("El tipo de gasto seleccionado no esta activo.");
+            if (response.FkidDigitoIdentificadorPres.HasValue &&
                 !await _context.DigitoIdentificadors.AsNoTracking().AnyAsync(x => x.PkidDigitoIdentificador == response.FkidDigitoIdentificadorPres.Value && x.Activo))
-                throw new ArgumentException("El digito identificador es requerido y debe estar activo.");
-            if (!response.FkidDestinoGastoPres.HasValue ||
+                throw new ArgumentException("El digito identificador seleccionado no esta activo.");
+            if (response.FkidDestinoGastoPres.HasValue &&
                 !await _context.DestinoGastos.AsNoTracking().AnyAsync(x => x.PkidDestinoGasto == response.FkidDestinoGastoPres.Value && x.Activo))
-                throw new ArgumentException("El destino del gasto es requerido y debe estar activo.");
+                throw new ArgumentException("El destino del gasto seleccionado no esta activo.");
             if (!response.Importe.HasValue || response.Importe.Value <= 0)
                 throw new ArgumentException("El importe de la requisicion debe ser mayor a cero.");
+
+            if (!response.FechaRequiereInicio.HasValue || !response.FechaRequiereFin.HasValue)
+                throw new ArgumentException("Las fechas de inicio y fin de suministro son requeridas.");
+            if (response.FechaRequisicion.Date > response.FechaRequiereInicio.Value.Date)
+                throw new ArgumentException("La fecha de requisicion no puede ser posterior al inicio de suministro.");
+            if (response.FechaRequisicion.Date > response.FechaRequiereFin.Value.Date)
+                throw new ArgumentException("La fecha de requisicion no puede ser posterior al fin de suministro.");
+            if (response.FechaRequiereInicio.Value.Date > response.FechaRequiereFin.Value.Date)
+                throw new ArgumentException("La fecha de inicio de suministro no puede ser posterior a la fecha fin.");
+
+            var areaSolicitanteValido = await _context.PersonaAreas.AsNoTracking().AnyAsync(x =>
+                x.FkidPersonaNom == response.FkidPersonaNom &&
+                x.FkidAreaSis == response.FkidAreaSis &&
+                x.EsSolicitante == true &&
+                x.Activo);
+            if (!areaSolicitanteValido)
+                throw new ArgumentException("El solicitante no esta activo o no pertenece al area seleccionada.");
+
+            var usuarioId = _userContext.GetCurrentUserId();
+            var areaDelUsuario = await _context.VwUsuarioPersonaAreas.AsNoTracking().AnyAsync(x =>
+                x.PkIdUsuario == usuarioId &&
+                x.PkidPersona == response.FkidPersonaNom &&
+                x.PkidArea == response.FkidAreaSis &&
+                x.UsuarioActivo &&
+                x.PersonaActivo == true &&
+                x.AreaActivo == true &&
+                x.EsSolicitante == true);
+            if (!areaDelUsuario)
+                throw new ArgumentException("El solicitante y el area deben corresponder al usuario actual y tener permiso para solicitar.");
+
+            if (!response.FkidEgresoAutorizadoPres.HasValue)
+                throw new ArgumentException("Debe seleccionar una posicion de presupuesto disponible.");
+
+            var posicion = await _context.VwEgresoDisponibles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidEgresoAutorizado == response.FkidEgresoAutorizadoPres.Value &&
+                x.FkidAnioSis == response.FkidAnioSis &&
+                x.FkidAreaSis == response.FkidAreaSis);
+            if (posicion == null)
+                throw new ArgumentException("La posicion presupuestal no pertenece al anio y area seleccionados.");
+            if (posicion.Total.GetValueOrDefault() <= 0)
+                throw new ArgumentException("La posicion presupuestal seleccionada no tiene saldo disponible.");
+            if (posicion.FkidProgramaPres != response.FkidProgramaPres ||
+                posicion.FkidFuenteFinanciamientoPres != response.FkidFuenteFinanciamientoPres ||
+                posicion.FkidTipoGastoPres != response.FkidTipoGastoPres ||
+                posicion.FkidDigitoIdentificadorPres != response.FkidDigitoIdentificadorPres ||
+                posicion.FkidDestinoGastoPres != response.FkidDestinoGastoPres)
+                throw new ArgumentException("La clasificacion no corresponde a la posicion presupuestal seleccionada.");
+
+            if (response.FkidProyectoOrco != posicion.FkidPyPres)
+                throw new ArgumentException("El proyecto no corresponde a la posicion presupuestal seleccionada.");
+
+            if (requisicionId.HasValue)
+            {
+                var partidas = await _context.RequisicionPartida.AsNoTracking()
+                    .Where(x => x.Activo && x.FkidRequisicionOrco == requisicionId.Value)
+                    .ToListAsync();
+                if (partidas.Sum(x => x.Monto ?? 0m) > response.Importe.Value)
+                    throw new ArgumentException("El nuevo importe es menor que el monto ya distribuido en partidas.");
+
+                foreach (var partida in partidas)
+                {
+                    if (!partida.FkidEgresoAutorizadoPres.HasValue)
+                        throw new ArgumentException("Existen partidas sin posicion presupuestal; corrigelas antes de editar la requisicion.");
+
+                    var partidaPosicion = await _context.VwEgresoDisponibles.AsNoTracking().FirstOrDefaultAsync(x =>
+                        x.PkidEgresoAutorizado == partida.FkidEgresoAutorizadoPres.Value);
+                    if (partidaPosicion == null ||
+                        partidaPosicion.FkidPartidaConta != partida.FkidPartidaConta ||
+                        partidaPosicion.FkidAnioSis != response.FkidAnioSis ||
+                        partidaPosicion.FkidAreaSis != response.FkidAreaSis ||
+                        partidaPosicion.FkidProgramaPres != response.FkidProgramaPres ||
+                        partidaPosicion.FkidFuenteFinanciamientoPres != response.FkidFuenteFinanciamientoPres ||
+                        partidaPosicion.FkidTipoGastoPres != response.FkidTipoGastoPres ||
+                        partidaPosicion.FkidDigitoIdentificadorPres != response.FkidDigitoIdentificadorPres ||
+                        partidaPosicion.FkidDestinoGastoPres != response.FkidDestinoGastoPres ||
+                        partidaPosicion.FkidPyPres != response.FkidProyectoOrco)
+                    {
+                        throw new ArgumentException(
+                            "La nueva clasificacion no es compatible con las partidas existentes; elimina o corrige las partidas primero.");
+                    }
+                }
+            }
         }
 
         private int CountActiveCotizaciones(int requisicionId)
@@ -332,15 +433,41 @@ namespace EG.Application.Services.Adquisicion
                 })
                 .ToDictionaryAsync(x => x.RequisicionId, x => x.Total);
 
+            var suficiencias = await _context.SolicitudSuficiencia
+                .AsNoTracking()
+                .Where(x => x.Activo && requisicionIds.Contains(x.FkidRequisicionOrco))
+                .GroupBy(x => x.FkidRequisicionOrco)
+                .ToDictionaryAsync(x => x.Key, x => x.Count());
+
             foreach (var item in items)
             {
                 item.CotizacionesActivas = counts.TryGetValue(item.PkidRequisicion, out var count) ? count : 0;
+                item.SuficienciasActivas = suficiencias.TryGetValue(item.PkidRequisicion, out var suficienciaActivaCount)
+                    ? suficienciaActivaCount
+                    : 0;
                 item.PartidasActivas = partidas.TryGetValue(item.PkidRequisicion, out var partidaCount) ? partidaCount : 0;
                 item.DetallesActivos = detalles.TryGetValue(item.PkidRequisicion, out var detalleCount) ? detalleCount : 0;
                 item.DetallesCotizados = cotizados.TryGetValue(item.PkidRequisicion, out var cotizadoCount) ? cotizadoCount : 0;
                 item.DetallesEnSuficiencia = enSuficiencia.TryGetValue(item.PkidRequisicion, out var suficienciaCount) ? suficienciaCount : 0;
             }
         }
+
+        private static PagedResult<RequisicionResponse> NotFoundResult() => new()
+        {
+            Success = false,
+            Message = "La requisicion no existe, esta inactiva o no pertenece a la empresa actual.",
+            Code = "NOT_FOUND",
+            TotalCount = 0
+        };
+
+        private static PagedResult<bool> NotFoundDeleteResult() => new()
+        {
+            Success = false,
+            Message = "La requisicion no existe, esta inactiva o no pertenece a la empresa actual.",
+            Code = "NOT_FOUND",
+            Data = false,
+            TotalCount = 0
+        };
 
         private static PagedResult<RequisicionResponse> LockedResult(string message)
         {

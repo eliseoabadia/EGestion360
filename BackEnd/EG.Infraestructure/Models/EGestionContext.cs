@@ -10190,6 +10190,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Activo).HasDefaultValue(true, "DF_RequisicionPartida_Activo");
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_RequisicionPartida_FechaCreacion");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEgresoAutorizadoPres).HasColumnName("FKIdEgresoAutorizado_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
             entity.Property(e => e.Monto).HasColumnType("decimal(20, 4)");
@@ -17984,6 +17985,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.EmpresaNombre).HasMaxLength(128);
             entity.Property(e => e.FechaRequisicion).HasColumnType("datetime");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidEgresoAutorizadoPres).HasColumnName("FKIdEgresoAutorizado_PRES");
             entity.Property(e => e.FkidPartidaConta).HasColumnName("FKIdPartida_CONTA");
             entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
             entity.Property(e => e.Monto).HasColumnType("decimal(20, 4)");
@@ -17993,6 +17995,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.PkidRequisicionPartida).HasColumnName("PKIdRequisicionPartida");
             entity.Property(e => e.RequisicionDescripcion).HasMaxLength(100);
             entity.Property(e => e.RequisicionImporte).HasColumnType("decimal(20, 4)");
+            entity.Property(e => e.Disponible).HasColumnType("decimal(20, 4)");
         });
 
         modelBuilder.Entity<VwResguardo>(entity =>

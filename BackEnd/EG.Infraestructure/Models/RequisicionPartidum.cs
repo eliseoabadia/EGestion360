@@ -15,6 +15,8 @@ public partial class RequisicionPartidum
 
     public int FkidPartidaConta { get; set; }
 
+    public int? FkidEgresoAutorizadoPres { get; set; }
+
     public decimal? Monto { get; set; }
 
     public string Observaciones { get; set; }

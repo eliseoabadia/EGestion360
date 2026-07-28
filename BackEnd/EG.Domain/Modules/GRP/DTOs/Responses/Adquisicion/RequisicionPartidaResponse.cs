@@ -6,6 +6,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int FkidEmpresaSis { get; set; }
         public int FkidRequisicionOrco { get; set; }
         public int FkidPartidaConta { get; set; }
+        public int? FkidEgresoAutorizadoPres { get; set; }
         public decimal? Monto { get; set; }
         public string Observaciones { get; set; } = string.Empty;
         public bool Activo { get; set; }
@@ -20,5 +21,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string PartidaClave { get; set; } = string.Empty;
         public string PartidaDescripcion { get; set; } = string.Empty;
         public string ClaveNombre { get; set; } = string.Empty;
+        public string EgresoAutorizadoDescripcion { get; set; } = string.Empty;
+        public decimal? Disponible { get; set; }
     }
 }

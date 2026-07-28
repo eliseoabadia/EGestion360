@@ -3,6 +3,7 @@ using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,12 +15,14 @@ namespace EG.Application.Services.Adquisicion
     {
         private readonly GenericService<Cotizacion, CotizacionDto, CotizacionResponse> _cotizacionService;
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public RequisicionDetalleAppService(
             GenericService<RequisicionDetalle, RequisicionDetalleDto, RequisicionDetalleResponse> service,
             GenericService<VwRequisicionDetalle, RequisicionDetalleDto, RequisicionDetalleResponse> serviceView,
             GenericService<Cotizacion, CotizacionDto, CotizacionResponse> cotizacionService,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -29,13 +32,19 @@ namespace EG.Application.Services.Adquisicion
         {
             _cotizacionService = cotizacionService;
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<RequisicionDetalleResponse>> CreateAsync(
             RequisicionDetalleResponse response,
             int usuarioActual)
         {
-            if (IsRequisicionLocked(response.FkidRequisicionOrco))
+            var requisicion = await RequisicionWorkflowGuard.GetOwnedRequisicionAsync(
+                _context, _userContext, response.FkidRequisicionOrco);
+            if (requisicion == null)
+                return NotFoundResult();
+
+            if (await RequisicionWorkflowGuard.IsLockedAsync(_context, response.FkidRequisicionOrco))
             {
                 return LockedResult("La requisicion ya esta vinculada a una cotizacion activa. Liberala para agregar bienes.");
             }
@@ -48,6 +57,7 @@ namespace EG.Application.Services.Adquisicion
             try
             {
                 await ApplyTipoBienDefaultsAsync(response);
+                await ValidatePartidaAndStockAsync(response, null);
                 var spResult = await ExecuteDetalleAsync(4, null, response, usuarioActual);
                 var id = spResult.GetId() ?? 0;
                 var result = await GetByIdAsync(id);
@@ -65,7 +75,18 @@ namespace EG.Application.Services.Adquisicion
             RequisicionDetalleResponse response,
             int usuarioActual)
         {
-            if (IsRequisicionLocked(response.FkidRequisicionOrco))
+            var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            var detalleActual = await _context.RequisicionDetalles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidRequisicionDetalle == id &&
+                x.FkidRequisicionOrco == response.FkidRequisicionOrco &&
+                x.FkidEmpresaSis == empresaId &&
+                x.Activo);
+            if (detalleActual == null ||
+                await RequisicionWorkflowGuard.GetOwnedRequisicionAsync(
+                    _context, _userContext, response.FkidRequisicionOrco) == null)
+                return NotFoundResult();
+
+            if (await RequisicionWorkflowGuard.IsLockedAsync(_context, response.FkidRequisicionOrco))
             {
                 return LockedResult("La requisicion ya esta vinculada a una cotizacion activa. Liberala para editar bienes.");
             }
@@ -78,6 +99,7 @@ namespace EG.Application.Services.Adquisicion
             try
             {
                 await ApplyTipoBienDefaultsAsync(response);
+                await ValidatePartidaAndStockAsync(response, id);
                 var spResult = await ExecuteDetalleAsync(5, id, response, usuarioActual);
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
@@ -91,10 +113,17 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var detalle = _service.GetQueryWithIncludes()
-                .FirstOrDefault(x => x.PkidRequisicionDetalle == id);
+            var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            var detalle = await _context.RequisicionDetalles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidRequisicionDetalle == id &&
+                x.FkidEmpresaSis == empresaId &&
+                x.Activo);
+            if (detalle == null ||
+                await RequisicionWorkflowGuard.GetOwnedRequisicionAsync(
+                    _context, _userContext, detalle.FkidRequisicionOrco) == null)
+                return NotFoundDeleteResult();
 
-            if (detalle != null && IsRequisicionLocked(detalle.FkidRequisicionOrco))
+            if (await RequisicionWorkflowGuard.IsLockedAsync(_context, detalle.FkidRequisicionOrco))
             {
                 return new PagedResult<bool>
                 {
@@ -113,7 +142,9 @@ namespace EG.Application.Services.Adquisicion
                     _context,
                     "[ORCO].[SP_MantenimientoRequisicion]",
                     StoredProcedureExecutor.Param("@Action", 6),
-                    StoredProcedureExecutor.Param("@PKIdRequisicionDetalle", id));
+                    StoredProcedureExecutor.Param("@PKIdRequisicion", detalle.FkidRequisicionOrco),
+                    StoredProcedureExecutor.Param("@PKIdRequisicionDetalle", id),
+                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
 
                 return new PagedResult<bool>
                 {
@@ -180,11 +211,57 @@ namespace EG.Application.Services.Adquisicion
                 .FirstOrDefaultAsync();
         }
 
-        private bool IsRequisicionLocked(int requisicionId)
+        private async Task ValidatePartidaAndStockAsync(
+            RequisicionDetalleResponse response,
+            int? currentDetalleId)
         {
-            return _cotizacionService.GetQueryWithIncludes()
-                .Any(x => x.FkidRequisicionOrco == requisicionId);
+            var tipoBien = await _context.TipoBiens.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo);
+            if (tipoBien == null || !tipoBien.FkidPartidaConta.HasValue)
+                throw new ArgumentException("El bien no existe, esta inactivo o no tiene partida presupuestal.");
+
+            var partidaAsignada = await _context.RequisicionPartida.AsNoTracking().AnyAsync(x =>
+                x.FkidRequisicionOrco == response.FkidRequisicionOrco &&
+                x.FkidPartidaConta == tipoBien.FkidPartidaConta.Value &&
+                x.Activo);
+            if (!partidaAsignada)
+                throw new ArgumentException("El bien no pertenece a una partida activa de la requisicion.");
+
+            var existencia = await _context.VwExistencias.AsNoTracking()
+                .Where(x => x.PkidTipoBien == response.FkidTipoBienAlma)
+                .Select(x => (decimal?)x.Existencias)
+                .FirstOrDefaultAsync();
+            if (!existencia.HasValue)
+                return;
+
+            var yaCapturado = await _context.RequisicionDetalles.AsNoTracking()
+                .Where(x =>
+                    x.FkidRequisicionOrco == response.FkidRequisicionOrco &&
+                    x.FkidTipoBienAlma == response.FkidTipoBienAlma &&
+                    x.Activo &&
+                    (!currentDetalleId.HasValue || x.PkidRequisicionDetalle != currentDetalleId.Value))
+                .SumAsync(x => (decimal?)x.Cantidad) ?? 0m;
+            if (yaCapturado + response.Cantidad > existencia.Value)
+                throw new ArgumentException(
+                    $"La cantidad solicitada excede la existencia disponible ({existencia.Value:0.##}).");
         }
+
+        private static PagedResult<RequisicionDetalleResponse> NotFoundResult() => new()
+        {
+            Success = false,
+            Message = "El detalle o la requisicion no existe, esta inactiva o no pertenece a la empresa actual.",
+            Code = "NOT_FOUND",
+            TotalCount = 0
+        };
+
+        private static PagedResult<bool> NotFoundDeleteResult() => new()
+        {
+            Success = false,
+            Message = "El detalle no existe, esta inactivo o no pertenece a la empresa actual.",
+            Code = "NOT_FOUND",
+            Data = false,
+            TotalCount = 0
+        };
 
         private static PagedResult<RequisicionDetalleResponse> LockedResult(string message)
         {

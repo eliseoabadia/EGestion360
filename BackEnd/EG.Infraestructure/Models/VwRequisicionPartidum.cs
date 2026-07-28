@@ -15,6 +15,8 @@ public partial class VwRequisicionPartidum
 
     public int FkidPartidaConta { get; set; }
 
+    public int? FkidEgresoAutorizadoPres { get; set; }
+
     public decimal? Monto { get; set; }
 
     public string Observaciones { get; set; }
@@ -42,4 +44,8 @@ public partial class VwRequisicionPartidum
     public string PartidaDescripcion { get; set; }
 
     public string ClaveNombre { get; set; }
+
+    public string EgresoAutorizadoDescripcion { get; set; }
+
+    public decimal? Disponible { get; set; }
 }
