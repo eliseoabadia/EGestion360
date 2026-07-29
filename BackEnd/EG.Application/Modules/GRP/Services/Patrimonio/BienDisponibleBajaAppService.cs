@@ -5,6 +5,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,23 +14,31 @@ namespace EG.Application.Services.Patrimonio
     public class BienDisponibleBajaAppService : IBienDisponibleBajaAppService
     {
         private readonly GenericService<VwBienesDisponiblesBaja, BienDisponibleBajaDto, BienDisponibleBajaResponse> _serviceView;
+        private readonly IUserContextService _userContext;
 
         public BienDisponibleBajaAppService(
-            GenericService<VwBienesDisponiblesBaja, BienDisponibleBajaDto, BienDisponibleBajaResponse> serviceView)
+            GenericService<VwBienesDisponiblesBaja, BienDisponibleBajaDto, BienDisponibleBajaResponse> serviceView,
+            IUserContextService userContext)
         {
             _serviceView = serviceView;
+            _userContext = userContext;
         }
 
         public async Task<PagedResult<BienDisponibleBajaResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.FkidEmpresaSis == empresaId)
+                .ToListAsync()).Adapt<List<BienDisponibleBajaResponse>>();
             return Success(items, "Bienes disponibles para baja obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<BienDisponibleBajaResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidBien");
-            if (item == null)
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidBien == id && x.FkidEmpresaSis == empresaId);
+            if (entity == null)
             {
                 return Failure<BienDisponibleBajaResponse>($"Bien disponible con ID {id} no encontrado.", "NOT_FOUND");
             }
@@ -39,8 +48,8 @@ namespace EG.Application.Services.Patrimonio
                 Success = true,
                 Message = "Bien disponible encontrado",
                 Code = "SUCCESS",
-                Data = item,
-                Items = new List<BienDisponibleBajaResponse> { item },
+                Data = entity.Adapt<BienDisponibleBajaResponse>(),
+                Items = new List<BienDisponibleBajaResponse> { entity.Adapt<BienDisponibleBajaResponse>() },
                 TotalCount = 1
             };
         }
@@ -71,7 +80,8 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes().Where(x => x.FkidEmpresaSis == empresaId);
 
                 if (TryGetIntFilter(request, "FkidAreaSis", out var areaId))
                 {

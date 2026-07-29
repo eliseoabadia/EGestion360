@@ -45,6 +45,52 @@ public sealed class StoredProcedureReportRegistry
                     new StoredProcedureReportField("TipoBienDescripcion", "Bien", 180),
                     new StoredProcedureReportField("Cantidad", "Cantidad", 70)
                 ],
+                Constants.BD_CON),
+            [ReportKeys.PolizaBajaPatrimonial] = new StoredProcedureReportDefinition(
+                ReportKeys.PolizaBajaPatrimonial,
+                "Póliza de baja patrimonial",
+                "CONTA.SP_ReportePoliza",
+                [new StoredProcedureReportParameter("@PKIdPoliza", "PKIdPoliza", typeof(int), "pk", 0)],
+                [
+                    new StoredProcedureReportField("ClavePoliza", "Clave", 75),
+                    new StoredProcedureReportField("FechaPoliza", "Fecha", 75),
+                    new StoredProcedureReportField("NombrePoliza", "Póliza", 180),
+                    new StoredProcedureReportField("Descripcion", "Tipo", 90),
+                    new StoredProcedureReportField("ClaveOrd", "Cuenta", 130),
+                    new StoredProcedureReportField("DDetalle", "Detalle", 180),
+                    new StoredProcedureReportField("ImporteDebe", "Debe", 80),
+                    new StoredProcedureReportField("ImporteHaber", "Haber", 80)
+                ],
+                Constants.BD_CON),
+            [ReportKeys.NotaEntradaPatrimonial] = new StoredProcedureReportDefinition(
+                ReportKeys.NotaEntradaPatrimonial,
+                "Nota de entrada patrimonial",
+                "[ALMA].[SPR_Entrada]",
+                [new StoredProcedureReportParameter("@PKIdOrdenCompra", "PKIdOrdenCompra", typeof(int), "pk", 0)],
+                [
+                    new StoredProcedureReportField("NumeroOrdenCompra", "Orden", 90),
+                    new StoredProcedureReportField("FechaOrdenCompra", "Fecha", 75),
+                    new StoredProcedureReportField("Requisicion", "Requisicion", 110),
+                    new StoredProcedureReportField("Proveedor", "Proveedor", 150),
+                    new StoredProcedureReportField("TipoBien", "Bien", 180),
+                    new StoredProcedureReportField("CantidadRecibida", "Recibido", 70),
+                    new StoredProcedureReportField("Importe", "Importe", 85)
+                ],
+                Constants.BD_CON),
+            [ReportKeys.AltaBienesMuebles] = new StoredProcedureReportDefinition(
+                ReportKeys.AltaBienesMuebles,
+                "Alta de bienes muebles",
+                "[ORCO].[SPR_Entrada_A]",
+                [new StoredProcedureReportParameter("@PKIdOrdenCompra", "PKIdOrdenCompra", typeof(int), "pk", 0)],
+                [
+                    new StoredProcedureReportField("Clave", "Clave patrimonial", 110),
+                    new StoredProcedureReportField("Descripcion", "Descripcion", 180),
+                    new StoredProcedureReportField("Marca", "Marca", 85),
+                    new StoredProcedureReportField("Modelo", "Modelo", 85),
+                    new StoredProcedureReportField("Serie", "Serie", 100),
+                    new StoredProcedureReportField("Factura", "Factura", 80),
+                    new StoredProcedureReportField("ValorActual", "Valor", 85)
+                ],
                 Constants.BD_CON)
         };
     }

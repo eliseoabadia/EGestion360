@@ -1,0 +1,71 @@
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using MudBlazor
+
+@inject IGenericCrudService<BienResponse> BienService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle1" Class="mb-3">@Detalle.TipoBienDescripcion</MudText>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+            Esta operación sólo registra la cantidad recibida. No modifica concepto, partida, precio ni cantidad contratada.
+        </MudAlert>
+        <MudNumericField @bind-Value="CantidadRecibida"
+                         Label="Cantidad recibida acumulada"
+                         Variant="Variant.Outlined"
+                         Min="0m"
+                         Max="@Detalle.CantidadSolicitada"
+                         Step="1m"
+                         Immediate="true"
+                         HelperText="@($"Máximo autorizado: {Detalle.CantidadSolicitada:0.####}")" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@Saving" OnClick="SaveAsync">
+            @(Saving ? "Registrando..." : "Registrar recepción")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter, EditorRequired] public OrdenCompraDetalleResponse Detalle { get; set; } = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private decimal CantidadRecibida;
+    private bool Saving;
+
+    protected override void OnInitialized() => CantidadRecibida = Detalle.CantidadRecibida;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task SaveAsync()
+    {
+        if (CantidadRecibida < 0 || CantidadRecibida > Detalle.CantidadSolicitada || CantidadRecibida != decimal.Truncate(CantidadRecibida))
+        {
+            Snackbar.Add("Capture una cantidad completa dentro del máximo autorizado.", Severity.Warning);
+            return;
+        }
+
+        Saving = true;
+        try
+        {
+            var result = await BienService.PostActionAsync(
+                $"registrar-recepcion/{Detalle.PkidOrdenCompraDetalle}",
+                new { CantidadRecibida });
+            if (result?.Success != true)
+            {
+                Snackbar.Add(result?.Message ?? "No fue posible registrar la recepción.", Severity.Error);
+                return;
+            }
+
+            Snackbar.Add(result.Message ?? "Recepción registrada.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(CantidadRecibida));
+        }
+        finally
+        {
+            Saving = false;
+        }
+    }
+}

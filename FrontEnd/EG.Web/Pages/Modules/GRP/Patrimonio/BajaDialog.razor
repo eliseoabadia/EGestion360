@@ -83,7 +83,9 @@
                                  Variant="Variant.Outlined"
                                  Format="0.####"
                                  Culture="@NumberCulture"
-                                 Min="0.0001m" />
+                                 Min="1m"
+                                 Max="1m"
+                                 ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -145,6 +147,7 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int AnioId { get; set; }
     [Parameter] public int BienId { get; set; }
     [Parameter] public int? AreaId { get; set; }
     [Parameter] public string BienDescripcion { get; set; } = string.Empty;
@@ -221,6 +224,12 @@
             return;
         }
 
+        if (AnioId <= 0)
+        {
+            Snackbar.Add("Debe seleccionar el año presupuestal.", Severity.Warning);
+            return;
+        }
+
         if (BienId <= 0 && _selectedBien == null)
         {
             Snackbar.Add("Debe seleccionar el bien a dar de baja.", Severity.Warning);
@@ -234,6 +243,7 @@
         }
 
         item.FkidEmpresaSis = empresaId.Value;
+        item.FkidAnioSis = AnioId;
         item.FkidBienAlma = BienId > 0 ? BienId : _selectedBien!.Id;
         item.FkidTipoBajaAlma = _selectedTipoBaja.Id;
         item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;

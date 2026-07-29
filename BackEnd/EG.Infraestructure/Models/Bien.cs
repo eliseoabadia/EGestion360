@@ -9,6 +9,8 @@ public partial class Bien
 {
     public int PkidBien { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int? FkidGrupoBienAlma { get; set; }
 
     public int FkidTipoBienAlma { get; set; }

@@ -9,6 +9,8 @@ public partial class VwBien
 {
     public int PkidBien { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public string Clave { get; set; }
 
     public string ClaveAnt { get; set; }

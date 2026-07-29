@@ -13,6 +13,8 @@ public partial class VwBaja
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public string EmpresaNombre { get; set; }
 
     public int? FkidAreaSis { get; set; }

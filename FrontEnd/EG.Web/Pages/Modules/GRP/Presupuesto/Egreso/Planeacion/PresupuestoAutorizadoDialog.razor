@@ -751,7 +751,7 @@
     private string DialogBodyClass => IsReadOnly
         ? "presupuesto-autorizado-dialog is-readonly"
         : "presupuesto-autorizado-dialog is-editable";
-    private string actionText => IsAuthorizationFlow ? "Firmar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
+    private string actionText => IsAuthorizationFlow ? "Autorizar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
     private string cancelText => IsReadOnly ? "Cerrar" : "Cancelar";
     private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;

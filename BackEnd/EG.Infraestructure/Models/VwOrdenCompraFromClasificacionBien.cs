@@ -11,6 +11,8 @@ public partial class VwOrdenCompraFromClasificacionBien
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public string Requisicion { get; set; }
 
     public string Proveedor { get; set; }

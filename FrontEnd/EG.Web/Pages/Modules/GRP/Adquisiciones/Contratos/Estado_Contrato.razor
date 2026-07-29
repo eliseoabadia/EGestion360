@@ -1,5 +1,6 @@
 ﻿@page "/Contratos/Estado_Contrato"
 @page "/Adquisiciones/Contratos/Estado_Contrato"
+@page "/Adquisiciones/Contratos/Registro_Compromiso"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contratos
 @using EG.Web.Pages.Shared
@@ -10,13 +11,14 @@
 @implements IDisposable
 @inherits BaseCrudPage<EstadoContratoResponse, EstadoContratoResponse>
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
-        <PageHeader Title="Estado de Contrato"
-                    Subtitle="Seguimiento operativo de contratos presupuestales"
+        <PageHeader Title="Registro de Compromiso"
+                    Subtitle="Contrato presupuestal desde suficiencia autorizada y generacion de poliza"
                     Icon="@Icons.Material.Filled.FactCheck"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
@@ -63,7 +65,7 @@
                 <TemplateColumn T="EstadoContratoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <DocumentSupportButton Modulo="Contratos"
-                        SubModulo="Estado_Contrato"
+                        SubModulo="Registro_Compromiso"
                         Controlador="EstadoContrato"
                         EntidadId="@cell.Item.PkidContrato"
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
@@ -159,7 +161,7 @@
     private const string CurrencySymbol = "$";
 
     protected override string ModuleName => "Contratos";
-    protected override string SubModuleName => "Estado_Contrato";
+    protected override string SubModuleName => "Registro_Compromiso";
     protected override Type CreateDialogType => typeof(EstadoContratoDialog);
     protected override Type EditDialogType => typeof(EstadoContratoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<EstadoContratoResponse>);
@@ -168,13 +170,25 @@
     protected override async Task OnInitializedAsync()
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
     }
 
     protected override async Task CreateItem()
     {
-        var parameters = new DialogParameters { ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0 };
-        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear Estado de Contrato", parameters,
+        if (AnioStateService.AnioId is not > 0)
+        {
+            Snackbar.Add("Selecciona un ano presupuestal.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId.Value
+        };
+        var dialog = await DialogService.ShowAsync(CreateDialogType, "Crear Registro de Compromiso", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false }) await ReloadData();
@@ -187,8 +201,13 @@
             return;
         }
 
-        var parameters = new DialogParameters { ["Id"] = id, ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0 };
-        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar Estado de Contrato", parameters,
+        var parameters = new DialogParameters
+        {
+            ["Id"] = id,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
+        };
+        var dialog = await DialogService.ShowAsync(EditDialogType, "Editar Registro de Compromiso", parameters,
             new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false }) await ReloadData();
@@ -230,6 +249,11 @@
             await table.ReloadData();
         }
     }
+
+    protected override Dictionary<string, object>? GetAdditionalFilters() =>
+        AnioStateService.AnioId is > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
+            : null;
 
     private async Task<bool> IsItemLockedAsync(int id)
     {
@@ -311,5 +335,10 @@
         : "background:#e0f2fe; color:#075985; font-weight:700;";
 
     private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
-    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
 }

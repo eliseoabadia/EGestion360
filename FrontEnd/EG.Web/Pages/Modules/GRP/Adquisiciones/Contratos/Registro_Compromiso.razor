@@ -1,5 +1,5 @@
 ﻿@page "/Contratos/Registro_Compromiso"
-@page "/Adquisiciones/Contratos/Registro_Compromiso"
+@page "/Adquisiciones/Contratos/Registro_Administrativo"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contratos
 @using EG.Web.Models
@@ -16,8 +16,8 @@
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
-        <PageHeader Title="Registro de Compromiso"
-                    Subtitle="Contratos de adquisiciones vinculados a ordenes de compra"
+        <PageHeader Title="Contrato Administrativo"
+                    Subtitle="Datos administrativos vinculados a ordenes de compra"
                     Icon="@Icons.Material.Filled.AssignmentTurnedIn"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"

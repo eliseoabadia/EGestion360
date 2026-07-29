@@ -9,13 +9,14 @@
 @implements IDisposable
 @inherits BaseCrudPage<SaldosContratoResponse, SaldosContratoResponse>
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
     <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
         <PageHeader Title="Saldos de Contratos"
-                    Subtitle="Presupuesto disponible para generar contratos"
+                    Subtitle="Comprometido no devengado por contrato y mes"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
@@ -23,20 +24,20 @@
         <MudGrid Spacing="2" Class="mb-2">
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card metric-primary" Elevation="0">
-                    <span>Disponible visible</span>
+                    <span>Saldo visible</span>
                     <strong>@Money(Elements.Sum(x => x.Total ?? 0m))</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card" Elevation="0">
-                    <span>Programas</span>
-                    <strong>@Elements.Select(x => x.FkidProgramaPres).Distinct().Count().ToString("N0", NumberCulture)</strong>
+                    <span>Contratado</span>
+                    <strong>@Money(Elements.Sum(x => x.TotalContratado))</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card" Elevation="0">
-                    <span>Partidas</span>
-                    <strong>@Elements.Select(x => x.FkidPartidaConta).Distinct().Count().ToString("N0", NumberCulture)</strong>
+                    <span>Devengado</span>
+                    <strong>@Money(Elements.Sum(x => x.TotalDevengado))</strong>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" md="3">
@@ -49,8 +50,8 @@
 
         <GenericDataGrid TItem="SaldosContratoResponse"
                       @ref="table"
-                      Title="Presupuesto disponible"
-                      SearchPlaceholder="Buscar por programa, partida, area, PY o descripcion..."
+                      Title="Contratos con saldo por devengar"
+                      SearchPlaceholder="Buscar por contrato, requisicion, proveedor, poliza o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -58,63 +59,50 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
             <Columns>
-                <TemplateColumn T="SaldosContratoResponse" Title="Programa" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
+                <TemplateColumn T="SaldosContratoResponse" Title="Contrato" Identifier="NumeroContrato" PropertyName="NumeroContrato" SortBy="x => x.NumeroContrato">
                     <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.ProgramaClave)</div>
-                        <span>@TextOrDash(cell.Item.ProgramaDescripcion)</span>
+                        <div class="main-cell">@TextOrDash(cell.Item.NumeroContrato)</div>
+                        <span>@TextOrDash(cell.Item.Descripcion)</span>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Partida" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
+                <TemplateColumn T="SaldosContratoResponse" Title="Requisicion" Identifier="FkidRequisicionOrco" PropertyName="FkidRequisicionOrco" SortBy="x => x.FkidRequisicionOrco">
                     <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.PartidaClave)</div>
-                        <span>@TextOrDash(cell.Item.PartidaDescripcion)</span>
+                        <div class="main-cell">@cell.Item.FkidRequisicionOrco</div>
+                        <span>@TextOrDash(cell.Item.RequisicionDescripcion)</span>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                <TemplateColumn T="SaldosContratoResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
                     <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.AreaNombre)</div>
-                        <span>@TextOrDash(cell.Item.AreaClave)</span>
+                        <div class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</div>
+                        <span>@TextOrDash(cell.Item.ProveedorRfc)</span>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Clasificacion" Identifier="__column_3" Sortable="false" Filterable="false">
+                <TemplateColumn T="SaldosContratoResponse" Title="Programa / Poliza" Identifier="ProgramaClave" PropertyName="ProgramaClave" SortBy="x => x.ProgramaClave">
                     <CellTemplate Context="cell">
                         <div class="stacked-lines">
-                        <span>FF: @TextOrDash(cell.Item.FuenteFinanciamientoClaveNombre)</span>
-                        <span>TG: @TextOrDash(cell.Item.TipoGastoClaveNombre)</span>
-                        <span>DI: @TextOrDash(cell.Item.DigitoIdentificadorClaveNombre)</span>
-                        <span>DG: @TextOrDash(cell.Item.DestinoGastoClaveNombre)</span>
-                        <span>PY: @TextOrDash(cell.Item.PyClaveNombre)</span>
+                        <span>Programa: @TextOrDash(cell.Item.ProgramaClave) - @TextOrDash(cell.Item.ProgramaDescripcion)</span>
+                        <span>Poliza: @TextOrDash(cell.Item.ClavePoliza)</span>
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                <TemplateColumn T="SaldosContratoResponse" Title="Importes" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
                     <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.Descripcion)</div>
-                        <span>@TextOrDash(cell.Item.DescripcionRequisicion)</span>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Disponible" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
-                    <CellTemplate Context="cell">
-                        <strong>@Money(cell.Item.Total ?? 0m)</strong>
+                        <div>Contratado: <strong>@Money(cell.Item.TotalContratado)</strong></div>
+                        <div>Devengado: @Money(cell.Item.TotalDevengado)</div>
+                        <div>Saldo: <strong>@Money(cell.Item.Total ?? 0m)</strong></div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="SaldosContratoResponse" Title="Meses" Identifier="__column_6" Sortable="false" Filterable="false">
                     <CellTemplate Context="cell">
                         <div class="months-line">
-                        <span>ENE @Money(cell.Item.Enero ?? 0m)</span>
-                        <span>FEB @Money(cell.Item.Febrero ?? 0m)</span>
-                        <span>MAR @Money(cell.Item.Marzo ?? 0m)</span>
-                        <span>ABR @Money(cell.Item.Abril ?? 0m)</span>
-                        <span>MAY @Money(cell.Item.Mayo ?? 0m)</span>
-                        <span>JUN @Money(cell.Item.Junio ?? 0m)</span>
+                        <span>ENE @Money(cell.Item.Ene)</span><span>FEB @Money(cell.Item.Feb)</span>
+                        <span>MAR @Money(cell.Item.Mar)</span><span>ABR @Money(cell.Item.Abr)</span>
+                        <span>MAY @Money(cell.Item.May)</span><span>JUN @Money(cell.Item.Jun)</span>
                         </div>
                         <div class="months-line">
-                        <span>JUL @Money(cell.Item.Julio ?? 0m)</span>
-                        <span>AGO @Money(cell.Item.Agosto ?? 0m)</span>
-                        <span>SEP @Money(cell.Item.Septiembre ?? 0m)</span>
-                        <span>OCT @Money(cell.Item.Octubre ?? 0m)</span>
-                        <span>NOV @Money(cell.Item.Noviembre ?? 0m)</span>
-                        <span>DIC @Money(cell.Item.Diciembre ?? 0m)</span>
+                        <span>JUL @Money(cell.Item.Jul)</span><span>AGO @Money(cell.Item.Ago)</span>
+                        <span>SEP @Money(cell.Item.Sep)</span><span>OCT @Money(cell.Item.Oct)</span>
+                        <span>NOV @Money(cell.Item.Nov)</span><span>DIC @Money(cell.Item.Dic)</span>
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
@@ -147,12 +135,14 @@
     protected override Type CreateDialogType => typeof(object);
     protected override Type EditDialogType => typeof(object);
     protected override Type DeleteDialogType => typeof(DeleteDialog<SaldosContratoResponse>);
-    protected override string GetDefaultSortLabel() => "ProgramaClave";
+    protected override string GetDefaultSortLabel() => "NumeroContrato";
 
     protected override async Task OnInitializedAsync()
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
     }
 
     protected override Task CreateItem() => Task.CompletedTask;
@@ -161,31 +151,22 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<SaldosContratoResponse> items) => items.Select(x => new
     {
-        x.PkidEgresoAutorizado,
+        x.PkidContrato,
         Anio = x.AnioClave,
-        Programa = x.ProgramaClaveNombre,
-        Partida = x.PartidaClaveNombre,
-        Area = x.AreaNombre,
-        Fuente = x.FuenteFinanciamientoClaveNombre,
-        TipoGasto = x.TipoGastoClaveNombre,
-        Digito = x.DigitoIdentificadorClaveNombre,
-        Destino = x.DestinoGastoClaveNombre,
-        PY = x.PyClaveNombre,
+        x.NumeroContrato,
         x.Descripcion,
-        Fecha = x.Fecha.ToString("dd/MM/yyyy"),
-        x.Enero,
-        x.Febrero,
-        x.Marzo,
-        x.Abril,
-        x.Mayo,
-        x.Junio,
-        x.Julio,
-        x.Agosto,
-        x.Septiembre,
-        x.Octubre,
-        x.Noviembre,
-        x.Diciembre,
-        Disponible = x.Total
+        Requisicion = x.FkidRequisicionOrco,
+        x.RequisicionDescripcion,
+        x.ProveedorNombre,
+        x.ProveedorRfc,
+        Programa = x.ProgramaClave,
+        x.ClavePoliza,
+        Fecha = x.FechaContrato.ToString("dd/MM/yyyy"),
+        x.Ene, x.Feb, x.Mar, x.Abr, x.May, x.Jun,
+        x.Jul, x.Ago, x.Sep, x.Oct, x.Nov, x.Dic,
+        x.TotalContratado,
+        x.TotalDevengado,
+        Saldo = x.Total
     });
 
     protected override async Task ReloadData()
@@ -196,8 +177,18 @@
         }
     }
 
+    protected override Dictionary<string, object>? GetAdditionalFilters() =>
+        AnioStateService.AnioId is > 0
+            ? new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId.Value }
+            : null;
+
     private static string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private void OnEmpresaChanged(int empresaId) => _ = InvokeAsync(ReloadData);
-    public void Dispose() => SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
 }

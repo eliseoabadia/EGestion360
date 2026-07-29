@@ -4,6 +4,7 @@ using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             GenericService<EgresoProyectado, EgresoProyectadoDto, EgresoProyectadoResponse> service,
             GenericService<VwEgresoProyectado, EgresoProyectadoDto, EgresoProyectadoResponse> serviceView,
             EGestionContext context,
+            IUserContextService userContext,
             ILogger<EgresoProyectadoAppService> logger)
             : base(
                 service,
@@ -28,14 +30,17 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 (dto, id) => dto.PkidEgresoProyectado = id)
         {
             _context = context;
+            _userContext = userContext;
             _logger = logger;
         }
 
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
         private readonly ILogger<EgresoProyectadoAppService> _logger;
 
         public override Task<PagedResult<EgresoProyectadoResponse>> CreateAsync(EgresoProyectadoResponse response, int usuarioActual)
         {
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             ClearMonthsBeforeStartDate(response);
             return base.CreateAsync(response, usuarioActual);
         }
@@ -47,6 +52,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 return Locked(id, "El anteproyecto ya fue autorizado y no puede editarse.");
             }
 
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             ClearMonthsBeforeStartDate(response);
             return await base.UpdateAsync(id, response, usuarioActual);
         }
@@ -254,8 +260,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     await using var transaction = await _context.Database.BeginTransactionAsync();
 
                     var now = DateTime.Now;
+                    var empresaId = _userContext.GetCurrentEmpresaId();
                     var entities = preview.Rows.Select(row => new EgresoProyectado
                     {
+                        FkidEmpresaSis = empresaId,
                         FkidProgramaPres = row.FkidProgramaPres!.Value,
                         FkidPartidaConta = row.FkidPartidaConta!.Value,
                         FkidAreaSis = row.FkidAreaSis!.Value,
@@ -291,7 +299,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                     preview.ImportedIds = entities.Select(x => x.PkidEgresoProyectado).ToList();
                     preview.ImportedCount = preview.ImportedIds.Count;
                     var importedViews = await _context.VwEgresoProyectados.AsNoTracking()
-                        .Where(x => preview.ImportedIds.Contains(x.PkidEgresoProyectado))
+                        .Where(x => x.FkidEmpresaSis == empresaId && preview.ImportedIds.Contains(x.PkidEgresoProyectado))
                         .ToListAsync();
                     preview.ImportedRows = importedViews.Select(x => x.Adapt<EgresoProyectadoResponse>()).ToList();
 
@@ -314,8 +322,9 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         private async Task<bool> IsAuthorizedAsync(int id)
         {
+            var empresaId = _userContext.GetCurrentEmpresaId();
             return await _context.EgresoAutorizados
-                .AnyAsync(x => x.FkidEgresoProyectadoPres == id && x.Activo);
+                .AnyAsync(x => x.FkidEmpresaSis == empresaId && x.FkidEgresoProyectadoPres == id && x.Activo);
         }
 
         private static PagedResult<EgresoProyectadoResponse> Locked(int id, string message)
@@ -406,8 +415,8 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             {
                 FkidAnioSis = PositiveOrNull(fallback.FkidAnioSis),
                 Anio = fallback.Anio ?? ParseInt(GetDetected(detectedHeaderValues, "Anio")),
-                FkidEmpresaSis = PositiveOrNull(fallback.FkidEmpresaSis),
-                EmpresaNombre = Trim(fallback.EmpresaNombre),
+                FkidEmpresaSis = _userContext.GetCurrentEmpresaId(),
+                EmpresaNombre = null,
                 Fecha = fallback.Fecha?.Date ?? DateTime.Today
             };
 

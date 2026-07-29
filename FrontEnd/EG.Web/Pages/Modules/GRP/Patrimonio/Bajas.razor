@@ -13,12 +13,13 @@
 @inherits BaseCrudPage<BajaResponse, BajaResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<EstatusBajaResponse> EstatusBajaService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column bajas-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column bajas-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
             <PageHeader Title="Bajas"
                         Subtitle="Bajas patrimoniales con soporte documental y trazabilidad"
@@ -46,6 +47,10 @@
                 </div>
             </div>
 
+            <MudChip T="string" Size="Size.Small" Color="@(AnioStateService.AnioId is > 0 ? Color.Info : Color.Error)" Variant="Variant.Outlined" Class="mb-2 align-self-start">
+                Año presupuestal: @(AnioStateService.AnioClave?.ToString() ?? "No seleccionado")
+            </MudChip>
+
             <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
                 <GenericDataGrid TItem="BajaResponse"
                               @ref="table"
@@ -69,12 +74,23 @@
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.BienClave)} | {TextOrDash(cell.Item.BienDescripcion)}")" />
                         <MudTooltip Text="Aplicar baja">
                         <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
-                        Visible="@CanUpdate"
+                        Visible="@CanAuthorize"
                         Disabled="@IsFinal(cell.Item)"
                         Color="Color.Success"
                         Size="Size.Small"
                         OnClick="@(() => AplicarBaja(cell.Item))" />
                         </MudTooltip>
+                        @if (cell.Item.FkidPolizaConta is > 0)
+                        {
+                            <ReportOpenButton ReportName="Patrimonio.Bajas.Poliza"
+                                              EntityId="@cell.Item.FkidPolizaConta"
+                                              PrimaryKeyParameter="pk"
+                                              Title="Póliza de baja patrimonial"
+                                              Tooltip="Ver póliza presupuestal"
+                                              Icon="@Icons.Material.Filled.AccountBalance"
+                                              Color="Color.Secondary"
+                                              Visible="@CanExport" />
+                        }
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
@@ -223,7 +239,9 @@
     {
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     protected override async Task<TableData<BajaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -238,9 +256,18 @@
             SortLabel = state.SortLabel ?? GetDefaultSortLabel();
             SortDirection = state.SortDirection;
 
-            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
-                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
-                : null;
+            if (SucursalStateService.EmpresaId is not > 0 || AnioStateService.AnioId is not > 0)
+            {
+                Elements.Clear();
+                TotalCount = 0;
+                return new TableData<BajaResponse> { Items = Elements, TotalItems = 0 };
+            }
+
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value,
+                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+            };
 
             var response = await Service.GetAllPaginadoAsync(
                 CurrentPage,
@@ -289,7 +316,8 @@
 
         var parameters = new DialogParameters
         {
-            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
         };
 
         var dialog = await DialogService.ShowAsync(CreateDialogType, "Nueva baja patrimonial",
@@ -321,7 +349,8 @@
         var parameters = new DialogParameters
         {
             ["Id"] = id,
-            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId ?? 0
         };
 
         var dialog = await DialogService.ShowAsync(EditDialogType, "Editar baja patrimonial",
@@ -384,9 +413,16 @@
 
         try
         {
-            var filters = SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0
-                ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
-                : null;
+            if (SucursalStateService.EmpresaId is not > 0 || AnioStateService.AnioId is not > 0)
+            {
+                Snackbar.Add("Debe seleccionar empresa y año presupuestal.", Severity.Warning);
+                return;
+            }
+            var filters = new Dictionary<string, object>
+            {
+                ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value,
+                ["FkidAnioSis"] = AnioStateService.AnioId.Value
+            };
             var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
             var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
 
@@ -427,7 +463,7 @@
 
     private async Task AplicarBaja(BajaResponse item)
     {
-        if (!CanUpdate)
+        if (!CanAuthorize)
         {
             Snackbar.Add("No tienes permisos para aplicar bajas", Severity.Warning);
             return;
@@ -445,18 +481,19 @@
             return;
         }
 
-        var estatusAplicadaId = await GetEstatusAplicadaIdAsync();
-        if (estatusAplicadaId <= 0)
+        if (AnioStateService.AnioId is not > 0)
         {
-            Snackbar.Add("No se encontro el estatus APLICADA.", Severity.Error);
+            Snackbar.Add("Debe seleccionar el año presupuestal.", Severity.Warning);
             return;
         }
 
-        var update = Clone(item);
-        update.FkidEstatusBajaAlma = estatusAplicadaId;
-        update.FechaBaja = DateTime.Today;
+        if (SucursalStateService.EmpresaId is not > 0 || AnioStateService.AnioId is not > 0)
+        {
+            Snackbar.Add("Debe seleccionar empresa y año presupuestal.", Severity.Warning);
+            return;
+        }
 
-        var response = await Service.UpdateAsync(update, item.PkidBaja);
+        var response = await Service.PostActionAsync($"{item.PkidBaja}/aplicar", new { FkidAnioSis = AnioStateService.AnioId.Value });
         if (response?.Success == true)
         {
             Snackbar.Add("Baja aplicada correctamente", Severity.Success);
@@ -509,6 +546,14 @@
         }
     }
 
+    private async void OnAnioChanged(int? _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
     private static bool IsFinal(BajaResponse item) =>
         item.EsFinal ||
         item.EstatusDescripcion.Equals("APLICADA", StringComparison.OrdinalIgnoreCase) ||
@@ -533,6 +578,7 @@
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

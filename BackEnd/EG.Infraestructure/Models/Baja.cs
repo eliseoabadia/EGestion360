@@ -13,6 +13,8 @@ public partial class Baja
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public int? FkidAreaSis { get; set; }
 
     public int FkidBienAlma { get; set; }
@@ -64,6 +66,8 @@ public partial class Baja
     public int? UsuarioModificacion { get; set; }
 
     public virtual Area FkidAreaSisNavigation { get; set; }
+
+    public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual Bien FkidBienAlmaNavigation { get; set; }
 

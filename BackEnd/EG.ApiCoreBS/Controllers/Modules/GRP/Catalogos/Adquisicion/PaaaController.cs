@@ -61,6 +61,7 @@ private void ConfigureService()
                 return !_service.GetQueryWithIncludes()
                     .Any(x => x.FkidAreaSis == pDto.FkidAreaSis
                         && x.FkidAnioSis == pDto.FkidAnioSis
+                        && x.FkidEmpresaSis == pDto.FkidEmpresaSis
                         && x.Activo
                         && (!id.HasValue || x.PkidPaaas != id.Value));
             });
@@ -71,11 +72,17 @@ private void ConfigureService()
         {
             try
             {
-                var items = await _serviceView.GetAllAsync();
+                var companyId = _userContext.GetCurrentEmpresaId();
+                var areaIds = await GetAuthorizedAreaIdsAsync();
+                var views = await _context.VwPaaas.AsNoTracking()
+                    .Where(x => x.Activo && x.FkidEmpresaSis == companyId && areaIds.Contains(x.FkidAreaSis))
+                    .OrderByDescending(x => x.PkidPaaas).ToListAsync();
+                var items = views.Adapt<List<PaaaResponse>>();
+                await MarkLockedAsync(items);
                 return Ok(new PagedResult<PaaaResponse>
                 {
-                    Items = items.ToList(),
-                    TotalCount = items.Count(),
+                    Items = items,
+                    TotalCount = items.Count,
                     Success = true,
                     Message = "Programas anuales obtenidos correctamente",
                     Code = "SUCCESS"
@@ -95,13 +102,18 @@ private void ConfigureService()
         {
             try
             {
-                var result = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidPaaas");
-                if (result == null)
+                var companyId = _userContext.GetCurrentEmpresaId();
+                var areaIds = await GetAuthorizedAreaIdsAsync();
+                var view = await _context.VwPaaas.AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.PkidPaaas == id && x.Activo && x.FkidEmpresaSis == companyId && areaIds.Contains(x.FkidAreaSis));
+                if (view == null)
                     return NotFound(new PagedResult<PaaaResponse>
                     {
                         Success = false, Message = "Programa anual no encontrado", Code = "NOT_FOUND", TotalCount = 0
                     });
 
+                var result = view.Adapt<PaaaResponse>();
+                await MarkLockedAsync(new List<PaaaResponse> { result });
                 return Ok(new PagedResult<PaaaResponse>
                 {
                     Success = true,
@@ -127,10 +139,13 @@ private void ConfigureService()
             try
             {
                 var dto = response.Adapt<PaaaDto>();
-                //dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+                dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
                 dto.UsuarioCreacion = _userContext.GetCurrentUserId();
                 dto.FechaCreacion = DateTime.Now;
                 dto.Activo = true;
+
+                if (!await IsAuthorizedAreaAsync(dto.FkidAreaSis))
+                    return Forbid();
 
                 if (!await ProyectoOrcoExistsAsync(dto.FkidProyectoOrco, dto.UsuarioCreacion))
                 {
@@ -150,7 +165,7 @@ private void ConfigureService()
 
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
-                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    "[ORCO].[SP_MantenimientoPAAASV2]",
                     StoredProcedureExecutor.Param("@Action", 1),
                     StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
                     StoredProcedureExecutor.Param("@FKIdAnio_SIS", dto.FkidAnioSis),
@@ -194,8 +209,14 @@ private void ConfigureService()
             {
                 var dto = response.Adapt<PaaaDto>();
                 dto.PkidPaaas = id;
+                dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
                 dto.UsuarioModificacion = _userContext.GetCurrentUserId();
                 dto.FechaModificacion = DateTime.Now;
+
+                if (!await OwnsPaaaAsync(id) || await IsPaaaLockedAsync(id))
+                    return Conflict(new PagedResult<PaaaResponse> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo o no pertenece a la empresa actual.", Code = "PAAA_LOCKED", TotalCount = 0 });
+                if (!await IsAuthorizedAreaAsync(dto.FkidAreaSis))
+                    return Forbid();
 
                 if (!await ProyectoOrcoExistsAsync(dto.FkidProyectoOrco, dto.UsuarioModificacion ?? _userContext.GetCurrentUserId()))
                 {
@@ -215,7 +236,7 @@ private void ConfigureService()
 
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
-                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    "[ORCO].[SP_MantenimientoPAAASV2]",
                     StoredProcedureExecutor.Param("@Action", 2),
                     StoredProcedureExecutor.Param("@PKIdPAAAS", id),
                     StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
@@ -265,9 +286,11 @@ private void ConfigureService()
         {
             try
             {
+                if (!await OwnsPaaaAsync(id) || await IsPaaaLockedAsync(id))
+                    return Conflict(new PagedResult<bool> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo o no pertenece a la empresa actual.", Code = "PAAA_LOCKED", TotalCount = 0 });
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
-                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    "[ORCO].[SP_MantenimientoPAAASV2]",
                     StoredProcedureExecutor.Param("@Action", 3),
                     StoredProcedureExecutor.Param("@PKIdPAAAS", id),
                     StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
@@ -308,11 +331,18 @@ private void ConfigureService()
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var companyId = _userContext.GetCurrentEmpresaId();
+                var areaIds = await GetAuthorizedAreaIdsAsync();
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(e => e.Activo && e.FkidEmpresaSis == companyId && areaIds.Contains(e.FkidAreaSis));
 
-                if (TryGetIntFilter(request, "FkidAnioSis", out var anioId))
+                if (TryGetIntFilter(request, "FkidAnioSis", out var anioId) && anioId > 0)
                 {
                     query = query.Where(e => e.FkidAnioSis == anioId);
+                }
+                else
+                {
+                    return BadRequest(new PagedResult<PaaaResponse> { Success = false, Message = "El ejercicio presupuestal es obligatorio.", Code = "YEAR_REQUIRED", TotalCount = 0 });
                 }
 
                 if (!string.IsNullOrWhiteSpace(request.Filtro))
@@ -349,9 +379,11 @@ private void ConfigureService()
                     .Take(request.PageSize)
                     .ToListAsync();
 
+                var responses = items.Adapt<List<PaaaResponse>>();
+                await MarkLockedAsync(responses);
                 return Ok(new PagedResult<PaaaResponse>
                 {
-                    Items = items.Adapt<List<PaaaResponse>>(),
+                    Items = responses,
                     TotalCount = totalItems,
                     Success = true,
                     Message = "OK",
@@ -372,8 +404,7 @@ catch (Exception ex)
     {
         try
         {
-            var paaa = await _context.Paaas.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidPaaas == id && x.Activo);
+            var paaa = await GetOwnedPaaaAsync(id);
 
             if (paaa == null)
                 return NotFound(new PagedResult<PaaaspartidumResponse>
@@ -411,6 +442,9 @@ catch (Exception ex)
     {
         try
         {
+            var partida = await GetOwnedPartidaAsync(partidaId);
+            if (partida == null)
+                return NotFound(new PagedResult<PaaasdetalleResponse> { Success = false, Message = "Partida no encontrada", Code = "NOT_FOUND", TotalCount = 0 });
             var detalles = await _context.VwPaaasdetalles.AsNoTracking()
                 .Where(x => x.FkidPaaaspartidaOrco == partidaId && x.Activo)
                 .OrderBy(x => x.TipoBienCodigoClave)
@@ -442,8 +476,7 @@ catch (Exception ex)
     {
         try
         {
-            var partida = await _context.Paaaspartida.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidPaaaspartida == partidaId && x.Activo);
+            var partida = await GetOwnedPartidaAsync(partidaId);
 
             if (partida == null)
                 return NotFound(new PagedResult<LookupItem>
@@ -507,9 +540,16 @@ catch (Exception ex)
     {
         try
         {
+            var paaa = await GetOwnedPaaaAsync(dto.FkidPaaasOrco);
+            if (paaa == null) return NotFound();
+            if (await IsPaaaLockedAsync(paaa.PkidPaaas))
+                return Conflict(new PagedResult<PaaaspartidumResponse> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo.", Code = "PAAA_LOCKED", TotalCount = 0 });
+            if (!await IsPartidaAvailableAsync(paaa, dto.FkidPartidaConta))
+                return BadRequest(new PagedResult<PaaaspartidumResponse> { Success = false, Message = "La partida no tiene presupuesto autorizado para el ejercicio, area y estructura del programa.", Code = "PARTIDA_NOT_AVAILABLE", TotalCount = 0 });
+            dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                 _context,
-                "[ORCO].[SP_MantenimientoPAAAS]",
+                "[ORCO].[SP_MantenimientoPAAASV2]",
                 StoredProcedureExecutor.Param("@Action", 5),
                 StoredProcedureExecutor.Param("@PKIdPAAAS", dto.FkidPaaasOrco),
                 StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
@@ -549,14 +589,21 @@ catch (Exception ex)
     {
         try
         {
+                var validation = await ValidateDetalleAsync(dto);
+                if (validation.Result != null) return validation.Result;
+                var paaaId = validation.Value.Partida.FkidPaaasOrco;
+                if (await IsPaaaLockedAsync(paaaId))
+                    return Conflict(new PagedResult<PaaasdetalleResponse> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo.", Code = "PAAA_LOCKED", TotalCount = 0 });
+                dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                     _context,
-                    "[ORCO].[SP_MantenimientoPAAAS]",
+                    "[ORCO].[SP_MantenimientoPAAASV2]",
                     StoredProcedureExecutor.Param("@Action", 7),
                     StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
                     StoredProcedureExecutor.Param("@PKIdPAAASPartida", dto.FkidPaaaspartidaOrco),
                     StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", dto.FkidTipoBienAlma),
                     StoredProcedureExecutor.Param("@FKIdUnidades_ALMA", dto.FkidUnidadesAlma),
+                    StoredProcedureExecutor.Param("@FKIdMes_SIS", dto.FkidMesSis),
                     StoredProcedureExecutor.Param("@Cantidad", dto.Cantidad),
                     StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
                     StoredProcedureExecutor.Param("@LugarEntrega", dto.LugarEntrega),
@@ -594,15 +641,24 @@ catch (Exception ex)
     {
         try
         {
+            var existing = await _context.Paaasdetalles.AsNoTracking().FirstOrDefaultAsync(x => x.PkidPaaasdetalle == detalleId && x.Activo);
+            if (existing == null) return NotFound();
+            dto.FkidPaaaspartidaOrco = existing.FkidPaaaspartidaOrco;
+            var validation = await ValidateDetalleAsync(dto);
+            if (validation.Result != null) return validation.Result;
+            if (await IsPaaaLockedAsync(validation.Value.Partida.FkidPaaasOrco))
+                return Conflict(new PagedResult<PaaasdetalleResponse> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo.", Code = "PAAA_LOCKED", TotalCount = 0 });
+            dto.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                 _context,
-                "[ORCO].[SP_MantenimientoPAAAS]",
+                "[ORCO].[SP_MantenimientoPAAASV2]",
                 StoredProcedureExecutor.Param("@Action", 8),
                 StoredProcedureExecutor.Param("@PKIdPAAASDetalle", detalleId),
                 StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", dto.FkidEmpresaSis),
                 StoredProcedureExecutor.Param("@PKIdPAAASPartida", dto.FkidPaaaspartidaOrco),
                 StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", dto.FkidTipoBienAlma),
                 StoredProcedureExecutor.Param("@FKIdUnidades_ALMA", dto.FkidUnidadesAlma),
+                StoredProcedureExecutor.Param("@FKIdMes_SIS", dto.FkidMesSis),
                 StoredProcedureExecutor.Param("@Cantidad", dto.Cantidad),
                 StoredProcedureExecutor.Param("@Observaciones", dto.Observaciones),
                 StoredProcedureExecutor.Param("@LugarEntrega", dto.LugarEntrega),
@@ -638,9 +694,13 @@ catch (Exception ex)
     {
         try
         {
+            var paaaId = await GetPaaaIdByDetalleAsync(detalleId);
+            if (!paaaId.HasValue) return NotFound();
+            if (await IsPaaaLockedAsync(paaaId.Value))
+                return Conflict(new PagedResult<bool> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo.", Code = "PAAA_LOCKED", TotalCount = 0 });
             var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                 _context,
-                "[ORCO].[SP_MantenimientoPAAAS]",
+                "[ORCO].[SP_MantenimientoPAAASV2]",
                 StoredProcedureExecutor.Param("@Action", 9),
                 StoredProcedureExecutor.Param("@PKIdPAAASDetalle", detalleId),
                 StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
@@ -702,8 +762,15 @@ catch (Exception ex)
             }), default);
         }
 
-        var partida = await _context.Paaaspartida.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.PkidPaaaspartida == dto.FkidPaaaspartidaOrco && x.Activo);
+        if (!dto.FkidMesSis.HasValue || !await _context.Mes.AsNoTracking().AnyAsync(x => x.PkidMes == dto.FkidMesSis && x.Activo == true))
+        {
+            return (BadRequest(new PagedResult<PaaasdetalleResponse>
+            {
+                Success = false, Message = "Debe seleccionar un mes activo", Code = "INVALID_MONTH", TotalCount = 0
+            }), default);
+        }
+
+        var partida = await GetOwnedPartidaAsync(dto.FkidPaaaspartidaOrco);
 
         if (partida == null)
         {
@@ -770,6 +837,103 @@ catch (Exception ex)
         return int.TryParse(raw.ToString(), out value);
     }
 
+    [HttpPost("{id}/partidas-disponibles")]
+    public async Task<ActionResult<PagedResult<LookupItem>>> GetPartidasDisponibles(int id, [FromBody] PagedRequest request)
+    {
+        var paaa = await GetOwnedPaaaAsync(id);
+        if (paaa == null) return NotFound();
+
+        var query = _context.VwEgresoDisponibles.AsNoTracking()
+            .Where(x => x.FkidAnioSis == paaa.FkidAnioSis && x.FkidAreaSis == paaa.FkidAreaSis);
+        if (paaa.FkidProgramaPres.HasValue) query = query.Where(x => x.FkidProgramaPres == paaa.FkidProgramaPres.Value);
+        if (paaa.FkidFuenteFinanciamientoPres.HasValue) query = query.Where(x => x.FkidFuenteFinanciamientoPres == paaa.FkidFuenteFinanciamientoPres.Value);
+
+        var partidas = query.Select(x => new { x.FkidPartidaConta, x.PartidaClave, x.PartidaDescripcion }).Distinct();
+        if (!string.IsNullOrWhiteSpace(request.Filtro))
+        {
+            var filter = request.Filtro.Trim();
+            partidas = partidas.Where(x => x.PartidaClave.Contains(filter) || x.PartidaDescripcion.Contains(filter));
+        }
+
+        var page = Math.Max(1, request.Page);
+        var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+        var total = await partidas.CountAsync();
+        var items = await partidas.OrderBy(x => x.PartidaClave).Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(x => new LookupItem { Id = x.FkidPartidaConta, Text = x.PartidaClave + " - " + x.PartidaDescripcion }).ToListAsync();
+        return Ok(new PagedResult<LookupItem> { Success = true, Code = "SUCCESS", Message = "Partidas disponibles", Items = items, TotalCount = total });
+    }
+
+    [HttpPost("meses")]
+    public async Task<ActionResult<PagedResult<LookupItem>>> GetMeses([FromBody] PagedRequest request)
+    {
+        var query = _context.Mes.AsNoTracking().Where(x => x.Activo == true);
+        if (!string.IsNullOrWhiteSpace(request.Filtro))
+        {
+            var filter = request.Filtro.Trim();
+            query = query.Where(x => x.Descripcion.Contains(filter) || x.Abreviatura.Contains(filter));
+        }
+        var page = Math.Max(1, request.Page);
+        var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+        var total = await query.CountAsync();
+        var items = await query.OrderBy(x => x.PkidMes).Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(x => new LookupItem { Id = x.PkidMes, Text = x.Descripcion }).ToListAsync();
+        return Ok(new PagedResult<LookupItem> { Success = true, Code = "SUCCESS", Message = "Meses", Items = items, TotalCount = total });
+    }
+
+    private async Task<List<int>> GetAuthorizedAreaIdsAsync()
+    {
+        var userId = _userContext.GetCurrentUserId();
+        return await _context.VwUsuarioPersonaAreas.AsNoTracking()
+            .Where(x => x.PkIdUsuario == userId && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
+            .Select(x => x.PkidArea!.Value).Distinct().ToListAsync();
+    }
+
+    private async Task<bool> IsAuthorizedAreaAsync(int areaId) => (await GetAuthorizedAreaIdsAsync()).Contains(areaId);
+
+    private async Task<Paaa?> GetOwnedPaaaAsync(int id)
+    {
+        var companyId = _userContext.GetCurrentEmpresaId();
+        var areaIds = await GetAuthorizedAreaIdsAsync();
+        return await _context.Paaas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidPaaas == id && x.Activo && x.FkidEmpresaSis == companyId && areaIds.Contains(x.FkidAreaSis));
+    }
+
+    private async Task<bool> OwnsPaaaAsync(int id) => await GetOwnedPaaaAsync(id) != null;
+
+    private async Task<Paaaspartidum?> GetOwnedPartidaAsync(int id)
+    {
+        var partida = await _context.Paaaspartida.AsNoTracking().FirstOrDefaultAsync(x => x.PkidPaaaspartida == id && x.Activo);
+        return partida != null && await OwnsPaaaAsync(partida.FkidPaaasOrco) ? partida : null;
+    }
+
+    private async Task<int?> GetPaaaIdByDetalleAsync(int detalleId) => await _context.Paaasdetalles.AsNoTracking()
+        .Where(x => x.PkidPaaasdetalle == detalleId && x.Activo)
+        .Select(x => (int?)x.FkidPaaaspartidaOrcoNavigation.FkidPaaasOrco).FirstOrDefaultAsync();
+
+    private Task<bool> IsPaaaLockedAsync(int id) => _context.EstudioMercadoDetalles.AsNoTracking().AnyAsync(d =>
+        d.Activo && d.FkidPaaasdetalleOrcoNavigation.Activo && d.FkidPaaasdetalleOrcoNavigation.FkidPaaaspartidaOrcoNavigation.Activo &&
+        d.FkidPaaasdetalleOrcoNavigation.FkidPaaaspartidaOrcoNavigation.FkidPaaasOrco == id &&
+        d.FkidEstudioMercadoOrcoNavigation.Activo && d.FkidEstudioMercadoOrcoNavigation.Estatus != 5);
+
+    private async Task MarkLockedAsync(List<PaaaResponse> items)
+    {
+        if (items.Count == 0) return;
+        var ids = items.Select(x => x.PkidPaaas).ToList();
+        var lockedIds = await _context.EstudioMercadoDetalles.AsNoTracking()
+            .Where(d => d.Activo && d.FkidPaaasdetalleOrcoNavigation.Activo && d.FkidPaaasdetalleOrcoNavigation.FkidPaaaspartidaOrcoNavigation.Activo &&
+                ids.Contains(d.FkidPaaasdetalleOrcoNavigation.FkidPaaaspartidaOrcoNavigation.FkidPaaasOrco) &&
+                d.FkidEstudioMercadoOrcoNavigation.Activo && d.FkidEstudioMercadoOrcoNavigation.Estatus != 5)
+            .Select(d => d.FkidPaaasdetalleOrcoNavigation.FkidPaaaspartidaOrcoNavigation.FkidPaaasOrco).Distinct().ToListAsync();
+        foreach (var item in items) item.BloqueadoPorEstudioMercado = lockedIds.Contains(item.PkidPaaas);
+    }
+
+    private Task<bool> IsPartidaAvailableAsync(Paaa paaa, int partidaId)
+    {
+        return _context.VwEgresoDisponibles.AsNoTracking().AnyAsync(x => x.FkidAnioSis == paaa.FkidAnioSis &&
+            x.FkidAreaSis == paaa.FkidAreaSis && x.FkidPartidaConta == partidaId &&
+            (!paaa.FkidProgramaPres.HasValue || x.FkidProgramaPres == paaa.FkidProgramaPres.Value) &&
+            (!paaa.FkidFuenteFinanciamientoPres.HasValue || x.FkidFuenteFinanciamientoPres == paaa.FkidFuenteFinanciamientoPres.Value));
+    }
+
     private Task<bool> ProyectoOrcoExistsAsync(int? proyectoId, int usuarioId)
     {
         return OrcoProyectoCatalog.EnsureProyectoOrcoAsync(_context, proyectoId, usuarioId);
@@ -793,9 +957,13 @@ catch (Exception ex)
     {
         try
         {
+            var partida = await GetOwnedPartidaAsync(partidaId);
+            if (partida == null) return NotFound();
+            if (await IsPaaaLockedAsync(partida.FkidPaaasOrco))
+                return Conflict(new PagedResult<bool> { Success = false, Message = "El programa esta bloqueado por un estudio de mercado activo.", Code = "PAAA_LOCKED", TotalCount = 0 });
             var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
                 _context,
-                "[ORCO].[SP_MantenimientoPAAAS]",
+                "[ORCO].[SP_MantenimientoPAAASV2]",
                 StoredProcedureExecutor.Param("@Action", 6),
                 StoredProcedureExecutor.Param("@PKIdPAAASPartida", partidaId),
                 StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));

@@ -5,5 +5,6 @@ namespace EG.Application.Interfaces.Patrimonio
 {
     public interface IBajaAppService : IAdquisicionCrudAppService<BajaResponse>
     {
+        Task<EG.Common.GenericModel.PagedResult<BajaResponse>> AplicarAsync(int id, int fkidAnioSis, int usuarioActual);
     }
 }

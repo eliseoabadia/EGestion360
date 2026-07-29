@@ -3,6 +3,7 @@ namespace EG.Domain.DTOs.Requests.Patrimonio
     public class BienDto
     {
         public int PkidBien { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int? FkidGrupoBienAlma { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public int? FkidAreaSis { get; set; }

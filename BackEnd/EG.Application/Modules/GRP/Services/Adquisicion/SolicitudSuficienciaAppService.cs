@@ -42,6 +42,14 @@ namespace EG.Application.Services.Adquisicion
             }
             request.AdditionalFilters["FkidAnioSis"] = anioId;
             request.AdditionalFilters["FkidEmpresaSis"] = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            var usuarioId = _userContext.GetCurrentUserId();
+            var areaIds = await _context.VwUsuarioPersonaAreas.AsNoTracking()
+                .Where(x => x.PkIdUsuario == usuarioId && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
+                .Select(x => x.PkidArea!.Value)
+                .Distinct()
+                .ToListAsync();
+            if (areaIds.Count > 0)
+                request.AdditionalFilters["FkidAreaSis__in"] = areaIds;
             var result = await base.GetAllPaginadoAsync(request);
             await MarkLockedAsync(result.Items);
             return result;
@@ -52,6 +60,14 @@ namespace EG.Application.Services.Adquisicion
             var result = await base.GetAllAsync();
             var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
             result.Items = result.Items?.Where(x => x.FkidEmpresaSis == empresaId).ToList() ?? new List<SolicitudSuficienciaResponse>();
+            var usuarioId = _userContext.GetCurrentUserId();
+            var areaIds = await _context.VwUsuarioPersonaAreas.AsNoTracking()
+                .Where(x => x.PkIdUsuario == usuarioId && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
+                .Select(x => x.PkidArea!.Value)
+                .Distinct()
+                .ToListAsync();
+            if (areaIds.Count > 0)
+                result.Items = result.Items.Where(x => x.FkidAreaSis.HasValue && areaIds.Contains(x.FkidAreaSis.Value)).ToList();
             result.TotalCount = result.Items.Count;
             await MarkLockedAsync(result.Items);
             return result;

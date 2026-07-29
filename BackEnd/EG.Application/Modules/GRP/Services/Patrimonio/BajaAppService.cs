@@ -38,19 +38,25 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BajaResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.FkidEmpresaSis == empresaId)
+                .ToListAsync()).Adapt<List<BajaResponse>>();
             await ApplyStatusFlagsAsync(items);
             return Success(items, "Bajas obtenidas correctamente", items.Count);
         }
 
         public async Task<PagedResult<BajaResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidBaja");
-            if (item == null)
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.FkidEmpresaSis == empresaId);
+            if (entity == null)
             {
                 return Failure<BajaResponse>($"Baja con ID {id} no encontrada.", "NOT_FOUND");
             }
 
+            var item = entity.Adapt<BajaResponse>();
             await ApplyStatusFlagsAsync(new List<BajaResponse> { item });
 
             return new PagedResult<BajaResponse>
@@ -66,6 +72,7 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BajaResponse>> CreateAsync(BajaResponse response, int usuarioActual)
         {
+            response.FkidPolizaConta = null;
             var validation = await NormalizeAndValidateAsync(response, isCreate: true);
             if (validation != null)
             {
@@ -74,10 +81,17 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
                 var result = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
                 var id = result.GetId();
                 if (id.HasValue)
                 {
+                    await _context.Bajas
+                        .Where(x => x.PkidBaja == id.Value && x.FkidEmpresaSis == response.FkidEmpresaSis)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.FkidAnioSis, response.FkidAnioSis)
+                            .SetProperty(x => x.FkidPolizaConta, (int?)null));
+                    await transaction.CommitAsync();
                     var refreshed = await GetByIdAsync(id.Value);
                     refreshed.Message = result.Mensaje;
                     return refreshed;
@@ -99,10 +113,11 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BajaResponse>> UpdateAsync(int id, BajaResponse response, int usuarioActual)
         {
+            var empresaId = _userContext.GetCurrentEmpresaId();
             var current = await _context.Bajas
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusBajaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.Activo && x.FkidEmpresaSis == empresaId);
 
             if (current == null)
             {
@@ -113,6 +128,17 @@ namespace EG.Application.Services.Patrimonio
             {
                 return Failure<BajaResponse>("La baja ya esta en estatus final y no puede modificarse.", "INVALID_STATE");
             }
+
+            if (response.FkidEstatusBajaAlma > 0 && response.FkidEstatusBajaAlma != current.FkidEstatusBajaAlma)
+            {
+                return Failure<BajaResponse>("El estatus no se cambia desde la edicion. Use la accion de autorizar, rechazar o cancelar.", "INVALID_TRANSITION");
+            }
+
+            response.FkidEmpresaSis = current.FkidEmpresaSis;
+            response.FkidAnioSis = current.FkidAnioSis;
+            response.FkidBienAlma = current.FkidBienAlma;
+            response.FkidEstatusBajaAlma = current.FkidEstatusBajaAlma;
+            response.FkidPolizaConta = current.FkidPolizaConta;
 
             var validation = await NormalizeAndValidateAsync(response, isCreate: false);
             if (validation != null)
@@ -127,8 +153,7 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var action = await ResolveUpdateActionAsync(response.FkidEstatusBajaAlma);
-                var result = await ExecuteMantenimientoAsync(action, id, response, usuarioActual);
+                var result = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
                 var refreshed = await GetByIdAsync(id);
                 refreshed.Message = result.Mensaje;
                 return refreshed;
@@ -141,10 +166,11 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
+            var empresaId = _userContext.GetCurrentEmpresaId();
             var current = await _context.Bajas
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusBajaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.Activo && x.FkidEmpresaSis == empresaId);
 
             if (current == null)
             {
@@ -223,7 +249,19 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var empresaActual = _userContext.TryGetCurrentEmpresaId();
+                if (empresaActual is not > 0)
+                {
+                    return Failure<BajaResponse>("Debe seleccionar una empresa activa.", "COMPANY_REQUIRED");
+                }
+
+                if (!TryGetIntFilter(request, "FkidAnioSis", out var anioId) || anioId <= 0)
+                {
+                    return Failure<BajaResponse>("Debe seleccionar el año presupuestal.", "YEAR_REQUIRED");
+                }
+
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == empresaActual.Value && x.FkidAnioSis == anioId);
 
                 if (TryGetIntFilter(request, "FkidEmpresaSis", out var empresaId))
                 {
@@ -289,11 +327,23 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<BajaResponse>?> NormalizeAndValidateAsync(BajaResponse response, bool isCreate)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
 
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<BajaResponse>("Debe existir una empresa seleccionada.");
+            }
+
+            if (response.FkidAnioSis is not > 0)
+            {
+                return Failure<BajaResponse>("Debe seleccionar el año presupuestal.", "YEAR_REQUIRED");
+            }
+
+            var anio = await _context.Anios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAnio == response.FkidAnioSis.Value && x.Activo);
+            if (anio == null)
+            {
+                return Failure<BajaResponse>("El año presupuestal seleccionado no existe o está inactivo.", "YEAR_REQUIRED");
             }
 
             if (response.FkidBienAlma <= 0)
@@ -316,6 +366,11 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BajaResponse>("La cantidad debe ser mayor a cero.");
             }
 
+            if (response.Cantidad.HasValue && response.Cantidad.Value != 1m)
+            {
+                return Failure<BajaResponse>("La baja patrimonial corresponde a un bien individual y su cantidad debe ser uno.");
+            }
+
             var fechaBajaValidacion = response.FechaBaja?.Date
                 ?? (response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date);
             if (response.FechaReferencia.HasValue && fechaBajaValidacion > response.FechaReferencia.Value.Date)
@@ -323,10 +378,22 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BajaResponse>("La fecha de referencia debe ser mayor o igual a la fecha de baja.");
             }
 
-            var bien = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo);
+            var bien = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidBien == response.FkidBienAlma && x.Activo && x.FkidEmpresaSis == response.FkidEmpresaSis);
             if (bien == null)
             {
-                return Failure<BajaResponse>("El bien seleccionado no existe o no esta activo.");
+                return Failure<BajaResponse>("El bien no existe, no está activo o no pertenece a la empresa actual.");
+            }
+
+            if (bien.EsContabilizado != true)
+            {
+                return Failure<BajaResponse>("El bien debe estar contabilizado antes de iniciar su baja patrimonial.", "NOT_ACCOUNTED");
+            }
+
+            var fechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date;
+            if (fechaSolicitud.Year != anio.Clave || (response.FechaBaja.HasValue && response.FechaBaja.Value.Year != anio.Clave))
+            {
+                return Failure<BajaResponse>("Las fechas de la baja deben pertenecer al año presupuestal seleccionado.", "YEAR_MISMATCH");
             }
 
             if (isCreate && await _context.Bajas.AsNoTracking().AnyAsync(x => x.FkidBienAlma == response.FkidBienAlma && x.Activo))
@@ -340,7 +407,7 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BajaResponse>("El tipo de baja seleccionado no existe o esta inactivo.");
             }
 
-            if (response.FkidEstatusBajaAlma <= 0)
+            if (isCreate || response.FkidEstatusBajaAlma <= 0)
             {
                 var inicial = await GetStatusByDescriptionAsync(EstatusInicial);
                 if (inicial == null)
@@ -366,6 +433,58 @@ namespace EG.Application.Services.Patrimonio
             response.Activo = true;
 
             return null;
+        }
+
+        public async Task<PagedResult<BajaResponse>> AplicarAsync(int id, int fkidAnioSis, int usuarioActual)
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var current = await _context.Bajas
+                .AsNoTracking()
+                .Include(x => x.FkidEstatusBajaAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidBaja == id && x.Activo && x.FkidEmpresaSis == empresaId);
+
+            if (current == null)
+                return Failure<BajaResponse>("La baja no existe o no pertenece a la empresa activa.", "NOT_FOUND");
+            if (current.FkidEstatusBajaAlmaNavigation?.EsFinal == true)
+                return Failure<BajaResponse>("La baja ya se encuentra en un estatus final.", "INVALID_STATE");
+            if (current.FkidAnioSis != fkidAnioSis)
+                return Failure<BajaResponse>("La baja no pertenece al año presupuestal seleccionado.", "YEAR_MISMATCH");
+
+            var anio = await _context.Anios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAnio == fkidAnioSis && x.Activo);
+            if (anio == null)
+                return Failure<BajaResponse>("El año presupuestal seleccionado no existe o está inactivo.", "YEAR_REQUIRED");
+            if (anio.Clave != DateTime.Today.Year)
+                return Failure<BajaResponse>("Las bajas operativas sólo pueden aplicarse en el ejercicio vigente.", "YEAR_NOT_CURRENT");
+
+            var bienElegible = await _context.Biens.AsNoTracking().AnyAsync(x =>
+                x.PkidBien == current.FkidBienAlma &&
+                x.FkidEmpresaSis == empresaId &&
+                x.Activo &&
+                x.EsContabilizado == true);
+            if (!bienElegible)
+                return Failure<BajaResponse>("El bien ya no está activo, contabilizado o disponible para aplicar la baja.", "ASSET_NOT_ELIGIBLE");
+
+            var aplicada = await GetStatusByDescriptionAsync(EstatusAplicada);
+            if (aplicada == null)
+                return Failure<BajaResponse>("No existe el estatus APLICADA.");
+
+            var response = current.Adapt<BajaResponse>();
+            response.FkidEstatusBajaAlma = aplicada.PkidEstatusBaja;
+            response.FechaBaja = DateTime.Today;
+            response.FkidPolizaConta = current.FkidPolizaConta;
+
+            try
+            {
+                var result = await ExecuteMantenimientoAsync(4, id, response, usuarioActual);
+                var refreshed = await GetByIdAsync(id);
+                refreshed.Message = result.Mensaje;
+                return refreshed;
+            }
+            catch (Exception ex)
+            {
+                return Failure<BajaResponse>($"Error al aplicar la baja: {ex.Message}");
+            }
         }
 
         private async Task<int> ResolveUpdateActionAsync(int estatusBajaId)

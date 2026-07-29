@@ -3,6 +3,7 @@ namespace EG.Domain.DTOs.Requests.Patrimonio
     public class BienDisponibleBajaDto
     {
         public int PkidBien { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public string Clave { get; set; } = string.Empty;
         public string ClaveAnt { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;

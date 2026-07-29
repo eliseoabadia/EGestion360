@@ -33,6 +33,9 @@ namespace EG.Infraestructure.Models
         [StringLength(255)]
         public string PartidaDescripcion { get; set; }
         public int? PKIdPAAASDetalle { get; set; }
+        public int? FKIdMes_SIS { get; set; }
+        [StringLength(50)]
+        public string MesDescripcion { get; set; }
         [StringLength(200)]
         public string TipoBienCodigoClave { get; set; }
         [StringLength(1200)]

@@ -4,6 +4,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace EG.Application.Services.Patrimonio
@@ -13,13 +14,16 @@ namespace EG.Application.Services.Patrimonio
     {
         private readonly GenericService<VwOrdenCompraFromClasificacionBien, ClasificacionBienesMueblesDto, ClasificacionBienesMueblesResponse> _serviceView;
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public ClasificacionBienesMueblesAppService(
             GenericService<VwOrdenCompraFromClasificacionBien, ClasificacionBienesMueblesDto, ClasificacionBienesMueblesResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
         {
             _serviceView = serviceView;
             _context = context;
+            _userContext = userContext;
         }
 
         public async Task<PagedResult<ClasificacionBienesMueblesResponse>> GetAllAsync()
@@ -35,11 +39,17 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ClasificacionBienesMueblesResponse>> GetByIdAsync(int id)
         {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (empresaId is not > 0)
+            {
+                return Failure<ClasificacionBienesMueblesResponse>("Debe seleccionar una empresa activa.", "COMPANY_REQUIRED");
+            }
+
             var item = await _serviceView.GetByIdAsync(
                 id,
                 idPropertyName: nameof(VwOrdenCompraFromClasificacionBien.PkidOrdenCompra));
 
-            if (item == null)
+            if (item == null || item.FkidEmpresaSis != empresaId.Value)
             {
                 return Failure<ClasificacionBienesMueblesResponse>("Orden de compra no encontrada.", "NOT_FOUND");
             }
@@ -80,6 +90,20 @@ namespace EG.Application.Services.Patrimonio
         public async Task<PagedResult<ClasificacionBienesMueblesResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
             request ??= new PagedRequest();
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (empresaId is not > 0)
+            {
+                return Failure<ClasificacionBienesMueblesResponse>("Debe seleccionar una empresa activa.", "COMPANY_REQUIRED");
+            }
+
+            request.AdditionalFilters ??= new Dictionary<string, object>();
+            if (!TryReadPositiveInt(request.AdditionalFilters, nameof(VwOrdenCompraFromClasificacionBien.FkidAnioSis), out _))
+            {
+                return Failure<ClasificacionBienesMueblesResponse>("Debe seleccionar el año presupuestal.", "BUDGET_YEAR_REQUIRED");
+            }
+
+            // La empresa siempre proviene del contexto autenticado; no se confia en el valor enviado por el cliente.
+            request.AdditionalFilters[nameof(VwOrdenCompraFromClasificacionBien.FkidEmpresaSis)] = empresaId.Value;
             request.SortLabel = string.IsNullOrWhiteSpace(request.SortLabel)
                 ? nameof(VwOrdenCompraFromClasificacionBien.PkidOrdenCompra)
                 : request.SortLabel;
@@ -92,6 +116,22 @@ namespace EG.Application.Services.Patrimonio
             }
 
             return result;
+        }
+
+        private static bool TryReadPositiveInt(Dictionary<string, object> filters, string key, out int value)
+        {
+            value = 0;
+            if (!filters.TryGetValue(key, out var raw) || raw == null)
+            {
+                return false;
+            }
+
+            if (raw is System.Text.Json.JsonElement json)
+            {
+                return json.TryGetInt32(out value) && value > 0;
+            }
+
+            return int.TryParse(Convert.ToString(raw, System.Globalization.CultureInfo.InvariantCulture), out value) && value > 0;
         }
 
         private async Task EnrichAsync(IList<ClasificacionBienesMueblesResponse>? items)

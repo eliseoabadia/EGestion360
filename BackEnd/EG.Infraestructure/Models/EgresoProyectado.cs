@@ -55,6 +55,8 @@ public partial class EgresoProyectado
 
     public int? UsuarioModificacion { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int? FkidFuenteFinanciamientoPres { get; set; }
 
     public int? FkidTipoGastoPres { get; set; }

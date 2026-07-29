@@ -33,6 +33,8 @@ public partial class EgresoAutorizado
 
     public int? FkidEgresoProyectadoPres { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public decimal Enero { get; set; }
 
     public decimal Febrero { get; set; }

@@ -9,6 +9,8 @@ public partial class VwEgresoProyectado
 {
     public int PkidEgresoProyectado { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int? PkidEgresoAutorizado { get; set; }
 
     public bool? EstaAutorizado { get; set; }

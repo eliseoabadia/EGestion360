@@ -17,6 +17,10 @@ public partial class VwPaaasdetalle
 
     public int? FkidUnidadesAlma { get; set; }
 
+    public int? FkidMesSis { get; set; }
+
+    public string MesDescripcion { get; set; }
+
     public decimal Cantidad { get; set; }
 
     public string Observaciones { get; set; }

@@ -32,6 +32,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
 public string? FuenteFinanciamientoDescripcion { get; set; }
     public string? FuenteFinanciamientoClave { get; set; }
     public string ClaveNombre { get; set; } = string.Empty;
+    public bool BloqueadoPorEstudioMercado { get; set; }
     
     // Navegación a partidas
     public List<PaaaspartidumResponse> Partidas { get; set; } = new();

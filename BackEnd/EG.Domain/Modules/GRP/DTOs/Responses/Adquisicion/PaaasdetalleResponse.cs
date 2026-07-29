@@ -9,6 +9,8 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int FkidPaaaspartidaOrco { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public int? FkidUnidadesAlma { get; set; }
+        public int? FkidMesSis { get; set; }
+        public string MesDescripcion { get; set; } = string.Empty;
         public string TipoBienCodigoClave { get; set; } = string.Empty;
         public string TipoBienDescripcion { get; set; } = string.Empty;
         public decimal Cantidad { get; set; }

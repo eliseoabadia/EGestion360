@@ -13,13 +13,14 @@
 @inherits BaseCrudPage<ClasificacionBienesMueblesResponse, ClasificacionBienesMueblesResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenCompraDetalleService
 @inject IGenericCrudService<BienResponse> BienService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column clasificacion-bienes-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column clasificacion-bienes-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Clasificacion de Bienes Muebles"
                     Subtitle="Ordenes de compra, recepcion patrimonial y soporte documental"
                     Icon="@Icons.Material.Filled.Inventory"
@@ -48,6 +49,9 @@
         <div class="quick-strip">
             <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
                 Empresa: @TextOrDash(SucursalStateService.EmpresaNombre)
+            </MudChip>
+            <MudChip T="string" Size="Size.Small" Color="@(AnioStateService.AnioId is > 0 ? Color.Info : Color.Error)" Variant="Variant.Outlined">
+                Año presupuestal: @(AnioStateService.AnioClave?.ToString() ?? "No seleccionado")
             </MudChip>
             <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">
                 @(Elements.Count(x => x.Color == 1)) con bienes
@@ -99,6 +103,22 @@
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@TextOrDash(cell.Item.Numero)"
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.Requisicion)} | {TextOrDash(cell.Item.Proveedor)}")" />
+                        <ReportOpenButton ReportName="Patrimonio.ClasificacionBienes.NotaEntrada"
+                                          EntityId="@cell.Item.PkidOrdenCompra"
+                                          PrimaryKeyParameter="pk"
+                                          Title="Nota de entrada patrimonial"
+                                          Tooltip="Imprimir nota de entrada"
+                                          Icon="@Icons.Material.Filled.ReceiptLong"
+                                          Color="Color.Secondary"
+                                          Visible="@CanExport" />
+                        <ReportOpenButton ReportName="Patrimonio.ClasificacionBienes.AltaBienes"
+                                          EntityId="@cell.Item.PkidOrdenCompra"
+                                          PrimaryKeyParameter="pk"
+                                          Title="Alta de bienes muebles"
+                                          Tooltip="Imprimir alta de bienes"
+                                          Icon="@Icons.Material.Filled.Print"
+                                          Color="Color.Primary"
+                                          Visible="@CanExport" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="ID" Identifier="PkidOrdenCompra" PropertyName="PkidOrdenCompra" SortBy="x => x.PkidOrdenCompra">
@@ -211,8 +231,15 @@
                         <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
                         Color="Color.Success"
                         Size="Size.Small"
-                        Disabled="@IsBusy"
+                        Disabled="@(IsBusy || !CanUpdate || cell.Item.CantidadRecibida <= 0)"
                         OnClick="@(() => GenerarBienes(cell.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Registrar recepción">
+                            <MudIconButton Icon="@Icons.Material.Filled.LocalShipping"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           Disabled="@(IsBusy || !CanUpdate)"
+                                           OnClick="@(() => RegistrarRecepcion(cell.Item))" />
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
@@ -254,6 +281,17 @@
                                   SearchStringChanged="(s) => bienesSearch = s"
                                   OnSearch="ReloadBienes">
             <Columns>
+                <TemplateColumn T="BienResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
+                    <CellTemplate Context="cell">
+                        <MudTooltip Text="Editar datos patrimoniales">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Disabled="@(!CanUpdate)"
+                                           OnClick="@(() => EditarBien(cell.Item))" />
+                        </MudTooltip>
+                    </CellTemplate>
+                </TemplateColumn>
                 <TemplateColumn T="BienResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
                     <CellTemplate Context="cell">
                         @TextOrDash(cell.Item.Clave)
@@ -394,8 +432,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     protected override async Task<TableData<ClasificacionBienesMueblesResponse>> LoadServerData(
@@ -412,10 +453,14 @@
             SortDirection = state.SortDirection;
 
             var filters = new Dictionary<string, object>();
-            if (SucursalStateService.EmpresaId is > 0)
+            if (SucursalStateService.EmpresaId is not > 0 || AnioStateService.AnioId is not > 0)
             {
-                filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+                Elements.Clear();
+                TotalCount = 0;
+                return new TableData<ClasificacionBienesMueblesResponse> { Items = Elements, TotalItems = 0 };
             }
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
 
             var response = await Service.GetAllPaginadoAsync(
                 CurrentPage,
@@ -530,10 +575,13 @@
         try
         {
             var filters = new Dictionary<string, object>();
-            if (SucursalStateService.EmpresaId is > 0)
+            if (SucursalStateService.EmpresaId is not > 0 || AnioStateService.AnioId is not > 0)
             {
-                filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+                Snackbar.Add("Debe seleccionar empresa y año presupuestal para exportar.", Severity.Warning);
+                return;
             }
+            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
 
             var response = await Service.GetAllPaginadoAsync(
                 1,
@@ -633,6 +681,40 @@
         }, "Generacion en proceso...");
     }
 
+    private async Task RegistrarRecepcion(OrdenCompraDetalleResponse detalle)
+    {
+        var parameters = new DialogParameters<RecepcionBienesDialog> { { x => x.Detalle, detalle } };
+        var dialog = await DialogService.ShowAsync<RecepcionBienesDialog>(
+            "Recepción de bienes",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            SelectedDetalle = null;
+            await ReloadDetalles();
+            await ReloadData();
+        }
+    }
+
+    private async Task EditarBien(BienResponse bien)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Id"] = bien.PkidBien,
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+        };
+        var dialog = await DialogService.ShowAsync<BienDialog>(
+            "Editar datos patrimoniales",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadBienes();
+        }
+    }
+
     private async Task ClearSelection()
     {
         SelectedOrden = null;
@@ -659,6 +741,16 @@
     }
 
     private async void OnEmpresaChanged(int _)
+    {
+        SelectedOrden = null;
+        SelectedDetalle = null;
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private async void OnAnioChanged(int? _)
     {
         SelectedOrden = null;
         SelectedDetalle = null;
@@ -704,6 +796,7 @@
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

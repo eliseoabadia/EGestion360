@@ -50,13 +50,13 @@
                         Size="Size.Small"
                         OnClick="@(() => SelectPaaa(cell.Item))" />
                         </MudTooltip>
-                        <ReportOpenButton ReportName=""
+                        <ReportOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                         EntityId="@cell.Item.PkidPaaas"
                         Title="@($"Reporte PAAA {cell.Item.PkidPaaas}")"
                         Tooltip="Ver reporte PAAAS"
                         Color="Color.Secondary"
                         Visible="@CanView" />
-                        <ReportDesignerOpenButton ReportName=""
+                        <ReportDesignerOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                         Title="Disenador reporte PAAAS"
                         Tooltip="Editar diseno del reporte PAAAS"
                         Color="Color.Primary"
@@ -70,14 +70,14 @@
                         RegistroDescripcion="@($"PAAA {cell.Item.PkidPaaas} · {cell.Item.AreaNombre}")" />
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
+                        Visible="@(CanUpdate && !cell.Item.BloqueadoPorEstudioMercado)"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidPaaas))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
+                        Visible="@(CanDelete && !cell.Item.BloqueadoPorEstudioMercado)"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeleteItem(cell.Item.PkidPaaas))" />
@@ -99,20 +99,20 @@
                 <TemplateColumn T="PaaaResponse" Title="Área" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
                     <CellTemplate Context="cell">
                         <div Style="font-weight: 500;">
-                        @cell.Item.ProgramaDescripcion
+                        @cell.Item.AreaNombre
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="PaaaResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
                     <CellTemplate Context="cell">
                         <div Style="font-weight: 500;">
-                        @cell.Item.FuenteFinanciamientoDescripcion
+                        @cell.Item.ProgramaDescripcion
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="PaaaResponse" Title="Fuente Financiamiento" Identifier="FuenteFinanciamientoDescripcion" PropertyName="FuenteFinanciamientoDescripcion" SortBy="x => x.FuenteFinanciamientoDescripcion">
                     <CellTemplate Context="cell">
-                        @cell.Item.AreaNombre
+                        @cell.Item.FuenteFinanciamientoDescripcion
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="PaaaResponse" Title="Responsable" Identifier="ResponsableCompleto" PropertyName="ResponsableCompleto" SortBy="x => x.ResponsableCompleto">
@@ -168,13 +168,13 @@
                                                    FkidEmpresaSis="@SelectedPaaa.FkidEmpresaSis"
                                                    RegistroTitulo="@SelectedPaaa.Descripcion"
                                                    RegistroDescripcion="@($"Programa anual {SelectedPaaa.PkidPaaas} · {SelectedPaaa.AreaNombre}")" />
-                            <ReportOpenButton ReportName=""
+                            <ReportOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                                               EntityId="@SelectedPaaa.PkidPaaas"
                                               Title="@($"Reporte PAAA {SelectedPaaa.PkidPaaas}")"
                                               Tooltip="Ver reporte PAAAS"
                                               Color="Color.Secondary"
                                               Visible="@CanView" />
-                            <ReportDesignerOpenButton ReportName=""
+                            <ReportDesignerOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                                                       Title="Disenador reporte PAAAS"
                                                       Tooltip="Editar diseno del reporte PAAAS"
                                                       Color="Color.Primary"
@@ -183,13 +183,14 @@
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"
                                                Size="Size.Small"
-                                               Visible="@CanUpdate"
+                                               Visible="@(CanUpdate && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                                                OnClick="@(() => EditItem(SelectedPaaa.PkidPaaas))" />
                             </MudTooltip>
                             <MudTooltip Text="Agregar partida">
                                 <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
                                                Color="Color.Success"
                                                Size="Size.Small"
+                                               Disabled="@SelectedPaaa.BloqueadoPorEstudioMercado"
                                                OnClick="AddPartida" />
                             </MudTooltip>
                         </div>
@@ -247,7 +248,7 @@
                                       Title="Partidas"
                                       SearchPlaceholder="Buscar partida..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@CanCreate"
+                                      ShowAddButton="@(CanCreate && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                                       PageSize="5"
                                       ServerDataFunc="LoadPartidasServerData"
                                       SearchString="@partidaSearchString"
@@ -265,7 +266,7 @@
                         </MudTooltip>
                         <MudTooltip Text="Eliminar partida">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
+                        Visible="@(CanDelete && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeletePartida(cell.Item))" />
@@ -302,7 +303,7 @@
                                       Title="@BienesTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && SelectedPartida != null)"
+                                      ShowAddButton="@(CanCreate && SelectedPartida != null && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                                       PageSize="5"
                                       ServerDataFunc="LoadBienesServerData"
                                       SearchString="@bienSearchString"
@@ -314,14 +315,14 @@
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Editar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
+                        Visible="@(CanUpdate && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditBien(cell.Item))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar bien o servicio">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
+                        Visible="@(CanDelete && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeleteBien(cell.Item))" />
@@ -342,6 +343,9 @@
                     <CellTemplate Context="cell">
                         @Quantity(cell.Item.Cantidad)
                     </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaaasdetalleResponse" Title="Mes" Identifier="MesDescripcion" PropertyName="MesDescripcion" SortBy="x => x.MesDescripcion">
+                    <CellTemplate Context="cell">@TextOrDash(cell.Item.MesDescripcion)</CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="PaaasdetalleResponse" Title="Unidad" Identifier="Unidad" PropertyName="Unidad" SortBy="x => x.Unidad">
                     <CellTemplate Context="cell">

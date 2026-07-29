@@ -2,9 +2,12 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.Interfaces;
+using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -15,11 +18,19 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     {
         private readonly IBienAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly EGestionContext _context;
+        private readonly IAuthorizationService _authorization;
 
-        public BienController(IBienAppService appService, IUserContextService userContext)
+        public BienController(
+            IBienAppService appService,
+            IUserContextService userContext,
+            EGestionContext context,
+            IAuthorizationService authorization)
         {
             _appService = appService;
             _userContext = userContext;
+            _context = context;
+            _authorization = authorization;
         }
 
         [HttpGet]
@@ -83,11 +94,50 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpPost("generar-desde-detalle/{detalleOrdenCompraId:int}")]
         public async Task<ActionResult<PagedResult<BienResponse>>> GenerarDesdeDetalle(int detalleOrdenCompraId)
         {
+            if (!await CanOperateClassificationAsync()) return Forbid();
             var result = await _appService.GenerarDesdeDetalleOrdenCompraAsync(
                 detalleOrdenCompraId,
                 _userContext.GetCurrentUserId());
 
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("registrar-recepcion/{detalleOrdenCompraId:int}")]
+        public async Task<ActionResult<PagedResult<BienResponse>>> RegistrarRecepcion(
+            int detalleOrdenCompraId,
+            [FromBody] RecepcionDetalleOrdenCompraRequest request)
+        {
+            if (!await CanOperateClassificationAsync()) return Forbid();
+            var result = await _appService.RegistrarRecepcionAsync(
+                detalleOrdenCompraId,
+                request.CantidadRecibida,
+                _userContext.GetCurrentUserId());
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        private async Task<bool> CanOperateClassificationAsync() =>
+            (await _authorization.AuthorizeAsync(
+                User,
+                null,
+                "Patrimonio|Clasificacion_Bienes_Muebles|update")).Succeeded;
+
+        [HttpPost("tipos-bien-capitulo-5000")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetTiposBienCapitulo5000([FromBody] PagedRequest request)
+        {
+            var query = _context.TipoBiens.AsNoTracking().Where(x => x.Activo &&
+                x.FkidPartidaContaNavigation.Activo && x.FkidPartidaContaNavigation.Clave.StartsWith("5"));
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                var filter = request.Filtro.Trim();
+                query = query.Where(x => x.CodigoClave.Contains(filter) || x.Descripcion.Contains(filter));
+            }
+            var page = Math.Max(1, request.Page);
+            var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+            var total = await query.CountAsync();
+            var items = await query.OrderBy(x => x.CodigoClave).Skip((page - 1) * pageSize).Take(pageSize)
+                .Select(x => new LookupItem { Id = x.PkidTipoBien, Text = x.CodigoClave + " - " + x.Descripcion }).ToListAsync();
+            return Ok(new PagedResult<LookupItem> { Success = true, Code = "SUCCESS", Message = "Tipos patrimoniales", Items = items, TotalCount = total });
         }
 
         [HttpPost("buscar")]

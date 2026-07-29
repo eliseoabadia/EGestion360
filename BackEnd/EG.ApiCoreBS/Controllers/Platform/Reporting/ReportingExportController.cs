@@ -98,6 +98,9 @@ public sealed class ReportingExportController : ControllerBase
     {
         ReportKeys.Poliza => "Reportes_Contabilidad|Polizas|CanExportToExcel",
         ReportKeys.PaaasHelloWorld => "PBR|PBR|CanExportToExcel",
+        ReportKeys.NotaEntradaPatrimonial => "Patrimonio|Clasificacion_Bienes_Muebles|CanExportToExcel",
+        ReportKeys.AltaBienesMuebles => "Patrimonio|Clasificacion_Bienes_Muebles|CanExportToExcel",
+        ReportKeys.PolizaBajaPatrimonial => "Patrimonio|Bajas|CanExportToExcel",
         _ => null
     };
 

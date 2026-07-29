@@ -7,6 +7,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string EmpresaNombre { get; set; } = string.Empty;
         public int FkidRequisicionOrco { get; set; }
         public int? FkidAnioSis { get; set; }
+        public int? FkidAreaSis { get; set; }
         public string RequisicionDescripcion { get; set; } = string.Empty;
         public DateTime? FechaRequisicion { get; set; }
         public decimal? RequisicionImporte { get; set; }

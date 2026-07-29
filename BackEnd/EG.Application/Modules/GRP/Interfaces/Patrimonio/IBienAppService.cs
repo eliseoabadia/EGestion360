@@ -7,5 +7,6 @@ namespace EG.Application.Interfaces.Patrimonio
     public interface IBienAppService : IAdquisicionCrudAppService<BienResponse>
     {
         Task<PagedResult<BienResponse>> GenerarDesdeDetalleOrdenCompraAsync(int detalleOrdenCompraId, int usuarioActual);
+        Task<PagedResult<BienResponse>> RegistrarRecepcionAsync(int detalleOrdenCompraId, decimal cantidadRecibida, int usuarioActual);
     }
 }

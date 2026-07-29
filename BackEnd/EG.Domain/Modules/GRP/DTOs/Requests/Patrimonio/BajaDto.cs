@@ -5,6 +5,7 @@ namespace EG.Domain.DTOs.Requests.Patrimonio
         public int PkidBaja { get; set; }
         public string Folio { get; set; } = string.Empty;
         public int FkidEmpresaSis { get; set; }
+        public int? FkidAnioSis { get; set; }
         public int? FkidAreaSis { get; set; }
         public int FkidBienAlma { get; set; }
         public int FkidTipoBajaAlma { get; set; }

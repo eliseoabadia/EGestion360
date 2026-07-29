@@ -14,6 +14,7 @@
 @inherits BaseCrudPage<BienResponse, BienResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
 
 <AccessVerification IsInitialized="@IsInitialized"
@@ -102,23 +103,18 @@
                         <MudTooltip Text="Dar baja">
                         <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline"
                         Visible="@CanUpdate"
+                        Disabled="@cell.Item.TieneBajaActiva"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => OpenBajaDialog(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@(cell.Item.BloqueadoOperacion ? cell.Item.MotivoBloqueo : "Editar")">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
+                        Disabled="@cell.Item.BloqueadoOperacion"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidBien))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Eliminar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
-                        Color="Color.Error"
-                        Size="Size.Small"
-                        OnClick="@(() => DeleteItem(cell.Item.PkidBien))" />
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
@@ -744,12 +740,26 @@
             return;
         }
 
+        await AnioStateService.InitializeAsync();
+        if (AnioStateService.AnioId is not > 0)
+        {
+            Snackbar.Add("Debe seleccionar el año presupuestal para iniciar la baja.", Severity.Warning);
+            return;
+        }
+
+        if (bien.TieneBajaActiva)
+        {
+            Snackbar.Add("El bien ya tiene una solicitud de baja activa.", Severity.Warning);
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             ["BienId"] = bien.PkidBien,
             ["BienDescripcion"] = $"{TextOrDash(bien.Clave)} - {TextOrDash(bien.Descripcion)}",
             ["AreaId"] = bien.FkidAreaSis,
-            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0
+            ["EmpresaId"] = SucursalStateService.EmpresaId ?? 0,
+            ["AnioId"] = AnioStateService.AnioId.Value
         };
 
         var dialog = await DialogService.ShowAsync<BajaDialog>(

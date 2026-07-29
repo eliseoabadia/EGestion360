@@ -133,7 +133,7 @@ BEGIN TRY
         Estatus, Activo, FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @RequisicionId, GETDATE(), 3, 1, SYSDATETIME(), 1);
+        (1, @RequisicionId, DATEFROMPARTS(YEAR(GETDATE()),1,1), 1, 1, SYSDATETIME(), 1);
     DECLARE @SolicitudId int = SCOPE_IDENTITY();
 
     INSERT PRES.SolicitudSuficienciaDetalle (

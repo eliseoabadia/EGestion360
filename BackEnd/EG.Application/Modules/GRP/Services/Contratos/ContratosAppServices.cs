@@ -10,6 +10,7 @@ using EG.Infraestructure.Models;
 using EG.Domain.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EG.Application.Services.Contratos
 {
@@ -401,15 +402,40 @@ namespace EG.Application.Services.Contratos
     }
 
     public class SaldosContratoAppService(
-        GenericService<VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse> service,
-        GenericService<VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse> serviceView)
-        : AdquisicionCrudAppService<VwEgresoDisponible, VwEgresoDisponible, SaldosContratoResponse, SaldosContratoResponse>(
+        GenericService<VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse> service,
+        GenericService<VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse> serviceView,
+        IUserContextService userContext)
+        : AdquisicionCrudAppService<VwEgreCompNoDev, VwEgreCompNoDev, SaldosContratoResponse, SaldosContratoResponse>(
             service,
             serviceView,
-            "PkidEgresoAutorizado",
-            "Saldos disponibles para contrato",
-            (dto, id) => dto.PkidEgresoAutorizado = id)
+            "PkidContrato",
+            "Saldos de contratos",
+            (dto, id) => dto.PkidContrato = id)
     {
+        private readonly IUserContextService _userContext = userContext;
+
+        public override async Task<PagedResult<SaldosContratoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            if (_userContext.TryGetCurrentEmpresaId() is not > 0)
+            {
+                return Failure<SaldosContratoResponse>("Selecciona una empresa para consultar los saldos.", "COMPANY_REQUIRED");
+            }
+
+            if (!HasRequiredBudgetYear(request))
+            {
+                return Failure<SaldosContratoResponse>(
+                    "Selecciona un ano presupuestal para consultar los saldos de contratos.",
+                    "BUDGET_YEAR_REQUIRED");
+            }
+
+            return await base.GetAllPaginadoAsync(request);
+        }
+
+        public override Task<PagedResult<SaldosContratoResponse>> GetByIdAsync(int id) =>
+            _userContext.TryGetCurrentEmpresaId() is > 0
+                ? base.GetByIdAsync(id)
+                : Task.FromResult(Failure<SaldosContratoResponse>("Selecciona una empresa para consultar el saldo.", "COMPANY_REQUIRED"));
+
         public override Task<PagedResult<SaldosContratoResponse>> CreateAsync(SaldosContratoResponse response, int usuarioActual) =>
             Task.FromResult(ReadOnlyFailure<SaldosContratoResponse>());
 
@@ -426,6 +452,23 @@ namespace EG.Application.Services.Contratos
             Code = "READ_ONLY",
             TotalCount = 0
         };
+
+        private static bool HasRequiredBudgetYear(PagedRequest request)
+        {
+            if (request?.AdditionalFilters == null ||
+                !request.AdditionalFilters.TryGetValue("FkidAnioSis", out var value) ||
+                value == null)
+            {
+                return false;
+            }
+
+            return value switch
+            {
+                JsonElement json when json.ValueKind == JsonValueKind.Number => json.GetInt32() > 0,
+                int id => id > 0,
+                _ => int.TryParse(value.ToString(), out var id) && id > 0
+            };
+        }
     }
 
     public class EstadoContratoAppService(
@@ -454,6 +497,28 @@ namespace EG.Application.Services.Contratos
 
         private readonly EGestionContext _context = context;
         private readonly IUserContextService _userContext = userContext;
+
+        public override async Task<PagedResult<EstadoContratoResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            if (_userContext.TryGetCurrentEmpresaId() is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa para consultar los compromisos.", "COMPANY_REQUIRED");
+            }
+
+            if (!HasRequiredBudgetYear(request))
+            {
+                return Failure<EstadoContratoResponse>(
+                    "Selecciona un ano presupuestal para consultar los compromisos.",
+                    "BUDGET_YEAR_REQUIRED");
+            }
+
+            return await base.GetAllPaginadoAsync(request);
+        }
+
+        public override Task<PagedResult<EstadoContratoResponse>> GetByIdAsync(int id) =>
+            _userContext.TryGetCurrentEmpresaId() is > 0
+                ? base.GetByIdAsync(id)
+                : Task.FromResult(Failure<EstadoContratoResponse>("Selecciona una empresa para consultar el compromiso.", "COMPANY_REQUIRED"));
 
         public override async Task<PagedResult<EstadoContratoResponse>> CreateAsync(EstadoContratoResponse response, int usuarioActual)
         {
@@ -495,9 +560,15 @@ namespace EG.Application.Services.Contratos
 
         public override async Task<PagedResult<EstadoContratoResponse>> UpdateAsync(int id, EstadoContratoResponse response, int usuarioActual)
         {
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa antes de modificar el compromiso.", "COMPANY_REQUIRED");
+            }
+
             var current = await _context.Contratos1
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.FkidEmpresaSis == empresaActual.Value && x.Activo);
 
             if (current == null)
             {
@@ -565,9 +636,15 @@ namespace EG.Application.Services.Contratos
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<bool>("Selecciona una empresa antes de eliminar el compromiso.", "COMPANY_REQUIRED");
+            }
+
             var current = await _context.Contratos1
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.FkidEmpresaSis == empresaActual.Value && x.Activo);
 
             if (current == null)
             {
@@ -584,9 +661,15 @@ namespace EG.Application.Services.Contratos
 
         public async Task<PagedResult<EstadoContratoResponse>> AutorizarAsync(int id, int usuarioActual)
         {
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa antes de autorizar el compromiso.", "COMPANY_REQUIRED");
+            }
+
             var current = await _context.Contratos1
                 .Include(x => x.ContratoDetalles)
-                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.FkidEmpresaSis == empresaActual.Value && x.Activo);
 
             if (current == null)
             {
@@ -792,9 +875,15 @@ namespace EG.Application.Services.Contratos
 
         public async Task<PagedResult<EstadoContratoResponse>> LiberarRemanenteAsync(int id, int usuarioActual)
         {
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa antes de liberar el remanente.", "COMPANY_REQUIRED");
+            }
+
             var current = await _context.Contratos1
                 .Include(x => x.ContratoDetalles)
-                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.FkidEmpresaSis == empresaActual.Value && x.Activo);
 
             if (current == null)
             {
@@ -813,7 +902,7 @@ namespace EG.Application.Services.Contratos
 
             var saldo = await _context.VwEgreCompNoDevs
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidContrato == id);
+                .FirstOrDefaultAsync(x => x.PkidContrato == id && x.FkidEmpresaSis == empresaActual.Value);
 
             if (saldo == null)
             {
@@ -977,9 +1066,15 @@ namespace EG.Application.Services.Contratos
                 return null;
             }
 
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa antes de generar las partidas.", "COMPANY_REQUIRED");
+            }
+
             var contrato = await _context.Contratos1
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidContrato == contratoId && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidContrato == contratoId && x.FkidEmpresaSis == empresaActual.Value && x.Activo);
 
             if (contrato == null)
             {
@@ -1287,6 +1382,23 @@ namespace EG.Application.Services.Contratos
             return itemId > 0 ? itemId : fallback;
         }
 
+        private static bool HasRequiredBudgetYear(PagedRequest request)
+        {
+            if (request?.AdditionalFilters == null ||
+                !request.AdditionalFilters.TryGetValue("FkidAnioSis", out var value) ||
+                value == null)
+            {
+                return false;
+            }
+
+            return value switch
+            {
+                JsonElement json when json.ValueKind == JsonValueKind.Number => json.GetInt32() > 0,
+                int id => id > 0,
+                _ => int.TryParse(value.ToString(), out var id) && id > 0
+            };
+        }
+
         private async Task<PagedResult<EstadoContratoResponse>?> NormalizeAndValidateAsync(
             EstadoContratoResponse response,
             int? currentId)
@@ -1301,10 +1413,22 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("Debe seleccionar una autorizacion de suficiencia.");
             }
 
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona una empresa antes de registrar el compromiso.", "COMPANY_REQUIRED");
+            }
+
+            if (response.FkidAnioSis is not > 0)
+            {
+                return Failure<EstadoContratoResponse>("Selecciona un ano presupuestal antes de registrar el compromiso.", "BUDGET_YEAR_REQUIRED");
+            }
+
             var autorizacion = await _context.AutorizacionSuficiencia
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x =>
                     x.PkidAutorizacionSuficiencia == response.FkidAutorizacionSuficienciaPres &&
+                    x.FkidEmpresaSis == empresaActual.Value &&
                     x.Activo);
 
             if (autorizacion == null)
@@ -1317,16 +1441,6 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("La autorizacion de suficiencia debe estar autorizada antes de generar contrato.");
             }
 
-            var empresaActual = _userContext.TryGetCurrentEmpresaId();
-            if (empresaActual.HasValue &&
-                empresaActual.Value > 0 &&
-                autorizacion.FkidEmpresaSis != empresaActual.Value)
-            {
-                return Failure<EstadoContratoResponse>(
-                    "La autorizacion de suficiencia no pertenece a la empresa activa.",
-                    "FORBIDDEN");
-            }
-
             var flujo = await (
                 from solicitud in _context.SolicitudSuficiencia.AsNoTracking()
                 join requisicion in _context.Requisicions.AsNoTracking()
@@ -1337,6 +1451,8 @@ namespace EG.Application.Services.Contratos
                 select new
                 {
                     RequisicionId = requisicion.PkidRequisicion,
+                    requisicion.FkidAnioSis,
+                    requisicion.FkidEmpresaSis,
                     requisicion.CompraDirecta,
                     requisicion.FechaRequisicion
                 }).FirstOrDefaultAsync();
@@ -1347,10 +1463,21 @@ namespace EG.Application.Services.Contratos
                     "No se encontro la requisicion activa relacionada con la autorizacion.");
             }
 
+            if (flujo.FkidEmpresaSis != empresaActual.Value)
+            {
+                return Failure<EstadoContratoResponse>("La requisicion no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
+            if (flujo.FkidAnioSis is not > 0 || flujo.FkidAnioSis.Value != response.FkidAnioSis.Value)
+            {
+                return Failure<EstadoContratoResponse>("La autorizacion no pertenece al ano presupuestal seleccionado.", "BUDGET_YEAR_MISMATCH");
+            }
+
             var duplicate = await _context.Contratos1
                 .AsNoTracking()
                 .AnyAsync(x =>
                     x.Activo &&
+                    x.FkidEmpresaSis == empresaActual.Value &&
                     x.FkidAutorizacionSuficienciaPres == response.FkidAutorizacionSuficienciaPres &&
                     x.PkidContrato != (currentId ?? response.PkidContrato));
 
@@ -1456,6 +1583,7 @@ namespace EG.Application.Services.Contratos
             }
 
             response.FkidEmpresaSis = autorizacion.FkidEmpresaSis;
+            response.FkidAnioSis = flujo.FkidAnioSis;
             response.NumeroContrato = response.NumeroContrato.Trim();
             response.Descripcion = response.Descripcion.Trim();
             response.PlazoEjecucion ??= string.Empty;

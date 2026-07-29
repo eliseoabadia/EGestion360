@@ -3,6 +3,7 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
     public class BienResponse
     {
         public int PkidBien { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int? FkidGrupoBienAlma { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public int? FkidAreaSis { get; set; }
@@ -82,5 +83,8 @@ namespace EG.Domain.DTOs.Responses.Patrimonio
         public string TipoAdquisicionDescripcionMovto { get; set; } = string.Empty;
         public string PartidaClave { get; set; } = string.Empty;
         public string PartidaDescripcion { get; set; } = string.Empty;
+        public bool BloqueadoOperacion { get; set; }
+        public bool TieneBajaActiva { get; set; }
+        public string MotivoBloqueo { get; set; } = string.Empty;
     }
 }

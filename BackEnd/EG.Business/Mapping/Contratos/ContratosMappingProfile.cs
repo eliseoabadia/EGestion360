@@ -13,7 +13,7 @@ namespace EG.Business.Mapping.Contratos
             config.NewConfig<VwContrato1, OrcoContratoResponse>().TwoWays();
             config.NewConfig<OrcoContratoResponse, OrcoContratoDto>().TwoWays();
 
-            config.NewConfig<VwEgresoDisponible, SaldosContratoResponse>().TwoWays();
+            config.NewConfig<VwEgreCompNoDev, SaldosContratoResponse>().TwoWays();
             config.NewConfig<SaldosContratoResponse, SaldosContratoResponse>().TwoWays();
 
             config.NewConfig<Contrato1, EstadoContratoDto>().TwoWays();

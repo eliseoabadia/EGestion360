@@ -611,6 +611,12 @@ namespace EG.Business.Services
         private IQueryable<TEntity> ApplyAdditionalFilter(IQueryable<TEntity> query, string propertyName, object value)
         {
             const string notEqualSuffix = "__ne";
+            const string inSuffix = "__in";
+            var useIn = propertyName.EndsWith(inSuffix, StringComparison.OrdinalIgnoreCase);
+            if (useIn)
+            {
+                propertyName = propertyName[..^inSuffix.Length];
+            }
             var useNotEqual = propertyName.EndsWith(notEqualSuffix, StringComparison.OrdinalIgnoreCase);
             if (useNotEqual)
             {
@@ -621,6 +627,23 @@ namespace EG.Business.Services
             var property = Expression.Property(parameter, propertyName);
             var propertyType = property.Type;
             var targetType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+            if (useIn)
+            {
+                var rawValues = value is JsonElement arrayElement && arrayElement.ValueKind == JsonValueKind.Array
+                    ? arrayElement.EnumerateArray().Select(x => ConvertJsonElement(x, targetType))
+                    : ((System.Collections.IEnumerable)value).Cast<object>().Select(x => Convert.ChangeType(x, targetType, CultureInfo.InvariantCulture));
+                var typedArray = Array.CreateInstance(targetType, rawValues.Count());
+                var index = 0;
+                foreach (var item in rawValues) typedArray.SetValue(item, index++);
+                Expression itemExpression = property;
+                if (propertyType != targetType)
+                    itemExpression = Expression.Convert(property, targetType);
+                var contains = Expression.Call(
+                    typeof(Enumerable), nameof(Enumerable.Contains), new[] { targetType },
+                    Expression.Constant(typedArray), itemExpression);
+                return query.Where(Expression.Lambda<Func<TEntity, bool>>(contains, parameter));
+            }
 
             object convertedValue;
             if (value is JsonElement jsonElement)

@@ -18,6 +18,7 @@
 @inject IGenericCrudService<ProveedorResponse> ProveedorService
 @inject IGenericCrudService<PolizaResponse> PolizaService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EstadoContratoResponse"
@@ -131,6 +132,7 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int EmpresaId { get; set; }
+    [Parameter] public int AnioId { get; set; }
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
@@ -151,7 +153,7 @@
     private LookupItem? _selectedPoliza;
     private bool _compraDirecta;
 
-    private string Title => Id.HasValue ? "Editar Estado de Contrato" : "Nuevo Estado de Contrato";
+    private string Title => Id.HasValue ? "Editar Registro de Compromiso" : "Nuevo Registro de Compromiso";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private string EmpresaText => string.IsNullOrWhiteSpace(item.EmpresaNombre)
@@ -171,6 +173,11 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+        if (AnioId <= 0 && AnioStateService.AnioId is > 0)
+        {
+            AnioId = AnioStateService.AnioId.Value;
+        }
         if (Id.HasValue)
         {
             await LoadItemAsync(Id.Value);
@@ -180,6 +187,7 @@
         item.FkidEmpresaSis = EmpresaId > 0
             ? EmpresaId
             : SucursalStateService.EmpresaId ?? 0;
+        item.FkidAnioSis = AnioId;
     }
 
     private async Task LoadItemAsync(int id)
@@ -225,6 +233,12 @@
             return;
         }
 
+        if (AnioId <= 0)
+        {
+            Snackbar.Add("Selecciona un ano presupuestal.", Severity.Warning);
+            return;
+        }
+
         if (item.MontoTotal <= 0m)
         {
             Snackbar.Add("El monto total debe ser mayor a cero.", Severity.Warning);
@@ -232,6 +246,7 @@
         }
 
         item.FkidAutorizacionSuficienciaPres = _selectedAutorizacion.Id;
+        item.FkidAnioSis = AnioId;
         item.FkidProveedorSis = _selectedProveedor.Id;
         item.FkidPolizaConta = _selectedPoliza?.Id;
         item.FechaContrato = DateOnly.FromDateTime(_fechaContrato ?? DateTime.Today);
@@ -279,6 +294,7 @@
         item.FkidAutorizacionSuficienciaPres = autorizacion.PkidAutorizacionSuficiencia;
         item.FkidSolicitudSuficienciaPres = autorizacion.FkidSolicitudSuficienciaPres;
         item.FkidRequisicionOrco = autorizacion.FkidRequisicionOrco;
+        item.FkidAnioSis = autorizacion.FkidAnioSis;
         item.RequisicionDescripcion = autorizacion.RequisicionDescripcion;
         item.NumeroContrato = string.IsNullOrWhiteSpace(item.NumeroContrato)
             ? $"AUT-{autorizacion.PkidAutorizacionSuficiencia}"
@@ -316,6 +332,7 @@
         var additional = GetEmpresaFilter();
         additional ??= new Dictionary<string, object>();
         additional["Estatus"] = 2;
+        additional["FkidAnioSis"] = AnioId;
 
         var response = await AutorizacionService.GetAllPaginadoAsync(page, pageSize, filter, "FechaAutorizacion", SortDirection.Descending, additional);
         return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem

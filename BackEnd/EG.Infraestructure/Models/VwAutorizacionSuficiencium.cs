@@ -17,6 +17,8 @@ public partial class VwAutorizacionSuficiencium
 
     public int FkidRequisicionOrco { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public string RequisicionDescripcion { get; set; }
 
     public DateOnly FechaSolicitud { get; set; }

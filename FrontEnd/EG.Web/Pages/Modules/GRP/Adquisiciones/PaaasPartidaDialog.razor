@@ -1,10 +1,7 @@
 @using MudBlazor
 @using EG.Domain.DTOs.Responses.Adquisicion
-@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Models
-@using EG.Web.Contracts
 @using EG.Common.GenericModel
-@inject IGenericCrudService<PartidaResponse> PartidaService
 @inject ISnackbar Snackbar
 @inject HttpClient Http
 
@@ -55,17 +52,22 @@
 
     private async Task<ComboLookupResult> LoadPartidasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await PartidaService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
-        var items = response?.Items?.Select(x => new LookupItem
+        var request = new EG.Common.GenericModel.PagedRequest
         {
-            Id = x.PkidPartida,
-            Text = $"{x.Clave} - {x.Descripcion}"
-        }) ?? new List<LookupItem>();
+            Page = page,
+            PageSize = pageSize,
+            Filtro = filter ?? string.Empty,
+            SortLabel = "Clave",
+            SortDirection = "Ascending"
+        };
+        var httpResponse = await Http.PostAsJsonAsync($"api/Paaa/{PaaaId}/partidas-disponibles", request, ct);
+        var response = await httpResponse.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = response?.Items ?? new List<LookupItem>();
 
         return new ComboLookupResult
         {
             Items = items,
-            TotalCount = response?.TotalCount ?? items.Count()
+            TotalCount = response?.TotalCount ?? items.Count
         };
     }
 

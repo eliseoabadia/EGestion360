@@ -3,6 +3,7 @@ namespace EG.Domain.DTOs.Requests.Presupuestales
     public class EgresoAutorizadoDto
     {
         public int PkidEgresoAutorizado { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int? FkidEgresoProyectadoPres { get; set; }
         public int FkidProgramaPres { get; set; }
         public int FkidPartidaConta { get; set; }

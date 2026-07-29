@@ -72,25 +72,18 @@
             <Columns>
                 <TemplateColumn T="EgresoAutorizadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        OnClick="@(() => EditItem(cell.Item.PkidEgresoAutorizado))" />
-                        </MudTooltip>
                         <DocumentSupportButton Modulo="Egreso"
                         SubModulo="Presupuesto_Autorizado"
                         Controlador="EgresoAutorizado"
                         EntidadId="@cell.Item.PkidEgresoAutorizado"
                         RegistroTitulo="@TextOrDash(cell.Item.ProgramaClaveNombre ?? cell.Item.ProgramaClave)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
-                        <MudTooltip Text="@(cell.Item.FkidEgresoProyectadoPres.HasValue ? "Regresar a proyectado" : "Eliminar")">
-                        <MudIconButton Icon="@(cell.Item.FkidEgresoProyectadoPres.HasValue ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Delete)"
-                        Visible="@CanDelete"
+                        <MudTooltip Text="Regresar a anteproyecto">
+                        <MudIconButton Icon="@Icons.Material.Filled.LockOpen"
+                        Visible="@(CanDelete && cell.Item.FkidEgresoProyectadoPres.HasValue)"
                         Color="Color.Error"
                         Size="Size.Small"
-                        OnClick="@(() => DeleteAutorizado(cell.Item))" />
+                        OnClick="@(() => ShowRegresarAProyectadoDialog(cell.Item))" />
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>

@@ -4,6 +4,7 @@ namespace EG.Domain.DTOs.Requests.Patrimonio
     {
         public int PkidOrdenCompra { get; set; }
         public int FkidEmpresaSis { get; set; }
+        public int? FkidAnioSis { get; set; }
         public string Requisicion { get; set; } = string.Empty;
         public string Proveedor { get; set; } = string.Empty;
         public string Justificacion { get; set; } = string.Empty;

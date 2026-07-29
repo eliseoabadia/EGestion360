@@ -17,6 +17,7 @@
 @inject IGenericCrudService<TipoAdquisicionResponse> TipoAdquisicionService
 @inject IGenericCrudService<ResguardoResponse> ResguardoService
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <BaseCrudDialog TItem="BienResponse"
                 Title="@dialogTitle"
@@ -52,6 +53,7 @@
                                    Label="Tipo de bien"
                                    Required="true"
                                    RequiredError="El tipo de bien es requerido"
+                                   Disabled="@Id.HasValue"
                                    LoadPage="LoadTiposBienPageAsync" />
             </MudItem>
 
@@ -119,7 +121,8 @@
             <MudItem xs="12" md="3">
                 <MudDatePicker @bind-Date="item.FechaAdq"
                                Label="Fecha adquisicion"
-                               Variant="Variant.Outlined" />
+                               Variant="Variant.Outlined"
+                               ReadOnly="@Id.HasValue" />
             </MudItem>
 
             <MudItem xs="12" md="3">
@@ -166,6 +169,7 @@
                            Value="@(item.EsContabilizado ?? false)"
                            ValueChanged="value => item.EsContabilizado = value"
                            Label="Contabilizado"
+                           Disabled="true"
                            Color="Color.Primary" />
             </MudItem>
 
@@ -313,8 +317,11 @@
 
     private async Task<ComboLookupResult> LoadTiposBienPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await TipoBienService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidTipoBien, Text = BuildTipoBienText(x.CodigoClave, x.TipoBienDescripcion) }), response?.TotalCount);
+        var request = new EG.Common.GenericModel.PagedRequest { Page = page, PageSize = pageSize, Filtro = filter ?? string.Empty };
+        var response = await Http.PostAsJsonAsync("api/Bien/tipos-bien-capitulo-5000", request, ct);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = result?.Items ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = items, TotalCount = result?.TotalCount ?? items.Count };
     }
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)

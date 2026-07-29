@@ -33,19 +33,24 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BienResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var companyId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.Activo && x.FkidEmpresaSis == companyId).ToListAsync()).Adapt<List<BienResponse>>();
             await ApplyEntityKeysAsync(items);
             return Success(items, "Bienes obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<BienResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidBien");
-            if (item == null)
+            var companyId = _userContext.GetCurrentEmpresaId();
+            var view = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidBien == id && x.Activo && x.FkidEmpresaSis == companyId);
+            if (view == null)
             {
                 return Failure<BienResponse>($"Bien con ID {id} no encontrado.", "NOT_FOUND");
             }
 
+            var item = view.Adapt<BienResponse>();
             await ApplyEntityKeysAsync(new List<BienResponse> { item });
 
             return new PagedResult<BienResponse>
@@ -61,6 +66,7 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BienResponse>> CreateAsync(BienResponse response, int usuarioActual)
         {
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             var validation = await NormalizeAndValidateAsync(response, true);
             if (validation != null)
             {
@@ -94,11 +100,21 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BienResponse>> UpdateAsync(int id, BienResponse response, int usuarioActual)
         {
-            var current = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == id && x.Activo);
+            var companyId = _userContext.GetCurrentEmpresaId();
+            var current = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == id && x.Activo && x.FkidEmpresaSis == companyId);
             if (current == null)
             {
                 return Failure<BienResponse>($"Bien con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var lockReason = await GetLockReasonAsync(current.PkidBien);
+            if (lockReason.Length > 0) return Failure<BienResponse>(lockReason, "BIEN_LOCKED");
+
+            response.FkidEmpresaSis = companyId;
+            response.FkidTipoBienAlma = current.FkidTipoBienAlma;
+            response.FkidPartidaConta = current.FkidPartidaConta;
+            response.FechaAdq = current.FechaAdq;
+            response.EsContabilizado = current.EsContabilizado;
 
             var validation = await NormalizeAndValidateAsync(response, false);
             if (validation != null)
@@ -129,56 +145,23 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            if (!await _context.Biens.AsNoTracking().AnyAsync(x => x.PkidBien == id && x.Activo))
+            await Task.CompletedTask;
+            return new PagedResult<bool>
             {
-                return new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Bien con ID {id} no encontrado.",
-                    Code = "NOT_FOUND",
-                    Data = false,
-                    TotalCount = 0
-                };
-            }
-
-            try
-            {
-                var result = await StoredProcedureExecutor.ExecuteResultAsync(
-                    _context,
-                    "[ALMA].[SP_MantenimientoBien]",
-                    StoredProcedureExecutor.Param("@Action", 3),
-                    StoredProcedureExecutor.Param("@PKIdBien", id),
-                    StoredProcedureExecutor.Param("@IdBaja", id),
-                    StoredProcedureExecutor.Param("@IdUser", _userContext.GetCurrentUserId()));
-
-                return new PagedResult<bool>
-                {
-                    Success = true,
-                    Message = result.Mensaje,
-                    Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
-                    TotalCount = 1
-                };
-            }
-            catch (Exception ex)
-            {
-                return new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = $"Error al eliminar bien: {ex.Message}",
-                    Code = "ERROR",
-                    Data = false,
-                    TotalCount = 0
-                };
-            }
+                Success = false,
+                Message = "Los bienes no se eliminan directamente; utilice el proceso formal de baja.",
+                Code = "USE_BAJA",
+                Data = false,
+                TotalCount = 0
+            };
         }
 
         public async Task<PagedResult<BienResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var companyId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes().Where(x => x.Activo && x.FkidEmpresaSis == companyId);
 
                 if (TryGetIntFilter(request, "Resguardo", out var resguardoId))
                 {
@@ -232,12 +215,14 @@ namespace EG.Application.Services.Patrimonio
             {
                 return Failure<BienResponse>($"Error al obtener bienes: {ex.Message}");
             }
+
         }
 
         public async Task<PagedResult<BienResponse>> GenerarDesdeDetalleOrdenCompraAsync(
             int detalleOrdenCompraId,
             int usuarioActual)
         {
+            var companyId = _userContext.GetCurrentEmpresaId();
             var detalle = await _context.OrdenCompraDetalles
                 .AsNoTracking()
                 .Include(x => x.FkidOrdenCompraOrcoNavigation)
@@ -249,14 +234,17 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BienResponse>("El detalle de orden de compra no existe o esta inactivo.", "NOT_FOUND");
             }
 
-            var cantidadObjetivo = detalle.CantidadRecibida > 0
-                ? detalle.CantidadRecibida
-                : detalle.CantidadSolicitada;
+            if (detalle.FkidOrdenCompraOrcoNavigation?.FkidEmpresaSis != companyId || detalle.FkidOrdenCompraOrcoNavigation.FkidEstatusOrdenCompraOrco < 2)
+            {
+                return Failure<BienResponse>("La orden no pertenece a la empresa actual o aun no esta autorizada para surtirse.", "INVALID_ORDER_STATUS");
+            }
+
+            var cantidadObjetivo = detalle.CantidadRecibida;
             var objetivo = Convert.ToInt32(Math.Truncate(cantidadObjetivo));
 
             if (objetivo <= 0)
             {
-                return Failure<BienResponse>("El detalle no tiene cantidad recibida o solicitada para generar bienes.");
+                return Failure<BienResponse>("Primero debe registrar una cantidad recibida para generar bienes.");
             }
 
             var existentes = await _context.Biens
@@ -297,12 +285,16 @@ namespace EG.Application.Services.Patrimonio
 
             var response = new BienResponse
             {
+                FkidEmpresaSis = companyId,
                 FkidGrupoBienAlma = detalle.FkidTipoBienAlmaNavigation?.FkidGrupoBienAlma,
                 FkidTipoBienAlma = detalle.FkidTipoBienAlma,
                 FkidProveedorSis = orden?.FkidProveedorSis,
                 FkidPartidaConta = detalle.FkidTipoBienAlmaNavigation?.FkidPartidaConta
                     ?? requisicion?.FkidEgresoAutorizadoPresNavigation?.FkidPartidaConta,
                 FkidDetalleOrdenCompraOrco = detalleOrdenCompraId,
+                FkidAreaSis = requisicion?.FkidAreaSis,
+                FkidEstadoBienAlma = 3,
+                FkidTipoPatrimonioAlma = 1,
                 Descripcion = detalle.FkidTipoBienAlmaNavigation?.Descripcion
                     ?? detalle.Observaciones
                     ?? $"Bien de detalle {detalleOrdenCompraId}",
@@ -323,15 +315,24 @@ namespace EG.Application.Services.Patrimonio
                 Caracteristicas = string.Empty,
                 Localizado = true,
                 EsContabilizado = false,
+                VerificacionesDias = 365,
+                MantenimientoDias = 180,
+                Mantenimiento = true,
+                Calibracion = true,
                 Activo = true
             };
 
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
                 for (var index = 0; index < faltantes; index++)
                 {
                     await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
                 }
+
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC [ALMA].[SP_CerrarRecepcionPatrimonial] @DetalleOrdenCompraId={detalleOrdenCompraId}, @EmpresaId={companyId}, @UsuarioId={usuarioActual}");
+                await transaction.CommitAsync();
 
                 return new PagedResult<BienResponse>
                 {
@@ -348,6 +349,65 @@ namespace EG.Application.Services.Patrimonio
             {
                 return Failure<BienResponse>($"Error al generar bienes desde la orden de compra: {ex.Message}");
             }
+        }
+
+        public async Task<PagedResult<BienResponse>> RegistrarRecepcionAsync(
+            int detalleOrdenCompraId,
+            decimal cantidadRecibida,
+            int usuarioActual)
+        {
+            var companyId = _userContext.GetCurrentEmpresaId();
+            var detalle = await _context.OrdenCompraDetalles
+                .Include(x => x.FkidOrdenCompraOrcoNavigation)
+                .FirstOrDefaultAsync(x => x.PkidOrdenCompraDetalle == detalleOrdenCompraId && x.Activo);
+
+            if (detalle == null)
+            {
+                return Failure<BienResponse>("El detalle de orden de compra no existe o esta inactivo.", "NOT_FOUND");
+            }
+
+            var orden = detalle.FkidOrdenCompraOrcoNavigation;
+            if (orden == null || orden.FkidEmpresaSis != companyId)
+            {
+                return Failure<BienResponse>("La orden de compra no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
+            if (orden.FkidEstatusOrdenCompraOrco < 2)
+            {
+                return Failure<BienResponse>("La orden debe estar autorizada antes de registrar su recepcion.", "INVALID_ORDER_STATUS");
+            }
+
+            if (cantidadRecibida < 0 || cantidadRecibida > detalle.CantidadSolicitada)
+            {
+                return Failure<BienResponse>($"La cantidad recibida debe estar entre 0 y {detalle.CantidadSolicitada:0.####}.");
+            }
+
+            if (cantidadRecibida != decimal.Truncate(cantidadRecibida))
+            {
+                return Failure<BienResponse>("Los bienes muebles deben recibirse en unidades completas.");
+            }
+
+            var bienesGenerados = await _context.Biens
+                .AsNoTracking()
+                .CountAsync(x => x.FkidDetalleOrdenCompraOrco == detalleOrdenCompraId && x.Activo);
+            if (cantidadRecibida < bienesGenerados)
+            {
+                return Failure<BienResponse>($"No puede reducir la recepcion por debajo de los {bienesGenerados} bienes ya generados.");
+            }
+
+            detalle.CantidadRecibida = cantidadRecibida;
+            detalle.FechaModificacion = DateTime.Now;
+            detalle.UsuarioModificacion = usuarioActual;
+            await _context.SaveChangesAsync();
+
+            return new PagedResult<BienResponse>
+            {
+                Success = true,
+                Code = "SUCCESS",
+                Message = $"Recepcion registrada: {cantidadRecibida:0.####} de {detalle.CantidadSolicitada:0.####}.",
+                Items = new List<BienResponse>(),
+                TotalCount = bienesGenerados
+            };
         }
 
         private async Task<PagedResult<BienResponse>?> NormalizeAndValidateAsync(BienResponse response, bool isCreate)
@@ -367,9 +427,10 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BienResponse>("El valor factura debe ser mayor a cero.");
             }
 
-            if (!await _context.TipoBiens.AsNoTracking().AnyAsync(x => x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo))
+            if (!await _context.TipoBiens.AsNoTracking().AnyAsync(x => x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo &&
+                x.FkidPartidaContaNavigation.Activo && x.FkidPartidaContaNavigation.Clave.StartsWith("5")))
             {
-                return Failure<BienResponse>("El tipo de bien seleccionado no existe o esta inactivo.");
+                return Failure<BienResponse>("El tipo de bien no existe, esta inactivo o no pertenece al capitulo 5000.");
             }
 
             response.Modelo ??= string.Empty;
@@ -400,9 +461,10 @@ namespace EG.Application.Services.Patrimonio
         {
             return StoredProcedureExecutor.ExecuteResultAsync(
                 _context,
-                "[ALMA].[SP_MantenimientoBien]",
+                "[ALMA].[SP_MantenimientoBienEmpresa]",
                 StoredProcedureExecutor.Param("@Action", action),
                 StoredProcedureExecutor.Param("@PKIdBien", id),
+                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", _userContext.GetCurrentEmpresaId()),
                 StoredProcedureExecutor.Param("@FKIdGrupoBien_ALMA", response.FkidGrupoBienAlma),
                 StoredProcedureExecutor.Param("@FKIdTipoBien_ALMA", response.FkidTipoBienAlma),
                 StoredProcedureExecutor.Param("@FKIdArea_SIS", response.FkidAreaSis),
@@ -465,6 +527,7 @@ namespace EG.Application.Services.Patrimonio
                 .Select(x => new
                 {
                     x.PkidBien,
+                    x.FkidEmpresaSis,
                     x.FkidGrupoBienAlma,
                     x.FkidTipoBienAlma,
                     x.FkidAreaSis,
@@ -490,6 +553,7 @@ namespace EG.Application.Services.Patrimonio
                 }
 
                 item.FkidGrupoBienAlma = key.FkidGrupoBienAlma;
+                item.FkidEmpresaSis = key.FkidEmpresaSis;
                 item.FkidTipoBienAlma = key.FkidTipoBienAlma;
                 item.FkidAreaSis = key.FkidAreaSis;
                 item.FkidProveedorSis = key.FkidProveedorSis;
@@ -503,7 +567,24 @@ namespace EG.Application.Services.Patrimonio
                 item.Resguardo = key.Resguardo;
                 item.ResguardoAnterior = key.ResguardoAnterior;
                 item.RelId = key.RelId;
+                item.MotivoBloqueo = await GetLockReasonAsync(item.PkidBien);
+                item.BloqueadoOperacion = item.MotivoBloqueo.Length > 0;
+                item.TieneBajaActiva = await _context.Bajas.AsNoTracking()
+                    .AnyAsync(x => x.FkidBienAlma == item.PkidBien && x.Activo);
             }
+        }
+
+        private async Task<string> GetLockReasonAsync(int id)
+        {
+            var state = await _context.Biens.AsNoTracking().Where(x => x.PkidBien == id)
+                .Select(x => new { Resguardado = x.EstaResguardado == true, Contabilizado = x.EsContabilizado == true })
+                .FirstOrDefaultAsync();
+            if (state == null) return "El bien no existe.";
+            if (state.Contabilizado) return "El bien ya esta contabilizado.";
+            if (state.Resguardado) return "El bien tiene un resguardo activo.";
+            if (await _context.Bajas.AsNoTracking().AnyAsync(x => x.FkidBienAlma == id && x.Activo))
+                return "El bien tiene un proceso de baja activo.";
+            return string.Empty;
         }
 
         private static IQueryable<VwBien> ApplySort(IQueryable<VwBien> query, string? sortLabel, string? sortDirection)

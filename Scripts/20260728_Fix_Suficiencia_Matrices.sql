@@ -9,6 +9,7 @@ SELECT
     emp.Nombre AS EmpresaNombre,
     ss.FKIdRequisicion_ORCO,
     req.FKIdAnio_SIS,
+    req.FKIdArea_SIS,
     req.Descripcion AS RequisicionDescripcion,
     req.FechaRequisicion,
     req.Importe AS RequisicionImporte,

@@ -45,6 +45,15 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedMes"
+                                   ValueChanged="value => _selectedMes = value"
+                                   Label="Mes programado"
+                                   Required="true"
+                                   RequiredError="Debe seleccionar el mes"
+                                   LoadPage="LoadMesesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedUnidad"
                                    ValueChanged="value => _selectedUnidad = value"
                                    Label="Unidad de Medida"
@@ -81,6 +90,7 @@
 
     private LookupItem? _selectedTipoBien;
     private LookupItem? _selectedUnidad;
+    private LookupItem? _selectedMes;
     private decimal _cantidad = 1m;
     private string _observaciones = string.Empty;
     private string _lugarEntrega = string.Empty;
@@ -102,6 +112,10 @@
             _cantidad = Item.Cantidad <= 0 ? 1m : Item.Cantidad;
             _observaciones = Item.Observaciones ?? string.Empty;
             _lugarEntrega = Item.LugarEntrega ?? string.Empty;
+            if (Item.FkidMesSis.HasValue)
+            {
+                _selectedMes = new LookupItem { Id = Item.FkidMesSis.Value, Text = Item.MesDescripcion };
+            }
             await LoadUnidadForEdit();
             return;
         }
@@ -228,6 +242,15 @@
         };
     }
 
+    private async Task<ComboLookupResult> LoadMesesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        var request = new EG.Common.GenericModel.PagedRequest { Page = page, PageSize = pageSize, Filtro = filter ?? string.Empty };
+        var response = await Http.PostAsJsonAsync("api/Paaa/meses", request, ct);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<LookupItem>>(cancellationToken: ct);
+        var items = result?.Items ?? new List<LookupItem>();
+        return new ComboLookupResult { Items = items, TotalCount = result?.TotalCount ?? items.Count };
+    }
+
     private async Task GuardarCambiosAsync()
     {
         if (_selectedTipoBien == null)
@@ -242,6 +265,13 @@
             return;
         }
 
+
+        if (_selectedMes == null)
+        {
+            Snackbar.Add("Debe seleccionar el mes programado", Severity.Warning);
+            return;
+        }
+
         var dto = new
         {
             PkidPaaasdetalle = Item?.PkidPaaasdetalle ?? 0,
@@ -249,6 +279,7 @@
             FkidPaaaspartidaOrco = PartidaId,
             FkidTipoBienAlma = _selectedTipoBien.Id,
             FkidUnidadesAlma = _selectedUnidad?.Id,
+            FkidMesSis = _selectedMes.Id,
             Cantidad = _cantidad,
             Observaciones = _observaciones ?? string.Empty,
             LugarEntrega = _lugarEntrega ?? string.Empty,

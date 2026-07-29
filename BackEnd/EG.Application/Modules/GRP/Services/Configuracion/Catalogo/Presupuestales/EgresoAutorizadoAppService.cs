@@ -46,15 +46,13 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
         public override Task<PagedResult<EgresoAutorizadoResponse>> CreateAsync(EgresoAutorizadoResponse response, int usuarioActual)
         {
-            if (response.FkidEgresoProyectadoPres.HasValue && response.FkidEgresoProyectadoPres.Value > 0)
-            {
-                return CrearAutorizacionCapturadaAsync(response, usuarioActual);
-            }
+            if (!response.FkidEgresoProyectadoPres.HasValue || response.FkidEgresoProyectadoPres.Value <= 0)
+                return Task.FromResult(Failure("El presupuesto autorizado debe originarse en un anteproyecto activo.", "INVALID_OPERATION"));
 
-            response.FechaAutorizacion ??= DateTime.Now;
-            response.UsuarioAutorizacion ??= usuarioActual;
-
-            return base.CreateAsync(response, usuarioActual);
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+            response.FechaAutorizacion = DateTime.Now;
+            response.UsuarioAutorizacion = usuarioActual;
+            return CrearAutorizacionCapturadaAsync(response, usuarioActual);
         }
 
         public override async Task<PagedResult<EgresoAutorizadoResponse>> UpdateAsync(
@@ -62,129 +60,100 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             EgresoAutorizadoResponse response,
             int usuarioActual)
         {
-            var existing = await _context.EgresoAutorizados
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidEgresoAutorizado == id && x.Activo);
-
-            if (existing == null)
-            {
-                return await base.UpdateAsync(id, response, usuarioActual);
-            }
-
-            if (!existing.FkidEgresoProyectadoPres.HasValue && response.FkidEgresoProyectadoPres.HasValue)
-            {
-                return Locked("Para autorizar un egreso proyectado usa la accion de autorizar desde egreso proyectado.");
-            }
-
-            PreserveAmounts(response, existing);
-
-            if (existing.FkidEgresoProyectadoPres.HasValue)
-            {
-                response.FkidEgresoProyectadoPres = existing.FkidEgresoProyectadoPres;
-                response.FkidProgramaPres = existing.FkidProgramaPres;
-                response.FkidPartidaConta = existing.FkidPartidaConta;
-                response.FkidAreaSis = existing.FkidAreaSis;
-                response.FkidFuenteFinanciamientoPres = existing.FkidFuenteFinanciamientoPres;
-                response.FkidTipoGastoPres = existing.FkidTipoGastoPres;
-                response.FkidDigitoIdentificadorPres = existing.FkidDigitoIdentificadorPres;
-                response.FkidDestinoGastoPres = existing.FkidDestinoGastoPres;
-                response.FkidPyPres = existing.FkidPyPres;
-            }
-
-            return await base.UpdateAsync(id, response, usuarioActual);
+            await Task.CompletedTask;
+            return Locked("El presupuesto autorizado es de solo lectura. Para corregirlo, regresalo al anteproyecto si no tiene movimientos posteriores.");
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var isLinkedToProyectado = await _context.EgresoAutorizados
-                .AsNoTracking()
-                .AnyAsync(x => x.PkidEgresoAutorizado == id && x.Activo && x.FkidEgresoProyectadoPres.HasValue);
-
-            if (isLinkedToProyectado)
-            {
-                return new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = "Para regresar un presupuesto autorizado a proyectado usa el proceso de regresar a proyectado.",
-                    Code = "LOCKED",
-                    Data = false,
-                    TotalCount = 0
-                };
-            }
-
-            try
-            {
-                var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
-                    _context,
-                    StoredProcedure,
-                    BuildParameters(3, id, null, _userContext.GetCurrentUserId()));
-
-                return new PagedResult<bool>
-                {
-                    Success = true,
-                    Message = string.IsNullOrWhiteSpace(spResult.Mensaje)
-                        ? "Presupuesto autorizado eliminado correctamente."
-                        : spResult.Mensaje,
-                    Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
-                    TotalCount = 1
-                };
-            }
-            catch (Exception ex)
-            {
-                return new PagedResult<bool>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Code = "ERROR",
-                    Data = false,
-                    TotalCount = 0
-                };
-            }
+            await Task.CompletedTask;
+            return BoolFailure("El presupuesto autorizado no se elimina directamente. Usa regresar a anteproyecto.", "LOCKED");
         }
 
         public async Task<PagedResult<bool>> RegresarAProyectadoAsync(int pkidEgresoAutorizado, int usuarioActual)
         {
             try
             {
-                var autorizado = await _context.EgresoAutorizados
-                    .FirstOrDefaultAsync(x => x.PkidEgresoAutorizado == pkidEgresoAutorizado && x.Activo);
-
-                if (autorizado == null)
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var strategy = _context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    return BoolFailure($"Presupuesto autorizado con ID {pkidEgresoAutorizado} no encontrado.", "NOT_FOUND");
-                }
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    var autorizado = await _context.EgresoAutorizados
+                        .FirstOrDefaultAsync(x => x.PkidEgresoAutorizado == pkidEgresoAutorizado &&
+                                                  x.FkidEmpresaSis == empresaId && x.Activo);
 
-                if (!autorizado.FkidEgresoProyectadoPres.HasValue)
-                {
-                    return BoolFailure("El presupuesto autorizado no proviene de un egreso proyectado.", "INVALID_OPERATION");
-                }
+                    if (autorizado == null)
+                        return BoolFailure($"Presupuesto autorizado con ID {pkidEgresoAutorizado} no encontrado para la empresa actual.", "NOT_FOUND");
 
-                var proyectadoActivo = await _context.EgresoProyectados
-                    .AsNoTracking()
-                    .AnyAsync(x => x.PkidEgresoProyectado == autorizado.FkidEgresoProyectadoPres.Value && x.Activo);
+                    if (!autorizado.FkidEgresoProyectadoPres.HasValue)
+                        return BoolFailure("El presupuesto autorizado no proviene de un anteproyecto.", "INVALID_OPERATION");
 
-                if (!proyectadoActivo)
-                {
-                    return BoolFailure("El egreso proyectado origen no existe o no esta activo.", "NOT_FOUND");
-                }
+                    var proyectadoActivo = await _context.EgresoProyectados.AsNoTracking().AnyAsync(x =>
+                        x.PkidEgresoProyectado == autorizado.FkidEgresoProyectadoPres.Value &&
+                        x.FkidEmpresaSis == empresaId && x.Activo);
 
-                autorizado.Activo = false;
-                autorizado.UsuarioModificacion = usuarioActual;
-                autorizado.FechaModificacion = DateTime.Now;
+                    if (!proyectadoActivo)
+                        return BoolFailure("El anteproyecto origen no existe o no pertenece a la empresa actual.", "NOT_FOUND");
 
-                await _context.SaveChangesAsync();
+                    if (await _context.Requisicions.AsNoTracking().AnyAsync(x =>
+                            x.FkidEgresoAutorizadoPres == pkidEgresoAutorizado && x.FkidEmpresaSis == empresaId && x.Activo))
+                        return BoolFailure("No se puede regresar: el presupuesto tiene requisiciones activas.", "HAS_REQUISITIONS");
 
-                return new PagedResult<bool>
-                {
-                    Success = true,
-                    Message = "Presupuesto autorizado regresado a proyectado correctamente.",
-                    Code = "SUCCESS",
-                    Data = true,
-                    Items = new List<bool> { true },
-                    TotalCount = 1
-                };
+                    if (await _context.EgreAdecuacionDetalles.AsNoTracking().AnyAsync(x =>
+                            x.FkidEgresoAutorizadoPres == pkidEgresoAutorizado && x.Activo))
+                        return BoolFailure("No se puede regresar: el presupuesto tiene adecuaciones activas.", "HAS_ADJUSTMENTS");
+
+                    var now = DateTime.Now;
+                    autorizado.Activo = false;
+                    autorizado.UsuarioModificacion = usuarioActual;
+                    autorizado.FechaModificacion = now;
+
+                    if (autorizado.FkidPolizaConta.HasValue)
+                    {
+                        var detalles = await _context.PolizaDetalles.Where(x =>
+                            x.FkidPolizaConta == autorizado.FkidPolizaConta.Value &&
+                            x.FkidReferencia == pkidEgresoAutorizado && x.Activo).ToListAsync();
+                        foreach (var detalle in detalles)
+                        {
+                            detalle.Activo = false;
+                            detalle.UsuarioModificacion = usuarioActual;
+                            detalle.FechaModificacion = now;
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    if (autorizado.FkidPolizaConta.HasValue)
+                    {
+                        var poliza = await _context.Polizas.FirstOrDefaultAsync(x =>
+                            x.PkidPoliza == autorizado.FkidPolizaConta.Value && x.Activo);
+                        if (poliza != null)
+                        {
+                            var saldos = await _context.PolizaDetalles.AsNoTracking()
+                                .Where(x => x.FkidPolizaConta == poliza.PkidPoliza && x.Activo)
+                                .GroupBy(_ => 1)
+                                .Select(g => new { Debe = g.Sum(x => x.ImporteDebe ?? 0m), Haber = g.Sum(x => x.ImporteHaber ?? 0m), Total = g.Count() })
+                                .FirstOrDefaultAsync();
+                            poliza.EstaBalanceado = saldos == null || saldos.Debe == saldos.Haber;
+                            poliza.Activo = saldos is { Total: > 0 };
+                            poliza.UsuarioModificacion = usuarioActual;
+                            poliza.FechaModificacion = now;
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    await transaction.CommitAsync();
+                    return new PagedResult<bool>
+                    {
+                        Success = true,
+                        Message = "Presupuesto autorizado regresado a anteproyecto correctamente.",
+                        Code = "SUCCESS",
+                        Data = true,
+                        Items = new List<bool> { true },
+                        TotalCount = 1
+                    };
+                });
             }
             catch (Exception ex)
             {
@@ -215,9 +184,11 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             try
             {
                 var pkidEgresoProyectado = response.FkidEgresoProyectadoPres!.Value;
+                var empresaId = _userContext.GetCurrentEmpresaId();
                 var proyectado = await _context.EgresoProyectados
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.PkidEgresoProyectado == pkidEgresoProyectado && x.Activo);
+                    .FirstOrDefaultAsync(x => x.PkidEgresoProyectado == pkidEgresoProyectado &&
+                                              x.FkidEmpresaSis == empresaId && x.Activo);
 
                 if (proyectado == null)
                 {
@@ -226,7 +197,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
                 var existingId = await _context.EgresoAutorizados
                     .AsNoTracking()
-                    .Where(x => x.FkidEgresoProyectadoPres == pkidEgresoProyectado && x.Activo)
+                    .Where(x => x.FkidEmpresaSis == empresaId && x.FkidEgresoProyectadoPres == pkidEgresoProyectado && x.Activo)
                     .Select(x => (int?)x.PkidEgresoAutorizado)
                     .FirstOrDefaultAsync();
 
@@ -236,6 +207,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                 }
 
                 response.FkidProgramaPres = proyectado.FkidProgramaPres;
+                response.FkidEmpresaSis = empresaId;
                 response.FkidPartidaConta = proyectado.FkidPartidaConta;
                 response.FkidAreaSis = proyectado.FkidAreaSis;
                 response.FkidFuenteFinanciamientoPres = proyectado.FkidFuenteFinanciamientoPres;
@@ -380,6 +352,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             {
                 StoredProcedureExecutor.Param("@Action", action),
                 StoredProcedureExecutor.Param("@PKIdEgresoAutorizado", id ?? response?.PkidEgresoAutorizado),
+                StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response?.FkidEmpresaSis),
                 StoredProcedureExecutor.Param("@FKIdPrograma_PRES", response?.FkidProgramaPres),
                 StoredProcedureExecutor.Param("@FKIdFuenteFinanciamiento_PRES", response?.FkidFuenteFinanciamientoPres),
                 StoredProcedureExecutor.Param("@FKIdTipoGasto_PRES", response?.FkidTipoGastoPres),

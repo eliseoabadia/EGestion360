@@ -21,11 +21,27 @@ public partial class VwEgreCompNoDev
 
     public int? FkidAnioSis { get; set; }
 
+    public int? AnioClave { get; set; }
+
     public int FkidEgresoAutorizadoPres { get; set; }
 
     public int FkidProgramaPres { get; set; }
 
+    public string ProgramaClave { get; set; }
+
+    public string ProgramaDescripcion { get; set; }
+
     public int? FkidFuenteFinanciamientoPres { get; set; }
+
+    public string RequisicionDescripcion { get; set; }
+
+    public string ProveedorClave { get; set; }
+
+    public string ProveedorNombre { get; set; }
+
+    public string ProveedorRfc { get; set; }
+
+    public string ClavePoliza { get; set; }
 
     public string NumeroContrato { get; set; }
 

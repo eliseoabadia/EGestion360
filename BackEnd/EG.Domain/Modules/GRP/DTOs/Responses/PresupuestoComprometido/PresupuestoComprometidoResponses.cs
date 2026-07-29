@@ -7,6 +7,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoComprometido
         public string? EmpresaNombre { get; set; }
         public int FkidSolicitudSuficienciaPres { get; set; }
         public int FkidRequisicionOrco { get; set; }
+        public int? FkidAnioSis { get; set; }
         public string? RequisicionDescripcion { get; set; }
         public DateOnly FechaSolicitud { get; set; } = DateOnly.FromDateTime(DateTime.Today);
         public DateOnly FechaAutorizacion { get; set; } = DateOnly.FromDateTime(DateTime.Today);
