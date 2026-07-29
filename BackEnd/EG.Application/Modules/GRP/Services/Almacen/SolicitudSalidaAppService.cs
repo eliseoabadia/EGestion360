@@ -31,28 +31,34 @@ namespace EG.Application.Services.Almacen
 
         public async Task<PagedResult<SolicitudSalidaResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetAllAsync())
+                .Where(x => x.FkidEmpresaSis == empresaId)
+                .ToList();
             await ApplyAggregateFlagsAsync(items);
             return Success(items, "Solicitudes de salida obtenidas correctamente", items.Count);
         }
 
         public async Task<PagedResult<SolicitudSalidaResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidSolicitudSalida");
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var item = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.FkidEmpresaSis == empresaId);
             if (item == null)
             {
                 return Failure<SolicitudSalidaResponse>($"Solicitud de salida con ID {id} no encontrada.", "NOT_FOUND");
             }
 
-            await ApplyAggregateFlagsAsync(new List<SolicitudSalidaResponse> { item });
+            var response = item.Adapt<SolicitudSalidaResponse>();
+            await ApplyAggregateFlagsAsync(new List<SolicitudSalidaResponse> { response });
 
             return new PagedResult<SolicitudSalidaResponse>
             {
                 Success = true,
                 Message = "Solicitud de salida encontrada",
                 Code = "SUCCESS",
-                Data = item,
-                Items = new List<SolicitudSalidaResponse> { item },
+                Data = response,
+                Items = new List<SolicitudSalidaResponse> { response },
                 TotalCount = 1
             };
         }
@@ -92,7 +98,7 @@ namespace EG.Application.Services.Almacen
         {
             var current = await _context.SolicitudSalida
                 .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -133,7 +139,7 @@ namespace EG.Application.Services.Almacen
         {
             var current = await _context.SolicitudSalida
                 .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -172,7 +178,7 @@ namespace EG.Application.Services.Almacen
         {
             var current = await _context.SolicitudSalida
                 .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -214,12 +220,14 @@ namespace EG.Application.Services.Almacen
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
-
-                if (AlmacenPagedFilter.TryGetInt(request, "FkidEmpresaSis", out var empresaId))
+                if (!AlmacenPagedFilter.TryGetInt(request, "FkidAnioSis", out var anioId) || anioId <= 0)
                 {
-                    query = query.Where(x => x.FkidEmpresaSis == empresaId);
+                    return Failure<SolicitudSalidaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
                 }
+
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId);
 
                 if (AlmacenPagedFilter.TryGetInt(request, "FkidAreaSolicitaSis", out var areaSolicitaId))
                 {
@@ -239,13 +247,6 @@ namespace EG.Application.Services.Almacen
                 if (AlmacenPagedFilter.TryGetBool(request, "Autorizado", out var autorizado))
                 {
                     query = query.Where(x => x.Autorizado == autorizado);
-                }
-
-                if (TryGetYearFilter(request, out var anio))
-                {
-                    var start = new DateOnly(anio, 1, 1);
-                    var end = start.AddYears(1);
-                    query = query.Where(x => x.FechaSolicitud >= start && x.FechaSolicitud < end);
                 }
 
                 var filtro = request.Filtro?.Trim();
@@ -278,11 +279,23 @@ namespace EG.Application.Services.Almacen
 
         private async Task<PagedResult<SolicitudSalidaResponse>?> NormalizeAndValidateAsync(SolicitudSalidaResponse response, bool isCreate)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
 
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<SolicitudSalidaResponse>("Debe existir una empresa seleccionada.");
+            }
+
+            if (!response.FkidAnioSis.HasValue || response.FkidAnioSis.Value <= 0)
+            {
+                return Failure<SolicitudSalidaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
+            }
+
+            var anio = await _context.Anios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAnio == response.FkidAnioSis.Value && x.Activo);
+            if (anio == null)
+            {
+                return Failure<SolicitudSalidaResponse>("El ejercicio presupuestal seleccionado no existe o está inactivo.");
             }
 
             if (!response.FkidAreaSolicitaSis.HasValue || response.FkidAreaSolicitaSis.Value <= 0)
@@ -306,6 +319,21 @@ namespace EG.Application.Services.Almacen
             }
 
             response.FechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud;
+            if (response.FechaSolicitud.Year != anio.Clave)
+            {
+                return Failure<SolicitudSalidaResponse>("La fecha de solicitud debe pertenecer al ejercicio presupuestal seleccionado.");
+            }
+
+            var areasUsuario = await _context.VwUsuarioPersonaAreas.AsNoTracking()
+                .Where(x => x.PkIdUsuario == _userContext.GetCurrentUserId() && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
+                .Select(x => x.PkidArea!.Value)
+                .Distinct()
+                .ToListAsync();
+            if (areasUsuario.Count > 0 &&
+                (!areasUsuario.Contains(response.FkidAreaSolicitaSis.Value) || !areasUsuario.Contains(response.FkidAreaEntregaSis.Value)))
+            {
+                return Failure<SolicitudSalidaResponse>("Las áreas seleccionadas deben estar asignadas al usuario actual.", "AREA_FORBIDDEN");
+            }
             response.Folio = string.IsNullOrWhiteSpace(response.Folio)
                 ? await BuildFolioAsync(response)
                 : response.Folio.Trim();
@@ -330,12 +358,9 @@ namespace EG.Application.Services.Almacen
         private async Task<string> BuildFolioAsync(SolicitudSalidaResponse response)
         {
             var year = response.FechaSolicitud == default ? DateTime.Today.Year : response.FechaSolicitud.Year;
-            var start = new DateOnly(year, 1, 1);
-            var end = start.AddYears(1);
             var next = await _context.SolicitudSalida.CountAsync(x =>
                 x.FkidEmpresaSis == response.FkidEmpresaSis &&
-                x.FechaSolicitud >= start &&
-                x.FechaSolicitud < end) + 1;
+                x.FkidAnioSis == response.FkidAnioSis) + 1;
             return $"SAL-{year}-{next:00000}";
         }
 
@@ -352,6 +377,7 @@ namespace EG.Application.Services.Almacen
         private static void ApplyValues(SolicitudSalidum entity, SolicitudSalidaResponse response)
         {
             entity.FkidEmpresaSis = response.FkidEmpresaSis;
+            entity.FkidAnioSis = response.FkidAnioSis;
             entity.FkidAreaSolicitaSis = response.FkidAreaSolicitaSis;
             entity.FkidAreaEntregaSis = response.FkidAreaEntregaSis;
             entity.FkidEstatusSolicitudSalidaAlma = response.FkidEstatusSolicitudSalidaAlma;

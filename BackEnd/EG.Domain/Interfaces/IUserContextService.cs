@@ -8,6 +8,8 @@ namespace EG.Domain.Interfaces
         int? TryGetCurrentUserId();
         int GetCurrentEmpresaId();
         int? TryGetCurrentEmpresaId();
+        int GetCurrentAnioPresupuestalId();
+        int? TryGetCurrentAnioPresupuestalId();
         ClaimsPrincipal? GetUserPrincipal();
     }
 }

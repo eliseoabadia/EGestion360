@@ -9,4 +9,5 @@ public static class ReportKeys
     public const string NotaEntradaPatrimonial = "Patrimonio.ClasificacionBienes.NotaEntrada";
     public const string AltaBienesMuebles = "Patrimonio.ClasificacionBienes.AltaBienes";
     public const string PolizaBajaPatrimonial = "Patrimonio.Bajas.Poliza";
+    public const string PolizaSalidaAlmacen = "Almacen.Suministros_Salida.Poliza";
 }

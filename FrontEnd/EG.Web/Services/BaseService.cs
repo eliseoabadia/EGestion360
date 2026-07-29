@@ -24,6 +24,8 @@ namespace EG.Web.Services
         public static readonly string TOKENKEY = "authToken";
         private const string EMPRESA_KEY = "empresa_seleccionada";
         private const string EMPRESA_HEADER = "X-Empresa-Id";
+        private const string ANIO_PRESUPUESTAL_KEY = "anio_presupuestal_seleccionado";
+        private const string ANIO_PRESUPUESTAL_HEADER = "X-Anio-Presupuestal-Id";
         private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromSeconds(30);
         private string? _cachedToken;
         private DateTimeOffset _cachedTokenExpiresAt = DateTimeOffset.MinValue;
@@ -130,6 +132,7 @@ namespace EG.Web.Services
             var request = new HttpRequestMessage(method, endpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             await AddEmpresaHeaderAsync(request);
+            await AddAnioPresupuestalHeaderAsync(request);
             return request;
         }
 
@@ -158,6 +161,40 @@ namespace EG.Web.Services
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "No fue posible obtener la empresa seleccionada desde localStorage.");
+                return null;
+            }
+        }
+
+        private async Task AddAnioPresupuestalHeaderAsync(HttpRequestMessage request)
+        {
+            var anioId = await GetSelectedAnioPresupuestalIdAsync();
+            if (anioId.HasValue && anioId.Value > 0)
+            {
+                request.Headers.Remove(ANIO_PRESUPUESTAL_HEADER);
+                request.Headers.Add(ANIO_PRESUPUESTAL_HEADER, anioId.Value.ToString());
+            }
+        }
+
+        private async Task<int?> GetSelectedAnioPresupuestalIdAsync()
+        {
+            if (!IsClientSide())
+                return null;
+
+            try
+            {
+                var raw = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", ANIO_PRESUPUESTAL_KEY);
+                if (string.IsNullOrWhiteSpace(raw))
+                    return null;
+
+                using var document = JsonDocument.Parse(raw);
+                return document.RootElement.TryGetProperty("Id", out var idElement) &&
+                    idElement.TryGetInt32(out var anioId) && anioId > 0
+                    ? anioId
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "No fue posible obtener el ejercicio presupuestal seleccionado desde localStorage.");
                 return null;
             }
         }

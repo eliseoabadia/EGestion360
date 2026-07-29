@@ -16,7 +16,7 @@
 @inject IJSRuntime JS
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column ingresos-recaudar-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column ingresos-recaudar-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ingresos por Recaudar"
                     Subtitle="Consulta del ingreso disponible por programa y origen"
                     Icon="@Icons.Material.Filled.RequestQuote"

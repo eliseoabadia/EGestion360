@@ -53,12 +53,11 @@
             }
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedEstatus"
-                                   ValueChanged="value => _selectedEstatus = value"
-                                   Label="Estatus"
-                                   Required="true"
-                                   RequiredError="El estatus es requerido"
-                                   LoadPage="LoadEstatusPageAsync" />
+                <MudTextField Value="@CurrentStatusLabel"
+                              Label="Estatus"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true"
+                              HelperText="El estatus final se asigna únicamente mediante la autorización." />
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -170,7 +169,7 @@
             return;
         }
 
-        if (_selectedEstatus == null)
+        if (_selectedEstatus == null || _selectedEstatus.Id <= 0)
         {
             Snackbar.Add("Debe seleccionar un estatus.", Severity.Warning);
             return;
@@ -250,15 +249,7 @@
         }), response?.TotalCount);
     }
 
-    private async Task<ComboLookupResult> LoadEstatusPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await EstatusService.GetAllPaginadoAsync(page, pageSize, filter, "Orden", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem
-        {
-            Id = x.PkidEstatusInventario,
-            Text = x.Descripcion
-        }), response?.TotalCount);
-    }
+    private string CurrentStatusLabel => _selectedEstatus?.Text ?? item.EstatusDescripcion ?? string.Empty;
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
     {

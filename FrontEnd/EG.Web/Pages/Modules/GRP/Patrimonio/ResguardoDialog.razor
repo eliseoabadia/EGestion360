@@ -11,6 +11,7 @@
 @inject IGenericCrudService<AreaResponse> AreaService
 @inject IGenericCrudService<PersonaResponse> PersonaService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="ResguardoResponse"
@@ -89,9 +90,16 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         if (Id.HasValue)
         {
             await CargarDatosAsync();
+        }
+        else if (AnioStateService.AnioClave is > 0)
+        {
+            var anio = AnioStateService.AnioClave.Value;
+            _fechaResguardo = new DateTime(anio, 1, 1);
+            item.FechaResguardo = _fechaResguardo.Value;
         }
     }
 
@@ -122,6 +130,12 @@
             return;
         }
 
+        if (AnioStateService.AnioId is not > 0 || AnioStateService.AnioClave is not > 0)
+        {
+            Snackbar.Add("Debe seleccionar un ejercicio presupuestal.", Severity.Warning);
+            return;
+        }
+
         if (_selectedPersona == null)
         {
             Snackbar.Add("Debe seleccionar el responsable.", Severity.Warning);
@@ -132,6 +146,12 @@
         item.FkidPersonaNom = _selectedPersona.Id;
         item.FkidAreaSis = _selectedArea?.Id;
         item.FechaResguardo = _fechaResguardo ?? DateTime.Today;
+
+        if (item.FechaResguardo.Year != AnioStateService.AnioClave.Value)
+        {
+            Snackbar.Add($"La fecha del resguardo debe pertenecer al ejercicio {AnioStateService.AnioClave.Value}.", Severity.Warning);
+            return;
+        }
         item.Observaciones ??= string.Empty;
 
         var response = Id.HasValue

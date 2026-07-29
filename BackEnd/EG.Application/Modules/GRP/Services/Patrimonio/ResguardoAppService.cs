@@ -33,17 +33,25 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ResguardoResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.FkidEmpresaSis == scope.EmpresaId && x.FechaResguardo.Year == scope.Anio)
+                .ToListAsync();
+            var items = entities.Adapt<List<ResguardoResponse>>();
             return Success(items, "Resguardos obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<ResguardoResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidResguardo");
-            if (item == null)
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidResguardo == id && x.FkidEmpresaSis == scope.EmpresaId && x.FechaResguardo.Year == scope.Anio);
+            if (entity == null)
             {
                 return Failure<ResguardoResponse>($"Resguardo con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var item = entity.Adapt<ResguardoResponse>();
 
             return new PagedResult<ResguardoResponse>
             {
@@ -58,10 +66,18 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ResguardoResponse>> CreateAsync(ResguardoResponse response, int usuarioActual)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            response.FkidEmpresaSis = scope.EmpresaId;
             var validation = Validate(response);
             if (validation != null)
             {
                 return validation;
+            }
+
+            var referenceValidation = await ValidateReferencesAsync(response, scope, null);
+            if (referenceValidation != null)
+            {
+                return referenceValidation;
             }
 
             try
@@ -96,24 +112,40 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ResguardoResponse>> UpdateAsync(int id, ResguardoResponse response, int usuarioActual)
         {
-            if (!await _context.Resguardos.AsNoTracking().AnyAsync(x => x.PkidResguardo == id && x.Activo))
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var current = await _context.Resguardos.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidResguardo == id && x.Activo &&
+                    x.FkidEmpresaSis == scope.EmpresaId && x.Fecha.Year == scope.Anio);
+            if (current == null)
             {
                 return Failure<ResguardoResponse>($"Resguardo con ID {id} no encontrado.", "NOT_FOUND");
             }
 
+            if (await _context.ResguardoDetalles.AsNoTracking().AnyAsync(x => x.FkidResguardoAlma == id && x.Activo) &&
+                (response.FkidPersonaNom <= 0 || response.FkidAreaSis != current.FkidAreaSis ||
+                 (response.FechaResguardo != default && response.FechaResguardo.Date != current.Fecha.ToDateTime(TimeOnly.MinValue))))
+            {
+                return Failure<ResguardoResponse>("No puede cambiar responsable, área o fecha de un resguardo con bienes activos. Libere los bienes primero.", "INVALID_STATE");
+            }
+
+            response.FkidEmpresaSis = current.FkidEmpresaSis;
             var validation = Validate(response);
             if (validation != null)
             {
                 return validation;
             }
 
+            var referenceValidation = await ValidateReferencesAsync(response, scope, id);
+            if (referenceValidation != null)
+            {
+                return referenceValidation;
+            }
+
             try
             {
-                _service.ApplyCurrentEmpresaIfPresent(response);
-
                 var resguardo = await _context.Resguardos.FirstAsync(x => x.PkidResguardo == id && x.Activo);
                 resguardo.Folio = string.IsNullOrWhiteSpace(response.Folio) ? resguardo.Folio : response.Folio.Trim();
-                resguardo.FkidEmpresaSis = response.FkidEmpresaSis;
+                resguardo.FkidEmpresaSis = current.FkidEmpresaSis;
                 resguardo.FkidAreaSis = response.FkidAreaSis;
                 resguardo.Responsable = await ResolveResponsableAsync(response);
                 resguardo.Fecha = DateOnly.FromDateTime(response.FechaResguardo.Date);
@@ -137,7 +169,9 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var resguardo = await _context.Resguardos.FirstOrDefaultAsync(x => x.PkidResguardo == id && x.Activo);
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var resguardo = await _context.Resguardos.FirstOrDefaultAsync(x => x.PkidResguardo == id && x.Activo &&
+                    x.FkidEmpresaSis == scope.EmpresaId && x.Fecha.Year == scope.Anio);
                 if (resguardo == null)
                 {
                     return new PagedResult<bool>
@@ -196,12 +230,9 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
-
-                if (TryGetIntFilter(request, "FkidEmpresaSis", out var empresaId))
-                {
-                    query = query.Where(x => x.FkidEmpresaSis == empresaId);
-                }
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == scope.EmpresaId && x.FechaResguardo.Year == scope.Anio);
 
                 if (TryGetIntFilter(request, "FkidAreaSis", out var areaId))
                 {
@@ -260,6 +291,36 @@ namespace EG.Application.Services.Patrimonio
             return $"{prefix}{next:00000}";
         }
 
+        private async Task<PagedResult<ResguardoResponse>?> ValidateReferencesAsync(
+            ResguardoResponse response,
+            PatrimonioScope scope,
+            int? currentId)
+        {
+            if (response.FechaResguardo == default || response.FechaResguardo.Year != scope.Anio)
+            {
+                return Failure<ResguardoResponse>("La fecha del resguardo debe corresponder al ejercicio presupuestal seleccionado.");
+            }
+
+            if (!await _context.Areas.AsNoTracking().AnyAsync(x => x.PkidArea == response.FkidAreaSis && x.Activo))
+            {
+                return Failure<ResguardoResponse>("El área seleccionada no existe o está inactiva.");
+            }
+
+            if (!await _context.Personas.AsNoTracking().AnyAsync(x => x.PkidPersona == response.FkidPersonaNom && x.Activo))
+            {
+                return Failure<ResguardoResponse>("La persona responsable no existe o está inactiva.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(response.Folio) && await _context.Resguardos.AsNoTracking().AnyAsync(x =>
+                    x.Activo && x.FkidEmpresaSis == scope.EmpresaId && x.Folio == response.Folio.Trim() &&
+                    (!currentId.HasValue || x.PkidResguardo != currentId.Value)))
+            {
+                return Failure<ResguardoResponse>("El folio de resguardo ya existe para la empresa.", "DUPLICATE");
+            }
+
+            return null;
+        }
+
         private async Task<string> ResolveResponsableAsync(ResguardoResponse response)
         {
             var persona = await _context.Personas
@@ -298,6 +359,11 @@ namespace EG.Application.Services.Patrimonio
             if (response.FkidPersonaNom <= 0)
             {
                 return Failure<ResguardoResponse>("Debe seleccionar la persona responsable.");
+            }
+
+            if (!response.FkidAreaSis.HasValue || response.FkidAreaSis.Value <= 0)
+            {
+                return Failure<ResguardoResponse>("Debe seleccionar el área responsable.");
             }
 
             if (response.FechaResguardo == default)

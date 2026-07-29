@@ -4,6 +4,7 @@ namespace EG.Domain.DTOs.Requests.Almacen
     {
         public int PkidAlmacen { get; set; }
         public int FkidEmpresaSis { get; set; }
+        public int? FkidAnioSis { get; set; }
         public int? FkidAreaSis { get; set; }
         public int FkidTipoBienAlma { get; set; }
         public int? FkidUnidadesAlma { get; set; }

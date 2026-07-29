@@ -8,8 +8,9 @@
 
 @inject IGenericCrudService<ResguardoMovimientoResponse> Service
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
-<MudContainer Class="px-3 d-flex flex-column resguardo-historico-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+<MudContainer Class="px-3 d-flex flex-column resguardo-historico-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="Resguardo Historico"
                 Subtitle="Movimientos de asignacion y liberacion de bienes"
                 Icon="@Icons.Material.Filled.History"
@@ -28,7 +29,7 @@
                       OnSearch="ReloadData"
                       PageSize="20"
                       PageSizeOptions="new[] { 10, 20, 50, 100 }"
-                      TableHeight="calc(100vh - 250px)">
+                      TableHeight="auto">
             <Columns>
                 <TemplateColumn T="ResguardoMovimientoResponse" Title="Fecha" Identifier="FechaMovimiento" PropertyName="FechaMovimiento" SortBy="x => x.FechaMovimiento">
                     <CellTemplate Context="cell">
@@ -86,7 +87,9 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     private async Task<TableData<ResguardoMovimientoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -130,8 +133,17 @@
         }
     }
 
+    private async void OnAnioChanged(int? _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
     }
 }

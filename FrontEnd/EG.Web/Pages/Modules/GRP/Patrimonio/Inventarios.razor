@@ -1,5 +1,4 @@
 ﻿@page "/Patrimonio/Inventarios"
-@page "/Patrimonio/Cedula_Diferencia"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -14,13 +13,13 @@
 @inherits BaseCrudPage<InventarioResponse, InventarioResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<InventarioDetalleResponse> DetalleService
-@inject IGenericCrudService<EstatusInventarioResponse> EstatusService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedInventario == null)
         {
             <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
@@ -384,7 +383,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<InventarioResponse>);
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
-    private bool CanAuthorizeInventory => CanAuthorize || CanUpdate;
+    private bool CanAuthorizeInventory => CanAuthorize;
     private bool IsSelectedLocked => IsLocked(SelectedInventario);
 
     protected override string GetDefaultSortLabel() => "FechaInventario";
@@ -393,7 +392,9 @@
     {
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     protected override async Task<TableData<InventarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -792,18 +793,7 @@
             return;
         }
 
-        var finalStatusId = await GetFinalStatusIdAsync();
-        if (finalStatusId <= 0)
-        {
-            Snackbar.Add("No se encontro un estatus final de inventario.", Severity.Error);
-            return;
-        }
-
-        var update = Clone(item);
-        update.FkidEstatusInventarioAlma = finalStatusId;
-        update.Autorizado = true;
-
-        var response = await Service.UpdateAsync(update, item.PkidInventario);
+        var response = await Service.PostActionAsync($"{item.PkidInventario}/autorizar");
         if (response?.Success == true)
         {
             Snackbar.Add("Inventario autorizado correctamente", Severity.Success);
@@ -814,40 +804,16 @@
         Snackbar.Add(response?.Message ?? "Error al autorizar inventario", Severity.Error);
     }
 
-    private async Task<int> GetFinalStatusIdAsync()
+    private async void OnEmpresaChanged(int _)
     {
-        var response = await EstatusService.GetAllPaginadoAsync(1, 100, string.Empty, "Orden", SortDirection.Ascending);
-        var status = response?.Items?.FirstOrDefault(x => x.EsFinal)
-            ?? response?.Items?.FirstOrDefault(x => x.Descripcion.Contains("CERRADO", StringComparison.OrdinalIgnoreCase))
-            ?? response?.Items?.FirstOrDefault(x => x.Descripcion.Contains("AUTORIZADO", StringComparison.OrdinalIgnoreCase));
-        return status?.PkidEstatusInventario ?? 0;
+        BackToTable();
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
     }
 
-    private static InventarioResponse Clone(InventarioResponse item) => new()
-    {
-        PkidInventario = item.PkidInventario,
-        FkidEmpresaSis = item.FkidEmpresaSis,
-        FkidCalendarioInventarioAlma = item.FkidCalendarioInventarioAlma,
-        FkidAreaSis = item.FkidAreaSis,
-        FkidEstatusInventarioAlma = item.FkidEstatusInventarioAlma,
-        Folio = item.Folio,
-        FechaInventario = item.FechaInventario,
-        Responsable = item.Responsable,
-        Observaciones = item.Observaciones,
-        TotalBienes = item.TotalBienes,
-        TotalLocalizados = item.TotalLocalizados,
-        TotalDiferencias = item.TotalDiferencias,
-        Autorizado = item.Autorizado,
-        FechaAutorizacion = item.FechaAutorizacion,
-        UsuarioAutorizacion = item.UsuarioAutorizacion,
-        Activo = item.Activo,
-        FechaCreacion = item.FechaCreacion,
-        UsuarioCreacion = item.UsuarioCreacion,
-        FechaModificacion = item.FechaModificacion,
-        UsuarioModificacion = item.UsuarioModificacion
-    };
-
-    private async void OnEmpresaChanged(int _)
+    private async void OnAnioChanged(int? _)
     {
         BackToTable();
         if (table != null)
@@ -877,6 +843,7 @@
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

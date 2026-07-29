@@ -33,25 +33,50 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<InventarioDetalleResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var inventarios = _context.Inventarios.AsNoTracking()
+                .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio)
+                .Select(x => x.PkidInventario);
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => inventarios.Contains(x.FkidInventarioAlma))
+                .ToListAsync();
+            var items = entities.Adapt<List<InventarioDetalleResponse>>();
             return Success(items, "Detalle de inventario obtenido correctamente", items.Count);
         }
 
         public async Task<PagedResult<InventarioDetalleResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidInventarioDetalle");
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var item = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.PkidInventarioDetalle == id)
+                .Join(_context.Inventarios.AsNoTracking(),
+                    detalle => detalle.FkidInventarioAlma,
+                    inventario => inventario.PkidInventario,
+                    (detalle, inventario) => new { detalle, inventario })
+                .Join(_context.CalendarioInventarios.AsNoTracking(),
+                    x => x.inventario.FkidCalendarioInventarioAlma,
+                    calendario => (int?)calendario.PkidCalendarioInventario,
+                    (x, calendario) => new { x.detalle, x.inventario, calendario })
+                .Where(x => x.inventario.Activo && x.inventario.FkidEmpresaSis == scope.EmpresaId &&
+                    x.calendario.Activo && x.calendario.Anio == scope.Anio)
+                .Select(x => x.detalle)
+                .FirstOrDefaultAsync();
             if (item == null)
             {
                 return Failure<InventarioDetalleResponse>($"Detalle de inventario con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var response = item.Adapt<InventarioDetalleResponse>();
 
             return new PagedResult<InventarioDetalleResponse>
             {
                 Success = true,
                 Message = "Detalle de inventario encontrado",
                 Code = "SUCCESS",
-                Data = item,
-                Items = new List<InventarioDetalleResponse> { item },
+                Data = response,
+                Items = new List<InventarioDetalleResponse> { response },
                 TotalCount = 1
             };
         }
@@ -91,11 +116,17 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<InventarioDetalleResponse>> UpdateAsync(int id, InventarioDetalleResponse response, int usuarioActual)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
             var current = await _context.InventarioDetalles
                 .AsNoTracking()
                 .Include(x => x.FkidInventarioAlmaNavigation)
+                .ThenInclude(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .Include(x => x.FkidInventarioAlmaNavigation)
                 .ThenInclude(x => x.FkidEstatusInventarioAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidInventarioDetalle == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidInventarioDetalle == id && x.Activo &&
+                    x.FkidInventarioAlmaNavigation.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidInventarioAlmaNavigation.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidInventarioAlmaNavigation.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
 
             if (current == null)
             {
@@ -133,11 +164,17 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
             var current = await _context.InventarioDetalles
                 .AsNoTracking()
                 .Include(x => x.FkidInventarioAlmaNavigation)
+                .ThenInclude(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .Include(x => x.FkidInventarioAlmaNavigation)
                 .ThenInclude(x => x.FkidEstatusInventarioAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidInventarioDetalle == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidInventarioDetalle == id && x.Activo &&
+                    x.FkidInventarioAlmaNavigation.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidInventarioAlmaNavigation.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidInventarioAlmaNavigation.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
 
             if (current == null)
             {
@@ -183,7 +220,14 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var inventarios = _context.Inventarios.AsNoTracking()
+                    .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId &&
+                        x.FkidCalendarioInventarioAlmaNavigation != null &&
+                        x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio)
+                    .Select(x => x.PkidInventario);
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => inventarios.Contains(x.FkidInventarioAlma));
 
                 if (PatrimonioPagedFilter.TryGetInt(request, "FkidInventarioAlma", out var inventarioId))
                 {
@@ -248,10 +292,18 @@ namespace EG.Application.Services.Patrimonio
             var inventario = await _context.Inventarios
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusInventarioAlmaNavigation)
+                .Include(x => x.FkidCalendarioInventarioAlmaNavigation)
                 .FirstOrDefaultAsync(x => x.PkidInventario == response.FkidInventarioAlma && x.Activo);
             if (inventario == null)
             {
                 return Failure<InventarioDetalleResponse>("El inventario seleccionado no existe o esta inactivo.");
+            }
+
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            if (inventario.FkidEmpresaSis != scope.EmpresaId ||
+                inventario.FkidCalendarioInventarioAlmaNavigation?.Anio != scope.Anio)
+            {
+                return Failure<InventarioDetalleResponse>("El inventario no pertenece a la empresa y ejercicio presupuestal seleccionados.");
             }
 
             if (IsLocked(inventario))
@@ -264,7 +316,7 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<InventarioDetalleResponse>("Debe seleccionar un bien.");
             }
 
-            var bien = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo);
+            var bien = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo && x.FkidEmpresaSis == scope.EmpresaId);
             if (bien == null)
             {
                 return Failure<InventarioDetalleResponse>("El bien seleccionado no existe o esta inactivo.");

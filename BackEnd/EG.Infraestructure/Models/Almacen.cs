@@ -11,6 +11,8 @@ public partial class Almacen
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public int? FkidAreaSis { get; set; }
 
     public int FkidTipoBienAlma { get; set; }

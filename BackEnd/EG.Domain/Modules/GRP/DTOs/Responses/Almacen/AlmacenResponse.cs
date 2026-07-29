@@ -4,6 +4,8 @@ namespace EG.Domain.DTOs.Responses.Almacen
     {
         public int PkidAlmacen { get; set; }
         public int FkidEmpresaSis { get; set; }
+        public int? FkidAnioSis { get; set; }
+        public int? AnioClave { get; set; }
         public string EmpresaNombre { get; set; } = string.Empty;
         public int? FkidAreaSis { get; set; }
         public string AreaNombre { get; set; } = string.Empty;
@@ -32,6 +34,12 @@ namespace EG.Domain.DTOs.Responses.Almacen
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public string Cucop { get; set; } = string.Empty;
+        public string Cabms { get; set; } = string.Empty;
+        public string PartidaClave { get; set; } = string.Empty;
+        public decimal? ExistenciaMinima { get; set; }
+        public decimal? ExistenciaMaxima { get; set; }
+        public string EstadoExistencia { get; set; } = string.Empty;
         public string ClaveNombre => string.IsNullOrWhiteSpace(TipoBienDescripcion)
             ? Clave
             : $"{Clave} - {TipoBienDescripcion}";

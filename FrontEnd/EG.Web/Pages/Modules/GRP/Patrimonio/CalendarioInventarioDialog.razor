@@ -10,6 +10,7 @@
 @inject IGenericCrudService<CalendarioInventarioResponse> Service
 @inject IGenericCrudService<AreaResponse> AreaService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="CalendarioInventarioResponse"
@@ -44,11 +45,10 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudNumericField @bind-Value="item.Anio"
-                                 Label="Anio"
-                                 Variant="Variant.Outlined"
-                                 Min="2000"
-                                 Max="2100" />
+                <MudTextField Value="@SelectedAnioText"
+                              Label="Ejercicio presupuestal"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -115,6 +115,17 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+
+        if (AnioStateService.AnioClave is > 0)
+        {
+            item.Anio = AnioStateService.AnioClave.Value;
+            if (!Id.HasValue && _fechaInicio?.Year != item.Anio)
+            {
+                _fechaInicio = new DateTime(item.Anio, 1, 1);
+                _fechaFin = _fechaInicio;
+            }
+        }
 
         if (Id.HasValue)
         {
@@ -157,6 +168,12 @@
             return;
         }
 
+        if (AnioStateService.AnioId is not > 0 || AnioStateService.AnioClave is not > 0)
+        {
+            Snackbar.Add("Debe seleccionar un ejercicio presupuestal activo.", Severity.Warning);
+            return;
+        }
+
         if (!_fechaInicio.HasValue || !_fechaFin.HasValue)
         {
             Snackbar.Add("Debe capturar fechas validas.", Severity.Warning);
@@ -167,7 +184,7 @@
         item.FkidAreaSis = _selectedArea.Id;
         item.FechaInicio = _fechaInicio.Value.Date;
         item.FechaFin = _fechaFin.Value.Date;
-        item.Anio = item.Anio <= 0 ? item.FechaInicio.Year : item.Anio;
+        item.Anio = AnioStateService.AnioClave.Value;
         item.Descripcion ??= string.Empty;
         item.Observaciones ??= string.Empty;
 
@@ -209,4 +226,8 @@
 
     private static string TextOrId(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
+    private string SelectedAnioText => AnioStateService.AnioClave is > 0
+        ? AnioStateService.AnioTexto
+        : "Sin ejercicio seleccionado";
 }

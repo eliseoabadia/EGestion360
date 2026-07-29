@@ -1,4 +1,5 @@
 using EG.Application.Interfaces.Almacen;
+using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Almacen;
@@ -31,14 +32,20 @@ namespace EG.Application.Services.Almacen
 
         public async Task<PagedResult<DetalleSolicitudSalidaResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => _context.SolicitudSalida.Any(s => s.PkidSolicitudSalida == x.FkidSolicitudSalidaAlma && s.FkidEmpresaSis == empresaId))
+                .ToListAsync();
+            var items = entities.Adapt<List<DetalleSolicitudSalidaResponse>>();
             return Success(items, "Detalle de solicitud de salida obtenido correctamente", items.Count);
         }
 
         public async Task<PagedResult<DetalleSolicitudSalidaResponse>> GetByIdAsync(int id)
         {
             var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidDetalleSolicitudSalida");
-            if (item == null)
+            var allowed = item != null && await _context.DetalleSolicitudSalida
+                .AnyAsync(x => x.PkidDetalleSolicitudSalida == id && x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
+            if (!allowed)
             {
                 return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud con ID {id} no encontrado.", "NOT_FOUND");
             }
@@ -88,7 +95,7 @@ namespace EG.Application.Services.Almacen
                 .Include(x => x.FkidSolicitudSalidaAlmaNavigation)
                 .ThenInclude(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
                 .Include(x => x.FkidAlmacenAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo && x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -134,7 +141,7 @@ namespace EG.Application.Services.Almacen
                 .Include(x => x.FkidSolicitudSalidaAlmaNavigation)
                 .ThenInclude(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
                 .Include(x => x.FkidAlmacenAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo && x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -175,12 +182,21 @@ namespace EG.Application.Services.Almacen
                 return Failure<DetalleSolicitudSalidaResponse>("La existencia asociada no esta disponible para suministro.", "STOCK_NOT_AVAILABLE");
             }
 
+            if (almacen.FkidEmpresaSis != solicitud.FkidEmpresaSis || almacen.FkidAnioSis != solicitud.FkidAnioSis)
+            {
+                return Failure<DetalleSolicitudSalidaResponse>("La existencia asociada no pertenece a la empresa y ejercicio de la solicitud.", "STOCK_SCOPE_MISMATCH");
+            }
+
             if (almacen.InventarioCerrado || almacen.EsContabilizado)
             {
                 return Failure<DetalleSolicitudSalidaResponse>("La existencia asociada esta cerrada o contabilizada y no puede surtirse.", "STOCK_LOCKED");
             }
 
             var cantidadAnterior = current.CantidadEntregada ?? 0m;
+            if (cantidadEntregada < cantidadAnterior)
+            {
+                return Failure<DetalleSolicitudSalidaResponse>("No es posible disminuir una entrega. La corrección debe realizarse mediante la cancelación o el movimiento de reversa correspondiente.", "DELIVERY_REVERSAL_REQUIRED");
+            }
             var diferenciaSalida = cantidadEntregada - cantidadAnterior;
             if (diferenciaSalida > 0 && almacen.Cantidad < diferenciaSalida)
             {
@@ -205,7 +221,16 @@ namespace EG.Application.Services.Almacen
                 current.UsuarioModificacion = usuarioActual;
 
                 await _context.SaveChangesAsync();
-                await UpdateSolicitudStatusAfterDeliveryAsync(solicitud.PkidSolicitudSalida, usuarioActual);
+                var surtidaTotalmente = await UpdateSolicitudStatusAfterDeliveryAsync(solicitud.PkidSolicitudSalida, usuarioActual);
+                if (surtidaTotalmente && !solicitud.FkidPolizaConta.HasValue)
+                {
+                    await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context,
+                        "[ALMA].[SP_CREATE_PolizaSalidaAlmacen]",
+                        StoredProcedureExecutor.Param("@PKIdSolicitudSalida", solicitud.PkidSolicitudSalida),
+                        StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+                    await _context.Entry(solicitud).ReloadAsync();
+                }
                 await transaction.CommitAsync();
 
                 var refreshed = await GetByIdAsync(id);
@@ -223,7 +248,7 @@ namespace EG.Application.Services.Almacen
             var current = await _context.DetalleSolicitudSalida
                 .Include(x => x.FkidSolicitudSalidaAlmaNavigation)
                 .ThenInclude(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidDetalleSolicitudSalida == id && x.Activo && x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (current == null)
             {
@@ -255,7 +280,9 @@ namespace EG.Application.Services.Almacen
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => _context.SolicitudSalida.Any(s => s.PkidSolicitudSalida == x.FkidSolicitudSalidaAlma && s.FkidEmpresaSis == empresaId));
 
                 if (AlmacenPagedFilter.TryGetInt(request, "FkidSolicitudSalidaAlma", out var solicitudId))
                 {
@@ -310,7 +337,7 @@ namespace EG.Application.Services.Almacen
             var solicitud = await _context.SolicitudSalida
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == response.FkidSolicitudSalidaAlma && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == response.FkidSolicitudSalidaAlma && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
 
             if (solicitud == null)
             {
@@ -331,7 +358,7 @@ namespace EG.Application.Services.Almacen
             {
                 var almacen = await _context.Almacens
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.PkidAlmacen == response.FkidAlmacenAlma.Value && x.Activo && x.FkidEmpresaSis == solicitud.FkidEmpresaSis);
+                    .FirstOrDefaultAsync(x => x.PkidAlmacen == response.FkidAlmacenAlma.Value && x.Activo && x.FkidEmpresaSis == solicitud.FkidEmpresaSis && x.FkidAnioSis == solicitud.FkidAnioSis);
 
                 if (almacen == null)
                 {
@@ -346,6 +373,8 @@ namespace EG.Application.Services.Almacen
                         x.Activo &&
                         x.FkidAlmacenAlma == response.FkidAlmacenAlma.Value &&
                         x.PkidDetalleSolicitudSalida != (currentId ?? 0) &&
+                        x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == solicitud.FkidEmpresaSis &&
+                        x.FkidSolicitudSalidaAlmaNavigation.FkidAnioSis == solicitud.FkidAnioSis &&
                         !x.FkidSolicitudSalidaAlmaNavigation.Autorizado)
                     .SumAsync(x => x.CantidadAutorizada ?? x.CantidadSolicitada);
 
@@ -393,6 +422,11 @@ namespace EG.Application.Services.Almacen
                 return Failure<DetalleSolicitudSalidaResponse>("La cantidad entregada no puede exceder la cantidad autorizada.");
             }
 
+            if (response.CantidadEntregada.Value > 0)
+            {
+                return Failure<DetalleSolicitudSalidaResponse>("La entrega sólo se registra desde Suministros de salida, después de autorizar la solicitud.", "DELIVERY_WORKFLOW_REQUIRED");
+            }
+
             response.CantidadPendiente = Math.Max(0m, response.CantidadAutorizada.Value - response.CantidadEntregada.Value);
             response.Observaciones ??= string.Empty;
             response.Activo = true;
@@ -426,6 +460,7 @@ namespace EG.Application.Services.Almacen
                     !x.InventarioCerrado &&
                     !x.EsContabilizado &&
                     x.FkidEmpresaSis == solicitud.FkidEmpresaSis &&
+                    x.FkidAnioSis == solicitud.FkidAnioSis &&
                     x.FkidTipoBienAlma == response.FkidTipoBienAlma)
                 .SumAsync(x => x.Cantidad);
 
@@ -436,13 +471,14 @@ namespace EG.Application.Services.Almacen
                     x.PkidDetalleSolicitudSalida != (currentId ?? 0) &&
                     x.FkidTipoBienAlma == response.FkidTipoBienAlma &&
                     x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == solicitud.FkidEmpresaSis &&
+                    x.FkidSolicitudSalidaAlmaNavigation.FkidAnioSis == solicitud.FkidAnioSis &&
                     !x.FkidSolicitudSalidaAlmaNavigation.Autorizado)
                 .SumAsync(x => x.CantidadAutorizada ?? x.CantidadSolicitada);
 
             return Math.Max(0m, existencia - comprometida);
         }
 
-        private async Task UpdateSolicitudStatusAfterDeliveryAsync(int solicitudId, int usuarioActual)
+        private async Task<bool> UpdateSolicitudStatusAfterDeliveryAsync(int solicitudId, int usuarioActual)
         {
             var solicitud = await _context.SolicitudSalida
                 .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
@@ -450,7 +486,7 @@ namespace EG.Application.Services.Almacen
 
             if (solicitud == null || !solicitud.Autorizado || solicitud.FkidEstatusSolicitudSalidaAlmaNavigation?.EsFinal == true)
             {
-                return;
+                return false;
             }
 
             var tienePendientes = await _context.DetalleSolicitudSalida
@@ -463,13 +499,14 @@ namespace EG.Application.Services.Almacen
                 : await GetDeliveredStatusIdAsync();
             if (!statusId.HasValue || solicitud.FkidEstatusSolicitudSalidaAlma == statusId.Value)
             {
-                return;
+                return !tienePendientes;
             }
 
             solicitud.FkidEstatusSolicitudSalidaAlma = statusId.Value;
             solicitud.FechaModificacion = DateTime.Now;
             solicitud.UsuarioModificacion = usuarioActual;
             await _context.SaveChangesAsync();
+            return !tienePendientes;
         }
 
         private async Task<int?> GetAuthorizedStatusIdAsync()

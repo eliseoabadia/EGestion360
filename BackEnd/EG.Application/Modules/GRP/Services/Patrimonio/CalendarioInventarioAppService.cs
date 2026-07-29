@@ -33,18 +33,27 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<CalendarioInventarioResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio)
+                .ToListAsync();
+            var items = entities.Adapt<List<CalendarioInventarioResponse>>();
             await ApplyInventoryCountsAsync(items);
             return Success(items, "Calendarios de inventario obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<CalendarioInventarioResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidCalendarioInventario");
-            if (item == null)
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidCalendarioInventario == id &&
+                    x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
+            if (entity == null)
             {
                 return Failure<CalendarioInventarioResponse>($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var item = entity.Adapt<CalendarioInventarioResponse>();
 
             await ApplyInventoryCountsAsync(new List<CalendarioInventarioResponse> { item });
 
@@ -61,6 +70,9 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<CalendarioInventarioResponse>> CreateAsync(CalendarioInventarioResponse response, int usuarioActual)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            response.FkidEmpresaSis = scope.EmpresaId;
+            response.Anio = scope.Anio;
             var validation = await NormalizeAndValidateAsync(response, isCreate: true);
             if (validation != null)
             {
@@ -70,7 +82,7 @@ namespace EG.Application.Services.Patrimonio
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                await ArchiveCurrentInventariosAsync(response.FkidEmpresaSis, response.FkidAreaSis!.Value, usuarioActual);
+                await ArchiveCurrentInventariosAsync(response.FkidEmpresaSis, response.FkidAreaSis!.Value, response.Anio, usuarioActual);
                 var result = await ExecuteMantenimientoAsync(1, null, response, usuarioActual);
                 await transaction.CommitAsync();
 
@@ -99,13 +111,18 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<CalendarioInventarioResponse>> UpdateAsync(int id, CalendarioInventarioResponse response, int usuarioActual)
         {
-            var current = await _context.CalendarioInventarios.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCalendarioInventario == id && x.Activo);
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var current = await _context.CalendarioInventarios.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidCalendarioInventario == id && x.Activo &&
+                x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
             if (current == null)
             {
                 return Failure<CalendarioInventarioResponse>($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
             }
 
             response.PkidCalendarioInventario = id;
+            response.FkidEmpresaSis = current.FkidEmpresaSis;
+            response.Anio = current.Anio;
             var validation = await NormalizeAndValidateAsync(response, isCreate: false);
             if (validation != null)
             {
@@ -131,7 +148,10 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var current = await _context.CalendarioInventarios.AsNoTracking().FirstOrDefaultAsync(x => x.PkidCalendarioInventario == id && x.Activo);
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var current = await _context.CalendarioInventarios.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidCalendarioInventario == id && x.Activo &&
+                x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
             if (current == null)
             {
                 return BoolFailure($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
@@ -176,21 +196,13 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
-
-                if (PatrimonioPagedFilter.TryGetInt(request, "FkidEmpresaSis", out var empresaId))
-                {
-                    query = query.Where(x => x.FkidEmpresaSis == empresaId);
-                }
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
 
                 if (PatrimonioPagedFilter.TryGetInt(request, "FkidAreaSis", out var areaId))
                 {
                     query = query.Where(x => x.FkidAreaSis == areaId);
-                }
-
-                if (PatrimonioPagedFilter.TryGetInt(request, "Anio", out var anio))
-                {
-                    query = query.Where(x => x.Anio == anio);
                 }
 
                 var filtro = request.Filtro?.Trim();
@@ -223,8 +235,6 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<CalendarioInventarioResponse>?> NormalizeAndValidateAsync(CalendarioInventarioResponse response, bool isCreate)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
-
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<CalendarioInventarioResponse>("Debe existir una empresa seleccionada.");
@@ -254,6 +264,24 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<CalendarioInventarioResponse>("La fecha fin debe ser mayor o igual a la fecha inicio.");
             }
 
+            if (response.FechaInicio.Year != response.Anio || response.FechaFin.Year != response.Anio)
+            {
+                return Failure<CalendarioInventarioResponse>("Las fechas del calendario deben corresponder al ejercicio presupuestal seleccionado.");
+            }
+
+            var existeTraslape = await _context.CalendarioInventarios.AsNoTracking().AnyAsync(x =>
+                x.Activo &&
+                x.FkidEmpresaSis == response.FkidEmpresaSis &&
+                x.FkidAreaSis == response.FkidAreaSis &&
+                x.Anio == response.Anio &&
+                x.PkidCalendarioInventario != response.PkidCalendarioInventario &&
+                x.FechaInicio <= DateOnly.FromDateTime(response.FechaFin) &&
+                x.FechaFin >= DateOnly.FromDateTime(response.FechaInicio));
+            if (existeTraslape)
+            {
+                return Failure<CalendarioInventarioResponse>("Ya existe un calendario activo para el área en el rango indicado.", "DUPLICATE");
+            }
+
             response.Descripcion = response.Descripcion.Trim();
             response.Observaciones ??= string.Empty;
             response.Folio ??= string.Empty;
@@ -262,11 +290,14 @@ namespace EG.Application.Services.Patrimonio
             return null;
         }
 
-        private async Task ArchiveCurrentInventariosAsync(int empresaId, int areaId, int usuarioActual)
+        private async Task ArchiveCurrentInventariosAsync(int empresaId, int areaId, int anio, int usuarioActual)
         {
             var inventarios = await _context.Inventarios
                 .Include(x => x.InventarioDetalles)
-                .Where(x => x.Activo && x.FkidEmpresaSis == empresaId && x.FkidAreaSis == areaId)
+                .Include(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .Where(x => x.Activo && x.FkidEmpresaSis == empresaId && x.FkidAreaSis == areaId &&
+                    x.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidCalendarioInventarioAlmaNavigation.Anio == anio)
                 .ToListAsync();
 
             if (inventarios.Count == 0)

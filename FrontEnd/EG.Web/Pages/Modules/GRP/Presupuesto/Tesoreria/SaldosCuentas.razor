@@ -6,7 +6,7 @@
 @inherits BaseCrudPage<InstrumentoResponse, InstrumentoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column instrumentos-inversion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column instrumentos-inversion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Instrumentos de Inversion"
                     Subtitle="Catalogo financiero de tesoreria"
                     Icon="@Icons.Material.Filled.PieChart"

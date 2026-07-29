@@ -1,6 +1,7 @@
 using EG.Common.Enums;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.Patrimonio;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +16,19 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     public class ResguardoMovimientoController : ControllerBase
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
-        public ResguardoMovimientoController(EGestionContext context)
+        public ResguardoMovimientoController(EGestionContext context, IUserContextService userContext)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<ResguardoMovimientoResponse>>> GetAll()
         {
-            var items = await BaseQuery()
+            var scope = await GetScopeAsync();
+            var items = await ApplyScopeFilter(BaseQuery(), scope.EmpresaId, scope.Anio)
                 .OrderByDescending(x => x.FechaMovimiento)
                 .Take(500)
                 .Select(x => Map(x))
@@ -36,7 +40,8 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [HttpGet("{id}")]
         public async Task<ActionResult<PagedResult<ResguardoMovimientoResponse>>> GetById(int id)
         {
-            var item = await BaseQuery()
+            var scope = await GetScopeAsync();
+            var item = await ApplyScopeFilter(BaseQuery(), scope.EmpresaId, scope.Anio)
                 .Where(x => x.PkidResguardoMovimiento == id)
                 .Select(x => Map(x))
                 .FirstOrDefaultAsync();
@@ -56,7 +61,8 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             var page = request.Page <= 0 ? 1 : request.Page;
             var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
-            var query = ApplySearch(ApplyEmpresaFilter(BaseQuery(), request), request.SearchString ?? request.Filtro);
+            var scope = await GetScopeAsync();
+            var query = ApplySearch(ApplyScopeFilter(BaseQuery(), scope.EmpresaId, scope.Anio), request.SearchString ?? request.Filtro);
             var total = await query.CountAsync();
             var items = await ApplySort(query, request.SortLabel, request.SortDirection)
                 .Skip((page - 1) * pageSize)
@@ -98,16 +104,28 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                     (x.FkidResguardoDestinoAlmaNavigation.Responsable != null && x.FkidResguardoDestinoAlmaNavigation.Responsable.Contains(value)))));
         }
 
-        private static IQueryable<ResguardoMovimiento> ApplyEmpresaFilter(IQueryable<ResguardoMovimiento> query, PagedRequest request)
+        private static IQueryable<ResguardoMovimiento> ApplyScopeFilter(IQueryable<ResguardoMovimiento> query, int empresaId, int anio)
         {
-            if (!TryGetIntFilter(request, "FkidEmpresaSis", out var empresaId) || empresaId <= 0)
-            {
-                return query;
-            }
-
             return query.Where(x =>
                 (x.FkidResguardoOrigenAlmaNavigation != null && x.FkidResguardoOrigenAlmaNavigation.FkidEmpresaSis == empresaId) ||
-                (x.FkidResguardoDestinoAlmaNavigation != null && x.FkidResguardoDestinoAlmaNavigation.FkidEmpresaSis == empresaId));
+                (x.FkidResguardoDestinoAlmaNavigation != null && x.FkidResguardoDestinoAlmaNavigation.FkidEmpresaSis == empresaId))
+                .Where(x => x.FechaMovimiento.Year == anio);
+        }
+
+        private async Task<(int EmpresaId, int Anio)> GetScopeAsync()
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
+            var anio = await _context.Anios.AsNoTracking()
+                .Where(x => x.PkidAnio == anioId && x.Activo)
+                .Select(x => (int?)x.Clave)
+                .SingleOrDefaultAsync();
+            if (!anio.HasValue)
+            {
+                throw new InvalidOperationException("El ejercicio presupuestal seleccionado no existe o está inactivo.");
+            }
+
+            return (empresaId, anio.Value);
         }
 
         private static bool TryGetIntFilter(PagedRequest request, string key, out int value)

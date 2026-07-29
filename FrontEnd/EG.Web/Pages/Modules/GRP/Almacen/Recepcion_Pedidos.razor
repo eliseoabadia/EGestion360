@@ -12,6 +12,7 @@
 @inherits BaseCrudPage<OrdenCompraResponse, OrdenCompraResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenDetalleService
 @inject IGenericCrudService<AlmacenResponse> AlmacenService
 
@@ -223,7 +224,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
         await SucursalStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
     }
 
@@ -237,6 +240,10 @@
         if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
         {
             filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+        if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
+        {
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
         }
 
         var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
@@ -279,7 +286,11 @@
             entradasSearch,
             "FechaEntrada",
             SortDirection.Descending,
-            new Dictionary<string, object> { ["FkidDetalleOrdenCompraOrco"] = selectedDetalle.PkidOrdenCompraDetalle });
+            new Dictionary<string, object>
+            {
+                ["FkidDetalleOrdenCompraOrco"] = selectedDetalle.PkidOrdenCompraDetalle,
+                ["FkidAnioSis"] = AnioStateService.AnioId
+            });
         entradas = response?.Items?.ToList() ?? new List<AlmacenResponse>();
         entradasTotal = response?.Success == true ? response.TotalCount : 0;
         return new TableData<AlmacenResponse> { Items = entradas, TotalItems = entradasTotal };
@@ -359,10 +370,17 @@
     }
 
     private async void OnEmpresaChanged(int empresaId) => await RefreshAll();
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(async () =>
+    {
+        selectedOrden = null;
+        selectedDetalle = null;
+        await RefreshAll();
+    });
 
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

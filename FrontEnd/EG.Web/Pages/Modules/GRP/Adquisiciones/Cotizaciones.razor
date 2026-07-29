@@ -20,7 +20,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column cotizacion-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column cotizacion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedCotizacion == null)
         {
             <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">

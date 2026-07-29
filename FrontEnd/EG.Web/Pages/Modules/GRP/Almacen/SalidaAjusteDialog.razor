@@ -10,6 +10,7 @@
 @inject IGenericCrudService<AlmacenResponse> AlmacenService
 @inject IGenericCrudService<MotivoEsResponse> MotivoService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="AlmacenResponse"
@@ -133,6 +134,7 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
     }
 
     private async Task GuardarCambiosAsync()
@@ -210,6 +212,10 @@
         if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
         {
             filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+        }
+        if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
+        {
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
         }
 
         var response = await AlmacenService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending, filters);

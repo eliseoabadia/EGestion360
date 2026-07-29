@@ -9,8 +9,9 @@
 @using MudBlazor
 
 @inject IGenericCrudService<SolicitudSalidaResponse> Service
-@inject IGenericCrudService<AreaResponse> AreaService
+@inject IGenericCrudService<UsuarioAreaResponse> AreaService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="SolicitudSalidaResponse"
@@ -121,6 +122,7 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
 
         if (Id.HasValue)
         {
@@ -167,6 +169,12 @@
         }
 
         item.FkidEmpresaSis = empresaId.Value;
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un ejercicio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+        item.FkidAnioSis = AnioStateService.AnioId.Value;
         item.FkidAreaSolicitaSis = _selectedAreaSolicita.Id;
         item.FkidAreaEntregaSis = _selectedAreaEntrega.Id;
         item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
@@ -192,18 +200,20 @@
 
     private async Task<ComboLookupResult> LoadAreaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion");
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidArea, Text = BuildClaveText(x.Clave, x.Descripcion) }), response?.TotalCount);
+        var response = await AreaService.GetAllAsync();
+        var items = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.PkidArea > 0 && x.Activo)
+            .Where(x => string.IsNullOrWhiteSpace(filter) || x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(x => x.UsuarioAreaDescripcion)
+            .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion })
+            .ToList();
+        var currentPage = Math.Max(1, page);
+        var currentPageSize = pageSize <= 0 ? 10 : pageSize;
+        return new ComboLookupResult
+        {
+            Items = items.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
+            TotalCount = items.Count
+        };
     }
 
-    private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
-    {
-        var list = items?.Where(x => !string.IsNullOrWhiteSpace(x.Text)).ToList() ?? new List<LookupItem>();
-        return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
-    }
-
-    private static string BuildClaveText(string? clave, string? descripcion)
-    {
-        return $"{clave} - {descripcion}".Trim(' ', '-');
-    }
 }

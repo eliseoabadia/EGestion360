@@ -13,11 +13,12 @@
 @inherits BaseCrudPage<CalendarioInventarioResponse, CalendarioInventarioResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column calendario-inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column calendario-inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
             <PageHeader Title="Calendario de inventarios"
                         Subtitle="Periodos por area con cierre historico automatico"
@@ -37,7 +38,7 @@
                 </div>
                 <div>
                     <span class="summary-label">Anio vigente</span>
-                    <strong>@DateTime.Today.Year</strong>
+                    <strong>@(AnioStateService.AnioClave?.ToString() ?? "-")</strong>
                 </div>
                 <div>
                     <span class="summary-label">Entidad</span>
@@ -204,7 +205,9 @@
     {
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     protected override async Task<TableData<CalendarioInventarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -259,6 +262,12 @@
         if (!CanCreate)
         {
             Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            return;
+        }
+
+        if (AnioStateService.AnioId is not > 0)
+        {
+            Snackbar.Add("Selecciona un ejercicio presupuestal antes de crear un calendario.", Severity.Warning);
             return;
         }
 
@@ -418,12 +427,21 @@
         }
     }
 
+    private async void OnAnioChanged(int? _)
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

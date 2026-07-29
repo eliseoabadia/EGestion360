@@ -17,7 +17,7 @@
 @inject NavigationManager Navigation
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column ingresos-clc-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column ingresos-clc-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ingresos (CLCs)"
                     Subtitle="Consulta consolidada de CLCs; la captura se realiza desde Depositos CLC"
                     Icon="@Icons.Material.Filled.Scale"

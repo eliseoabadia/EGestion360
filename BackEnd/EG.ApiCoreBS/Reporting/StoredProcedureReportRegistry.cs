@@ -62,6 +62,22 @@ public sealed class StoredProcedureReportRegistry
                     new StoredProcedureReportField("ImporteHaber", "Haber", 80)
                 ],
                 Constants.BD_CON),
+            [ReportKeys.PolizaSalidaAlmacen] = new StoredProcedureReportDefinition(
+                ReportKeys.PolizaSalidaAlmacen,
+                "Póliza de salida de almacén",
+                "CONTA.SP_ReportePoliza",
+                [new StoredProcedureReportParameter("@PKIdPoliza", "PKIdPoliza", typeof(int), "pk", 0)],
+                [
+                    new StoredProcedureReportField("ClavePoliza", "Clave", 75),
+                    new StoredProcedureReportField("FechaPoliza", "Fecha", 75),
+                    new StoredProcedureReportField("NombrePoliza", "Póliza", 180),
+                    new StoredProcedureReportField("Descripcion", "Tipo", 90),
+                    new StoredProcedureReportField("ClaveOrd", "Cuenta", 130),
+                    new StoredProcedureReportField("DDetalle", "Detalle", 180),
+                    new StoredProcedureReportField("ImporteDebe", "Debe", 80),
+                    new StoredProcedureReportField("ImporteHaber", "Haber", 80)
+                ],
+                Constants.BD_CON),
             [ReportKeys.NotaEntradaPatrimonial] = new StoredProcedureReportDefinition(
                 ReportKeys.NotaEntradaPatrimonial,
                 "Nota de entrada patrimonial",

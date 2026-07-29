@@ -50,6 +50,17 @@
                         Size="Size.Small"
                         OnClick="@(() => SelectSolicitud(cell.Item))" />
                         </MudTooltip>
+                        @if (cell.Item.FkidPolizaConta is > 0)
+                        {
+                            <ReportOpenButton ReportName="Almacen.Suministros_Salida.Poliza"
+                                              EntityId="@cell.Item.FkidPolizaConta"
+                                              PrimaryKeyParameter="pk"
+                                              Title="Póliza de salida de almacén"
+                                              Tooltip="Ver póliza de salida"
+                                              Icon="@Icons.Material.Filled.AccountBalance"
+                                              Color="Color.Secondary"
+                                              Visible="@CanExport" />
+                        }
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="SolicitudSalidaResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
@@ -110,7 +121,7 @@
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Actualizar entrega">
                         <MudIconButton Icon="@Icons.Material.Filled.EditNote"
-                        Visible="@CanUpdate"
+                        Visible="@CanAuthorize"
                         Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))"
                         Color="Color.Primary"
                         Size="Size.Small"
@@ -184,9 +195,9 @@
         {
             filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
         }
-        if (AnioStateService.AnioClave.HasValue)
+        if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
         {
-            filters["Anio"] = AnioStateService.AnioClave.Value;
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
         }
         filters["Autorizado"] = true;
 
@@ -235,6 +246,7 @@
         {
             ["Id"] = detail.PkidDetalleSolicitudSalida,
             ["SolicitudId"] = detail.FkidSolicitudSalidaAlma,
+            ["AnioId"] = selectedSolicitud.FkidAnioSis,
             ["SolicitudDescripcion"] = $"{selectedSolicitud.Folio} | {selectedSolicitud.Solicitante}",
             ["ModoEntrega"] = true
         };

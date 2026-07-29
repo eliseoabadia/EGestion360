@@ -11,6 +11,8 @@ public partial class SolicitudSalidum
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public int? FkidAreaSolicitaSis { get; set; }
 
     public int? FkidAreaEntregaSis { get; set; }

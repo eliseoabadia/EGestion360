@@ -35,18 +35,38 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<InventarioResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var calendarios = _context.CalendarioInventarios
+                .AsNoTracking()
+                .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio)
+                .Select(x => x.PkidCalendarioInventario);
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidCalendarioInventarioAlma.HasValue && calendarios.Contains(x.FkidCalendarioInventarioAlma.Value))
+                .ToListAsync();
+            var items = entities.Adapt<List<InventarioResponse>>();
             await ApplyStatusFlagsAsync(items);
             return Success(items, "Inventarios obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<InventarioResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidInventario");
-            if (item == null)
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.PkidInventario == id && x.FkidEmpresaSis == scope.EmpresaId)
+                .Join(_context.CalendarioInventarios.AsNoTracking(),
+                    inventario => inventario.FkidCalendarioInventarioAlma,
+                    calendario => (int?)calendario.PkidCalendarioInventario,
+                    (inventario, calendario) => new { inventario, calendario })
+                .Where(x => x.calendario.Activo && x.calendario.Anio == scope.Anio)
+                .Select(x => x.inventario)
+                .FirstOrDefaultAsync();
+            if (entity == null)
             {
                 return Failure<InventarioResponse>($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var item = entity.Adapt<InventarioResponse>();
 
             await ApplyStatusFlagsAsync(new List<InventarioResponse> { item });
 
@@ -64,6 +84,8 @@ namespace EG.Application.Services.Patrimonio
         public async Task<PagedResult<InventarioResponse>> CreateAsync(InventarioResponse response, int usuarioActual)
         {
             // La autorización se concede únicamente mediante el flujo posterior al alta.
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            response.FkidEmpresaSis = scope.EmpresaId;
             response.Autorizado = false;
             var validation = await NormalizeAndValidateAsync(response, isCreate: true);
             if (validation != null)
@@ -98,10 +120,15 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<InventarioResponse>> UpdateAsync(int id, InventarioResponse response, int usuarioActual)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
             var current = await _context.Inventarios
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusInventarioAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidInventario == id && x.Activo);
+                .Include(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidInventario == id && x.Activo &&
+                    x.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
 
             if (current == null)
             {
@@ -113,7 +140,17 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<InventarioResponse>("El inventario ya esta autorizado o en estatus final y no puede modificarse.", "INVALID_STATE");
             }
 
+            if (response.Autorizado || response.FkidEstatusInventarioAlma != current.FkidEstatusInventarioAlma)
+            {
+                return Failure<InventarioResponse>("El estatus no se modifica desde la edición. Use la acción de autorizar inventario.", "INVALID_TRANSITION");
+            }
+
             response.PkidInventario = id;
+            response.FkidEmpresaSis = current.FkidEmpresaSis;
+            response.FkidCalendarioInventarioAlma = current.FkidCalendarioInventarioAlma;
+            response.FkidAreaSis = current.FkidAreaSis;
+            response.FkidEstatusInventarioAlma = current.FkidEstatusInventarioAlma;
+            response.Autorizado = false;
             var validation = await NormalizeAndValidateAsync(response, isCreate: false);
             if (validation != null)
             {
@@ -126,8 +163,7 @@ namespace EG.Application.Services.Patrimonio
 
             try
             {
-                var action = await ResolveUpdateActionAsync(response);
-                var result = await ExecuteMantenimientoAsync(action, id, response, usuarioActual);
+                var result = await ExecuteMantenimientoAsync(2, id, response, usuarioActual);
                 var refreshed = await GetByIdAsync(id);
                 refreshed.Message = result.Mensaje;
                 return refreshed;
@@ -140,10 +176,15 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
             var current = await _context.Inventarios
                 .AsNoTracking()
                 .Include(x => x.FkidEstatusInventarioAlmaNavigation)
-                .FirstOrDefaultAsync(x => x.PkidInventario == id && x.Activo);
+                .Include(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidInventario == id && x.Activo &&
+                    x.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
 
             if (current == null)
             {
@@ -189,12 +230,12 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
-
-                if (PatrimonioPagedFilter.TryGetInt(request, "FkidEmpresaSis", out var empresaId))
-                {
-                    query = query.Where(x => x.FkidEmpresaSis == empresaId);
-                }
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var calendarios = _context.CalendarioInventarios.AsNoTracking()
+                    .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio)
+                    .Select(x => x.PkidCalendarioInventario);
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == scope.EmpresaId && x.FkidCalendarioInventarioAlma.HasValue && calendarios.Contains(x.FkidCalendarioInventarioAlma.Value));
 
                 if (PatrimonioPagedFilter.TryGetInt(request, "FkidCalendarioInventarioAlma", out var calendarioId))
                 {
@@ -247,8 +288,6 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<InventarioResponse>?> NormalizeAndValidateAsync(InventarioResponse response, bool isCreate)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
-
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<InventarioResponse>("Debe existir una empresa seleccionada.");
@@ -272,6 +311,12 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<InventarioResponse>("El calendario no pertenece a la empresa seleccionada.");
             }
 
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            if (calendario.FkidEmpresaSis != scope.EmpresaId || calendario.Anio != scope.Anio)
+            {
+                return Failure<InventarioResponse>("El calendario no pertenece a la empresa y ejercicio presupuestal seleccionados.");
+            }
+
             response.FkidAreaSis ??= calendario.FkidAreaSis;
             if (!response.FkidAreaSis.HasValue || response.FkidAreaSis.Value <= 0)
             {
@@ -289,12 +334,25 @@ namespace EG.Application.Services.Patrimonio
                 response.FkidEstatusInventarioAlma = inicial.PkidEstatusInventario;
             }
 
-            if (!await _context.EstatusInventarios.AsNoTracking().AnyAsync(x => x.PkidEstatusInventario == response.FkidEstatusInventarioAlma && x.Activo))
+            var estatus = await _context.EstatusInventarios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidEstatusInventario == response.FkidEstatusInventarioAlma && x.Activo);
+            if (estatus == null)
             {
                 return Failure<InventarioResponse>("El estatus seleccionado no existe o esta inactivo.");
             }
 
+            if (estatus.EsFinal)
+            {
+                return Failure<InventarioResponse>("El estatus final solo se asigna mediante la autorizacion del inventario.", "INVALID_TRANSITION");
+            }
+
             response.FechaInventario = response.FechaInventario == default ? DateTime.Today : response.FechaInventario.Date;
+            if (response.FechaInventario.Year != calendario.Anio ||
+                response.FechaInventario.Date < calendario.FechaInicio.ToDateTime(TimeOnly.MinValue) ||
+                response.FechaInventario.Date > calendario.FechaFin.ToDateTime(TimeOnly.MinValue))
+            {
+                return Failure<InventarioResponse>("La fecha del inventario debe quedar dentro del calendario del ejercicio seleccionado.");
+            }
             response.Responsable ??= string.Empty;
             response.Observaciones ??= string.Empty;
             response.Folio ??= string.Empty;
@@ -303,18 +361,46 @@ namespace EG.Application.Services.Patrimonio
             return null;
         }
 
-        private async Task<int> ResolveUpdateActionAsync(InventarioResponse response)
+        public async Task<PagedResult<InventarioResponse>> AutorizarAsync(int id, int usuarioActual)
         {
-            if (response.Autorizado)
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var current = await _context.Inventarios
+                .AsNoTracking()
+                .Include(x => x.FkidEstatusInventarioAlmaNavigation)
+                .Include(x => x.FkidCalendarioInventarioAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidInventario == id && x.Activo &&
+                    x.FkidEmpresaSis == scope.EmpresaId &&
+                    x.FkidCalendarioInventarioAlmaNavigation != null &&
+                    x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
+            if (current == null)
             {
-                return 4;
+                return Failure<InventarioResponse>($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
             }
 
-            var status = await _context.EstatusInventarios
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidEstatusInventario == response.FkidEstatusInventarioAlma);
+            if (IsLocked(current))
+            {
+                return Failure<InventarioResponse>("El inventario ya esta autorizado o en estatus final.", "INVALID_STATE");
+            }
 
-            return status?.EsFinal == true ? 4 : 2;
+            if (!await _context.InventarioDetalles.AsNoTracking().AnyAsync(x => x.FkidInventarioAlma == id && x.Activo))
+            {
+                return Failure<InventarioResponse>("Agrega al menos un bien antes de autorizar el inventario.", "INVALID_STATE");
+            }
+
+            var result = await ExecuteMantenimientoAsync(4, id, new InventarioResponse
+            {
+                PkidInventario = current.PkidInventario,
+                FkidEmpresaSis = current.FkidEmpresaSis,
+                FkidCalendarioInventarioAlma = current.FkidCalendarioInventarioAlma,
+                FkidAreaSis = current.FkidAreaSis,
+                FkidEstatusInventarioAlma = current.FkidEstatusInventarioAlma,
+                FechaInventario = current.FechaInventario.ToDateTime(TimeOnly.MinValue),
+                Responsable = current.Responsable ?? string.Empty,
+                Observaciones = current.Observaciones ?? string.Empty
+            }, usuarioActual);
+            var refreshed = await GetByIdAsync(id);
+            refreshed.Message = result.Mensaje;
+            return refreshed;
         }
 
         private async Task<EstatusInventario?> GetInitialStatusAsync()

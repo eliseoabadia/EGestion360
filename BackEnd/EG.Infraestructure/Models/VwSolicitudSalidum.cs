@@ -11,6 +11,10 @@ public partial class VwSolicitudSalidum
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
+    public int? AnioClave { get; set; }
+
     public string EmpresaNombre { get; set; }
 
     public int? FkidAreaSolicitaSis { get; set; }
@@ -54,4 +58,6 @@ public partial class VwSolicitudSalidum
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int? FkidPolizaConta { get; set; }
 }

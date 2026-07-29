@@ -10,11 +10,12 @@
 @inherits BaseCrudPage<AlmacenResponse, AlmacenResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column almacen-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column almacen-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Entradas por ajuste"
                     Subtitle="Movimientos manuales de entrada al almacen con soporte documental"
                     Icon="@Icons.Material.Filled.Inventory2"
@@ -41,7 +42,7 @@
             </div>
         </div>
 
-        <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+        <div Style="flex-grow: 1; min-height: 0;">
             <GenericDataGrid TItem="AlmacenResponse"
                           @ref="table"
                           Title="Entradas registradas"
@@ -177,7 +178,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
         await SucursalStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
     }
 
@@ -195,6 +198,10 @@
             if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
             {
                 filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
+            }
+            if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
+            {
+                filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
             }
 
             var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
@@ -241,10 +248,12 @@
     }
 
     private async void OnEmpresaChanged(int empresaId) => await table.ReloadData();
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(() => table.ReloadData());
 
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

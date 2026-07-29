@@ -17,7 +17,7 @@
 @inject NavigationManager Navigation
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column otros-ingresos-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column otros-ingresos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ingresos Propios"
                     Subtitle="Consulta del ingreso por ejercer; la captura se realiza en Ley de Ingresos Estimados"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"

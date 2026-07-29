@@ -262,9 +262,9 @@
             {
                 filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
             }
-            if (AnioStateService.AnioClave.HasValue)
+            if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
             {
-                filters["Anio"] = AnioStateService.AnioClave.Value;
+                filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
             }
 
             var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
@@ -319,6 +319,7 @@
         var parameters = new DialogParameters
         {
             ["SolicitudId"] = selectedSolicitud.PkidSolicitudSalida,
+            ["AnioId"] = selectedSolicitud.FkidAnioSis,
             ["SolicitudDescripcion"] = $"{selectedSolicitud.Folio} | {selectedSolicitud.Solicitante}"
         };
         var dialog = await DialogService.ShowAsync<DetalleSolicitudSalidaDialog>("Agregar bien", parameters,
@@ -336,6 +337,7 @@
         {
             ["Id"] = detail.PkidDetalleSolicitudSalida,
             ["SolicitudId"] = detail.FkidSolicitudSalidaAlma,
+            ["AnioId"] = selectedSolicitud?.FkidAnioSis,
             ["SolicitudDescripcion"] = selectedSolicitud == null ? detail.SolicitudFolio : $"{selectedSolicitud.Folio} | {selectedSolicitud.Solicitante}"
         };
         var dialog = await DialogService.ShowAsync<DetalleSolicitudSalidaDialog>("Editar bien", parameters,

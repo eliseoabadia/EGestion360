@@ -105,6 +105,7 @@
 @code {
     [Parameter] public int? Id { get; set; }
     [Parameter] public int SolicitudId { get; set; }
+    [Parameter] public int? AnioId { get; set; }
     [Parameter] public string SolicitudDescripcion { get; set; } = "Solicitud de salida";
     [Parameter] public bool ModoEntrega { get; set; }
 
@@ -235,7 +236,11 @@
     private async Task<ComboLookupResult> LoadAlmacenPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await AlmacenService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending,
-            new Dictionary<string, object> { ["AplicaAlmacen"] = true });
+            new Dictionary<string, object>
+            {
+                ["AplicaAlmacen"] = true,
+                ["FkidAnioSis"] = AnioId
+            });
         return ToComboResult(response?.Items?.Where(x => x.Cantidad > 0 && !x.EstaBloqueado).Select(x => new LookupItem
         {
             Id = x.PkidAlmacen,

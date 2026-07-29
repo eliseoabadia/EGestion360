@@ -146,6 +146,7 @@ public static class ApiServiceExtensions
         RegisterCrud<ResguardoResponse>(services, "api/Resguardo");
         RegisterCrud<ResguardoDetalleResponse>(services, "api/ResguardoDetalle");
         RegisterCrud<ResguardoMovimientoResponse>(services, "api/ResguardoMovimiento");
+        RegisterCrud<CedulaDiferenciaResponse>(services, "api/CedulaDiferencias");
         RegisterCrud<CalendarioInventarioResponse>(services, "api/CalendarioInventario");
         RegisterCrud<InventarioResponse>(services, "api/Inventario");
         RegisterCrud<InventarioDetalleResponse>(services, "api/InventarioDetalle");

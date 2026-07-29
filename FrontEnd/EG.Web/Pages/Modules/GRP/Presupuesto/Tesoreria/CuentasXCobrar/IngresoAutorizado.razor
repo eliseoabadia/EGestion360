@@ -17,7 +17,7 @@
 @inject IJSRuntime JS
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column ingresos-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column ingresos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ley de Ingresos Estimados"
                     Subtitle="Presupuesto mensual y poliza de autorizacion"
                     Icon="@Icons.Material.Filled.AccountBalance"

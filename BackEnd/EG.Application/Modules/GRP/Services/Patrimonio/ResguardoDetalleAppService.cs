@@ -33,17 +33,35 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ResguardoDetalleResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var resguardos = _context.Resguardos.AsNoTracking()
+                .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId && x.Fecha.Year == scope.Anio)
+                .Select(x => x.PkidResguardo);
+            var entities = await _serviceView.GetQueryWithIncludes()
+                .Where(x => resguardos.Contains(x.FkidResguardoAlma))
+                .ToListAsync();
+            var items = entities.Adapt<List<ResguardoDetalleResponse>>();
             return Success(items, "Detalles de resguardo obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<ResguardoDetalleResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidResguardoDetalle");
-            if (item == null)
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            var entity = await _serviceView.GetQueryWithIncludes()
+                .Where(x => x.PkidResguardoDetalle == id)
+                .Join(_context.Resguardos.AsNoTracking(),
+                    detalle => detalle.FkidResguardoAlma,
+                    resguardo => resguardo.PkidResguardo,
+                    (detalle, resguardo) => new { detalle, resguardo })
+                .Where(x => x.resguardo.Activo && x.resguardo.FkidEmpresaSis == scope.EmpresaId && x.resguardo.Fecha.Year == scope.Anio)
+                .Select(x => x.detalle)
+                .FirstOrDefaultAsync();
+            if (entity == null)
             {
                 return Failure<ResguardoDetalleResponse>($"Detalle de resguardo con ID {id} no encontrado.", "NOT_FOUND");
             }
+
+            var item = entity.Adapt<ResguardoDetalleResponse>();
 
             return new PagedResult<ResguardoDetalleResponse>
             {
@@ -74,8 +92,14 @@ namespace EG.Application.Services.Patrimonio
                     return Failure<ResguardoDetalleResponse>("El resguardo no existe o está inactivo.", "NOT_FOUND");
                 }
 
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                if (resguardo.FkidEmpresaSis != scope.EmpresaId || resguardo.Fecha.Year != scope.Anio)
+                {
+                    return Failure<ResguardoDetalleResponse>("El resguardo no pertenece a la empresa y ejercicio presupuestal seleccionados.");
+                }
+
                 var bien = await _context.Biens
-                    .FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo);
+                    .FirstOrDefaultAsync(x => x.PkidBien == response.FkidBienAlma && x.Activo && x.FkidEmpresaSis == scope.EmpresaId);
                 if (bien == null)
                 {
                     return Failure<ResguardoDetalleResponse>("El bien no existe o está inactivo.", "NOT_FOUND");
@@ -133,7 +157,10 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<ResguardoDetalleResponse>> UpdateAsync(int id, ResguardoDetalleResponse response, int usuarioActual)
         {
-            if (!await _context.ResguardoDetalles.AsNoTracking().AnyAsync(x => x.PkidResguardoDetalle == id && x.Activo))
+            var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+            if (!await _context.ResguardoDetalles.AsNoTracking().AnyAsync(x => x.PkidResguardoDetalle == id && x.Activo &&
+                x.FkidResguardoAlmaNavigation.FkidEmpresaSis == scope.EmpresaId &&
+                x.FkidResguardoAlmaNavigation.Fecha.Year == scope.Anio))
             {
                 return Failure<ResguardoDetalleResponse>($"Detalle de resguardo con ID {id} no encontrado.", "NOT_FOUND");
             }
@@ -179,8 +206,11 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
                 var detalle = await _context.ResguardoDetalles
-                    .FirstOrDefaultAsync(x => x.PkidResguardoDetalle == id && x.Activo);
+                    .FirstOrDefaultAsync(x => x.PkidResguardoDetalle == id && x.Activo &&
+                        x.FkidResguardoAlmaNavigation.FkidEmpresaSis == scope.EmpresaId &&
+                        x.FkidResguardoAlmaNavigation.Fecha.Year == scope.Anio);
                 if (detalle == null)
                 {
                     return new PagedResult<bool>
@@ -245,7 +275,12 @@ namespace EG.Application.Services.Patrimonio
         {
             try
             {
-                var query = _serviceView.GetQueryWithIncludes();
+                var scope = await PatrimonioScopeResolver.RequireAsync(_context, _userContext);
+                var resguardos = _context.Resguardos.AsNoTracking()
+                    .Where(x => x.Activo && x.FkidEmpresaSis == scope.EmpresaId && x.Fecha.Year == scope.Anio)
+                    .Select(x => x.PkidResguardo);
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => resguardos.Contains(x.FkidResguardoAlma));
 
                 if (TryGetIntFilter(request, "FkidBienAlma", out var bienId))
                 {

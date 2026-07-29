@@ -11,6 +11,10 @@ public partial class VwAlmacen
 
     public int FkidEmpresaSis { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
+    public int? AnioClave { get; set; }
+
     public string EmpresaNombre { get; set; }
 
     public int? FkidAreaSis { get; set; }

@@ -15,6 +15,7 @@
 @inject IGenericCrudService<UnidadeResponse> UnidadService
 @inject IGenericCrudService<MotivoEsResponse> MotivoService
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject TipoBienDefaultsService TipoBienDefaultsService
 @inject ISnackbar Snackbar
 
@@ -184,6 +185,7 @@
     protected override async Task OnInitializedAsync()
     {
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
 
         if (Id.HasValue)
         {
@@ -244,6 +246,12 @@
         }
 
         item.FkidEmpresaSis = empresaId.Value;
+        if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
+        {
+            Snackbar.Add("Debe seleccionar un ejercicio presupuestal en el encabezado.", Severity.Warning);
+            return;
+        }
+        item.FkidAnioSis = AnioStateService.AnioId.Value;
         item.FkidTipoBienAlma = _selectedTipoBien.Id;
         item.FkidAreaSis = _selectedArea?.Id;
         item.FkidUnidadesAlma = _selectedUnidad?.Id;

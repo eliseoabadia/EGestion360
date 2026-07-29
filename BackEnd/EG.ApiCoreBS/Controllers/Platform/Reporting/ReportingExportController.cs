@@ -101,6 +101,7 @@ public sealed class ReportingExportController : ControllerBase
         ReportKeys.NotaEntradaPatrimonial => "Patrimonio|Clasificacion_Bienes_Muebles|CanExportToExcel",
         ReportKeys.AltaBienesMuebles => "Patrimonio|Clasificacion_Bienes_Muebles|CanExportToExcel",
         ReportKeys.PolizaBajaPatrimonial => "Patrimonio|Bajas|CanExportToExcel",
+        ReportKeys.PolizaSalidaAlmacen => "Almacen|Suministros_Salida|CanExportToExcel",
         _ => null
     };
 

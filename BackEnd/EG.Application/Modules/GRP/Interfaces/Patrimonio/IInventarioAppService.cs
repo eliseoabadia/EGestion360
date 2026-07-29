@@ -5,5 +5,6 @@ namespace EG.Application.Interfaces.Patrimonio
 {
     public interface IInventarioAppService : IAdquisicionCrudAppService<InventarioResponse>
     {
+        Task<EG.Common.GenericModel.PagedResult<InventarioResponse>> AutorizarAsync(int id, int usuarioActual);
     }
 }

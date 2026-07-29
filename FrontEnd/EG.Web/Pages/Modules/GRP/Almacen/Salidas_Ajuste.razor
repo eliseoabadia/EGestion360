@@ -11,11 +11,12 @@
 @inherits BaseCrudPage<AlmacenResponse, AlmacenResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column salida-ajuste-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column salida-ajuste-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Salidas por ajuste"
                     Subtitle="Ajustes manuales de salida con trazabilidad documental y afectacion inmediata a existencias"
                     Icon="@Icons.Material.Filled.Output"
@@ -42,7 +43,7 @@
             </div>
         </div>
 
-        <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+        <div Style="flex-grow: 1; min-height: 0;">
             <GenericDataGrid TItem="AlmacenResponse"
                           @ref="table"
                           Title="Historial de salidas por ajuste"
@@ -160,7 +161,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
         await SucursalStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
     }
 
@@ -268,15 +271,21 @@
         {
             filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
         }
+        if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
+        {
+            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
+        }
 
         return filters;
     }
 
     private async void OnEmpresaChanged(int empresaId) => await table.ReloadData();
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(() => table.ReloadData());
 
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

@@ -15,11 +15,13 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     {
         private readonly IInventarioAppService _appService;
         private readonly IUserContextService _userContext;
+        private readonly IAuthorizationService _authorization;
 
-        public InventarioController(IInventarioAppService appService, IUserContextService userContext)
+        public InventarioController(IInventarioAppService appService, IUserContextService userContext, IAuthorizationService authorization)
         {
             _appService = appService;
             _userContext = userContext;
+            _authorization = authorization;
         }
 
         [HttpGet]
@@ -71,6 +73,19 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         {
             var result = await _appService.DeleteAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id:int}/autorizar")]
+        public async Task<ActionResult<PagedResult<InventarioResponse>>> Autorizar(int id)
+        {
+            var permission = await _authorization.AuthorizeAsync(User, null, "Patrimonio|Inventarios|authorize");
+            if (!permission.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var result = await _appService.AutorizarAsync(id, _userContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : result.Code == "NOT_FOUND" ? NotFound(result) : BadRequest(result);
         }
 
         [HttpPost("GetAllPaginado")]

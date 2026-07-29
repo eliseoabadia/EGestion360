@@ -31,22 +31,26 @@ namespace EG.Application.Services.Almacen
 
         public async Task<PagedResult<AlmacenResponse>> GetAllAsync()
         {
-            var items = (await _serviceView.GetAllAsync()).ToList();
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetAllAsync()).Where(x => x.FkidEmpresaSis == empresaId).ToList();
             return Success(items, "Movimientos de almacen obtenidos correctamente", items.Count);
         }
 
         public async Task<PagedResult<AlmacenResponse>> GetByIdAsync(int id)
         {
-            var item = await _serviceView.GetByIdAsync(id, idPropertyName: "PkidAlmacen");
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var item = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.FkidEmpresaSis == empresaId);
             if (item == null)
             {
                 return Failure<AlmacenResponse>($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
             }
 
-            var entity = await _context.Almacens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidAlmacen == id);
+            var response = item.Adapt<AlmacenResponse>();
+            var entity = await _context.Almacens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.FkidEmpresaSis == empresaId);
             if (entity != null)
             {
-                item.FkidDetalleOrdenCompraOrco = entity.FkidDetalleOrdenCompraOrco;
+                response.FkidDetalleOrdenCompraOrco = entity.FkidDetalleOrdenCompraOrco;
             }
 
             return new PagedResult<AlmacenResponse>
@@ -54,8 +58,8 @@ namespace EG.Application.Services.Almacen
                 Success = true,
                 Message = "Movimiento de almacen encontrado",
                 Code = "SUCCESS",
-                Data = item,
-                Items = new List<AlmacenResponse> { item },
+                Data = response,
+                Items = new List<AlmacenResponse> { response },
                 TotalCount = 1
             };
         }
@@ -92,7 +96,7 @@ namespace EG.Application.Services.Almacen
 
         public async Task<PagedResult<AlmacenResponse>> UpdateAsync(int id, AlmacenResponse response, int usuarioActual)
         {
-            var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo);
+            var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (current == null)
             {
                 return Failure<AlmacenResponse>($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
@@ -134,7 +138,7 @@ namespace EG.Application.Services.Almacen
 
         public async Task<PagedResult<bool>> DeleteAsync(int id)
         {
-            var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo);
+            var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (current == null)
             {
                 return BoolFailure($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
@@ -174,7 +178,7 @@ namespace EG.Application.Services.Almacen
             }
 
             var origen = await _context.Almacens
-                .FirstOrDefaultAsync(x => x.PkidAlmacen == origenId && x.Activo);
+                .FirstOrDefaultAsync(x => x.PkidAlmacen == origenId && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (origen == null)
             {
                 return Failure<AlmacenResponse>("La existencia origen no existe o no esta activa.", "NOT_FOUND");
@@ -235,6 +239,7 @@ namespace EG.Application.Services.Almacen
                 var movimiento = new EG.Infraestructure.Models.Almacen
                 {
                     FkidEmpresaSis = origen.FkidEmpresaSis,
+                    FkidAnioSis = origen.FkidAnioSis,
                     FkidAreaSis = origen.FkidAreaSis,
                     FkidTipoBienAlma = origen.FkidTipoBienAlma,
                     FkidUnidadesAlma = origen.FkidUnidadesAlma,
@@ -281,12 +286,19 @@ namespace EG.Application.Services.Almacen
                     return await GetByDetalleOrdenAsync(request, detalleOrdenId);
                 }
 
-                var query = _serviceView.GetQueryWithIncludes();
-
-                if (AlmacenPagedFilter.TryGetInt(request, "FkidEmpresaSis", out var empresaId))
+                if (!AlmacenPagedFilter.TryGetInt(request, "FkidAnioSis", out var anioId) || anioId <= 0)
                 {
-                    query = query.Where(x => x.FkidEmpresaSis == empresaId);
+                    return Failure<AlmacenResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
                 }
+
+                if (AlmacenPagedFilter.TryGetBool(request, "VistaExistencias", out var vistaExistencias) && vistaExistencias)
+                {
+                    return await GetExistenciasRegistradasAsync(request, anioId);
+                }
+
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId);
 
                 if (AlmacenPagedFilter.TryGetInt(request, "FkidAreaSis", out var areaId))
                 {
@@ -352,7 +364,12 @@ namespace EG.Application.Services.Almacen
                 .Include(x => x.FkidTipoBienAlmaNavigation)
                 .ThenInclude(x => x.FkidUnidadesAlmaNavigation)
                 .Include(x => x.FkidMotivoEsAlmaNavigation)
-                .Where(x => x.Activo && x.FkidDetalleOrdenCompraOrco == detalleOrdenId);
+                .Where(x => x.Activo && x.FkidDetalleOrdenCompraOrco == detalleOrdenId && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
+
+            if (AlmacenPagedFilter.TryGetInt(request, "FkidAnioSis", out var anioId) && anioId > 0)
+            {
+                query = query.Where(x => x.FkidAnioSis == anioId);
+            }
 
             var filtro = request.Filtro?.Trim();
             if (!string.IsNullOrWhiteSpace(filtro))
@@ -378,9 +395,67 @@ namespace EG.Application.Services.Almacen
             return Success(items, "Entradas de orden de compra obtenidas correctamente", total);
         }
 
+        private async Task<PagedResult<AlmacenResponse>> GetExistenciasRegistradasAsync(PagedRequest request, int anioId)
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var movimientos = await _context.Almacens.AsNoTracking()
+                .Where(x => x.Activo && x.AplicaAlmacen && x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId)
+                .GroupBy(x => new { x.FkidTipoBienAlma, x.FkidUnidadesAlma })
+                .Select(g => new { g.Key.FkidTipoBienAlma, g.Key.FkidUnidadesAlma, Cantidad = g.Sum(x => x.Cantidad), Costo = g.Sum(x => x.Costo ?? 0m) })
+                .ToListAsync();
+
+            var cierres = await _context.CierreInventarios.AsNoTracking()
+                .Where(x => x.Activo && x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId)
+                .GroupBy(x => new { x.FkidTipoBienAlma, x.FkidUnidadesAlma })
+                .Select(g => new { g.Key.FkidTipoBienAlma, g.Key.FkidUnidadesAlma, Cantidad = g.Sum(x => x.Existencias), Costo = g.Sum(x => x.CostoExistencias ?? 0m) })
+                .ToListAsync();
+
+            var totales = movimientos.Concat(cierres)
+                .GroupBy(x => new { x.FkidTipoBienAlma, x.FkidUnidadesAlma })
+                .Select(g => new { g.Key.FkidTipoBienAlma, g.Key.FkidUnidadesAlma, Cantidad = g.Sum(x => x.Cantidad), Costo = g.Sum(x => x.Costo) })
+                .ToList();
+            var ids = totales.Select(x => x.FkidTipoBienAlma).Distinct().ToList();
+            var tipos = await _context.TipoBiens.AsNoTracking()
+                .Include(x => x.FkidPartidaContaNavigation)
+                .Include(x => x.FkidUnidadesAlmaNavigation)
+                .Where(x => ids.Contains(x.PkidTipoBien))
+                .ToDictionaryAsync(x => x.PkidTipoBien);
+
+            var items = totales.Select(x =>
+            {
+                tipos.TryGetValue(x.FkidTipoBienAlma, out var tipo);
+                var costoUnitario = x.Cantidad == 0 ? 0m : Math.Round(x.Costo / x.Cantidad, 4);
+                var minimo = tipo?.ExistenciaMinima;
+                var maximo = tipo?.ExistenciaMaxima;
+                var estado = x.Cantidad <= 0 ? "Sin existencia" : minimo.HasValue && x.Cantidad <= minimo ? "Mínimo" : maximo.HasValue && x.Cantidad > maximo ? "Máximo excedido" : "Disponible";
+                return new AlmacenResponse
+                {
+                    FkidEmpresaSis = empresaId, FkidAnioSis = anioId, FkidTipoBienAlma = x.FkidTipoBienAlma, FkidUnidadesAlma = x.FkidUnidadesAlma,
+                    Clave = tipo?.CodigoClave ?? string.Empty, TipoBienClave = tipo?.CodigoClave ?? string.Empty, TipoBienDescripcion = tipo?.Descripcion ?? string.Empty,
+                    UnidadDescripcion = tipo?.FkidUnidadesAlmaNavigation?.Descripcion ?? string.Empty, Cantidad = x.Cantidad, Costo = x.Costo, CostoUnitario = costoUnitario,
+                    Cucop = tipo?.CucopPlus ?? string.Empty, Cabms = tipo?.Cabms ?? string.Empty, PartidaClave = tipo?.FkidPartidaContaNavigation?.Clave ?? string.Empty,
+                    ExistenciaMinima = minimo, ExistenciaMaxima = maximo, EstadoExistencia = estado, Activo = true, AplicaAlmacen = true
+                };
+            });
+
+            var filtro = request.Filtro?.Trim();
+            if (!string.IsNullOrWhiteSpace(filtro))
+                items = items.Where(x => x.Clave.Contains(filtro, StringComparison.OrdinalIgnoreCase) || x.TipoBienDescripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase) || x.Cucop.Contains(filtro, StringComparison.OrdinalIgnoreCase) || x.Cabms.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+            items = request.SortLabel switch
+            {
+                "Cantidad" => items.OrderByDescending(x => x.Cantidad),
+                "Costo" => items.OrderByDescending(x => x.Costo),
+                _ => items.OrderBy(x => x.TipoBienDescripcion)
+            };
+            var list = items.ToList();
+            var page = Math.Max(1, request.Page);
+            var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
+            return Success(list.Skip((page - 1) * pageSize).Take(pageSize).ToList(), "Existencias registradas obtenidas correctamente", list.Count);
+        }
+
         private async Task<PagedResult<AlmacenResponse>?> NormalizeAndValidateAsync(AlmacenResponse response, bool isCreate)
         {
-            _service.ApplyCurrentEmpresaIfPresent(response);
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
 
             if (response.FkidEmpresaSis <= 0)
             {
@@ -403,6 +478,18 @@ namespace EG.Application.Services.Almacen
                 return Failure<AlmacenResponse>("El bien o servicio seleccionado no existe o esta inactivo.");
             }
 
+            if (!response.FkidAnioSis.HasValue || response.FkidAnioSis.Value <= 0)
+            {
+                return Failure<AlmacenResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
+            }
+
+            var anio = await _context.Anios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAnio == response.FkidAnioSis.Value && x.Activo);
+            if (anio == null)
+            {
+                return Failure<AlmacenResponse>("El ejercicio presupuestal seleccionado no existe o está inactivo.");
+            }
+
             if (response.FkidUnidadesAlma is not > 0)
             {
                 response.FkidUnidadesAlma = tipoBien.FkidUnidadesAlma;
@@ -419,6 +506,10 @@ namespace EG.Application.Services.Almacen
             }
 
             response.FechaEntrada = response.FechaEntrada == default ? DateTime.Today : response.FechaEntrada;
+            if (response.FechaEntrada.Year != anio.Clave)
+            {
+                return Failure<AlmacenResponse>("La fecha de entrada debe pertenecer al ejercicio presupuestal seleccionado.");
+            }
             response.Costo ??= Math.Round(response.Cantidad * (response.CostoUnitario ?? 0m), 4);
             response.Clave = string.IsNullOrWhiteSpace(response.Clave)
                 ? await BuildClaveAsync(response)
@@ -483,6 +574,7 @@ namespace EG.Application.Services.Almacen
         private static void ApplyValues(EG.Infraestructure.Models.Almacen entity, AlmacenResponse response)
         {
             entity.FkidEmpresaSis = response.FkidEmpresaSis;
+            entity.FkidAnioSis = response.FkidAnioSis;
             entity.FkidAreaSis = response.FkidAreaSis;
             entity.FkidTipoBienAlma = response.FkidTipoBienAlma;
             entity.FkidUnidadesAlma = response.FkidUnidadesAlma;
@@ -506,6 +598,7 @@ namespace EG.Application.Services.Almacen
             {
                 PkidAlmacen = entity.PkidAlmacen,
                 FkidEmpresaSis = entity.FkidEmpresaSis,
+                FkidAnioSis = entity.FkidAnioSis,
                 EmpresaNombre = entity.FkidEmpresaSisNavigation?.Nombre ?? string.Empty,
                 FkidAreaSis = entity.FkidAreaSis,
                 AreaNombre = entity.FkidAreaSisNavigation?.Nombre ?? string.Empty,

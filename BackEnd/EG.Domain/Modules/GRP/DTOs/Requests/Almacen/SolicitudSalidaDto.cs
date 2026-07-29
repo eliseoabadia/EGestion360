@@ -4,6 +4,7 @@ namespace EG.Domain.DTOs.Requests.Almacen
     {
         public int PkidSolicitudSalida { get; set; }
         public int FkidEmpresaSis { get; set; }
+        public int? FkidAnioSis { get; set; }
         public int? FkidAreaSolicitaSis { get; set; }
         public int? FkidAreaEntregaSis { get; set; }
         public int FkidEstatusSolicitudSalidaAlma { get; set; }
@@ -21,5 +22,6 @@ namespace EG.Domain.DTOs.Requests.Almacen
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public int? FkidPolizaConta { get; set; }
     }
 }

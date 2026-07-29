@@ -196,6 +196,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IEstatusBajaAppService, EstatusBajaAppService>();
             services.AddScoped<IBienDisponibleBajaAppService, BienDisponibleBajaAppService>();
             services.AddScoped<IResguardoAppService, ResguardoAppService>();
+            services.AddScoped<ICedulaDiferenciasAppService, CedulaDiferenciasAppService>();
             services.AddScoped<IResguardoDetalleAppService, ResguardoDetalleAppService>();
             services.AddScoped<ICalendarioInventarioAppService, CalendarioInventarioAppService>();
             services.AddScoped<IInventarioAppService, InventarioAppService>();

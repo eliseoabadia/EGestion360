@@ -1,0 +1,177 @@
+@page "/Patrimonio/Cedula_Diferencia"
+@using EG.Common.GenericModel
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Web.Contracts
+@using EG.Web.Models
+@using EG.Web.Pages.Shared
+@using EG.Web.Services
+@using MudBlazor
+@implements IDisposable
+
+@inject IGenericCrudService<CedulaDiferenciaResponse> Service
+@inject IGenericCrudService<AreaResponse> AreaService
+@inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
+@inject ISnackbar Snackbar
+
+<MudContainer Class="px-3 d-flex flex-column cedula-diferencia-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <PageHeader Title="Cédula de diferencia"
+                Subtitle="Comparativo entre el último inventario histórico y el inventario activo"
+                Icon="@Icons.Material.Filled.FactCheck"
+                ShowCreateButton="false"
+                OnRefresh="ReloadData" />
+
+    @if (AnioStateService.AnioId is not > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-2">
+            Selecciona un ejercicio presupuestal para consultar la cédula.
+        </MudAlert>
+    }
+
+    <MudPaper Elevation="1" Class="pa-3 mb-2" Style="flex-shrink: 0;">
+        <MudGrid Spacing="2" AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="7">
+                <PagedAutocomplete Value="@_selectedArea"
+                                   ValueChanged="OnAreaChanged"
+                                   Label="Área a comparar"
+                                   Required="true"
+                                   RequiredError="El área es requerida"
+                                   LoadPage="LoadAreasPageAsync" />
+            </MudItem>
+            <MudItem xs="12" md="5">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @(_selectedArea == null
+                        ? "La consulta se habilita al seleccionar un área."
+                        : $"Ejercicio activo: {AnioStateService.AnioTexto}")
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+        <GenericDataGrid TItem="CedulaDiferenciaResponse"
+                         @ref="table"
+                         Title="Diferencias de inventario"
+                         SearchPlaceholder="Buscar tipo, clave, bien, tipo patrimonial o resguardante..."
+                         ShowExportButton="false"
+                         ServerDataFunc="LoadServerData"
+                         SearchString="@search"
+                         SearchStringChanged="value => search = value"
+                         OnSearch="ReloadData"
+                         PageSize="20"
+                         PageSizeOptions="new[] { 10, 20, 50, 100 }">
+            <Columns>
+                <TemplateColumn T="CedulaDiferenciaResponse" Title="Resultado" Identifier="Tipo" PropertyName="Tipo" SortBy="x => x.Tipo">
+                    <CellTemplate Context="cell">
+                        <MudChip T="string" Size="Size.Small" Color="@TypeColor(cell.Item.Tipo)" Variant="Variant.Outlined">
+                            @cell.Item.Tipo
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CedulaDiferenciaResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
+                    <CellTemplate Context="cell">@TextOrDash(cell.Item.Clave)</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CedulaDiferenciaResponse" Title="Bien" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(cell.Item.Descripcion)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.TipoPatrimonio)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CedulaDiferenciaResponse" Title="Tipo de bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
+                    <CellTemplate Context="cell">
+                        <MudText Typo="Typo.body2">@TextOrDash(cell.Item.TipoBienClave)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.TipoBienDescripcion)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CedulaDiferenciaResponse" Title="Resguardante" Identifier="Resguardante" PropertyName="Resguardante" SortBy="x => x.Resguardante">
+                    <CellTemplate Context="cell">@TextOrDash(cell.Item.Resguardante)</CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
+    </div>
+</MudContainer>
+
+@code {
+    private GenericDataGrid<CedulaDiferenciaResponse> table = null!;
+    private LookupItem? _selectedArea;
+    private string search = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
+        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    private async Task<TableData<CedulaDiferenciaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        if (_selectedArea == null || AnioStateService.AnioId is not > 0)
+        {
+            return new TableData<CedulaDiferenciaResponse> { Items = [], TotalItems = 0 };
+        }
+
+        var response = await Service.GetAllPaginadoAsync(
+            Math.Max(1, state.Page + 1),
+            state.PageSize,
+            search,
+            state.SortLabel ?? "Tipo",
+            state.SortDirection,
+            new Dictionary<string, object> { ["FkidAreaSis"] = _selectedArea.Id });
+
+        if (response?.Success != true && !string.IsNullOrWhiteSpace(response?.Message))
+        {
+            Snackbar.Add(response.Message, Severity.Warning);
+        }
+
+        return new TableData<CedulaDiferenciaResponse>
+        {
+            Items = response?.Items ?? [],
+            TotalItems = response?.TotalCount ?? 0
+        };
+    }
+
+    private async Task OnAreaChanged(LookupItem? value)
+    {
+        _selectedArea = value;
+        await ReloadData();
+    }
+
+    private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+    {
+        var response = await AreaService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
+        var items = response?.Items?.Select(x => new LookupItem
+        {
+            Id = x.PkidArea,
+            Text = string.IsNullOrWhiteSpace(x.Clave) ? x.Descripcion : $"{x.Clave} - {x.Descripcion}"
+        }).ToList() ?? [];
+        return new ComboLookupResult { Items = items, TotalCount = response?.TotalCount ?? items.Count };
+    }
+
+    private async Task ReloadData()
+    {
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
+    private static Color TypeColor(string? type) => type switch
+    {
+        "Faltantes" => Color.Error,
+        "Sobrantes" => Color.Warning,
+        _ => Color.Success
+    };
+
+    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private async void OnEmpresaChanged(int _) => await ReloadData();
+    private async void OnAnioChanged(int? _) => await ReloadData();
+
+    public void Dispose()
+    {
+        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
+    }
+}

@@ -14,6 +14,7 @@ namespace EG.ApiCoreBS.Services
         private readonly ILogger<UserContextService> _logger;
         private readonly EGestionContext _context;
         private const string EmpresaHeader = "X-Empresa-Id";
+        private const string AnioPresupuestalHeader = "X-Anio-Presupuestal-Id";
         private static readonly string[] CandidateClaimTypes = new[]
         {
             ClaimTypes.NameIdentifier,
@@ -157,6 +158,40 @@ namespace EG.ApiCoreBS.Services
             var id = TryGetCurrentEmpresaId();
             if (!id.HasValue)
                 throw new InvalidOperationException("No se pudo obtener el ID de la empresa del usuario autenticado.");
+            return id.Value;
+        }
+
+        public int? TryGetCurrentAnioPresupuestalId()
+        {
+            var headers = _httpContextAccessor.HttpContext?.Request?.Headers;
+            if (headers == null ||
+                !headers.TryGetValue(AnioPresupuestalHeader, out var value) ||
+                !int.TryParse(value.FirstOrDefault(), out var anioId) ||
+                anioId <= 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                return _context.Anios
+                    .AsNoTracking()
+                    .Any(x => x.PkidAnio == anioId && x.Activo)
+                    ? anioId
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo validar el ejercicio presupuestal {AnioId}", anioId);
+                return null;
+            }
+        }
+
+        public int GetCurrentAnioPresupuestalId()
+        {
+            var id = TryGetCurrentAnioPresupuestalId();
+            if (!id.HasValue)
+                throw new InvalidOperationException("No se pudo obtener el ejercicio presupuestal seleccionado.");
             return id.Value;
         }
     }

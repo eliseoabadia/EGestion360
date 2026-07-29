@@ -13,12 +13,13 @@
 @inherits BaseCrudPage<ResguardoResponse, ResguardoResponse>
 
 @inject SucursalStateService SucursalStateService
+@inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column firma-resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100vh; overflow: hidden;">
+    <MudContainer Class="px-3 d-flex flex-column firma-resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedResguardo == null)
         {
             <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
@@ -311,7 +312,9 @@
     {
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
+        await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        AnioStateService.OnAnioChanged += OnAnioChanged;
     }
 
     protected override async Task<TableData<ResguardoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -563,6 +566,15 @@
         }
     }
 
+    private async void OnAnioChanged(int? _)
+    {
+        BackToTable();
+        if (table != null)
+        {
+            await table.ReloadData();
+        }
+    }
+
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
 
@@ -572,6 +584,7 @@
     public void Dispose()
     {
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
+        AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();
         SearchCts?.Dispose();
     }

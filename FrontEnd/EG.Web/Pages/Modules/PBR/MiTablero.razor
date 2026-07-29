@@ -12,7 +12,7 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100vh; overflow: hidden;">
+<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="Mi Tablero"
                 Subtitle="@($"Vista ejecutiva del ejercicio {anio}")"
                 Icon="@Icons.Material.Filled.DashboardCustomize"
