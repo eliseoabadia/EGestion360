@@ -91,6 +91,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 
             var dto = request.Adapt<MatrizConversionDto>();
 
+            var validationMessage = await ValidateAccountingRulesAsync(request);
+            if (validationMessage != null)
+            {
+                return BadRequest(ValidationFailure(validationMessage));
+            }
+
             var existe = await _service.ExisteRegistroAsync(dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis, dto.FkidTipoGastoPres);
             if (existe)
             {
@@ -133,6 +139,12 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 
             var dto = request.Adapt<MatrizConversionDto>();
             dto.PkidMatrizConversion = id;
+
+            var validationMessage = await ValidateAccountingRulesAsync(request);
+            if (validationMessage != null)
+            {
+                return BadRequest(ValidationFailure(validationMessage));
+            }
 
             var existe = await _service.ExisteRegistroUpdateAsync(id, dto.FkidAnioSis, dto.FkidProgramaPres, dto.FkidPartidaSis, dto.FkidTipoGastoPres);
             if (existe)
@@ -353,7 +365,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContablePorEjercer()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 2"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 2") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -365,7 +377,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePorEjercerLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 2"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 2") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -376,7 +388,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContableModificado()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 3"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 3") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -388,7 +400,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableModificadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 3"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 3") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -399,7 +411,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContableComprometido()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 4"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 4") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -411,7 +423,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableComprometidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 4"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 4") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -422,7 +434,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContableDevengado()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 5"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 5") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -434,7 +446,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableDevengadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 5"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 5") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -445,7 +457,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContableEjercido()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 6"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 6") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -457,7 +469,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableEjercidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 6"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 6") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -468,7 +480,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContablePagado()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 7"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 7") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -480,7 +492,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePagadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 7"))
+                .Where(c => c.ClaveOrd.StartsWith("8 2 7") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
@@ -491,7 +503,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<IActionResult> GetCuentaContableGasto()
         {
             var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("5"))
+                .Where(c => c.ClaveOrd.StartsWith("5") && c.NivelCuenta == 7)
                 .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -503,11 +515,64 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableGastoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
             var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("5"))
+                .Where(c => c.ClaveOrd.StartsWith("5") && c.NivelCuenta == 7)
                 .OrderBy(c => c.ClaveNombre)
                 .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
 
             return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
         }
+
+        private async Task<string?> ValidateAccountingRulesAsync(MatrizConversionResponse request)
+        {
+            var programaValido = await _context.Set<Programa>().AsNoTracking().AnyAsync(p =>
+                p.PkidPrograma == request.FkidProgramaPres &&
+                p.FkidAnioSis == request.FkidAnioSis &&
+                p.Activo);
+            if (!programaValido)
+                return "El programa no pertenece al ejercicio seleccionado o esta inactivo.";
+
+            if (!await _context.Set<Partidum1>().AsNoTracking().AnyAsync(p => p.PkidPartida == request.FkidPartidaSis && p.Activo))
+                return "La partida seleccionada no existe o esta inactiva.";
+
+            if (!await _context.TipoGastos.AsNoTracking().AnyAsync(t => t.PkidTipoGasto == request.FkidTipoGastoPres && t.Activo))
+                return "El tipo de gasto seleccionado no existe o esta inactivo.";
+
+            var reglas = new[]
+            {
+                (Id: request.FkidCuentaContableAprobado, Prefijo: "8 2 1"),
+                (Id: request.FkidCuentaContablePorEjercer, Prefijo: "8 2 2"),
+                (Id: request.FkidCuentaContableModificado, Prefijo: "8 2 3"),
+                (Id: request.FkidCuentaContableComprometido, Prefijo: "8 2 4"),
+                (Id: request.FkidCuentaContableDevengado, Prefijo: "8 2 5"),
+                (Id: request.FkidCuentaContableEjercido, Prefijo: "8 2 6"),
+                (Id: request.FkidCuentaContablePagado, Prefijo: "8 2 7"),
+                (Id: request.FkidCuentaContableGasto, Prefijo: "5")
+            };
+
+            var cuentas = await _context.VwCuentas.AsNoTracking()
+                .Where(c => reglas.Select(r => r.Id).Contains(c.PkIdCuenta))
+                .ToDictionaryAsync(c => c.PkIdCuenta);
+
+            foreach (var regla in reglas)
+            {
+                if (!cuentas.TryGetValue(regla.Id, out var cuenta) ||
+                    !cuenta.Activo || cuenta.NivelCuenta != 7 ||
+                    string.IsNullOrWhiteSpace(cuenta.ClaveOrd) ||
+                    !cuenta.ClaveOrd.StartsWith(regla.Prefijo))
+                {
+                    return $"La cuenta {regla.Id} no cumple la naturaleza {regla.Prefijo} de nivel 7.";
+                }
+            }
+
+            return null;
+        }
+
+        private static PagedResult<MatrizConversionResponse> ValidationFailure(string message) => new()
+        {
+            Success = false,
+            Message = message,
+            Code = "BUSINESS_RULE",
+            TotalCount = 0
+        };
     }
 }

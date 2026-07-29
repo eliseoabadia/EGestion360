@@ -26,9 +26,18 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<SolicitudSuficienciaResponse>>> GetAll()
+        public async Task<ActionResult<PagedResult<SolicitudSuficienciaResponse>>> GetAll([FromQuery] int? idAnio)
         {
+            if (!idAnio.HasValue || idAnio.Value <= 0)
+                return BadRequest(new PagedResult<SolicitudSuficienciaResponse>
+                {
+                    Success = false,
+                    Message = "Debe seleccionar un ejercicio presupuestal.",
+                    Code = "YEAR_REQUIRED"
+                });
             var result = await _appService.GetAllAsync();
+            result.Items = result.Items?.Where(x => x.FkidAnioSis == idAnio.Value).ToList() ?? new List<SolicitudSuficienciaResponse>();
+            result.TotalCount = result.Items.Count;
             return Ok(result);
         }
 

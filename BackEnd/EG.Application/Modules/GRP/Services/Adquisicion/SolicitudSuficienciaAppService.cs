@@ -3,6 +3,7 @@ using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ namespace EG.Application.Services.Adquisicion
             ISolicitudSuficienciaAppService
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public SolicitudSuficienciaAppService(
             GenericService<SolicitudSuficiencium, SolicitudSuficienciaDto, SolicitudSuficienciaResponse> service,
             GenericService<VwSolicitudSuficiencium, SolicitudSuficienciaDto, SolicitudSuficienciaResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -27,6 +30,41 @@ namespace EG.Application.Services.Adquisicion
                 (dto, id) => dto.PkidSolicitudSuficiencia = id)
         {
             _context = context;
+            _userContext = userContext;
+        }
+
+        public override async Task<PagedResult<SolicitudSuficienciaResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            if (!request.AdditionalFilters.TryGetValue("FkidAnioSis", out var anioRaw) ||
+                !int.TryParse(anioRaw?.ToString(), out var anioId) || anioId <= 0)
+            {
+                return Failure<SolicitudSuficienciaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
+            }
+            request.AdditionalFilters["FkidAnioSis"] = anioId;
+            request.AdditionalFilters["FkidEmpresaSis"] = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            var result = await base.GetAllPaginadoAsync(request);
+            await MarkLockedAsync(result.Items);
+            return result;
+        }
+
+        public override async Task<PagedResult<SolicitudSuficienciaResponse>> GetAllAsync()
+        {
+            var result = await base.GetAllAsync();
+            var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            result.Items = result.Items?.Where(x => x.FkidEmpresaSis == empresaId).ToList() ?? new List<SolicitudSuficienciaResponse>();
+            result.TotalCount = result.Items.Count;
+            await MarkLockedAsync(result.Items);
+            return result;
+        }
+
+        public override async Task<PagedResult<SolicitudSuficienciaResponse>> GetByIdAsync(int id)
+        {
+            var result = await base.GetByIdAsync(id);
+            if (result.Success && result.Data?.FkidEmpresaSis != RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext))
+                return Failure<SolicitudSuficienciaResponse>("Solicitud de suficiencia no encontrada.", "NOT_FOUND");
+            if (result.Success && result.Data != null)
+                await MarkLockedAsync(new[] { result.Data });
+            return result;
         }
 
         public override async Task<PagedResult<SolicitudSuficienciaResponse>> CreateAsync(
@@ -86,6 +124,14 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
         {
+            var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            var solicitud = await _context.SolicitudSuficiencia.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidSolicitudSuficiencia == id && x.FkidEmpresaSis == empresaId && x.Activo);
+            if (solicitud == null)
+                return Failure<bool>("Solicitud de suficiencia no encontrada.", "NOT_FOUND");
+            if (await HasActiveAuthorizationAsync(id))
+                return Failure<bool>("La solicitud tiene una autorizacion vigente. Cancela o elimina la autorizacion antes de regresar a esta etapa.", "LOCKED");
+
             try
             {
                 var spResult = await StoredProcedureExecutor.ExecuteResultAsync(
@@ -136,6 +182,13 @@ namespace EG.Application.Services.Adquisicion
                 var fechaSolicitud = request.FechaSolicitud == default
                     ? DateOnly.FromDateTime(DateTime.Today)
                     : request.FechaSolicitud;
+
+                var fechaRequisicion = await _context.Requisicions.AsNoTracking()
+                    .Where(x => x.PkidRequisicion == request.FkidRequisicionOrco && x.Activo)
+                    .Select(x => (DateTime?)x.FechaRequisicion)
+                    .FirstOrDefaultAsync();
+                if (!fechaRequisicion.HasValue || fechaSolicitud > DateOnly.FromDateTime(fechaRequisicion.Value))
+                    return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser menor o igual a la fecha de requisicion.");
 
                 var readiness = await ValidateRequisicionReadyForSolicitudAsync(request.FkidRequisicionOrco, null);
                 if (readiness != null)
@@ -215,6 +268,26 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<SolicitudSuficienciaResponse>("La requisicion no existe o esta inactiva.");
             }
 
+            if (requisicion.FkidEmpresaSis != RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext))
+                return Failure<SolicitudSuficienciaResponse>("La requisicion no pertenece a la empresa activa.", "NOT_FOUND");
+
+            var fechaSolicitud = response.FechaSolicitud == default
+                ? DateOnly.FromDateTime(DateTime.Today)
+                : response.FechaSolicitud;
+            if (fechaSolicitud > DateOnly.FromDateTime(requisicion.FechaRequisicion))
+                return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser menor o igual a la fecha de requisicion.");
+
+            if (currentId.HasValue)
+            {
+                var actual = await _context.SolicitudSuficiencia.AsNoTracking().FirstOrDefaultAsync(x =>
+                    x.PkidSolicitudSuficiencia == currentId.Value && x.FkidEmpresaSis == requisicion.FkidEmpresaSis && x.Activo);
+                if (actual == null)
+                    return Failure<SolicitudSuficienciaResponse>("Solicitud de suficiencia no encontrada.", "NOT_FOUND");
+                if (await HasActiveAuthorizationAsync(actual.PkidSolicitudSuficiencia))
+                    return Failure<SolicitudSuficienciaResponse>("La solicitud tiene una autorizacion vigente. Cancela o elimina la autorizacion antes de modificarla.", "LOCKED");
+                response.Estatus = actual.Estatus;
+            }
+
             if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidFuenteFinanciamientoPres.HasValue ||
                 !requisicion.FkidTipoGastoPres.HasValue || !requisicion.FkidDigitoIdentificadorPres.HasValue ||
                 !requisicion.FkidDestinoGastoPres.HasValue)
@@ -246,7 +319,8 @@ namespace EG.Application.Services.Adquisicion
             response.GastoNoProgramable = string.IsNullOrWhiteSpace(response.GastoNoProgramable)
                 ? null
                 : response.GastoNoProgramable.Trim();
-            response.Estatus = response.Estatus <= 0 ? 1 : response.Estatus;
+            if (!currentId.HasValue)
+                response.Estatus = 1;
 
             return null;
         }
@@ -263,6 +337,9 @@ namespace EG.Application.Services.Adquisicion
             {
                 return Failure<SolicitudSuficienciaResponse>("La requisicion no existe o esta inactiva.");
             }
+
+            if (requisicion.FkidEmpresaSis != RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext))
+                return Failure<SolicitudSuficienciaResponse>("La requisicion no pertenece a la empresa activa.", "NOT_FOUND");
 
             var duplicate = await _context.SolicitudSuficiencia
                 .AsNoTracking()
@@ -311,6 +388,19 @@ namespace EG.Application.Services.Adquisicion
                     $"No se puede generar suficiencia: faltan montos cotizados en {ejemplo}.");
             }
 
+            if (requisicion.CompraDirecta != true)
+            {
+                var detallesIds = detalles.Select(x => x.RequisicionDetalleId).ToHashSet();
+                var proveedoresCompletos = cotizaciones
+                    .GroupBy(x => x.ProveedorId)
+                    .Count(g => detallesIds.All(id => g.Any(x => x.RequisicionDetalleId == id)));
+                if (proveedoresCompletos < 3)
+                {
+                    return Failure<SolicitudSuficienciaResponse>(
+                        "La suficiencia requiere tres cotizaciones completas de proveedores distintos o compra directa autorizada.");
+                }
+            }
+
             return null;
         }
 
@@ -348,6 +438,7 @@ namespace EG.Application.Services.Adquisicion
                 select new CotizacionDetalleBase
                 {
                     RequisicionDetalleId = cotizacionDetalle.FkidRequisicionDetalleOrco,
+                    ProveedorId = cotizacion.FkidProveedorSis,
                     PrecioUnitario = cotizacionDetalle.PrecioUnitario.Value
                 })
                 .ToListAsync();
@@ -435,7 +526,28 @@ namespace EG.Application.Services.Adquisicion
         private sealed class CotizacionDetalleBase
         {
             public int RequisicionDetalleId { get; set; }
+            public int ProveedorId { get; set; }
             public decimal PrecioUnitario { get; set; }
+        }
+
+        private Task<bool> HasActiveAuthorizationAsync(int solicitudId) =>
+            _context.AutorizacionSuficiencia.AsNoTracking().AnyAsync(x =>
+                x.FkidSolicitudSuficienciaPres == solicitudId && x.Activo && x.Estatus != 3);
+
+        private async Task MarkLockedAsync(IEnumerable<SolicitudSuficienciaResponse>? items)
+        {
+            if (items == null) return;
+            var list = items.ToList();
+            var ids = list.Select(x => x.PkidSolicitudSuficiencia).ToList();
+            if (ids.Count == 0) return;
+            var lockedIds = await _context.AutorizacionSuficiencia.AsNoTracking()
+                .Where(x => ids.Contains(x.FkidSolicitudSuficienciaPres) && x.Activo && x.Estatus != 3)
+                .Select(x => x.FkidSolicitudSuficienciaPres)
+                .Distinct()
+                .ToListAsync();
+            var locked = lockedIds.ToHashSet();
+            foreach (var item in list)
+                item.BloqueadaPorAutorizacion = locked.Contains(item.PkidSolicitudSuficiencia);
         }
     }
 }

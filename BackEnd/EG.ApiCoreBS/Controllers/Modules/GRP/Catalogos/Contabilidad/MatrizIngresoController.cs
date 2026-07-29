@@ -1,4 +1,5 @@
 using Mapster;
+using EG.ApiCoreBS.Helpers;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
@@ -6,6 +7,7 @@ using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 {
@@ -15,11 +17,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     public class MatrizIngresoController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IMatrizIngresoService _service;
+        private readonly EGestionContext _context;
 
         public MatrizIngresoController(
-            IMatrizIngresoService service)
+            IMatrizIngresoService service,
+            EGestionContext context)
         {
             _service = service;
+            _context = context;
         }
 
         [HttpGet]
@@ -76,7 +81,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var created = await _service.CreateAsync(request, GetCurrentUserId());
+            MatrizIngresoResponse created;
+            try
+            {
+                created = await _service.CreateAsync(request, GetCurrentUserId());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ValidationFailure(ex.Message));
+            }
 
             return CreatedAtAction(nameof(GetById), new { id = created?.PkidMatrizIngreso },
                 new PagedResult<MatrizIngresoResponse>
@@ -103,7 +116,15 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
                 });
             }
 
-            var updated = await _service.UpdateAsync(id, request, GetCurrentUserId());
+            MatrizIngresoResponse? updated;
+            try
+            {
+                updated = await _service.UpdateAsync(id, request, GetCurrentUserId());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ValidationFailure(ex.Message));
+            }
             if (updated == null)
             {
                 return NotFound(new PagedResult<MatrizIngresoResponse>
@@ -222,5 +243,33 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         {
             return Ok(await _service.GetCuentaContableLookupPaginadoAsync(page, pageSize, filter));
         }
+
+        [HttpGet("GetCuentaPresupuestalLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaPresupuestalLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas.AsNoTracking()
+                .Where(c => c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("8 1"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? string.Empty });
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
+        [HttpGet("GetCuentaDepositoLookupPaginado")]
+        public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaDepositoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
+        {
+            var query = _context.VwCuentas.AsNoTracking()
+                .Where(c => c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("1"))
+                .OrderBy(c => c.ClaveNombre)
+                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? string.Empty });
+            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+        }
+
+        private static PagedResult<MatrizIngresoResponse> ValidationFailure(string message) => new()
+        {
+            Success = false,
+            Message = message,
+            Code = "BUSINESS_RULE",
+            TotalCount = 0
+        };
     }
 }

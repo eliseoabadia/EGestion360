@@ -18619,6 +18619,7 @@ public partial class EGestionContext : DbContext
                 .HasMaxLength(11)
                 .IsUnicode(false);
             entity.Property(e => e.FechaRequisicion).HasColumnType("datetime");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidRequisicionOrco).HasColumnName("FKIdRequisicion_ORCO");
             entity.Property(e => e.GastoNoProgramable)

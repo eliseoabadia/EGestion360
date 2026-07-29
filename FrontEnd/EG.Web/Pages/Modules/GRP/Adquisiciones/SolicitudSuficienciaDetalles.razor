@@ -34,14 +34,14 @@
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Editar calendario">
                         <MudIconButton Icon="@Icons.Material.Filled.EditCalendar"
-                        Visible="@CanUpdate"
+                        Visible="@(CanUpdate && cell.Item.SolicitudEstatus == 1)"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidSolicitudSuficienciaDetalle))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
+                        Visible="@(CanDelete && cell.Item.SolicitudEstatus == 1)"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeleteItem(cell.Item.PkidSolicitudSuficienciaDetalle))" />

@@ -5,9 +5,11 @@
 @using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
 @using MudBlazor
+@implements IDisposable
 @inherits BaseCrudPage<SolicitudSuficienciaResponse, SolicitudSuficienciaResponse>
 
 @inject IGenericCrudService<SolicitudSuficienciaDetalleResponse> DetalleService
+@inject AnioPresupuestalStateService AnioStateService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
@@ -68,14 +70,14 @@
                         RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                        Visible="@CanUpdate"
+                        Visible="@(CanUpdate && !cell.Item.BloqueadaPorAutorizacion)"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidSolicitudSuficiencia))" />
                         </MudTooltip>
                         <MudTooltip Text="Eliminar">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                        Visible="@CanDelete"
+                        Visible="@(CanDelete && !cell.Item.BloqueadaPorAutorizacion)"
                         Color="Color.Error"
                         Size="Size.Small"
                         OnClick="@(() => DeleteItem(cell.Item.PkidSolicitudSuficiencia))" />
@@ -325,6 +327,29 @@
 
 @code {
     private GenericDataGrid<SolicitudSuficienciaResponse> table = null!;
+
+    protected override Dictionary<string, object>? GetAdditionalFilters() => new()
+    {
+        ["FkidAnioSis"] = AnioStateService.AnioId ?? 0
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AnioStateService.InitializeAsync();
+        AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    private void OnAnioChanged(int? anioId)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            SelectedSolicitud = null;
+            await ReloadData();
+        });
+    }
+
+    public void Dispose() => AnioStateService.OnAnioChanged -= OnAnioChanged;
     private GenericDataGrid<SolicitudSuficienciaDetalleResponse>? detalleTable;
     private SolicitudSuficienciaResponse? SelectedSolicitud;
     private List<SolicitudSuficienciaDetalleResponse> SelectedDetalles { get; set; } = new();

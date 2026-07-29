@@ -91,9 +91,8 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.Activo = true;
 
             await _service.AddAsync(dto);
-
-            var entities = await _service.GetAllAsync();
-            return entities.LastOrDefault();
+            return await _service.GetByIdAsync(dto.PkidMatrizConversion)
+                ?? throw new InvalidOperationException("No fue posible recuperar la matriz de conversion creada.");
         }
 
         public async Task UpdateAsync(int id, MatrizConversionDto dto, int usuarioId)
@@ -108,6 +107,17 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             var existing = await GetByIdAsync(id);
             if (existing == null) throw new KeyNotFoundException($"MatrizConversion con ID {id} no encontrado");
+
+            var usadaPorPresupuesto = await _context.VwEgresoAutorizados.AsNoTracking().AnyAsync(e =>
+                e.FkidAnioSis == existing.FkidAnioSis &&
+                e.FkidProgramaPres == existing.FkidProgramaPres &&
+                e.FkidPartidaConta == existing.FkidPartidaSis);
+
+            if (usadaPorPresupuesto)
+            {
+                throw new InvalidOperationException(
+                    "No puede eliminar la matriz porque esta relacionada con presupuesto autorizado.");
+            }
 
             var dto = new MatrizConversionDto
             {

@@ -211,7 +211,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
                 SearchString,
                 SortLabel,
                 SortDirection,
-                null
+                GetAdditionalFilters()
             );
 
             if (response?.Success == true && response.Items != null)
@@ -257,6 +257,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             StateHasChanged();
         }
     }
+
+    protected virtual Dictionary<string, object>? GetAdditionalFilters() => null;
 
     protected abstract string GetDefaultSortLabel();
 

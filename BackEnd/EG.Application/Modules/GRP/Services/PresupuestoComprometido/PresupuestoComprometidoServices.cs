@@ -105,6 +105,7 @@ namespace EG.Application.Services.PresupuestoComprometido
                         }
 
                         await _context.SaveChangesAsync();
+                        await SyncSolicitudStatusAsync(response.FkidSolicitudSuficienciaPres, response.Estatus, usuarioActual);
                         await transaction.CommitAsync();
                         result.Message =
                             "Suficiencia autorizada y reservada en una sola transaccion.";
@@ -131,8 +132,36 @@ namespace EG.Application.Services.PresupuestoComprometido
             AutorizacionSuficienciaResponse response,
             int usuarioActual)
         {
+            var current = await _context.AutorizacionSuficiencia.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAutorizacionSuficiencia == id && x.Activo);
+            if (current == null)
+                return Failure<AutorizacionSuficienciaResponse>("La autorizacion no existe o esta inactiva.", "NOT_FOUND");
+            if (!IsValidAuthorizationTransition(current.Estatus, response.Estatus))
+                return Failure<AutorizacionSuficienciaResponse>("La transicion de la autorizacion no esta permitida.", "LOCKED");
+            if (response.Estatus == 3 && await HasActiveContractAsync(id))
+                return Failure<AutorizacionSuficienciaResponse>("El contrato vigente debe cancelarse o eliminarse antes de cancelar la autorizacion.", "LOCKED");
+
             var validation = await NormalizeAndValidateAsync(response, id);
-            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+            if (validation != null) return validation;
+            var result = await base.UpdateAsync(id, response, usuarioActual);
+            if (result.Success)
+                await SyncSolicitudStatusAsync(current.FkidSolicitudSuficienciaPres, response.Estatus, usuarioActual);
+            return result;
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.AutorizacionSuficiencia.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAutorizacionSuficiencia == id && x.Activo);
+            if (current == null)
+                return Failure<bool>("La autorizacion no existe o esta inactiva.", "NOT_FOUND");
+            if (await HasActiveContractAsync(id))
+                return Failure<bool>("El contrato vigente debe cancelarse o eliminarse antes de borrar la autorizacion.", "LOCKED");
+
+            var result = await base.DeleteAsync(id);
+            if (result.Success)
+                await SyncSolicitudStatusAsync(current.FkidSolicitudSuficienciaPres, 3, null);
+            return result;
         }
 
         private async Task<PagedResult<AutorizacionSuficienciaResponse>?> NormalizeAndValidateAsync(
@@ -314,6 +343,26 @@ namespace EG.Application.Services.PresupuestoComprometido
                 ? value.Value.ToDateTime(TimeOnly.MinValue)
                 : null;
         }
+
+        private Task<bool> HasActiveContractAsync(int authorizationId) =>
+            _context.Contratos1.AsNoTracking().AnyAsync(x =>
+                x.FkidAutorizacionSuficienciaPres == authorizationId && x.Activo);
+
+        private async Task SyncSolicitudStatusAsync(int solicitudId, int authorizationStatus, int? usuarioActual)
+        {
+            var solicitud = await _context.SolicitudSuficiencia
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSuficiencia == solicitudId && x.Activo);
+            if (solicitud == null) return;
+            solicitud.Estatus = authorizationStatus switch { 1 => 2, 2 => 3, _ => 1 };
+            solicitud.FechaModificacion = DateTime.UtcNow;
+            solicitud.UsuarioModificacion = usuarioActual;
+            await _context.SaveChangesAsync();
+        }
+
+        private static bool IsValidAuthorizationTransition(int current, int next) =>
+            current == next ||
+            (current == 1 && next is 2 or 3) ||
+            (current == 2 && next == 3);
     }
 
     public class AutorizacionSuficienciaDetalleAppService(

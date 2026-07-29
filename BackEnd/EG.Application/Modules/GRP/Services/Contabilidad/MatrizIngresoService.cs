@@ -52,6 +52,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<MatrizIngresoResponse> CreateAsync(MatrizIngresoResponse request, int usuarioId)
         {
+            await ValidateAsync(request, null);
             var dto = request.Adapt<MatrizIngresoDto>();
             dto.UsuarioCreacion = usuarioId;
             dto.FechaCreacion = DateTime.UtcNow;
@@ -63,6 +64,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<MatrizIngresoResponse?> UpdateAsync(int id, MatrizIngresoResponse request, int usuarioId)
         {
+            await ValidateAsync(request, id);
             var dto = request.Adapt<MatrizIngresoDto>();
             dto.PkidMatrizIngreso = id;
             dto.UsuarioModificacion = usuarioId;
@@ -172,6 +174,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task<IEnumerable<object>> GetOrigenAsync()
         {
             return await _context.Set<Origen>()
+                .Where(o => o.Activo)
                 .Select(o => new { PkidCuenta = o.PkidOrigen, ClaveNombre = o.Descripcion })
                 .Distinct()
                 .ToListAsync();
@@ -180,7 +183,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task<IEnumerable<object>> GetCuentaContableAsync()
         {
             return await _context.VwCuentas
-                .Where(c => c.NivelCuenta == 7)
+                .Where(c => c.Activo && c.NivelCuenta == 7)
                 .Select(c => new { PkidCuenta = c.PkIdCuenta, ClaveNombre = c.ClaveNombre })
                 .Distinct()
                 .ToListAsync();
@@ -243,7 +246,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
 
         public async Task<PagedResult<LookupItem>> GetOrigenLookupPaginadoAsync(int page, int pageSize, string? filter)
         {
-            var query = _context.Set<Origen>().AsNoTracking();
+            var query = _context.Set<Origen>().AsNoTracking().Where(o => o.Activo);
             var normalizedFilter = filter?.Trim();
 
             if (!string.IsNullOrWhiteSpace(normalizedFilter))
@@ -278,7 +281,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             var query = _context.VwCuentas
                 .AsNoTracking()
-                .Where(c => c.NivelCuenta == 7);
+                .Where(c => c.Activo && c.NivelCuenta == 7);
             var normalizedFilter = filter?.Trim();
 
             if (!string.IsNullOrWhiteSpace(normalizedFilter))
@@ -307,6 +310,63 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 Items = items,
                 TotalCount = totalCount
             };
+        }
+
+        private async Task ValidateAsync(MatrizIngresoResponse request, int? currentId)
+        {
+            if (!request.FkIdAnioSis.HasValue || !request.FkIdPrograma.HasValue || !request.FkIdOrigen.HasValue)
+                throw new InvalidOperationException("El ejercicio, programa y origen son obligatorios.");
+
+            var programaValido = await _context.Set<Programa>().AsNoTracking().AnyAsync(p =>
+                p.PkidPrograma == request.FkIdPrograma.Value &&
+                p.FkidAnioSis == request.FkIdAnioSis.Value &&
+                p.Activo);
+            if (!programaValido)
+                throw new InvalidOperationException("El programa no pertenece al ejercicio seleccionado o esta inactivo.");
+
+            if (!await _context.Set<Origen>().AsNoTracking().AnyAsync(o => o.PkidOrigen == request.FkIdOrigen.Value && o.Activo))
+                throw new InvalidOperationException("El origen seleccionado no existe o esta inactivo.");
+
+            if (!request.FkIdCuentaContableAutorizado.HasValue)
+                throw new InvalidOperationException("La cuenta de presupuesto autorizado es obligatoria.");
+
+            var presupuestales = new[]
+            {
+                request.FkIdCuentaContableAutorizado,
+                request.FkIdCuentaContablePorEjercer,
+                request.FkIdCuentaContableModificado,
+                request.FkIdCuentaContableDevengado,
+                request.FkIdCuentaContableRecaudado
+            }.Where(x => x.HasValue).Select(x => x!.Value).Distinct().ToList();
+
+            var cuentasPresupuestalesValidas = await _context.VwCuentas.AsNoTracking().CountAsync(c =>
+                presupuestales.Contains(c.PkIdCuenta) && c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("8 1"));
+            if (cuentasPresupuestalesValidas != presupuestales.Count)
+                throw new InvalidOperationException("Las cuentas presupuestales de ingreso deben iniciar con 8 1 y ser de nivel 7.");
+
+            if (request.FkIdCuentaContableDeposito.HasValue &&
+                !await _context.VwCuentas.AsNoTracking().AnyAsync(c =>
+                    c.PkIdCuenta == request.FkIdCuentaContableDeposito.Value &&
+                    c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("1")))
+            {
+                throw new InvalidOperationException("La cuenta de deposito debe iniciar con 1 y ser de nivel 7.");
+            }
+
+            var duplicate = await _context.Set<MatrizIngreso>().AsNoTracking().AnyAsync(x =>
+                x.Activo &&
+                x.PkIdMatrizIngreso != (currentId ?? 0) &&
+                x.FkIdAnioSis == request.FkIdAnioSis &&
+                x.FkIdPrograma == request.FkIdPrograma &&
+                x.FkIdOrigen == request.FkIdOrigen &&
+                x.FkIdCuentaContableAutorizado == request.FkIdCuentaContableAutorizado &&
+                x.FkIdCuentaContablePorEjercer == request.FkIdCuentaContablePorEjercer &&
+                x.FkIdCuentaContableModificado == request.FkIdCuentaContableModificado &&
+                x.FkIdCuentaContableDevengado == request.FkIdCuentaContableDevengado &&
+                x.FkIdCuentaContableRecaudado == request.FkIdCuentaContableRecaudado &&
+                x.FkIdCuentaContableDeposito == request.FkIdCuentaContableDeposito);
+
+            if (duplicate)
+                throw new InvalidOperationException("La matriz de ingreso ya existe para el ejercicio y cuentas seleccionadas.");
         }
     }
 }

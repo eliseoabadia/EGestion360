@@ -47,7 +47,8 @@
                                Label="Fecha solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
-                               RequiredError="La fecha de solicitud es requerida" />
+                               RequiredError="La fecha de solicitud es requerida"
+                               Disabled="@IsHeaderLocked" />
             </MudItem>
 
             @if (!Id.HasValue)
@@ -68,12 +69,7 @@
             else
             {
                 <MudItem xs="12" md="4">
-                    <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
-                        <MudSelectItem Value="1">Borrador</MudSelectItem>
-                        <MudSelectItem Value="2">Enviada</MudSelectItem>
-                        <MudSelectItem Value="3">Autorizada</MudSelectItem>
-                        <MudSelectItem Value="4">Rechazada</MudSelectItem>
-                    </MudSelect>
+                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
 
@@ -81,7 +77,8 @@
                 <MudTextField @bind-Value="item.GastoNoProgramable"
                               Label="Gasto no programable"
                               Variant="Variant.Outlined"
-                              MaxLength="3" />
+                              MaxLength="3"
+                              Disabled="@IsHeaderLocked" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -89,7 +86,8 @@
                                  @bind-Value="item.IdGastoNoProgramable"
                                  Label="Id gasto no programable"
                                  Variant="Variant.Outlined"
-                                 Min="0" />
+                                 Min="0"
+                                 Disabled="@IsHeaderLocked" />
             </MudItem>
 
             <MudItem xs="12" md="4">
@@ -97,7 +95,8 @@
                                  @bind-Value="item.IdCompromisoNomina"
                                  Label="Id compromiso nomina"
                                  Variant="Variant.Outlined"
-                                 Min="0" />
+                                 Min="0"
+                                 Disabled="@IsHeaderLocked" />
             </MudItem>
 
             <MudItem xs="12" md="8">
@@ -105,7 +104,8 @@
                               Label="Justificacion"
                               Variant="Variant.Outlined"
                               Lines="3"
-                              MaxLength="1000" />
+                              MaxLength="1000"
+                              Disabled="@IsHeaderLocked" />
             </MudItem>
 
             @if (!Id.HasValue)
@@ -308,6 +308,7 @@
     private string actionText => Id.HasValue ? "Actualizar" : "Generar";
     private string processingText => Id.HasValue ? "Actualizando..." : "Generando...";
     private bool IsRequisicionLocked => Id.HasValue || RequisicionId > 0;
+    private bool IsHeaderLocked => Id.HasValue && item.BloqueadaPorAutorizacion;
     private bool CanConfirmDialog => Id.HasValue || _previewOk;
     private string PreviewSubtitle => _requisicion == null
         ? "La solicitud tomara el mes de la fecha de requisicion."
@@ -416,18 +417,24 @@
                 new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
 
             var detalles = detallesResponse?.Items?.Where(x => x.Activo).ToList() ?? new List<RequisicionDetalleResponse>();
-            var cotizaciones = cotizacionesResponse?.Items?
+            var cotizacionesValidas = cotizacionesResponse?.Items?
                 .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
+                .ToList() ?? new List<CotizacionDetalleResponse>();
+            var cotizaciones = cotizacionesValidas
                 .GroupBy(x => x.FkidRequisicionDetalleOrco)
-                .ToDictionary(x => x.Key, x => x.ToList()) ?? new Dictionary<int, List<CotizacionDetalleResponse>>();
+                .ToDictionary(x => x.Key, x => x.ToList());
 
             _previewItems = detalles.Select(detalle =>
             {
                 cotizaciones.TryGetValue(detalle.PkidRequisicionDetalle, out var quoteRows);
                 quoteRows ??= new List<CotizacionDetalleResponse>();
 
-                var promedio = quoteRows.Any()
-                    ? quoteRows.Average(x => x.PrecioUnitario.GetValueOrDefault() * detalle.Cantidad)
+                var preciosPorProveedor = quoteRows
+                    .GroupBy(x => x.FkidProveedorSis)
+                    .Select(x => x.Average(q => q.PrecioUnitario.GetValueOrDefault() * detalle.Cantidad))
+                    .ToList();
+                var promedio = preciosPorProveedor.Any()
+                    ? preciosPorProveedor.Average()
                     : 0m;
                 var ajustado = Math.Round(promedio * (1m + (_porcentajeAjuste / 100m)), 4, MidpointRounding.AwayFromZero);
 
@@ -435,7 +442,7 @@
                 {
                     Bien = TextOrDefault(detalle.BienClaveNombre, detalle.PkidRequisicionDetalle),
                     Cantidad = detalle.Cantidad,
-                    Cotizaciones = quoteRows.Count,
+                    Cotizaciones = preciosPorProveedor.Count,
                     Promedio = promedio,
                     Ajustado = ajustado
                 };
@@ -444,12 +451,21 @@
             _totalBienes = _previewItems.Count;
             _totalCotizados = _previewItems.Count(x => x.Cotizaciones > 0);
             _previewTotal = _previewItems.Sum(x => x.Ajustado);
-            _previewOk = _totalBienes > 0 && _totalCotizados == _totalBienes;
+            var detalleIds = detalles.Select(x => x.PkidRequisicionDetalle).ToHashSet();
+            var proveedoresCompletos = cotizacionesValidas
+                .GroupBy(x => x.FkidProveedorSis)
+                .Count(g => detalleIds.All(id => g.Any(x => x.FkidRequisicionDetalleOrco == id)));
+            _previewOk = _totalBienes > 0 && _totalCotizados == _totalBienes &&
+                (_requisicion?.CompraDirecta == true || proveedoresCompletos >= 3);
             _previewMessage = _previewOk
-                ? "La requisicion tiene montos cotizados para todos sus bienes."
+                ? (_requisicion?.CompraDirecta == true
+                    ? "Compra directa: todos los bienes tienen monto cotizado."
+                    : $"La requisicion tiene {proveedoresCompletos} cotizaciones completas de proveedores distintos.")
                 : _totalBienes == 0
                     ? "La requisicion no tiene bienes registrados."
-                    : "Faltan bienes con monto cotizado; no se puede generar la solicitud.";
+                    : _totalCotizados != _totalBienes
+                        ? "Faltan bienes con monto cotizado; no se puede generar la solicitud."
+                        : "Se requieren tres cotizaciones completas de proveedores distintos o compra directa autorizada.";
         }
         catch (Exception ex)
         {
@@ -499,6 +515,12 @@
         if (!_fechaSolicitud.HasValue)
         {
             Snackbar.Add("Debe capturar la fecha de solicitud.", Severity.Warning);
+            return;
+        }
+
+        if (_requisicion != null && _fechaSolicitud.Value.Date > _requisicion.FechaRequisicion.Date)
+        {
+            Snackbar.Add("La fecha de solicitud debe ser menor o igual a la fecha de requisicion.", Severity.Warning);
             return;
         }
 
@@ -591,6 +613,7 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+
 
     private static string Money(decimal value) =>
         $"${value.ToString("0.00", NumberCulture)}";
