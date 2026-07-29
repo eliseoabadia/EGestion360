@@ -167,13 +167,11 @@
                                  Required="true" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudNumericField T="decimal?"
-                                 @bind-Value="item.Penalizacion"
-                                 Label="Penalizacion"
-                                 Variant="Variant.Outlined"
-                                 Culture="@NumberCulture"
-                                 Format="0.00"
-                                 Min="0m" />
+                <MudTextField T="string"
+                              @bind-Value="item.Penalizacion"
+                              Label="Penalización / cláusula"
+                              Variant="Variant.Outlined"
+                              MaxLength="100" />
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudTextField Value="@Money(item.MontoMaximo)" Label="Total compromiso" Variant="Variant.Outlined" ReadOnly="true" />
@@ -410,6 +408,8 @@
     private async Task<ComboLookupResult> LoadOrdenesCompraPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var additional = GetEmpresaFilter();
+        additional ??= new Dictionary<string, object>();
+        additional["FkidEstatusOrdenCompraOrco"] = 2;
         var response = await OrdenCompraService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroOrdenCompra", SortDirection.Descending, additional);
         return ToComboResult(response?.Items?
             .Where(x => x.Activo)

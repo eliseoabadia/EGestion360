@@ -19,6 +19,10 @@ public partial class VwOrdenCompra
 
     public DateTime? FechaRequisicion { get; set; }
 
+    public int? FkidCotizacionOrco { get; set; }
+
+    public string CotizacionDescripcion { get; set; }
+
     public int FkidProveedorSis { get; set; }
 
     public string ProveedorNombre { get; set; }

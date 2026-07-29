@@ -7,6 +7,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Contratos;
 using EG.Domain.DTOs.Responses.Contratos;
 using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,8 @@ namespace EG.Application.Services.Contratos
     public class RegistroCompromisoAppService(
         GenericService<Contrato, OrcoContratoDto, OrcoContratoResponse> service,
         GenericService<VwContrato1, OrcoContratoDto, OrcoContratoResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<Contrato, VwContrato1, OrcoContratoDto, OrcoContratoResponse>(
             service,
             serviceView,
@@ -31,10 +33,11 @@ namespace EG.Application.Services.Contratos
         private const int EstatusInicial = 1;
         private const int EstatusAutorizado = 2;
         private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
 
         public override async Task<PagedResult<OrcoContratoResponse>> CreateAsync(OrcoContratoResponse response, int usuarioActual)
         {
-            var validation = await NormalizeAndValidateAsync(response, isCreate: true);
+            var validation = await NormalizeAndValidateAsync(response, currentId: null);
             return validation ?? await base.CreateAsync(response, usuarioActual);
         }
 
@@ -51,7 +54,7 @@ namespace EG.Application.Services.Contratos
                 return Failure<OrcoContratoResponse>("El registro ya fue autorizado. No se puede editar.", "LOCKED");
             }
 
-            var validation = await NormalizeAndValidateAsync(response, isCreate: false);
+            var validation = await NormalizeAndValidateAsync(response, currentId: id);
             if (validation != null)
             {
                 return validation;
@@ -111,7 +114,9 @@ namespace EG.Application.Services.Contratos
             return updated;
         }
 
-        private async Task<PagedResult<OrcoContratoResponse>?> NormalizeAndValidateAsync(OrcoContratoResponse response, bool isCreate)
+        private async Task<PagedResult<OrcoContratoResponse>?> NormalizeAndValidateAsync(
+            OrcoContratoResponse response,
+            int? currentId)
         {
             _service.ApplyCurrentEmpresaIfPresent(response);
 
@@ -170,6 +175,30 @@ namespace EG.Application.Services.Contratos
             if (ordenCompra.FkidEstatusOrdenCompraOrco <= 1)
             {
                 return Failure<OrcoContratoResponse>("La orden de compra debe estar autorizada antes de registrar el compromiso.");
+            }
+
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual.HasValue &&
+                empresaActual.Value > 0 &&
+                ordenCompra.FkidEmpresaSis != empresaActual.Value)
+            {
+                return Failure<OrcoContratoResponse>(
+                    "La orden de compra no pertenece a la empresa activa.",
+                    "FORBIDDEN");
+            }
+
+            var duplicate = await _context.Contratos
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Activo &&
+                    x.FkidOrdenCompraOrco == ordenCompra.PkidOrdenCompra &&
+                    x.PkidContrato != (currentId ?? 0));
+
+            if (duplicate)
+            {
+                return Failure<OrcoContratoResponse>(
+                    "Ya existe un registro de compromiso activo para esta orden de compra.",
+                    "DUPLICATE");
             }
 
             response.FkidEmpresaSis = ordenCompra.FkidEmpresaSis;
@@ -244,9 +273,17 @@ namespace EG.Application.Services.Contratos
 
             if (response.FkidFraccionOrco.HasValue && response.FkidFraccionOrco.Value > 0)
             {
+                if (!response.FkidArticuloOrco.HasValue || response.FkidArticuloOrco.Value <= 0)
+                {
+                    return Failure<OrcoContratoResponse>("Selecciona el articulo antes de elegir una fraccion.");
+                }
+
                 var fraccionExists = await _context.Fraccions
                     .AsNoTracking()
-                    .AnyAsync(x => x.PkidFraccion == response.FkidFraccionOrco.Value && x.Activo);
+                    .AnyAsync(x =>
+                        x.PkidFraccion == response.FkidFraccionOrco.Value &&
+                        x.FkidArticuloOrco == response.FkidArticuloOrco.Value &&
+                        x.Activo);
 
                 if (!fraccionExists)
                 {
@@ -283,6 +320,12 @@ namespace EG.Application.Services.Contratos
                 return Failure<OrcoContratoResponse>("El monto maximo debe ser mayor a cero.");
             }
 
+            if (ordenCompra.Total > 0m && response.MontoMaximo > ordenCompra.Total)
+            {
+                return Failure<OrcoContratoResponse>(
+                    "El monto maximo del contrato no puede exceder el total de la orden de compra.");
+            }
+
             if (response.MontoMinimo <= 0m)
             {
                 response.MontoMinimo = response.MontoMaximo;
@@ -293,7 +336,7 @@ namespace EG.Application.Services.Contratos
                 return Failure<OrcoContratoResponse>("El monto minimo no puede ser mayor al monto maximo.");
             }
 
-            if (isCreate || response.FkidEstatusContratoOrco <= 0)
+            if (!currentId.HasValue || response.FkidEstatusContratoOrco <= 0)
             {
                 response.FkidEstatusContratoOrco = EstatusInicial;
             }
@@ -388,7 +431,8 @@ namespace EG.Application.Services.Contratos
     public class EstadoContratoAppService(
         GenericService<Contrato1, EstadoContratoDto, EstadoContratoResponse> service,
         GenericService<VwContrato2, EstadoContratoDto, EstadoContratoResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<Contrato1, VwContrato2, EstadoContratoDto, EstadoContratoResponse>(
             service,
             serviceView,
@@ -404,11 +448,12 @@ namespace EG.Application.Services.Contratos
         private const int EstatusBorrador = 1;
         private const int EstatusVigente = 2;
         private const int EstatusConcluido = 3;
-        private const int TipoPolizaLiberacionRemanente = 4;
+        private const int TipoPolizaPresupuestal = 4;
         private const int TipoDetalleComprometido = 1;
         private const int TipoDetallePorEjercer = 2;
 
         private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
 
         public override async Task<PagedResult<EstadoContratoResponse>> CreateAsync(EstadoContratoResponse response, int usuarioActual)
         {
@@ -419,23 +464,33 @@ namespace EG.Application.Services.Contratos
             }
 
             response.Estatus = EstatusBorrador;
-
-            var created = await base.CreateAsync(response, usuarioActual);
-            var contratoId = ResolveResultId(created, response.PkidContrato);
-            if (!created.Success || contratoId <= 0)
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                return created;
-            }
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                var created = await base.CreateAsync(response, usuarioActual);
+                var contratoId = ResolveResultId(created, response.PkidContrato);
+                if (!created.Success || contratoId <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return created;
+                }
 
-            var detailValidation = await EnsureDetailsFromAutorizacionAsync(contratoId, response.FkidAutorizacionSuficienciaPres, usuarioActual);
-            if (detailValidation != null)
-            {
-                return detailValidation;
-            }
+                var detailValidation = await EnsureDetailsFromAutorizacionAsync(
+                    contratoId,
+                    response.FkidAutorizacionSuficienciaPres,
+                    usuarioActual);
+                if (detailValidation != null)
+                {
+                    await transaction.RollbackAsync();
+                    return detailValidation;
+                }
 
-            var refreshed = await GetByIdAsync(contratoId);
-            refreshed.Message = "Contrato creado con partidas de la autorizacion de suficiencia.";
-            return refreshed;
+                await transaction.CommitAsync();
+                var refreshed = await GetByIdAsync(contratoId);
+                refreshed.Message = "Contrato creado con partidas de la autorizacion de suficiencia.";
+                return refreshed;
+            });
         }
 
         public override async Task<PagedResult<EstadoContratoResponse>> UpdateAsync(int id, EstadoContratoResponse response, int usuarioActual)
@@ -461,7 +516,51 @@ namespace EG.Application.Services.Contratos
             }
 
             response.Estatus = current.Estatus;
-            return await base.UpdateAsync(id, response, usuarioActual);
+            var authorizationChanged =
+                current.FkidAutorizacionSuficienciaPres != response.FkidAutorizacionSuficienciaPres;
+            if (!authorizationChanged)
+            {
+                return await base.UpdateAsync(id, response, usuarioActual);
+            }
+
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                var currentDetails = await _context.ContratoDetalles
+                    .Where(x => x.FkidContratoPres == id && x.Activo)
+                    .ToListAsync();
+                var now = DateTime.Now;
+                foreach (var detail in currentDetails)
+                {
+                    detail.Activo = false;
+                    detail.FechaModificacion = now;
+                    detail.UsuarioModificacion = usuarioActual;
+                }
+                await _context.SaveChangesAsync();
+
+                var updated = await base.UpdateAsync(id, response, usuarioActual);
+                if (!updated.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return updated;
+                }
+
+                var detailValidation = await EnsureDetailsFromAutorizacionAsync(
+                    id,
+                    response.FkidAutorizacionSuficienciaPres,
+                    usuarioActual);
+                if (detailValidation != null)
+                {
+                    await transaction.RollbackAsync();
+                    return detailValidation;
+                }
+
+                await transaction.CommitAsync();
+                var refreshed = await GetByIdAsync(id);
+                refreshed.Message = "Contrato y partidas de la autorizacion actualizados correctamente.";
+                return refreshed;
+            });
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -511,12 +610,184 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("El total de las partidas del contrato debe ser mayor a cero.");
             }
 
-            current.Estatus = EstatusVigente;
-            current.FechaModificacion = DateTime.Now;
-            current.UsuarioModificacion = usuarioActual;
-            await _context.SaveChangesAsync();
+            if (Math.Abs(totalDetails - current.MontoTotal) > 0.01m)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "El monto total del contrato debe coincidir con la suma de sus partidas antes de autorizar.");
+            }
 
-            return await RefreshedAsync(id, "Contrato autorizado correctamente. Ya no se puede editar ni eliminar.");
+            var clasificacion = await (
+                from autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                join solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                    on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                join requisicion in _context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where autorizacion.PkidAutorizacionSuficiencia == current.FkidAutorizacionSuficienciaPres
+                select new
+                {
+                    requisicion.FkidAnioSis,
+                    requisicion.FkidProgramaPres,
+                    requisicion.FkidTipoGastoPres
+                }).FirstOrDefaultAsync();
+
+            if (clasificacion?.FkidAnioSis is not > 0 ||
+                clasificacion.FkidProgramaPres is not > 0 ||
+                clasificacion.FkidTipoGastoPres is not > 0)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "No se pudo resolver año, programa y tipo de gasto para generar la poliza de comprometido.");
+            }
+
+            var matrizValidation = await ValidateMatrizAsync(
+                clasificacion.FkidAnioSis.Value,
+                clasificacion.FkidProgramaPres.Value,
+                clasificacion.FkidTipoGastoPres.Value,
+                activeDetails);
+            if (matrizValidation != null)
+            {
+                return matrizValidation;
+            }
+
+            return await AuthorizeWithCommitmentPolicyAsync(
+                current,
+                activeDetails,
+                clasificacion.FkidAnioSis.Value,
+                clasificacion.FkidProgramaPres.Value,
+                clasificacion.FkidTipoGastoPres.Value,
+                usuarioActual);
+        }
+
+        private async Task<PagedResult<EstadoContratoResponse>> AuthorizeWithCommitmentPolicyAsync(
+            Contrato1 current,
+            IReadOnlyCollection<ContratoDetalle> details,
+            int anioId,
+            int programaId,
+            int tipoGastoId,
+            int usuarioActual)
+        {
+            var strategy = _context.Database.CreateExecutionStrategy();
+            try
+            {
+                return await strategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    var now = DateTime.Now;
+                    Poliza poliza;
+
+                    if (current.FkidPolizaConta.HasValue && current.FkidPolizaConta.Value > 0)
+                    {
+                        poliza = await _context.Polizas
+                            .FirstOrDefaultAsync(x =>
+                                x.PkidPoliza == current.FkidPolizaConta.Value &&
+                                x.Activo)
+                            ?? throw new UserVisibleException(
+                                "La poliza seleccionada no existe o esta inactiva.",
+                                "POLICY_NOT_FOUND");
+
+                        if (poliza.Autorizado == true || poliza.PermitirModificar == false)
+                        {
+                            throw new UserVisibleException(
+                                "La poliza seleccionada ya esta autorizada o bloqueada.",
+                                "POLICY_LOCKED");
+                        }
+
+                        var hasMovements = await _context.PolizaDetalles
+                            .AnyAsync(x => x.FkidPolizaConta == poliza.PkidPoliza && x.Activo);
+                        if (hasMovements)
+                        {
+                            throw new UserVisibleException(
+                                "La poliza seleccionada ya contiene movimientos. Usa una poliza nueva para el compromiso.",
+                                "POLICY_HAS_DETAILS");
+                        }
+                    }
+                    else
+                    {
+                        poliza = new Poliza
+                        {
+                            FkidAnioSis = anioId,
+                            FkidMesSis = current.FechaContrato.Month,
+                            FkidTipoPolizaSis = TipoPolizaPresupuestal,
+                            ClavePoliza = await BuildCommitmentPolizaClaveAsync(current.PkidContrato),
+                            NombrePoliza = BuildCommitmentPolizaName(current),
+                            FechaPoliza = now,
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual,
+                            PermitirModificar = true,
+                            Autorizado = false,
+                            FechaSolicitud = now
+                        };
+                        _context.Polizas.Add(poliza);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    var matrices = await GetMatricesAsync(anioId, programaId, tipoGastoId, details);
+                    foreach (var group in details.GroupBy(x => x.FkidPartidaConta))
+                    {
+                        var importe = decimal.Round(group.Sum(DetailTotal), 2);
+                        if (importe <= 0m)
+                        {
+                            continue;
+                        }
+
+                        var matriz = matrices[group.Key];
+                        _context.PolizaDetalles.Add(new PolizaDetalle
+                        {
+                            FkidCuentaContableConta = matriz.FkidCuentaContableComprometido,
+                            FkidPolizaConta = poliza.PkidPoliza,
+                            Descripcion = BuildCommitmentPolizaDetail(current),
+                            ImporteDebe = importe,
+                            ImporteHaber = null,
+                            FkidReferencia = current.PkidContrato,
+                            FkidTipoDetallePolizaSis = await GetTipoDetalleOrNullAsync(TipoDetalleComprometido),
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual
+                        });
+                        _context.PolizaDetalles.Add(new PolizaDetalle
+                        {
+                            FkidCuentaContableConta = matriz.FkidCuentaContablePorEjercer,
+                            FkidPolizaConta = poliza.PkidPoliza,
+                            Descripcion = BuildCommitmentPolizaDetail(current),
+                            ImporteDebe = null,
+                            ImporteHaber = importe,
+                            FkidReferencia = current.PkidContrato,
+                            FkidTipoDetallePolizaSis = await GetTipoDetalleOrNullAsync(TipoDetallePorEjercer),
+                            Activo = true,
+                            FechaCreacion = now,
+                            UsuarioCreacion = usuarioActual
+                        });
+                    }
+
+                    poliza.EstaBalanceado = true;
+                    poliza.Autorizado = true;
+                    poliza.PermitirModificar = false;
+                    poliza.FechaAutorizacion = now;
+                    poliza.FechaModificacion = now;
+                    poliza.UsuarioModificacion = usuarioActual;
+
+                    current.FkidPolizaConta = poliza.PkidPoliza;
+                    current.Estatus = EstatusVigente;
+                    current.FechaModificacion = now;
+                    current.UsuarioModificacion = usuarioActual;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return await RefreshedAsync(
+                        current.PkidContrato,
+                        $"Contrato autorizado y poliza {poliza.ClavePoliza} generada correctamente.");
+                });
+            }
+            catch (UserVisibleException ex)
+            {
+                return Failure<EstadoContratoResponse>(ex.UserMessage, ex.Code);
+            }
+            catch (Exception ex)
+            {
+                return Failure<EstadoContratoResponse>(
+                    $"No fue posible autorizar el contrato y generar la poliza: {ex.InnerException?.Message ?? ex.Message}");
+            }
         }
 
         public async Task<PagedResult<EstadoContratoResponse>> LiberarRemanenteAsync(int id, int usuarioActual)
@@ -606,7 +877,7 @@ namespace EG.Application.Services.Contratos
                     {
                         FkidAnioSis = saldo.FkidAnioSis.Value,
                         FkidMesSis = current.FechaFinVigencia?.Month ?? DateTime.Today.Month,
-                        FkidTipoPolizaSis = TipoPolizaLiberacionRemanente,
+                        FkidTipoPolizaSis = TipoPolizaPresupuestal,
                         ClavePoliza = await BuildPolizaClaveAsync(id),
                         NombrePoliza = BuildPolizaNombre(current),
                         FechaPoliza = now,
@@ -767,11 +1038,11 @@ namespace EG.Application.Services.Contratos
         {
             var tipoPolizaExists = await _context.TipoPolizas
                 .AsNoTracking()
-                .AnyAsync(x => x.PkidTipoPoliza == TipoPolizaLiberacionRemanente && x.Activo);
+                .AnyAsync(x => x.PkidTipoPoliza == TipoPolizaPresupuestal && x.Activo);
 
             if (!tipoPolizaExists)
             {
-                return Failure<EstadoContratoResponse>("No existe el tipo de poliza para liberacion de remanentes.");
+                return Failure<EstadoContratoResponse>("No existe el tipo de poliza presupuestal requerido.");
             }
 
             var matrices = await GetMatricesAsync(anioId, programaId, tipoGastoId, releaseDetails);
@@ -930,6 +1201,49 @@ namespace EG.Application.Services.Contratos
             return Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
         }
 
+        private async Task<string> BuildCommitmentPolizaClaveAsync(int contratoId)
+        {
+            var baseClave = $"CP{contratoId}";
+            if (baseClave.Length > 8)
+            {
+                baseClave = $"CP{contratoId % 1000000:000000}";
+            }
+
+            for (var suffix = 0; suffix < 100; suffix++)
+            {
+                var suffixText = suffix == 0 ? string.Empty : suffix.ToString();
+                var maxBaseLength = Math.Max(1, 10 - suffixText.Length);
+                var candidate = baseClave.Length > maxBaseLength
+                    ? baseClave[..maxBaseLength] + suffixText
+                    : baseClave + suffixText;
+
+                if (!await _context.Polizas
+                        .AsNoTracking()
+                        .AnyAsync(x => x.Activo && x.ClavePoliza == candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
+        }
+
+        private static string BuildCommitmentPolizaName(Contrato1 contrato)
+        {
+            var numero = string.IsNullOrWhiteSpace(contrato.NumeroContrato)
+                ? contrato.PkidContrato.ToString()
+                : contrato.NumeroContrato.Trim();
+            return $"Presupuesto comprometido del contrato {numero}";
+        }
+
+        private static string BuildCommitmentPolizaDetail(Contrato1 contrato)
+        {
+            var numero = string.IsNullOrWhiteSpace(contrato.NumeroContrato)
+                ? contrato.PkidContrato.ToString()
+                : contrato.NumeroContrato.Trim();
+            return $"Compromiso presupuestal contrato {numero}";
+        }
+
         private static string BuildPolizaNombre(Contrato1 contrato)
         {
             var numero = string.IsNullOrWhiteSpace(contrato.NumeroContrato)
@@ -1003,6 +1317,36 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("La autorizacion de suficiencia debe estar autorizada antes de generar contrato.");
             }
 
+            var empresaActual = _userContext.TryGetCurrentEmpresaId();
+            if (empresaActual.HasValue &&
+                empresaActual.Value > 0 &&
+                autorizacion.FkidEmpresaSis != empresaActual.Value)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "La autorizacion de suficiencia no pertenece a la empresa activa.",
+                    "FORBIDDEN");
+            }
+
+            var flujo = await (
+                from solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                join requisicion in _context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where solicitud.PkidSolicitudSuficiencia == autorizacion.FkidSolicitudSuficienciaPres &&
+                      solicitud.Activo &&
+                      requisicion.Activo
+                select new
+                {
+                    RequisicionId = requisicion.PkidRequisicion,
+                    requisicion.CompraDirecta,
+                    requisicion.FechaRequisicion
+                }).FirstOrDefaultAsync();
+
+            if (flujo == null)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "No se encontro la requisicion activa relacionada con la autorizacion.");
+            }
+
             var duplicate = await _context.Contratos1
                 .AsNoTracking()
                 .AnyAsync(x =>
@@ -1029,6 +1373,16 @@ namespace EG.Application.Services.Contratos
             if (!proveedorExists)
             {
                 return Failure<EstadoContratoResponse>("El proveedor seleccionado no existe o esta inactivo.");
+            }
+
+            if (flujo.CompraDirecta != true &&
+                !await ProviderHasCompleteQuotationAsync(
+                    flujo.RequisicionId,
+                    response.FkidProveedorSis))
+            {
+                return Failure<EstadoContratoResponse>(
+                    "El proveedor debe contar con una cotizacion completa para la requisicion autorizada.",
+                    "PROVIDER_NOT_QUOTED");
             }
 
             if (response.FkidPolizaConta.HasValue && response.FkidPolizaConta.Value > 0)
@@ -1058,6 +1412,31 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("El monto total debe ser mayor a cero.");
             }
 
+            var montoAutorizado = await _context.AutorizacionSuficienciaDetalles
+                .AsNoTracking()
+                .Where(x =>
+                    x.FkidAutorizacionSuficienciaPres == autorizacion.PkidAutorizacionSuficiencia &&
+                    x.Activo)
+                .SumAsync(x => x.Total ??
+                    x.Enero.GetValueOrDefault() + x.Febrero.GetValueOrDefault() +
+                    x.Marzo.GetValueOrDefault() + x.Abril.GetValueOrDefault() +
+                    x.Mayo.GetValueOrDefault() + x.Junio.GetValueOrDefault() +
+                    x.Julio.GetValueOrDefault() + x.Agosto.GetValueOrDefault() +
+                    x.Septiembre.GetValueOrDefault() + x.Octubre.GetValueOrDefault() +
+                    x.Noviembre.GetValueOrDefault() + x.Diciembre.GetValueOrDefault());
+
+            if (montoAutorizado <= 0m)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "La autorizacion no contiene partidas con importe para generar el contrato.");
+            }
+
+            if (Math.Abs(response.MontoTotal - montoAutorizado) > 0.01m)
+            {
+                return Failure<EstadoContratoResponse>(
+                    $"El monto del contrato debe coincidir con el total autorizado ({montoAutorizado:0.00}).");
+            }
+
             if (response.FechaContrato == default)
             {
                 response.FechaContrato = DateOnly.FromDateTime(DateTime.Today);
@@ -1070,6 +1449,12 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("La fecha fin de vigencia no puede ser anterior al inicio.");
             }
 
+            if (response.FechaContrato < autorizacion.FechaAutorizacion)
+            {
+                return Failure<EstadoContratoResponse>(
+                    "La fecha del contrato no puede ser anterior a la autorizacion de suficiencia.");
+            }
+
             response.FkidEmpresaSis = autorizacion.FkidEmpresaSis;
             response.NumeroContrato = response.NumeroContrato.Trim();
             response.Descripcion = response.Descripcion.Trim();
@@ -1079,6 +1464,38 @@ namespace EG.Application.Services.Contratos
             response.Activo = true;
 
             return null;
+        }
+
+        private async Task<bool> ProviderHasCompleteQuotationAsync(
+            int requisicionId,
+            int proveedorId)
+        {
+            var detailIds = await _context.RequisicionDetalles
+                .AsNoTracking()
+                .Where(x => x.FkidRequisicionOrco == requisicionId && x.Activo)
+                .Select(x => x.PkidRequisicionDetalle)
+                .ToListAsync();
+
+            if (detailIds.Count == 0)
+            {
+                return false;
+            }
+
+            var quotedDetails = await (
+                from cotizacion in _context.Cotizacions.AsNoTracking()
+                join detalle in _context.CotizacionDetalles.AsNoTracking()
+                    on cotizacion.PkidCotizacion equals detalle.FkidCotizacionOrco
+                where cotizacion.FkidRequisicionOrco == requisicionId &&
+                      cotizacion.FkidProveedorSis == proveedorId &&
+                      cotizacion.Activo &&
+                      detalle.Activo &&
+                      detalle.PrecioUnitario > 0 &&
+                      detailIds.Contains(detalle.FkidRequisicionDetalleOrco)
+                select detalle.FkidRequisicionDetalleOrco)
+                .Distinct()
+                .CountAsync();
+
+            return quotedDetails == detailIds.Count;
         }
 
         private static SqlParameter[] BuildParameters(int action, int? id, EstadoContratoResponse? response, int? usuarioActual)

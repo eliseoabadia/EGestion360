@@ -8,6 +8,8 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public int FkidRequisicionOrco { get; set; }
         public string RequisicionDescripcion { get; set; } = string.Empty;
         public DateTime? FechaRequisicion { get; set; }
+        public int? FkidCotizacionOrco { get; set; }
+        public string CotizacionDescripcion { get; set; } = string.Empty;
         public int FkidProveedorSis { get; set; }
         public string ProveedorNombre { get; set; } = string.Empty;
         public string ProveedorClave { get; set; } = string.Empty;

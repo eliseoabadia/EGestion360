@@ -9,6 +9,7 @@
 
 @inject IGenericCrudService<OrdenCompraResponse> Service
 @inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<CotizacionResponse> CotizacionService
 @inject IGenericCrudService<ProveedorResponse> ProveedorService
 @inject SucursalStateService SucursalStateService
 @inject ISnackbar Snackbar
@@ -54,11 +55,22 @@
 
             <MudItem xs="12" md="6">
                 <PagedAutocomplete Value="@_selectedRequisicion"
-                                   ValueChanged="value => _selectedRequisicion = value"
+                                   ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
                                    RequiredError="La requisicion es requerida"
                                    LoadPage="LoadRequisicionesPageAsync" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <PagedAutocomplete Value="@_selectedCotizacion"
+                                   ValueChanged="OnCotizacionChanged"
+                                   Label="Cotizacion adjudicada"
+                                   Required="@(!item.CompraDirecta)"
+                                   RequiredError="La cotizacion adjudicada es requerida"
+                                   Disabled="@(_selectedRequisicion == null || item.CompraDirecta)"
+                                   Clearable="@item.CompraDirecta"
+                                   LoadPage="LoadCotizacionesPageAsync" />
             </MudItem>
 
             <MudItem xs="12" md="6">
@@ -67,6 +79,7 @@
                                    Label="Proveedor"
                                    Required="true"
                                    RequiredError="El proveedor es requerido"
+                                   Disabled="@(!item.CompraDirecta)"
                                    LoadPage="LoadProveedoresPageAsync" />
             </MudItem>
 
@@ -113,7 +126,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudSwitch T="bool" @bind-Value="item.CompraDirecta" Label="Compra directa" Color="Color.Primary" />
+                <MudSwitch T="bool" @bind-Value="item.CompraDirecta" Label="Compra directa (definida en requisicion)" Disabled="true" Color="Color.Primary" />
             </MudItem>
 
             <MudItem xs="12">
@@ -152,6 +165,7 @@
 
     private DateTime? _fechaOrdenCompra = DateTime.Today;
     private LookupItem? _selectedRequisicion;
+    private LookupItem? _selectedCotizacion;
     private LookupItem? _selectedProveedor;
 
     private string dialogTitle => Id.HasValue ? "Editar Orden de Compra" : "Nueva Orden de Compra";
@@ -183,6 +197,15 @@
                     Id = item.FkidRequisicionOrco,
                     Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
                 };
+                _selectedCotizacion = item.FkidCotizacionOrco.HasValue
+                    ? new LookupItem
+                    {
+                        Id = item.FkidCotizacionOrco.Value,
+                        Text = string.IsNullOrWhiteSpace(item.CotizacionDescripcion)
+                            ? $"Cotizacion {item.FkidCotizacionOrco.Value}"
+                            : item.CotizacionDescripcion
+                    }
+                    : null;
                 _selectedProveedor = new LookupItem
                 {
                     Id = item.FkidProveedorSis,
@@ -223,8 +246,15 @@
             return;
         }
 
+        if (!item.CompraDirecta && _selectedCotizacion == null)
+        {
+            Snackbar.Add("Debe seleccionar la cotizacion adjudicada.", Severity.Warning);
+            return;
+        }
+
         item.FkidEmpresaSis = empresaId.Value;
         item.FkidRequisicionOrco = _selectedRequisicion.Id;
+        item.FkidCotizacionOrco = _selectedCotizacion?.Id;
         item.FkidProveedorSis = _selectedProveedor.Id;
         item.FechaOrdenCompra = _fechaOrdenCompra ?? DateTime.Today;
         item.FkidEstatusOrdenCompraOrco = item.FkidEstatusOrdenCompraOrco <= 0 ? 1 : item.FkidEstatusOrdenCompraOrco;
@@ -260,11 +290,96 @@
 
     private async Task<ComboLookupResult> LoadRequisicionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await RequisicionService.GetAllPaginadoAsync(page, pageSize, filter, "Descripcion", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Select(x => new LookupItem
+        var response = await RequisicionService.GetAllPaginadoAsync(
+            page, pageSize, filter, "Descripcion", SortDirection.Ascending, CompanyFilter());
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
         {
             Id = x.PkidRequisicion,
             Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+        }), response?.TotalCount);
+    }
+
+    private async Task OnRequisicionChanged(LookupItem? value)
+    {
+        _selectedRequisicion = value;
+        _selectedCotizacion = null;
+        _selectedProveedor = null;
+        item.FkidCotizacionOrco = null;
+
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await RequisicionService.GetByIdAsync(value.Id);
+        if (response?.Data == null)
+        {
+            return;
+        }
+
+        item.FkidRequisicionOrco = response.Data.PkidRequisicion;
+        item.CompraDirecta = response.Data.CompraDirecta == true;
+        item.FkidEmpresaSis = response.Data.FkidEmpresaSis;
+        if (string.IsNullOrWhiteSpace(item.Descripcion))
+        {
+            item.Descripcion = response.Data.Descripcion;
+        }
+    }
+
+    private async Task OnCotizacionChanged(LookupItem? value)
+    {
+        _selectedCotizacion = value;
+        item.FkidCotizacionOrco = value?.Id;
+        if (value == null)
+        {
+            if (!item.CompraDirecta)
+            {
+                _selectedProveedor = null;
+            }
+            return;
+        }
+
+        var response = await CotizacionService.GetByIdAsync(value.Id);
+        if (response?.Data == null)
+        {
+            return;
+        }
+
+        var cotizacion = response.Data;
+        if (_selectedRequisicion == null || cotizacion.FkidRequisicionOrco != _selectedRequisicion.Id)
+        {
+            Snackbar.Add("La cotizacion no pertenece a la requisicion seleccionada.", Severity.Warning);
+            _selectedCotizacion = null;
+            return;
+        }
+
+        _selectedProveedor = new LookupItem
+        {
+            Id = cotizacion.FkidProveedorSis,
+            Text = BuildProveedorText(cotizacion.ProveedorClave, cotizacion.ProveedorNombre)
+        };
+        item.FkidProveedorSis = cotizacion.FkidProveedorSis;
+    }
+
+    private async Task<ComboLookupResult> LoadCotizacionesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
+    {
+        if (_selectedRequisicion == null)
+        {
+            return new ComboLookupResult();
+        }
+
+        var response = await CotizacionService.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            "FechaProveedorCotiza",
+            SortDirection.Descending,
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = _selectedRequisicion.Id });
+
+        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
+        {
+            Id = x.PkidCotizacion,
+            Text = $"COT-{x.PkidCotizacion} | {BuildProveedorText(x.ProveedorClave, x.ProveedorNombre)} | {x.TotalCotizado:C2}"
         }), response?.TotalCount);
     }
 
@@ -282,6 +397,14 @@
     {
         var list = items?.ToList() ?? new List<LookupItem>();
         return new ComboLookupResult { Items = list, TotalCount = totalCount ?? list.Count };
+    }
+
+    private Dictionary<string, object>? CompanyFilter()
+    {
+        var empresaId = EmpresaId > 0 ? EmpresaId : SucursalStateService.EmpresaId;
+        return empresaId.HasValue && empresaId.Value > 0
+            ? new Dictionary<string, object> { ["FkidEmpresaSis"] = empresaId.Value }
+            : null;
     }
 
     private static string BuildProveedorText(string? clave, string? nombre)

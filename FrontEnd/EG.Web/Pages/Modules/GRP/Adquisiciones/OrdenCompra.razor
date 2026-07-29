@@ -122,7 +122,8 @@
                 </TemplateColumn>
                 <TemplateColumn T="OrdenCompraResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
-                        @TextOrDash(cell.Item.RequisicionDescripcion)
+                        <div class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</div>
+                        <span>@(cell.Item.CompraDirecta ? "Compra directa" : $"Cotizacion {cell.Item.FkidCotizacionOrco}")</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="OrdenCompraResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
@@ -776,6 +777,8 @@
         {
             ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra,
             ["RequisicionId"] = SelectedOrden.FkidRequisicionOrco,
+            ["CotizacionId"] = SelectedOrden.FkidCotizacionOrco,
+            ["CompraDirecta"] = SelectedOrden.CompraDirecta,
             ["CurrencySymbol"] = _currencySymbol,
             ["CurrencyName"] = _currencyName
         };
@@ -805,6 +808,8 @@
             ["Id"] = id,
             ["OrdenCompraId"] = SelectedOrden!.PkidOrdenCompra,
             ["RequisicionId"] = SelectedOrden.FkidRequisicionOrco,
+            ["CotizacionId"] = SelectedOrden.FkidCotizacionOrco,
+            ["CompraDirecta"] = SelectedOrden.CompraDirecta,
             ["CurrencySymbol"] = _currencySymbol,
             ["CurrencyName"] = _currencyName
         };

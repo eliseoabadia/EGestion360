@@ -27,6 +27,28 @@ namespace EG.Application.Services.CuentasXPagar
             response => response.PkidContrato,
             BuildParameters)
     {
+        public override Task<PagedResult<ContratoResponse>> CreateAsync(
+            ContratoResponse response,
+            int usuarioActual) =>
+            Task.FromResult(ReadOnlyContract<ContratoResponse>());
+
+        public override Task<PagedResult<ContratoResponse>> UpdateAsync(
+            int id,
+            ContratoResponse response,
+            int usuarioActual) =>
+            Task.FromResult(ReadOnlyContract<ContratoResponse>());
+
+        public override Task<PagedResult<bool>> DeleteAsync(int id) =>
+            Task.FromResult(ReadOnlyContract<bool>());
+
+        private static PagedResult<T> ReadOnlyContract<T>() => new()
+        {
+            Success = false,
+            Code = "USE_ESTADO_CONTRATO",
+            Message = "Los contratos se administran exclusivamente desde Estado de Contrato para conservar autorizacion, partidas y poliza.",
+            TotalCount = 0
+        };
+
         private static SqlParameter[] BuildParameters(int action, int? id, ContratoResponse? response, int? usuarioActual)
         {
             return new[]
@@ -69,6 +91,28 @@ namespace EG.Application.Services.CuentasXPagar
         protected override int CreateAction => 5;
         protected override int UpdateAction => 6;
         protected override int DeleteAction => 7;
+
+        public override Task<PagedResult<ContratoDetalleResponse>> CreateAsync(
+            ContratoDetalleResponse response,
+            int usuarioActual) =>
+            Task.FromResult(ReadOnlyDetail<ContratoDetalleResponse>());
+
+        public override Task<PagedResult<ContratoDetalleResponse>> UpdateAsync(
+            int id,
+            ContratoDetalleResponse response,
+            int usuarioActual) =>
+            Task.FromResult(ReadOnlyDetail<ContratoDetalleResponse>());
+
+        public override Task<PagedResult<bool>> DeleteAsync(int id) =>
+            Task.FromResult(ReadOnlyDetail<bool>());
+
+        private static PagedResult<T> ReadOnlyDetail<T>() => new()
+        {
+            Success = false,
+            Code = "CONTRACT_DETAILS_LOCKED",
+            Message = "Las partidas del contrato se generan desde la autorizacion de suficiencia y no admiten captura manual.",
+            TotalCount = 0
+        };
 
         private static SqlParameter[] BuildParameters(int action, int? id, ContratoDetalleResponse? response, int? usuarioActual)
         {

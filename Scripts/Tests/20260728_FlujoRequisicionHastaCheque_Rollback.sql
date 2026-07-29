@@ -98,12 +98,42 @@ BEGIN TRY
     VALUES
         (@CotizacionId, @RequisicionDetalleId, 100, 1, SYSDATETIME(), 1);
 
+    INSERT ORCO.Cotizacion (
+        FKIdRequisicion_ORCO, FKIdProveedor_SIS, FechaSolicitud,
+        Servicio, Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES
+        (@RequisicionId, 2, GETDATE(), 0, 1, SYSDATETIME(), 1);
+    DECLARE @CotizacionId2 int = SCOPE_IDENTITY();
+
+    INSERT ORCO.CotizacionDetalle (
+        FKIdCotizacion_ORCO, FKIdRequisicionDetalle_ORCO,
+        PrecioUnitario, Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES
+        (@CotizacionId2, @RequisicionDetalleId, 105, 1, SYSDATETIME(), 1);
+
+    INSERT ORCO.Cotizacion (
+        FKIdRequisicion_ORCO, FKIdProveedor_SIS, FechaSolicitud,
+        Servicio, Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES
+        (@RequisicionId, 3, GETDATE(), 0, 1, SYSDATETIME(), 1);
+    DECLARE @CotizacionId3 int = SCOPE_IDENTITY();
+
+    INSERT ORCO.CotizacionDetalle (
+        FKIdCotizacion_ORCO, FKIdRequisicionDetalle_ORCO,
+        PrecioUnitario, Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES
+        (@CotizacionId3, @RequisicionDetalleId, 110, 1, SYSDATETIME(), 1);
+
     INSERT PRES.SolicitudSuficiencia (
         FKIdEmpresa_SIS, FKIdRequisicion_ORCO, FechaSolicitud,
         Estatus, Activo, FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @RequisicionId, GETDATE(), 1, 1, SYSDATETIME(), 1);
+        (1, @RequisicionId, GETDATE(), 3, 1, SYSDATETIME(), 1);
     DECLARE @SolicitudId int = SCOPE_IDENTITY();
 
     INSERT PRES.SolicitudSuficienciaDetalle (
@@ -122,7 +152,7 @@ BEGIN TRY
         FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @SolicitudId, GETDATE(), N'Prueba', 3, 1, 1, SYSDATETIME(), 1);
+        (1, @SolicitudId, GETDATE(), N'Prueba', 3, 2, 1, SYSDATETIME(), 1);
     DECLARE @AutorizacionId int = SCOPE_IDENTITY();
 
     INSERT PRES.AutorizacionSuficienciaDetalle (
@@ -134,6 +164,63 @@ BEGIN TRY
         (1, @AutorizacionId, @SolicitudDetalleId, 56701,
          100, 1, SYSDATETIME(), 1);
     DECLARE @AutorizacionDetalleId int = SCOPE_IDENTITY();
+
+    INSERT ORCO.OrdenCompra (
+        FKIdEmpresa_SIS, FKIdRequisicion_ORCO, FKIdProveedor_SIS,
+        FKIdEstatusOrdenCompra_ORCO, NumeroOrdenCompra, Descripcion,
+        FechaOrdenCompra, Subtotal, Iva, Total, CompraDirecta,
+        Activo, FechaCreacion, UsuarioCreacion, FKIdCotizacion_ORCO
+    )
+    VALUES (
+        1, @RequisicionId, 1, 1, N'OC-PRUEBA-ROLLBACK',
+        N'Orden adjudicada para prueba', GETDATE(), 100, 0, 100, 0,
+        1, SYSDATETIME(), 1, @CotizacionId
+    );
+    DECLARE @OrdenCompraId int = SCOPE_IDENTITY();
+
+    INSERT ORCO.OrdenCompraDetalle (
+        FKIdOrdenCompra_ORCO, FKIdRequisicionDetalle_ORCO,
+        FKIdCotizacionDetalle_ORCO, FKIdTipoBien_ALMA, FKIdUnidades_ALMA,
+        CantidadSolicitada, CantidadRecibida, PrecioUnitario, Iva,
+        Activo, FechaCreacion, UsuarioCreacion
+    )
+    SELECT
+        @OrdenCompraId, @RequisicionDetalleId, cd.PKIdCotizacionDetalle,
+        5, 15, 1, 0, 100, 0, 1, SYSDATETIME(), 1
+    FROM ORCO.CotizacionDetalle cd
+    WHERE cd.FKIdCotizacion_ORCO = @CotizacionId
+      AND cd.FKIdRequisicionDetalle_ORCO = @RequisicionDetalleId
+      AND cd.Activo = 1;
+
+    UPDATE ORCO.OrdenCompra
+    SET FKIdEstatusOrdenCompra_ORCO = 2
+    WHERE PKIdOrdenCompra = @OrdenCompraId;
+
+    INSERT ORCO.Contratos (
+        FKIdEmpresa_SIS, FKIdOrdenCompra_ORCO, FKIdTipoContrato_ORCO,
+        FKIdTipoDocumento_ORCO, FKIdArea_SIS, FKIdTipoGarantia_ORCO,
+        FKIdProcedimientoContratacion_ORCO, FundamentoJuridico, Numero,
+        Descripcion, FechaContrato, FechaRecepcion, FKIdModalidad_ORCO,
+        MontoMaximo, MontoMinimo, Penalizacion, PlazoEjecucion,
+        FKIdEstatusContrato_ORCO, Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES (
+        1, @OrdenCompraId, 1, 2, 1, 2, 3, N'Prueba',
+        N'COMP-PRUEBA-ROLLBACK', N'Compromiso ligado a la orden',
+        GETDATE(), GETDATE(), 2, 100, 0,
+        N'Pena convencional conforme a contrato', N'Entrega inmediata',
+        1, 1, SYSDATETIME(), 1
+    );
+    DECLARE @CompromisoOrcoId int = SCOPE_IDENTITY();
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM ORCO.Contratos
+        WHERE PKIdContrato = @CompromisoOrcoId
+          AND FKIdOrdenCompra_ORCO = @OrdenCompraId
+          AND Penalizacion = N'Pena convencional conforme a contrato'
+    )
+        THROW 51049, 'La orden, el compromiso ORCO o la penalizacion textual no se guardaron correctamente.', 1;
 
     INSERT PRES.Contrato (
         FKIdEmpresa_SIS, FKIdAutorizacionSuficiencia_PRES,

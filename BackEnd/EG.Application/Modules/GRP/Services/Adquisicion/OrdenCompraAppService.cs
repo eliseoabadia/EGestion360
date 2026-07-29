@@ -66,7 +66,7 @@ namespace EG.Application.Services.Adquisicion
             OrdenCompraResponse response,
             int usuarioActual)
         {
-            var validation = await NormalizeAndValidateAsync(response, isCreate: true);
+            var validation = await NormalizeAndValidateAsync(response, currentId: null);
             if (validation != null)
             {
                 return validation;
@@ -112,7 +112,7 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<OrdenCompraResponse>("La orden de compra ya fue autorizada. No se puede editar.", "LOCKED");
             }
 
-            var validation = await NormalizeAndValidateAsync(response, isCreate: false);
+            var validation = await NormalizeAndValidateAsync(response, currentId: id);
             if (validation != null)
             {
                 return validation;
@@ -267,7 +267,7 @@ namespace EG.Application.Services.Adquisicion
 
         private async Task<PagedResult<OrdenCompraResponse>?> NormalizeAndValidateAsync(
             OrdenCompraResponse response,
-            bool isCreate)
+            int? currentId)
         {
             _service.ApplyCurrentEmpresaIfPresent(response);
 
@@ -296,7 +296,7 @@ namespace EG.Application.Services.Adquisicion
                 response.FechaOrdenCompra = DateTime.Today;
             }
 
-            if (isCreate || response.FkidEstatusOrdenCompraOrco <= 0)
+            if (!currentId.HasValue || response.FkidEstatusOrdenCompraOrco <= 0)
             {
                 response.FkidEstatusOrdenCompraOrco = EstatusInicial;
             }
@@ -321,6 +321,36 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<OrdenCompraResponse>("La requisicion seleccionada pertenece a otra empresa.");
             }
 
+            response.CompraDirecta = requisicion.CompraDirecta == true;
+
+            Cotizacion? cotizacion = null;
+            if (response.FkidCotizacionOrco.HasValue && response.FkidCotizacionOrco.Value > 0)
+            {
+                cotizacion = await _context.Cotizacions
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x =>
+                        x.PkidCotizacion == response.FkidCotizacionOrco.Value &&
+                        x.Activo);
+
+                if (cotizacion == null)
+                {
+                    return Failure<OrdenCompraResponse>("La cotizacion seleccionada no existe o esta inactiva.");
+                }
+
+                if (cotizacion.FkidRequisicionOrco != requisicion.PkidRequisicion)
+                {
+                    return Failure<OrdenCompraResponse>("La cotizacion no pertenece a la requisicion de la orden.");
+                }
+
+                response.FkidProveedorSis = cotizacion.FkidProveedorSis;
+            }
+            else if (!response.CompraDirecta)
+            {
+                return Failure<OrdenCompraResponse>(
+                    "Debe seleccionar la cotizacion adjudicada para generar la orden de compra.",
+                    "COTIZACION_REQUIRED");
+            }
+
             var proveedorExists = await _context.Proveedors
                 .AsNoTracking()
                 .AnyAsync(x => x.PkidProveedor == response.FkidProveedorSis && x.Activo);
@@ -330,6 +360,25 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<OrdenCompraResponse>("El proveedor seleccionado no existe o esta inactivo.");
             }
 
+            if (!response.CompraDirecta)
+            {
+                if (!await HasThreeCompleteQuotationsAsync(requisicion.PkidRequisicion))
+                {
+                    return Failure<OrdenCompraResponse>(
+                        "La requisicion requiere por lo menos tres cotizaciones completas de proveedores distintos antes de generar la orden.",
+                        "THREE_QUOTES_REQUIRED");
+                }
+
+                if (!await IsCompleteQuotationAsync(
+                        requisicion.PkidRequisicion,
+                        response.FkidCotizacionOrco!.Value))
+                {
+                    return Failure<OrdenCompraResponse>(
+                        "La cotizacion adjudicada no contiene precio para todos los bienes activos de la requisicion.",
+                        "INCOMPLETE_QUOTE");
+                }
+            }
+
             if (!await HasAuthorizedSuficienciaAsync(response.FkidRequisicionOrco))
             {
                 return Failure<OrdenCompraResponse>(
@@ -337,12 +386,135 @@ namespace EG.Application.Services.Adquisicion
                     "SUFICIENCIA_REQUIRED");
             }
 
+            if (!await HasAuthorizedCommitmentAsync(
+                    response.FkidRequisicionOrco,
+                    response.FkidProveedorSis))
+            {
+                return Failure<OrdenCompraResponse>(
+                    "Debe existir un compromiso presupuestal vigente para la requisicion y el proveedor adjudicado.",
+                    "COMMITMENT_REQUIRED");
+            }
+
+            if (currentId.HasValue)
+            {
+                var hasInconsistentDetails = await _context.OrdenCompraDetalles
+                    .AsNoTracking()
+                    .AnyAsync(x =>
+                        x.FkidOrdenCompraOrco == currentId.Value &&
+                        x.Activo &&
+                        (!response.CompraDirecta &&
+                         x.FkidCotizacionDetalleOrco.HasValue &&
+                         !_context.CotizacionDetalles.Any(cd =>
+                             cd.PkidCotizacionDetalle == x.FkidCotizacionDetalleOrco.Value &&
+                             cd.FkidCotizacionOrco == response.FkidCotizacionOrco)));
+
+                if (hasInconsistentDetails)
+                {
+                    return Failure<OrdenCompraResponse>(
+                        "No se puede cambiar la cotizacion porque existen detalles vinculados a otra cotizacion.");
+                }
+            }
+
             if (response.FechaOrdenCompra.Date < requisicion.FechaRequisicion.Date)
             {
                 return Failure<OrdenCompraResponse>("La fecha de la orden de compra debe ser igual o mayor a la fecha de requisicion.");
             }
 
+            if (cotizacion?.FechaProveedorCotiza.HasValue == true &&
+                response.FechaOrdenCompra.Date < cotizacion.FechaProveedorCotiza.Value.Date)
+            {
+                return Failure<OrdenCompraResponse>(
+                    "La fecha de la orden no puede ser anterior a la fecha en que el proveedor cotizo.");
+            }
+
             return null;
+        }
+
+        private async Task<bool> HasThreeCompleteQuotationsAsync(int requisicionId)
+        {
+            var detailIds = await _context.RequisicionDetalles
+                .AsNoTracking()
+                .Where(x => x.FkidRequisicionOrco == requisicionId && x.Activo)
+                .Select(x => x.PkidRequisicionDetalle)
+                .ToListAsync();
+
+            if (detailIds.Count == 0)
+            {
+                return false;
+            }
+
+            var coverage = await (
+                from cotizacion in _context.Cotizacions.AsNoTracking()
+                join detalle in _context.CotizacionDetalles.AsNoTracking()
+                    on cotizacion.PkidCotizacion equals detalle.FkidCotizacionOrco
+                where cotizacion.FkidRequisicionOrco == requisicionId &&
+                      cotizacion.Activo &&
+                      detalle.Activo &&
+                      detalle.PrecioUnitario > 0 &&
+                      detailIds.Contains(detalle.FkidRequisicionDetalleOrco)
+                group detalle by new
+                {
+                    cotizacion.PkidCotizacion,
+                    cotizacion.FkidProveedorSis
+                }
+                into grouped
+                select new
+                {
+                    grouped.Key.FkidProveedorSis,
+                    DetailCount = grouped.Select(x => x.FkidRequisicionDetalleOrco).Distinct().Count()
+                }).ToListAsync();
+
+            return coverage
+                .Where(x => x.DetailCount == detailIds.Count)
+                .Select(x => x.FkidProveedorSis)
+                .Distinct()
+                .Count() >= 3;
+        }
+
+        private async Task<bool> IsCompleteQuotationAsync(int requisicionId, int cotizacionId)
+        {
+            var requisicionDetails = await _context.RequisicionDetalles
+                .AsNoTracking()
+                .CountAsync(x => x.FkidRequisicionOrco == requisicionId && x.Activo);
+
+            if (requisicionDetails == 0)
+            {
+                return false;
+            }
+
+            var quotedDetails = await _context.CotizacionDetalles
+                .AsNoTracking()
+                .Where(x =>
+                    x.FkidCotizacionOrco == cotizacionId &&
+                    x.Activo &&
+                    x.PrecioUnitario > 0 &&
+                    x.FkidRequisicionDetalleOrcoNavigation.FkidRequisicionOrco == requisicionId &&
+                    x.FkidRequisicionDetalleOrcoNavigation.Activo)
+                .Select(x => x.FkidRequisicionDetalleOrco)
+                .Distinct()
+                .CountAsync();
+
+            return quotedDetails == requisicionDetails;
+        }
+
+        private Task<bool> HasAuthorizedCommitmentAsync(int requisicionId, int proveedorId)
+        {
+            return (
+                from solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                    on solicitud.PkidSolicitudSuficiencia equals autorizacion.FkidSolicitudSuficienciaPres
+                join contrato in _context.Contratos1.AsNoTracking()
+                    on autorizacion.PkidAutorizacionSuficiencia equals contrato.FkidAutorizacionSuficienciaPres
+                where solicitud.Activo &&
+                      autorizacion.Activo &&
+                      contrato.Activo &&
+                      solicitud.FkidRequisicionOrco == requisicionId &&
+                      solicitud.Estatus == 3 &&
+                      autorizacion.Estatus == 2 &&
+                      contrato.Estatus >= 2 &&
+                      contrato.FkidProveedorSis == proveedorId
+                select contrato.PkidContrato)
+                .AnyAsync();
         }
 
         private async Task<PagedResult<OrdenCompraResponse>?> ValidateOrdenReadyToAuthorizeAsync(int ordenCompraId)
@@ -431,6 +603,7 @@ namespace EG.Application.Services.Adquisicion
                 StoredProcedureExecutor.Param("@PKIdOrdenCompra", id),
                 StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
                 StoredProcedureExecutor.Param("@FKIdRequisicion_ORCO", response.FkidRequisicionOrco),
+                StoredProcedureExecutor.Param("@FKIdCotizacion_ORCO", response.FkidCotizacionOrco),
                 StoredProcedureExecutor.Param("@FKIdProveedor_SIS", response.FkidProveedorSis),
                 StoredProcedureExecutor.Param("@FKIdPoliza_CONTA", response.FkidPolizaConta),
                 StoredProcedureExecutor.Param("@FKIdEstatusOrdenCompra_ORCO", response.FkidEstatusOrdenCompraOrco),

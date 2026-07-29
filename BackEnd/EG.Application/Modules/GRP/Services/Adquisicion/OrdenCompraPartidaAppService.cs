@@ -5,6 +5,7 @@ using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +16,13 @@ namespace EG.Application.Services.Adquisicion
             IOrdenCompraPartidaAppService
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public OrdenCompraPartidaAppService(
             GenericService<OrdenCompraPartidum, OrdenCompraPartidaDto, OrdenCompraPartidaResponse> service,
             GenericService<VwOrdenCompraPartidum, OrdenCompraPartidaDto, OrdenCompraPartidaResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -28,6 +31,7 @@ namespace EG.Application.Services.Adquisicion
                 (dto, id) => dto.PkidOrdenCompraPartida = id)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<OrdenCompraPartidaResponse>> CreateAsync(
@@ -107,6 +111,11 @@ namespace EG.Application.Services.Adquisicion
                 return BoolFailure($"Partida de orden de compra con ID {id} no encontrada.", "NOT_FOUND");
             }
 
+            if (!await IsCurrentCompanyOrderAsync(partida.FkidOrdenCompraOrco))
+            {
+                return BoolFailure("La orden de compra no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
             if (await IsOrdenLockedAsync(partida.FkidOrdenCompraOrco))
             {
                 return BoolFailure("La orden de compra ya fue autorizada. No se pueden eliminar partidas.", "LOCKED");
@@ -178,6 +187,25 @@ namespace EG.Application.Services.Adquisicion
                 return Failure("La orden de compra no existe o esta inactiva.");
             }
 
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (empresaId.HasValue && empresaId.Value > 0 && orden.FkidEmpresaSis != empresaId.Value)
+            {
+                return Failure("La orden de compra no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
+            var partidaPertenece = await _context.RequisicionPartida
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.FkidRequisicionOrco == orden.FkidRequisicionOrco &&
+                    x.FkidEmpresaSis == orden.FkidEmpresaSis &&
+                    x.FkidPartidaConta == response.FkidPartidaConta &&
+                    x.Activo);
+
+            if (!partidaPertenece)
+            {
+                return Failure("La partida seleccionada no pertenece a la requisicion de la orden.");
+            }
+
             var importePartidas = await _context.OrdenCompraPartida
                 .Where(x =>
                     x.FkidOrdenCompraOrco == response.FkidOrdenCompraOrco &&
@@ -217,6 +245,22 @@ namespace EG.Application.Services.Adquisicion
         {
             return await _context.OrdenCompras
                 .AnyAsync(x => x.PkidOrdenCompra == ordenCompraId && x.Activo && x.FkidEstatusOrdenCompraOrco > 1);
+        }
+
+        private async Task<bool> IsCurrentCompanyOrderAsync(int ordenCompraId)
+        {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return true;
+            }
+
+            return await _context.OrdenCompras
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.PkidOrdenCompra == ordenCompraId &&
+                    x.Activo &&
+                    x.FkidEmpresaSis == empresaId.Value);
         }
 
         private static PagedResult<OrdenCompraPartidaResponse> Failure(string message, string code = "ERROR")

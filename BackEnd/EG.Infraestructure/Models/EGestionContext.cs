@@ -7854,6 +7854,8 @@ public partial class EGestionContext : DbContext
 
             entity.HasIndex(e => e.FkidEmpresaSis, "IX_OrdenCompra_FKIdEmpresa_SIS_2120394623");
 
+            entity.HasIndex(e => e.FkidCotizacionOrco, "IX_OrdenCompra_Cotizacion").HasFilter("([Activo]=(1))");
+
             entity.HasIndex(e => e.FkidPolizaConta, "IX_OrdenCompra_FKIdPoliza_CONTA_2120394623");
 
             entity.HasIndex(e => e.FechaOrdenCompra, "IX_OrdenCompra_Fecha").HasFilter("([Activo]=(1))");
@@ -7869,6 +7871,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_OrdenCompra_FechaCreacion");
             entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidCotizacionOrco).HasColumnName("FKIdCotizacion_ORCO");
             entity.Property(e => e.FkidEstatusOrdenCompraOrco).HasColumnName("FKIdEstatusOrdenCompra_ORCO");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidProveedorSis).HasColumnName("FKIdProveedor_SIS");

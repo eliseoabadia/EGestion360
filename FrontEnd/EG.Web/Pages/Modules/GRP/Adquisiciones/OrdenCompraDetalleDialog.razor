@@ -27,7 +27,9 @@
         <MudGrid GutterSize="2">
             <MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined">
-                    Puedes seleccionar un bien cotizado para traer cantidad, unidad y precio. Si no hay cotizacion, selecciona el bien de requisicion y captura el precio.
+                    @(CompraDirecta
+                        ? "Compra directa: puedes seleccionar el bien de requisicion y capturar el precio."
+                        : "Selecciona un bien de la cotizacion adjudicada; cantidad, unidad y precio se validan contra ella.")
                 </MudAlert>
             </MudItem>
 
@@ -35,7 +37,9 @@
                 <PagedAutocomplete Value="@_selectedCotizacionDetalle"
                                    ValueChanged="OnCotizacionDetalleChanged"
                                    Label="Bien cotizado"
-                                   Clearable="true"
+                                   Required="@(!CompraDirecta)"
+                                   RequiredError="Selecciona un bien de la cotizacion adjudicada"
+                                   Clearable="@CompraDirecta"
                                    LoadPage="LoadCotizacionDetallesPageAsync" />
             </MudItem>
 
@@ -45,6 +49,7 @@
                                    Label="Bien de requisicion"
                                    Required="@(_selectedCotizacionDetalle == null)"
                                    RequiredError="Selecciona un bien"
+                                   Disabled="@(!CompraDirecta)"
                                    Clearable="true"
                                    LoadPage="LoadRequisicionDetallesPageAsync" />
             </MudItem>
@@ -127,6 +132,8 @@
     [Parameter] public int? Id { get; set; }
     [Parameter] public int OrdenCompraId { get; set; }
     [Parameter] public int RequisicionId { get; set; }
+    [Parameter] public int? CotizacionId { get; set; }
+    [Parameter] public bool CompraDirecta { get; set; }
     [Parameter] public string CurrencySymbol { get; set; } = "$";
     [Parameter] public string CurrencyName { get; set; } = "Peso Mexicano";
 
@@ -276,9 +283,11 @@
 
     private async Task<ComboLookupResult> LoadCotizacionDetallesPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var filters = RequisicionId > 0
-            ? new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId }
-            : null;
+        var filters = CotizacionId.HasValue && CotizacionId.Value > 0
+            ? new Dictionary<string, object> { ["FkidCotizacionOrco"] = CotizacionId.Value }
+            : RequisicionId > 0
+                ? new Dictionary<string, object> { ["FkidRequisicionOrco"] = RequisicionId }
+                : null;
 
         var response = await CotizacionDetalleService.GetAllPaginadoAsync(page, pageSize, filter, "TipoBienDescripcion", SortDirection.Ascending, filters);
         return ToComboResult(response?.Items?.Select(x => new LookupItem

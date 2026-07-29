@@ -37,7 +37,7 @@ namespace EG.Domain.DTOs.Responses.Contratos
         public string? ModalidadDescripcion { get; set; }
         public decimal MontoMaximo { get; set; }
         public decimal MontoMinimo { get; set; }
-        public decimal? Penalizacion { get; set; }
+        public string? Penalizacion { get; set; }
         public string? PlazoEjecucion { get; set; }
         public string? FlArchivo { get; set; }
         public string? Justificacion { get; set; }

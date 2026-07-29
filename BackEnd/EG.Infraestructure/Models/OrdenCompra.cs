@@ -13,6 +13,8 @@ public partial class OrdenCompra
 
     public int FkidRequisicionOrco { get; set; }
 
+    public int? FkidCotizacionOrco { get; set; }
+
     public int FkidProveedorSis { get; set; }
 
     public int? FkidPolizaConta { get; set; }

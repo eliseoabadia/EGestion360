@@ -13,6 +13,8 @@
 @inject IGenericCrudService<EstadoContratoResponse> Service
 @inject IGenericCrudService<AutorizacionSuficienciaResponse> AutorizacionService
 @inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> AutorizacionDetalleService
+@inject IGenericCrudService<RequisicionResponse> RequisicionService
+@inject IGenericCrudService<CotizacionResponse> CotizacionService
 @inject IGenericCrudService<ProveedorResponse> ProveedorService
 @inject IGenericCrudService<PolizaResponse> PolizaService
 @inject SucursalStateService SucursalStateService
@@ -147,6 +149,7 @@
     private LookupItem? _selectedAutorizacion;
     private LookupItem? _selectedProveedor;
     private LookupItem? _selectedPoliza;
+    private bool _compraDirecta;
 
     private string Title => Id.HasValue ? "Editar Estado de Contrato" : "Nuevo Estado de Contrato";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -205,6 +208,7 @@
         _selectedPoliza = item.FkidPolizaConta.HasValue
             ? new LookupItem { Id = item.FkidPolizaConta.Value, Text = TextOrId(item.ClavePoliza, item.FkidPolizaConta.Value) }
             : null;
+        await LoadCompraDirectaAsync();
     }
 
     private async Task SaveAsync(bool _)
@@ -257,6 +261,7 @@
     private async Task OnAutorizacionChanged(LookupItem? value)
     {
         _selectedAutorizacion = value;
+        _selectedProveedor = null;
         if (value == null)
         {
             return;
@@ -289,6 +294,8 @@
         {
             item.MontoTotal = await GetAutorizacionTotalAsync(autorizacion.PkidAutorizacionSuficiencia);
         }
+
+        await LoadCompraDirectaAsync();
     }
 
     private async Task<decimal> GetAutorizacionTotalAsync(int autorizacionId)
@@ -320,12 +327,46 @@
 
     private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
+        HashSet<int>? allowedProviderIds = null;
+        if (!_compraDirecta && item.FkidRequisicionOrco.HasValue && item.FkidRequisicionOrco.Value > 0)
+        {
+            var quotations = await CotizacionService.GetAllPaginadoAsync(
+                1,
+                500,
+                string.Empty,
+                "PkidCotizacion",
+                SortDirection.Ascending,
+                new Dictionary<string, object>
+                {
+                    ["FkidRequisicionOrco"] = item.FkidRequisicionOrco.Value
+                });
+
+            allowedProviderIds = quotations?.Items?
+                .Where(x => x.Activo)
+                .Select(x => x.FkidProveedorSis)
+                .ToHashSet() ?? new HashSet<int>();
+        }
+
         var response = await ProveedorService.GetAllPaginadoAsync(page, pageSize, filter, "Nombre", SortDirection.Ascending);
-        return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
+        return ToComboResult(response?.Items?
+            .Where(x => x.Activo && (allowedProviderIds == null || allowedProviderIds.Contains(x.PkidProveedor)))
+            .Select(x => new LookupItem
         {
             Id = x.PkidProveedor,
             Text = BuildProveedorText(x.Clave, x.Nombre)
         }), response?.TotalCount);
+    }
+
+    private async Task LoadCompraDirectaAsync()
+    {
+        _compraDirecta = false;
+        if (!item.FkidRequisicionOrco.HasValue || item.FkidRequisicionOrco.Value <= 0)
+        {
+            return;
+        }
+
+        var response = await RequisicionService.GetByIdAsync(item.FkidRequisicionOrco.Value);
+        _compraDirecta = response?.Data?.CompraDirecta == true;
     }
 
     private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)

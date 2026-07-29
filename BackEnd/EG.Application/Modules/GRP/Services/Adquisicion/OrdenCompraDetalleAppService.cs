@@ -5,6 +5,7 @@ using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +16,13 @@ namespace EG.Application.Services.Adquisicion
             IOrdenCompraDetalleAppService
     {
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public OrdenCompraDetalleAppService(
             GenericService<OrdenCompraDetalle, OrdenCompraDetalleDto, OrdenCompraDetalleResponse> service,
             GenericService<VwOrdenCompraDetalle, OrdenCompraDetalleDto, OrdenCompraDetalleResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -28,6 +31,7 @@ namespace EG.Application.Services.Adquisicion
                 (dto, id) => dto.PkidOrdenCompraDetalle = id)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<OrdenCompraDetalleResponse>> CreateAsync(
@@ -107,6 +111,11 @@ namespace EG.Application.Services.Adquisicion
                 return BoolFailure($"Detalle de orden de compra con ID {id} no encontrado.", "NOT_FOUND");
             }
 
+            if (!await IsCurrentCompanyOrderAsync(detalle.FkidOrdenCompraOrco))
+            {
+                return BoolFailure("La orden de compra no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
             if (await IsOrdenLockedAsync(detalle.FkidOrdenCompraOrco))
             {
                 return BoolFailure("La orden de compra ya fue autorizada. No se pueden eliminar detalles.", "LOCKED");
@@ -154,6 +163,21 @@ namespace EG.Application.Services.Adquisicion
                 return Failure("Debe existir una orden de compra seleccionada.");
             }
 
+            var orden = await _context.OrdenCompras
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidOrdenCompra == response.FkidOrdenCompraOrco && x.Activo);
+
+            if (orden == null)
+            {
+                return Failure("La orden de compra no existe o esta inactiva.");
+            }
+
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (empresaId.HasValue && empresaId.Value > 0 && orden.FkidEmpresaSis != empresaId.Value)
+            {
+                return Failure("La orden de compra no pertenece a la empresa activa.", "FORBIDDEN");
+            }
+
             if (await IsOrdenLockedAsync(response.FkidOrdenCompraOrco))
             {
                 return Failure("La orden de compra ya fue autorizada. No se pueden modificar detalles.", "LOCKED");
@@ -163,12 +187,28 @@ namespace EG.Application.Services.Adquisicion
             {
                 var cotizacionDetalle = await _context.CotizacionDetalles
                     .Include(x => x.FkidRequisicionDetalleOrcoNavigation)
+                    .Include(x => x.FkidCotizacionOrcoNavigation)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.PkidCotizacionDetalle == response.FkidCotizacionDetalleOrco.Value && x.Activo);
 
                 if (cotizacionDetalle == null)
                 {
                     return Failure("El detalle de cotizacion seleccionado no existe o esta inactivo.");
+                }
+
+                var cotizacion = cotizacionDetalle.FkidCotizacionOrcoNavigation;
+                if (!cotizacion.Activo ||
+                    cotizacion.FkidRequisicionOrco != orden.FkidRequisicionOrco ||
+                    cotizacion.FkidProveedorSis != orden.FkidProveedorSis)
+                {
+                    return Failure("El detalle de cotizacion no corresponde a la requisicion y proveedor de la orden.");
+                }
+
+                if (!orden.CompraDirecta &&
+                    (!orden.FkidCotizacionOrco.HasValue ||
+                     cotizacion.PkidCotizacion != orden.FkidCotizacionOrco.Value))
+                {
+                    return Failure("El detalle no pertenece a la cotizacion adjudicada de la orden.");
                 }
 
                 ApplyFromRequisicionDetalle(response, cotizacionDetalle.FkidRequisicionDetalleOrcoNavigation);
@@ -199,6 +239,12 @@ namespace EG.Application.Services.Adquisicion
                     return Failure("El detalle de requisicion seleccionado no existe o esta inactivo.");
                 }
 
+                if (requisicionDetalle.FkidRequisicionOrco != orden.FkidRequisicionOrco ||
+                    requisicionDetalle.FkidEmpresaSis != orden.FkidEmpresaSis)
+                {
+                    return Failure("El detalle de requisicion no pertenece al encabezado de la orden.");
+                }
+
                 ApplyFromRequisicionDetalle(response, requisicionDetalle);
 
                 if (response.CantidadSolicitada <= 0)
@@ -217,6 +263,13 @@ namespace EG.Application.Services.Adquisicion
                 {
                     return Failure("La cantidad de la orden de compra rebasa la cantidad de la requisicion.");
                 }
+            }
+
+            if (!orden.CompraDirecta &&
+                (!response.FkidCotizacionDetalleOrco.HasValue ||
+                 response.FkidCotizacionDetalleOrco.Value <= 0))
+            {
+                return Failure("Los detalles de una orden ordinaria deben provenir de la cotizacion adjudicada.");
             }
 
             if (response.CantidadSolicitada <= 0)
@@ -289,6 +342,22 @@ namespace EG.Application.Services.Adquisicion
         {
             return await _context.OrdenCompras
                 .AnyAsync(x => x.PkidOrdenCompra == ordenCompraId && x.Activo && x.FkidEstatusOrdenCompraOrco > 1);
+        }
+
+        private async Task<bool> IsCurrentCompanyOrderAsync(int ordenCompraId)
+        {
+            var empresaId = _userContext.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return true;
+            }
+
+            return await _context.OrdenCompras
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.PkidOrdenCompra == ordenCompraId &&
+                    x.Activo &&
+                    x.FkidEmpresaSis == empresaId.Value);
         }
 
         private static PagedResult<OrdenCompraDetalleResponse> Failure(string message, string code = "ERROR")

@@ -1,0 +1,14 @@
+GestionEmpresarial - Actualizacion 2026-07-28
+
+Orden de aplicacion:
+
+1. Respaldar la base GestionEmpresarial.
+2. Ejecutar 20260728_FlujoRequisicionHastaCheque.sql.
+3. Ejecutar 20260728_IntegridadOrdenCompraContratos.sql.
+4. Publicar el contenido de Back.rar en el sitio del API.
+5. Publicar el contenido de Front.rar en el sitio web.
+6. Reiniciar los pools de IIS y validar el flujo.
+
+La segunda migracion es idempotente y debe ejecutarse despues de la primera.
+Incluye la referencia de cotizacion adjudicada, indices, vistas, SP y triggers
+para requisicion, cotizaciones, orden, compromiso, contrato y cheque.

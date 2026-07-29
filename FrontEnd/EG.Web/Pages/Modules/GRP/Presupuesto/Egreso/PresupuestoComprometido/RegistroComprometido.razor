@@ -18,7 +18,7 @@
                 <PageHeader Title="Registro Comprometido"
                             Subtitle="Contratos derivados de autorizaciones de suficiencia"
                             Icon="@Icons.Material.Filled.AssignmentTurnedIn"
-                            CanCreate="@CanCreate"
+                            CanCreate="false"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
@@ -42,8 +42,6 @@
                         RegistroTitulo="@TextOrDash(cell.Item.NumeroContrato)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
                         <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(cell.Item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(cell.Item))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(cell.Item.PkidContrato))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(cell.Item.PkidContrato))" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="ContratoResponse" Title="Contrato" Identifier="NumeroContrato" PropertyName="NumeroContrato" SortBy="x => x.NumeroContrato">
@@ -95,7 +93,6 @@
                                            RegistroTitulo="@TextOrDash(SelectedContrato.NumeroContrato)"
                                            RegistroDescripcion="@TextOrDash(SelectedContrato.Descripcion)" />
                     <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
-                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedContrato)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                 </MudPaper>
                 <div Style="flex-grow:1;overflow:hidden;min-height:0;">
                     <GenericDataGrid TItem="ContratoDetalleResponse" @ref="detalleTable" Title="Calendario por partida"
@@ -107,8 +104,6 @@
             <Columns>
                 <TemplateColumn T="ContratoDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditDetalle(cell.Item.PkidContratoDetalle))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(SelectedContrato)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteDetalle(cell.Item.PkidContratoDetalle))" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="ContratoDetalleResponse" Title="Partida" Identifier="__column_1" Sortable="false" Filterable="false">
