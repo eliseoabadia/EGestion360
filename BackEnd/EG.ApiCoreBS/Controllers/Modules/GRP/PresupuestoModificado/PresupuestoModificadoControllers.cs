@@ -75,6 +75,10 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
         [HttpPost("{id:int}/enviar-solicitud")]
         public async Task<ActionResult<PagedResult<EgreAdecuacionResponse>>> EnviarSolicitud(int id)
         {
+            var current = await _service.GetByIdAsync(id);
+            if (!current.Success || current.Data == null) return NotFound(current);
+            if (!HasPermission(User, GetSubModuleName(current.Data.FkidTipoAdecuacionPres), "update")) return Forbid();
+
             var result = await _service.EnviarSolicitudAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
@@ -86,7 +90,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             if (!current.Success || current.Data == null) return NotFound(current);
 
             var subModule = GetSubModuleName(current.Data.FkidTipoAdecuacionPres);
-            if (!HasAuthorizePermission(User, subModule)) return Forbid();
+            if (!HasPermission(User, subModule, "authorize")) return Forbid();
 
             var result = await _service.AutorizarAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
@@ -95,7 +99,22 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
         [HttpPost("{id:int}/rechazar")]
         public async Task<ActionResult<PagedResult<EgreAdecuacionResponse>>> Rechazar(int id)
         {
+            var current = await _service.GetByIdAsync(id);
+            if (!current.Success || current.Data == null) return NotFound(current);
+            if (!HasPermission(User, GetSubModuleName(current.Data.FkidTipoAdecuacionPres), "authorize")) return Forbid();
+
             var result = await _service.RechazarAsync(id, UserContext.GetCurrentUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id:int}/cancelar-solicitud")]
+        public async Task<ActionResult<PagedResult<EgreAdecuacionResponse>>> CancelarSolicitud(int id)
+        {
+            var current = await _service.GetByIdAsync(id);
+            if (!current.Success || current.Data == null) return NotFound(current);
+            if (!HasPermission(User, GetSubModuleName(current.Data.FkidTipoAdecuacionPres), "update")) return Forbid();
+
+            var result = await _service.CancelarSolicitudAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -107,7 +126,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             _ => string.Empty
         };
 
-        private static bool HasAuthorizePermission(ClaimsPrincipal user, string subModule)
+        private static bool HasPermission(ClaimsPrincipal user, string subModule, string action)
         {
             if (string.IsNullOrWhiteSpace(subModule)) return false;
 
@@ -132,7 +151,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
                 if (subGroup != null
                     && values != null
                     && string.Equals(subGroup.Value, subModule, StringComparison.OrdinalIgnoreCase)
-                    && HasAction(values.Value, "authorize"))
+                    && HasAction(values.Value, action))
                 {
                     return true;
                 }
@@ -140,7 +159,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
 
             return user.Claims.Any(c => IsClaim(c, "Group", "Presupuesto_Modificado"))
                 && user.Claims.Any(c => IsClaim(c, "SubGroup", subModule))
-                && user.Claims.Any(c => IsClaimType(c, "Values") && HasAction(c.Value, "authorize"));
+                && user.Claims.Any(c => IsClaimType(c, "Values") && HasAction(c.Value, action));
         }
 
         private static bool IsClaim(Claim claim, string type, string value) =>

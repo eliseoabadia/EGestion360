@@ -21,6 +21,8 @@ public partial class EgreAdecuacion
 
     public int? FkidPolizaConta { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int FkidAnioSis { get; set; }
 
     public bool? Autorizado { get; set; }

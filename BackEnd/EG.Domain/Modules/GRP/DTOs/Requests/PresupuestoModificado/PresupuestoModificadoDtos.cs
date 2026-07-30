@@ -9,6 +9,7 @@ namespace EG.Domain.DTOs.Requests.PresupuestoModificado
         public string? Justificacion { get; set; }
         public DateOnly Fecha { get; set; }
         public int? FkidPolizaConta { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int FkidAnioSis { get; set; }
         public bool? Autorizado { get; set; }
         public int? FkidAccionAdecuacionMasterPres { get; set; }
@@ -85,6 +86,7 @@ namespace EG.Domain.DTOs.Requests.PresupuestoModificado
         public string? Justificacion { get; set; }
         public DateOnly Fecha { get; set; }
         public int? FkidPolizaConta { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int FkidAnioSis { get; set; }
         public bool Autorizado { get; set; }
         public int? FkidAccionAdecuacionMasterPres { get; set; }

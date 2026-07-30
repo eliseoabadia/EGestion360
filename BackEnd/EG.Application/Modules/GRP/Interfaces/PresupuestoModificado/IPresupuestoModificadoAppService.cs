@@ -9,5 +9,6 @@ namespace EG.Application.Interfaces.PresupuestoModificado
         Task<PagedResult<EgreAdecuacionResponse>> EnviarSolicitudAsync(int id, int usuarioActual);
         Task<PagedResult<EgreAdecuacionResponse>> AutorizarAsync(int id, int usuarioActual);
         Task<PagedResult<EgreAdecuacionResponse>> RechazarAsync(int id, int usuarioActual);
+        Task<PagedResult<EgreAdecuacionResponse>> CancelarSolicitudAsync(int id, int usuarioActual);
     }
 }

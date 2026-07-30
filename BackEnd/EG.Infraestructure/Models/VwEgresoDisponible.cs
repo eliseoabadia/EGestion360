@@ -11,6 +11,8 @@ public partial class VwEgresoDisponible
 
     public int? FkidEgresoProyectadoPres { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int? FkidAnioSis { get; set; }
 
     public int? AnioClave { get; set; }

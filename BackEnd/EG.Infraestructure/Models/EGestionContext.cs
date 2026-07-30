@@ -4497,6 +4497,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(sysdatetime())", "DF_EgreAdecuacion_FechaCreacion");
             entity.Property(e => e.FkidAccionAdecuacionMasterPres).HasColumnName("FKIdAccionAdecuacionMaster_PRES");
             entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidEstatusAdecuacionPres).HasColumnName("FKIdEstatusAdecuacion_PRES");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidTipoAdecuacionPres).HasColumnName("FKIdTipoAdecuacion_PRES");
@@ -14986,6 +14987,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.EstatusAdecuacionDescripcion).HasMaxLength(100);
             entity.Property(e => e.FkidAccionAdecuacionMasterPres).HasColumnName("FKIdAccionAdecuacionMaster_PRES");
             entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidEstatusAdecuacionPres).HasColumnName("FKIdEstatusAdecuacion_PRES");
             entity.Property(e => e.FkidPolizaConta).HasColumnName("FKIdPoliza_CONTA");
             entity.Property(e => e.FkidTipoAdecuacionPres).HasColumnName("FKIdTipoAdecuacion_PRES");
@@ -15009,6 +15011,8 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Enero).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.Febrero).HasColumnType("decimal(20, 4)");
             entity.Property(e => e.FkidEgreAdecuacionPres).HasColumnName("FKIdEgreAdecuacion_PRES");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
+            entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
             entity.Property(e => e.FkidEgresoAutorizadoPres).HasColumnName("FKIdEgresoAutorizado_PRES");
             entity.Property(e => e.FkidTipoMovimientoPres).HasColumnName("FKIdTipoMovimiento_PRES");
             entity.Property(e => e.Julio).HasColumnType("decimal(20, 4)");
@@ -15115,6 +15119,7 @@ public partial class EGestionContext : DbContext
             entity.Property(e => e.Enero).HasColumnType("decimal(38, 4)");
             entity.Property(e => e.Febrero).HasColumnType("decimal(38, 4)");
             entity.Property(e => e.FkidAnioSis).HasColumnName("FKIdAnio_SIS");
+            entity.Property(e => e.FkidEmpresaSis).HasColumnName("FKIdEmpresa_SIS");
             entity.Property(e => e.FkidAreaSis).HasColumnName("FKIdArea_SIS");
             entity.Property(e => e.FkidDestinoGastoPres).HasColumnName("FKIdDestinoGasto_PRES");
             entity.Property(e => e.FkidDigitoIdentificadorPres).HasColumnName("FKIdDigitoIdentificador_PRES");

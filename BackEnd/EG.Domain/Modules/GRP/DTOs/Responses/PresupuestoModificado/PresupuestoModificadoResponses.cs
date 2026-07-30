@@ -13,6 +13,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public DateOnly Fecha { get; set; } = DateOnly.FromDateTime(DateTime.Today);
         public int? FkidPolizaConta { get; set; }
         public string? ClavePoliza { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int FkidAnioSis { get; set; }
         public int? AnioClave { get; set; }
         public bool? Autorizado { get; set; }
@@ -36,6 +37,8 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public int FkidEgreAdecuacionPres { get; set; }
         public string? EgreAdecuacionClave { get; set; }
         public bool? Autorizado { get; set; }
+        public int FkidEmpresaSis { get; set; }
+        public int FkidAnioSis { get; set; }
         public int? FkidEgresoAutorizadoPres { get; set; }
         public string? EgresoAutorizadoDescripcion { get; set; }
         public int FkidTipoMovimientoPres { get; set; }
@@ -89,6 +92,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
     {
         public int PkidEgresoAutorizado { get; set; }
         public int? FkidEgresoProyectadoPres { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int? FkidAnioSis { get; set; }
         public int? AnioClave { get; set; }
         public int FkidProgramaPres { get; set; }
@@ -154,6 +158,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public DateOnly Fecha { get; set; } = DateOnly.FromDateTime(DateTime.Today);
         public int? FkidPolizaConta { get; set; }
         public string? ClavePoliza { get; set; }
+        public int FkidEmpresaSis { get; set; }
         public int FkidAnioSis { get; set; }
         public int? AnioClave { get; set; }
         public bool Autorizado { get; set; }

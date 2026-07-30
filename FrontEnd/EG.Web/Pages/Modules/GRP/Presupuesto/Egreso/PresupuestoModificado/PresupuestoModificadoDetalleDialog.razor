@@ -8,6 +8,7 @@
 
 @inject IGenericCrudService<EgreAdecuacionDetalleResponse> Service
 @inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EgreAdecuacionDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
@@ -67,8 +68,15 @@
     {
         try
         {
+            await AnioStateService.InitializeAsync();
             item.FkidEgreAdecuacionPres = AdecuacionId;
             item.FkidTipoMovimientoPres = TipoMovimientoId;
+
+            if (!Id.HasValue && AnioStateService.AnioClave is > 0)
+            {
+                _fecha = new DateTime(AnioStateService.AnioClave.Value, 1, 1);
+                item.Fecha = DateOnly.FromDateTime(_fecha.Value);
+            }
 
             if (!Id.HasValue) return;
 
@@ -76,6 +84,7 @@
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
+                NormalizeMonthValues();
                 _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
                 if (item.FkidEgresoAutorizadoPres.HasValue)
                 {
@@ -99,6 +108,11 @@
             Snackbar.Add("Selecciona un egreso autorizado.", Severity.Warning);
             return;
         }
+        if (AnioStateService.AnioId is not > 0 || AnioStateService.AnioClave is not > 0 || AnioStateService.AnioId.Value != AnioId)
+        {
+            Snackbar.Add("El ejercicio presupuestal cambió; cierra y vuelve a abrir la captura.", Severity.Warning);
+            return;
+        }
         if (CapturedTotal <= 0)
         {
             Snackbar.Add("Solicita un importe para al menos un mes.", Severity.Warning);
@@ -119,6 +133,11 @@
         item.FkidEgreAdecuacionPres = AdecuacionId;
         item.FkidTipoMovimientoPres = TipoMovimientoId;
         item.Fecha = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
+        if (item.Fecha.Year != AnioStateService.AnioClave.Value)
+        {
+            Snackbar.Add($"La fecha debe pertenecer al ejercicio {AnioStateService.AnioClave.Value}.", Severity.Warning);
+            return;
+        }
 
         var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (response?.Success == true)
@@ -192,5 +211,21 @@
             case 11: item.Noviembre = value; break;
             case 12: item.Diciembre = value; break;
         }
+    }
+
+    private void NormalizeMonthValues()
+    {
+        item.Enero = Math.Abs(item.Enero ?? 0m);
+        item.Febrero = Math.Abs(item.Febrero ?? 0m);
+        item.Marzo = Math.Abs(item.Marzo ?? 0m);
+        item.Abril = Math.Abs(item.Abril ?? 0m);
+        item.Mayo = Math.Abs(item.Mayo ?? 0m);
+        item.Junio = Math.Abs(item.Junio ?? 0m);
+        item.Julio = Math.Abs(item.Julio ?? 0m);
+        item.Agosto = Math.Abs(item.Agosto ?? 0m);
+        item.Septiembre = Math.Abs(item.Septiembre ?? 0m);
+        item.Octubre = Math.Abs(item.Octubre ?? 0m);
+        item.Noviembre = Math.Abs(item.Noviembre ?? 0m);
+        item.Diciembre = Math.Abs(item.Diciembre ?? 0m);
     }
 }

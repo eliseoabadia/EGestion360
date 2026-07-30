@@ -4,6 +4,7 @@
 @using MudBlazor
 
 @inject IGenericCrudService<EgreAdecuacionResponse> Service
+@inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="EgreAdecuacionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
@@ -65,10 +66,16 @@
     {
         try
         {
+            await AnioStateService.InitializeAsync();
             if (!Id.HasValue)
             {
                 item.FkidTipoAdecuacionPres = TipoAdecuacionId;
                 item.FkidAnioSis = AnioId;
+                if (AnioStateService.AnioClave is > 0)
+                {
+                    _fecha = new DateTime(AnioStateService.AnioClave.Value, 1, 1);
+                    item.Fecha = DateOnly.FromDateTime(_fecha.Value);
+                }
                 return;
             }
 
@@ -89,9 +96,14 @@
     {
         if (_formLoading || form == null) return;
         if (!await form.ValidateAsync()) return;
-        if (AnioId <= 0)
+        if (AnioId <= 0 || AnioStateService.AnioId is not > 0 || AnioStateService.AnioClave is not > 0)
         {
             Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
+            return;
+        }
+        if (AnioStateService.AnioId.Value != AnioId)
+        {
+            Snackbar.Add("El ejercicio presupuestal cambió; cierra y vuelve a abrir la captura.", Severity.Warning);
             return;
         }
 
@@ -100,6 +112,11 @@
         item.FkidEstatusAdecuacionPres = item.FkidEstatusAdecuacionPres <= 0 ? 1 : item.FkidEstatusAdecuacionPres;
         item.FkidAccionAdecuacionMasterPres ??= 1;
         item.Fecha = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
+        if (item.Fecha.Year != AnioStateService.AnioClave.Value)
+        {
+            Snackbar.Add($"La fecha debe pertenecer al ejercicio {AnioStateService.AnioClave.Value}.", Severity.Warning);
+            return;
+        }
 
         var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (response?.Success == true)

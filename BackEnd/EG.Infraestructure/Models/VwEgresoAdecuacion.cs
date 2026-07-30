@@ -29,6 +29,8 @@ public partial class VwEgresoAdecuacion
 
     public string ClavePoliza { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public int FkidAnioSis { get; set; }
 
     public int? AnioClave { get; set; }

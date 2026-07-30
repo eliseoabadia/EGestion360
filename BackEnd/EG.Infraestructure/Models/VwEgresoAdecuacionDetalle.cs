@@ -15,6 +15,10 @@ public partial class VwEgresoAdecuacionDetalle
 
     public bool? Autorizado { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
+    public int FkidAnioSis { get; set; }
+
     public int? FkidEgresoAutorizadoPres { get; set; }
 
     public string EgresoAutorizadoDescripcion { get; set; }

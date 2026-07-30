@@ -18,7 +18,7 @@
 @inject HttpClient Http
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column mod-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="px-3 d-flex flex-column mod-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (Selected == null)
         {
             <PageHeader Title="@Title"
@@ -50,11 +50,14 @@
                     <CellTemplate Context="cell">
                         <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(cell.Item))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(cell.Item))" Title="@RequestTooltip(cell.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(cell.Item, "enviar-solicitud"))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@CanUpdate" Disabled="@(!CanCancelRequest(cell.Item))" Title="Cancelar solicitud y volver a captura" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(cell.Item, "cancelar-solicitud"))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(cell.Item))" Title="@AuthorizeTooltip(cell.Item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(cell.Item, "autorizar"))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Visible="@CanAuthorize" Disabled="@(!CanRejectItem(cell.Item))" Title="Rechazar solicitud" Size="Size.Small" Color="Color.Error" OnClick="@(() => Workflow(cell.Item, "rechazar"))" />
                         <DocumentSupportButton Modulo="Presupuesto_Modificado"
                         SubModulo="@SubModuleNameValue"
                         Controlador="EgreAdecuacion"
                         EntidadId="@cell.Item.PkidEgreAdecuacion"
+                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@TextOrDash(cell.Item.Clave)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Justificacion)" />
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(cell.Item.PkidEgreAdecuacion))" />
@@ -113,10 +116,13 @@
                                                SubModulo="@SubModuleNameValue"
                                                Controlador="EgreAdecuacion"
                                                EntidadId="@Selected.PkidEgreAdecuacion"
+                                               FkidEmpresaSis="@Selected.FkidEmpresaSis"
                                                RegistroTitulo="@TextOrDash(Selected.Clave)"
                                                RegistroDescripcion="@TextOrDash(Selected.Justificacion)" />
                         <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" Disabled="@(Selected == null || !CanSendSelected)" OnClick="@(() => Workflow(Selected!, "enviar-solicitud"))">Solicitar autorizacion</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Undo" Visible="@CanUpdate" Disabled="@(Selected == null || !CanCancelSelected)" OnClick="@(() => Workflow(Selected!, "cancelar-solicitud"))">Cancelar solicitud</MudButton>
                         <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(Selected == null || !CanAuthorizeSelected)" OnClick="@(() => Workflow(Selected!, "autorizar"))">Autorizar</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" Visible="@CanAuthorize" Disabled="@(Selected == null || !CanRejectSelected)" OnClick="@(() => Workflow(Selected!, "rechazar"))">Rechazar</MudButton>
                         @if (CanCreate)
                         {
                             <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.AddCircleOutline" Disabled="@(SelectedLocked || (!AllowBothMovements && DefaultMovimientoId != 1))" OnClick="@(() => AddDetalle(1))">Ampliacion</MudButton>
@@ -362,7 +368,9 @@
     private decimal HaberTotal => _poliza.Sum(x => x.ImporteHaber ?? 0m);
     private bool IsSelectedBalanced => _poliza.Count > 0 && DebeTotal == HaberTotal;
     private bool CanSendSelected => Selected != null && CanSendRequest(Selected, IsSelectedBalanced);
+    private bool CanCancelSelected => Selected != null && CanCancelRequest(Selected);
     private bool CanAuthorizeSelected => Selected != null && CanAuthorizeItem(Selected, IsSelectedBalanced);
+    private bool CanRejectSelected => Selected != null && CanRejectItem(Selected);
     private string BalanceText => _poliza.Count == 0 ? "Sin movimientos contables" : IsSelectedBalanced ? "Balanceada" : $"Diferencia {Money(Math.Abs(DebeTotal - HaberTotal))}";
     private bool IsCompensada => TipoAdecuacionId == 1;
 
@@ -514,8 +522,13 @@
                 Severity.Success),
             "rechazar" => (
                 "Rechazar modificación presupuestal",
-                $"¿Seguro que deseas rechazar y reabrir la modificación {item.Clave}?",
+                $"¿Seguro que deseas rechazar la modificación {item.Clave}? Quedará bloqueada.",
                 "Rechazar",
+                Severity.Warning),
+            "cancelar-solicitud" => (
+                "Cancelar solicitud de autorización",
+                $"¿Seguro que deseas cancelar la solicitud de {item.Clave} y devolverla a captura?",
+                "Cancelar solicitud",
                 Severity.Warning),
             _ => (
                 "Enviar solicitud de autorización",
@@ -546,15 +559,17 @@
         if (aumentosTable != null) await aumentosTable.ReloadData();
         if (reduccionesTable != null) await reduccionesTable.ReloadData();
     }
-    private bool IsLocked(EgreAdecuacionResponse item) => item.Autorizado == true;
+    private bool IsLocked(EgreAdecuacionResponse item) => item.Autorizado == true || item.FkidAccionAdecuacionMasterPres != 1;
     private static bool IsRequestSent(EgreAdecuacionResponse item) => item.FkidAccionAdecuacionMasterPres == 2;
     private bool IsBalanced(EgreAdecuacionResponse item) => BalanceCache.TryGetValue(item.PkidEgreAdecuacion, out var balance) && balance.Count > 0 && balance.Debe == balance.Haber;
     private bool CanSendRequest(EgreAdecuacionResponse item) => CanSendRequest(item, IsBalanced(item));
-    private static bool CanSendRequest(EgreAdecuacionResponse item, bool balanced) => !IsLockedStatic(item) && balanced && !IsRequestSent(item);
+    private static bool CanSendRequest(EgreAdecuacionResponse item, bool balanced) => item.FkidAccionAdecuacionMasterPres == 1 && !IsLockedStatic(item) && balanced;
+    private bool CanCancelRequest(EgreAdecuacionResponse item) => CanUpdate && item.Autorizado != true && IsRequestSent(item);
     private bool CanAuthorizeItem(EgreAdecuacionResponse item) => CanAuthorizeItem(item, IsBalanced(item));
-    private bool CanAuthorizeItem(EgreAdecuacionResponse item, bool balanced) => CanAuthorize && !IsLocked(item) && balanced && IsRequestSent(item);
-    private string RequestTooltip(EgreAdecuacionResponse item) => IsLocked(item) ? "La modificacion ya esta autorizada" : IsRequestSent(item) ? "La solicitud ya fue enviada" : IsBalanced(item) ? "Enviar solicitud de autorizacion" : BalanceTooltip(item);
-    private string AuthorizeTooltip(EgreAdecuacionResponse item) => !CanAuthorize ? "No tienes permiso para autorizar" : IsLocked(item) ? "La modificacion ya esta autorizada" : !IsRequestSent(item) ? "Primero envia la solicitud de autorizacion" : IsBalanced(item) ? "Autorizar modificacion" : BalanceTooltip(item);
+    private bool CanAuthorizeItem(EgreAdecuacionResponse item, bool balanced) => CanAuthorize && item.Autorizado != true && balanced && IsRequestSent(item);
+    private bool CanRejectItem(EgreAdecuacionResponse item) => CanAuthorize && item.Autorizado != true && IsRequestSent(item);
+    private string RequestTooltip(EgreAdecuacionResponse item) => item.Autorizado == true ? "La modificacion ya esta autorizada" : item.FkidAccionAdecuacionMasterPres == 4 ? "La modificacion fue rechazada" : IsRequestSent(item) ? "La solicitud ya fue enviada" : IsBalanced(item) ? "Enviar solicitud de autorizacion" : BalanceTooltip(item);
+    private string AuthorizeTooltip(EgreAdecuacionResponse item) => !CanAuthorize ? "No tienes permiso para autorizar" : item.Autorizado == true ? "La modificacion ya esta autorizada" : !IsRequestSent(item) ? "Primero envia la solicitud de autorizacion" : IsBalanced(item) ? "Autorizar modificacion" : BalanceTooltip(item);
     private string BalanceTooltip(EgreAdecuacionResponse item)
     {
         if (!BalanceCache.TryGetValue(item.PkidEgreAdecuacion, out var balance) || balance.Count == 0)
@@ -562,10 +577,10 @@
 
         return $"La poliza no esta balanceada. Debe {Money(balance.Debe)}, Haber {Money(balance.Haber)}";
     }
-    private static bool IsLockedStatic(EgreAdecuacionResponse item) => item.Autorizado == true;
-    private static string StatusText(EgreAdecuacionResponse item) => item.Autorizado == true ? "Autorizada" : item.FkidAccionAdecuacionMasterPres == 2 ? "Solicitud enviada" : string.IsNullOrWhiteSpace(item.AccionAdecuacion) ? "En captura" : item.AccionAdecuacion;
-    private static Color StatusColor(EgreAdecuacionResponse item) => item.Autorizado == true ? Color.Success : item.FkidAccionAdecuacionMasterPres == 2 ? Color.Info : Color.Warning;
-    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(ReloadData);
+    private static bool IsLockedStatic(EgreAdecuacionResponse item) => item.Autorizado == true || item.FkidAccionAdecuacionMasterPres != 1;
+    private static string StatusText(EgreAdecuacionResponse item) => item.Autorizado == true ? "Autorizada" : item.FkidAccionAdecuacionMasterPres == 2 ? "Solicitud enviada" : item.FkidAccionAdecuacionMasterPres == 4 ? "Rechazada" : "En captura";
+    private static Color StatusColor(EgreAdecuacionResponse item) => item.Autorizado == true ? Color.Success : item.FkidAccionAdecuacionMasterPres == 2 ? Color.Info : item.FkidAccionAdecuacionMasterPres == 4 ? Color.Error : Color.Warning;
+    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(BackToList);
     private string Money(decimal amount) => $"{_currencySymbol}{amount.ToString("0.00", NumberCulture)}";
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
