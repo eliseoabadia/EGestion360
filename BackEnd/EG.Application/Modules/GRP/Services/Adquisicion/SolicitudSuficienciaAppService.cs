@@ -35,11 +35,7 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<SolicitudSuficienciaResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            if (!request.AdditionalFilters.TryGetValue("FkidAnioSis", out var anioRaw) ||
-                !int.TryParse(anioRaw?.ToString(), out var anioId) || anioId <= 0)
-            {
-                return Failure<SolicitudSuficienciaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
-            }
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
             request.AdditionalFilters["FkidAnioSis"] = anioId;
             request.AdditionalFilters["FkidEmpresaSis"] = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
             var usuarioId = _userContext.GetCurrentUserId();
@@ -48,8 +44,16 @@ namespace EG.Application.Services.Adquisicion
                 .Select(x => x.PkidArea!.Value)
                 .Distinct()
                 .ToListAsync();
-            if (areaIds.Count > 0)
-                request.AdditionalFilters["FkidAreaSis__in"] = areaIds;
+            if (areaIds.Count == 0)
+                return new PagedResult<SolicitudSuficienciaResponse>
+                {
+                    Success = true,
+                    Code = "SUCCESS",
+                    Message = "El usuario no tiene areas operativas asignadas.",
+                    Items = new List<SolicitudSuficienciaResponse>(),
+                    TotalCount = 0
+                };
+            request.AdditionalFilters["FkidAreaSis__in"] = areaIds;
             var result = await base.GetAllPaginadoAsync(request);
             await MarkLockedAsync(result.Items);
             return result;
@@ -59,15 +63,17 @@ namespace EG.Application.Services.Adquisicion
         {
             var result = await base.GetAllAsync();
             var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
-            result.Items = result.Items?.Where(x => x.FkidEmpresaSis == empresaId).ToList() ?? new List<SolicitudSuficienciaResponse>();
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
+            result.Items = result.Items?.Where(x => x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId).ToList() ?? new List<SolicitudSuficienciaResponse>();
             var usuarioId = _userContext.GetCurrentUserId();
             var areaIds = await _context.VwUsuarioPersonaAreas.AsNoTracking()
                 .Where(x => x.PkIdUsuario == usuarioId && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
                 .Select(x => x.PkidArea!.Value)
                 .Distinct()
                 .ToListAsync();
-            if (areaIds.Count > 0)
-                result.Items = result.Items.Where(x => x.FkidAreaSis.HasValue && areaIds.Contains(x.FkidAreaSis.Value)).ToList();
+            result.Items = areaIds.Count == 0
+                ? new List<SolicitudSuficienciaResponse>()
+                : result.Items.Where(x => x.FkidAreaSis.HasValue && areaIds.Contains(x.FkidAreaSis.Value)).ToList();
             result.TotalCount = result.Items.Count;
             await MarkLockedAsync(result.Items);
             return result;
@@ -203,8 +209,8 @@ namespace EG.Application.Services.Adquisicion
                     .Where(x => x.PkidRequisicion == request.FkidRequisicionOrco && x.Activo)
                     .Select(x => (DateTime?)x.FechaRequisicion)
                     .FirstOrDefaultAsync();
-                if (!fechaRequisicion.HasValue || fechaSolicitud > DateOnly.FromDateTime(fechaRequisicion.Value))
-                    return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser menor o igual a la fecha de requisicion.");
+                if (!fechaRequisicion.HasValue || fechaSolicitud < DateOnly.FromDateTime(fechaRequisicion.Value))
+                    return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser igual o posterior a la fecha de requisicion.");
 
                 var readiness = await ValidateRequisicionReadyForSolicitudAsync(request.FkidRequisicionOrco, null);
                 if (readiness != null)
@@ -287,11 +293,14 @@ namespace EG.Application.Services.Adquisicion
             if (requisicion.FkidEmpresaSis != RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext))
                 return Failure<SolicitudSuficienciaResponse>("La requisicion no pertenece a la empresa activa.", "NOT_FOUND");
 
+            if (requisicion.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<SolicitudSuficienciaResponse>("La requisicion no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
+
             var fechaSolicitud = response.FechaSolicitud == default
                 ? DateOnly.FromDateTime(DateTime.Today)
                 : response.FechaSolicitud;
-            if (fechaSolicitud > DateOnly.FromDateTime(requisicion.FechaRequisicion))
-                return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser menor o igual a la fecha de requisicion.");
+            if (fechaSolicitud < DateOnly.FromDateTime(requisicion.FechaRequisicion))
+                return Failure<SolicitudSuficienciaResponse>("La fecha de solicitud debe ser igual o posterior a la fecha de requisicion.");
 
             if (currentId.HasValue)
             {

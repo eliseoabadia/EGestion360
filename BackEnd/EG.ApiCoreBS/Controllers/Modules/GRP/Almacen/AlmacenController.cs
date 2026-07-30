@@ -37,6 +37,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpPost]
+        [Authorize(Policy = "Almacen|Recepcion_Pedidos|new")]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> Create([FromBody] AlmacenResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -50,6 +51,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Almacen|Recepcion_Pedidos|update")]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> Update(int id, [FromBody] AlmacenResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -62,6 +64,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpPost("{id}/salida-ajuste")]
+        [Authorize(Policy = "Almacen|Recepcion_Pedidos|authorize")]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> CreateSalidaAjuste(int id, [FromBody] AlmacenResponse response)
         {
             var result = await _appService.CreateSalidaAjusteAsync(id, response, _userContext.GetCurrentUserId());
@@ -69,6 +72,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Almacen|Recepcion_Pedidos|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);

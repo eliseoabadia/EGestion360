@@ -10,7 +10,6 @@
 @inject IGenericCrudService<FacturaResponse> Service
 @inject IGenericCrudService<FacturaDetalleResponse> DetalleService
 @inject IGenericCrudService<ContratoResponse> ContratoService
-@inject IGenericCrudService<PolizaResponse> PolizaService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -19,7 +18,7 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><PagedAutocomplete Value="@contrato" ValueChanged="value => contrato = value" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
-            <MudItem xs="12" md="4"><PagedAutocomplete Value="@poliza" ValueChanged="value => poliza = value" Label="Póliza" Required="true" RequiredError="La póliza es requerida" LoadPage="LoadPolizasPageAsync" /></MudItem>
+            <MudItem xs="12" md="4"><MudAlert Severity="Severity.Info" Dense="true">Póliza de devengado automática</MudAlert></MudItem>
             <MudItem xs="12" md="8"><MudTextField @bind-Value="item.NumFactura" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudTextField @bind-Value="item.SerieFactura" Label="Serie" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
@@ -86,7 +85,6 @@
     private DateTime? fechaEmision = DateTime.Today;
     private DateTime? fechaRecepcion = DateTime.Today;
     private LookupItem? contrato;
-    private LookupItem? poliza;
     private string Title => Id.HasValue ? "Editar factura" : "Nueva factura";
     private string ActionText => Id.HasValue ? "Actualizar" : "Guardar factura";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
@@ -128,14 +126,13 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
-        if (contrato == null || poliza == null)
+        if (contrato == null)
         {
-            Snackbar.Add("Selecciona contrato y póliza.", Severity.Warning);
+            Snackbar.Add("Selecciona contrato.", Severity.Warning);
             return;
         }
 
         item.FkidContratoPres = contrato.Id;
-        item.FkidPolizaConta = poliza.Id;
         item.FechaEmision = DateOnly.FromDateTime(fechaEmision ?? DateTime.Today);
         item.FechaRecepcion = fechaRecepcion.HasValue ? DateOnly.FromDateTime(fechaRecepcion.Value) : null;
         if (item.Total <= 0)
@@ -145,53 +142,16 @@
                 : (item.Subtotal ?? 0m) + (item.Iva ?? 0m) - (item.Retencion ?? 0m);
         }
 
+        item.Detalles = detalleItems.Where(x => x.MontoAplicado > 0).Select(CloneDetail).ToList();
         var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (result?.Success == true)
         {
-            if (!Id.HasValue && detalleItems.Count > 0)
-            {
-                var facturaId = await ResolveCreatedId(result);
-                if (facturaId <= 0)
-                {
-                    Snackbar.Add("La factura se creo, pero no se pudo recuperar su identificador para generar el detalle.", Severity.Error);
-                    return;
-                }
-
-                foreach (var detail in detalleItems.Where(x => x.MontoAplicado > 0))
-                {
-                    detail.FkidFacturaPres = facturaId;
-                    if (detail.FkidEmpresaSis == 0)
-                    {
-                        detail.FkidEmpresaSis = item.FkidEmpresaSis;
-                    }
-
-                    var detailResult = await DetalleService.CreateAsync(detail);
-                    if (detailResult?.Success != true)
-                    {
-                        Snackbar.Add(detailResult?.Message ?? "La factura se creo, pero fallo al generar un detalle.", Severity.Error);
-                        return;
-                    }
-                }
-            }
-
             Snackbar.Add(Id.HasValue ? "Factura actualizada correctamente." : "Factura y detalle guardados correctamente.", Severity.Success);
             MudDialog.Close(DialogResult.Ok(result.Data ?? item));
             return;
         }
 
         Snackbar.Add(result?.Message ?? "No fue posible guardar la factura.", Severity.Error);
-    }
-
-    private async Task<int> ResolveCreatedId(EG.Web.Models.ApiResponse<FacturaResponse> result)
-    {
-        var createdId = result.Data?.PkidFactura ?? result.Items?.FirstOrDefault()?.PkidFactura ?? 0;
-        if (createdId > 0 || item.FkidContratoPres <= 0)
-        {
-            return createdId;
-        }
-
-        var created = await Service.GetAllPaginadoAsync(1, 1, string.Empty, "PkidFactura", SortDirection.Descending, new() { ["FkidContratoPres"] = item.FkidContratoPres });
-        return created?.Items?.FirstOrDefault()?.PkidFactura ?? 0;
     }
 
     private static FacturaResponse CloneHeader(FacturaResponse source) => new()
@@ -233,18 +193,11 @@
     private void SetLookups()
     {
         contrato = item.FkidContratoPres > 0 ? new LookupItem { Id = item.FkidContratoPres, Text = TextOrDash(item.NumeroContrato) } : null;
-        poliza = item.FkidPolizaConta > 0 ? new LookupItem { Id = item.FkidPolizaConta, Text = TextOrDash(item.ClavePoliza) } : null;
     }
     private async Task<ComboLookupResult> LoadContratosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await ContratoService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroContrato", SortDirection.Ascending, CompanyFilter());
         var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidContrato, Text = $"{x.NumeroContrato} - {x.ProveedorNombre}" }).ToList() ?? new();
-        return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
-    }
-    private async Task<ComboLookupResult> LoadPolizasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
-    {
-        var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending, CompanyFilter());
-        var list = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem { Id = x.PkidPoliza, Text = $"{x.ClavePoliza} - {x.NombrePoliza}" }).ToList() ?? new();
         return new ComboLookupResult { Items = list, TotalCount = response?.TotalCount ?? list.Count };
     }
     private Dictionary<string, object>? CompanyFilter() => item.FkidEmpresaSis > 0 ? new() { ["FkidEmpresaSis"] = item.FkidEmpresaSis } : null;

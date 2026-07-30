@@ -49,6 +49,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost]
+        [Authorize(Policy = "Adquisiciones|SolicitudSuficiencia|new")]
         public async Task<ActionResult<PagedResult<SolicitudSuficienciaResponse>>> Create([FromBody] SolicitudSuficienciaResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -58,6 +59,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Adquisiciones|SolicitudSuficiencia|update")]
         public async Task<ActionResult<PagedResult<SolicitudSuficienciaResponse>>> Update(int id, [FromBody] SolicitudSuficienciaResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -70,6 +72,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Adquisiciones|SolicitudSuficiencia|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
@@ -89,6 +92,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("generar-desde-requisicion")]
+        [Authorize(Policy = "Adquisiciones|SolicitudSuficiencia|new")]
         public async Task<ActionResult<PagedResult<SolicitudSuficienciaResponse>>> GenerarDesdeRequisicion(
             [FromBody] SolicitudSuficienciaGenerarRequest request)
         {

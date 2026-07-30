@@ -97,6 +97,7 @@ namespace EG.Domain.DTOs.Responses.CuentasXPagar
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
         public byte[]? RowVersion { get; set; }
+        public List<FacturaDetalleResponse> Detalles { get; set; } = [];
     }
 
     public class FacturaDetalleResponse
@@ -145,6 +146,8 @@ namespace EG.Domain.DTOs.Responses.CuentasXPagar
         public int UsuarioCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
+        public List<CLCDetalleResponse> Detalles { get; set; } = new();
+        public List<CLCFacturaResponse> Facturas { get; set; } = new();
     }
 
     public class CLCDetalleResponse
@@ -229,6 +232,7 @@ namespace EG.Domain.DTOs.Responses.CuentasXPagar
         public DateTime? FechaModificacion { get; set; }
         public int? UsuarioModificacion { get; set; }
         public byte[]? RowVersion { get; set; }
+        public List<ChequePartidaResponse> Partidas { get; set; } = [];
     }
 
     public class ChequePartidaResponse

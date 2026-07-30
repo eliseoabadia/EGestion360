@@ -40,6 +40,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|new")]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> Create([FromBody] CotizacionResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -49,6 +50,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|update")]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> Update(int id, [FromBody] CotizacionResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -61,6 +63,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
@@ -80,6 +83,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("{id}/enviar-correo")]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|authorize")]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> SendCotizacionEmail(int id)
         {
             var result = await _appService.SendCotizacionEmailAsync(id, _userContext.GetCurrentUserId());
@@ -89,6 +93,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("{id}/rechazar-envio")]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|authorize")]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> RejectCotizacionEmail(
             int id,
             [FromBody] string? motivo = null)
@@ -108,6 +113,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("recepcion")]
+        [Authorize(Policy = "Adquisiciones|Cotizacion|update")]
         public async Task<ActionResult<PagedResult<CotizacionDetalleResponse>>> SaveRecepcionCotizacion([FromBody] CotizacionRecepcionRequest request)
         {
             var result = await _appService.SaveRecepcionCotizacionAsync(request, _userContext.GetCurrentUserId());

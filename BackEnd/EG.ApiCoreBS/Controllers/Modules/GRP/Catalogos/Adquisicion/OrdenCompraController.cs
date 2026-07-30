@@ -39,6 +39,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost]
+        [Authorize(Policy = "Adquisiciones|OrdenCompra|new")]
         public async Task<ActionResult<PagedResult<OrdenCompraResponse>>> Create([FromBody] OrdenCompraResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -52,6 +53,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Adquisiciones|OrdenCompra|update")]
         public async Task<ActionResult<PagedResult<OrdenCompraResponse>>> Update(int id, [FromBody] OrdenCompraResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -64,6 +66,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Adquisiciones|OrdenCompra|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
@@ -76,6 +79,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("{id}/autorizar")]
+        [Authorize(Policy = "Adquisiciones|OrdenCompra|authorize")]
         public async Task<ActionResult<PagedResult<OrdenCompraResponse>>> Autorizar(int id)
         {
             var result = await _appService.AutorizarAsync(id, _userContext.GetCurrentUserId());

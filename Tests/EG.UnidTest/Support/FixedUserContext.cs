@@ -3,7 +3,7 @@ using EG.Domain.Interfaces;
 
 namespace EG.UnidTest.Support;
 
-internal sealed class FixedUserContext(int? userId, int? empresaId) : IUserContextService
+internal sealed class FixedUserContext(int? userId, int? empresaId, int? anioId = 1) : IUserContextService
 {
     public int GetCurrentUserId()
     {
@@ -23,6 +23,16 @@ internal sealed class FixedUserContext(int? userId, int? empresaId) : IUserConte
     public int? TryGetCurrentEmpresaId()
     {
         return empresaId;
+    }
+
+    public int GetCurrentAnioPresupuestalId()
+    {
+        return anioId ?? throw new InvalidOperationException("No budget year id configured for this test.");
+    }
+
+    public int? TryGetCurrentAnioPresupuestalId()
+    {
+        return anioId;
     }
 
     public ClaimsPrincipal? GetUserPrincipal()

@@ -17,7 +17,7 @@
 @inject SucursalStateService SucursalStateService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height:100%;overflow:visible;">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
         @if (SelectedFactura == null)
         {
             <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
@@ -47,7 +47,7 @@
                                                        FkidEmpresaSis="@context.Item.FkidEmpresaSis"
                                                        RegistroTitulo="@TextOrDash(context.Item.NumFactura)"
                                                        RegistroDescripcion="@($"{TextOrDash(context.Item.NumeroContrato)} | {TextOrDash(context.Item.ProveedorNombre)}")" />
-                                <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(context.Item))" /></MudTooltip>
+                                <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@(!CanGenerateClc(context.Item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(context.Item))" /></MudTooltip>
                                 <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidFactura))" /></MudTooltip>
                                 <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidFactura))" /></MudTooltip>
                             </CellTemplate></TemplateColumn>
@@ -74,7 +74,7 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
-                    <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
+                    <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@(!CanGenerateClc(SelectedFactura))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
                     <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
                 </MudPaper>
 
@@ -144,6 +144,7 @@
     private async Task SelectFactura(FacturaResponse item) { SelectedFactura = item; detalleSearch = string.Empty; await InvokeAsync(StateHasChanged); }
     private async Task BackToTable() { SelectedFactura = null; if (table != null) await table.ReloadData(); }
     private bool IsLocked(FacturaResponse item) => item.Estatus >= 2;
+    private static bool CanGenerateClc(FacturaResponse item) => item.Estatus == 3;
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => value.ToString("$0.00", Culture);
     private static Color StatusColor(int estatus) => estatus switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Error, _ => Color.Warning };
@@ -239,8 +240,6 @@
         var dialog = await DialogService.ShowAsync<CLCDialog>("Autorizar solicitud", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if ((await dialog.Result) is { Canceled: false })
         {
-            factura.Estatus = Math.Max(factura.Estatus, 2);
-            await Service.UpdateAsync(factura, factura.PkidFactura);
             await ReloadData();
         }
     }

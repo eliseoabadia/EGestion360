@@ -7,6 +7,7 @@ using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EG.Application.Services.Almacen
 {
@@ -82,8 +83,11 @@ namespace EG.Application.Services.Almacen
 
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                await AdjustOrderReceiptAsync(response.FkidDetalleOrdenCompraOrco, response.Cantidad, usuarioActual);
                 _context.Almacens.Add(entity);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
                 var result = await GetByIdAsync(entity.PkidAlmacen);
                 result.Message = "Movimiento de almacen registrado correctamente.";
                 return result;
@@ -113,19 +117,26 @@ namespace EG.Application.Services.Almacen
             }
 
             response.PkidAlmacen = id;
+            if (response.FkidDetalleOrdenCompraOrco != current.FkidDetalleOrdenCompraOrco)
+                return Failure<AlmacenResponse>("No se puede cambiar la orden origen de una entrada; elimina la entrada y registrala nuevamente.", "LOCKED");
             var validation = await NormalizeAndValidateAsync(response, isCreate: false);
             if (validation != null)
             {
                 return validation;
             }
 
+            var cantidadAnterior = current.Cantidad;
             ApplyValues(current, response);
             current.UsuarioModificacion = usuarioActual;
             current.FechaModificacion = DateTime.Now;
 
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                var delta = response.Cantidad - cantidadAnterior;
+                await AdjustOrderReceiptAsync(response.FkidDetalleOrdenCompraOrco, delta, usuarioActual);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
                 var refreshed = await GetByIdAsync(id);
                 refreshed.Message = "Movimiento de almacen actualizado correctamente.";
                 return refreshed;
@@ -154,10 +165,15 @@ namespace EG.Application.Services.Almacen
                 return BoolFailure("El movimiento ya esta cerrado o contabilizado y no puede eliminarse.", "LOCKED");
             }
 
-            current.Activo = false;
-            current.UsuarioModificacion = _userContext.GetCurrentUserId();
-            current.FechaModificacion = DateTime.Now;
-            await _context.SaveChangesAsync();
+            await using (var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable))
+            {
+                await AdjustOrderReceiptAsync(current.FkidDetalleOrdenCompraOrco, -current.Cantidad, _userContext.GetCurrentUserId());
+                current.Activo = false;
+                current.UsuarioModificacion = _userContext.GetCurrentUserId();
+                current.FechaModificacion = DateTime.Now;
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
 
             return new PagedResult<bool>
             {
@@ -456,6 +472,7 @@ namespace EG.Application.Services.Almacen
         private async Task<PagedResult<AlmacenResponse>?> NormalizeAndValidateAsync(AlmacenResponse response, bool isCreate)
         {
             response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+            response.FkidAnioSis = _userContext.GetCurrentAnioPresupuestalId();
 
             if (response.FkidEmpresaSis <= 0)
             {
@@ -510,6 +527,34 @@ namespace EG.Application.Services.Almacen
             {
                 return Failure<AlmacenResponse>("La fecha de entrada debe pertenecer al ejercicio presupuestal seleccionado.");
             }
+
+            if (response.FkidDetalleOrdenCompraOrco is not > 0)
+                return Failure<AlmacenResponse>("La entrada debe estar vinculada a un detalle de orden de compra.", "ORDER_DETAIL_REQUIRED");
+
+            var ordenDetalle = await _context.OrdenCompraDetalles.AsNoTracking()
+                .Where(x =>
+                    x.PkidOrdenCompraDetalle == response.FkidDetalleOrdenCompraOrco.Value && x.Activo &&
+                    x.FkidOrdenCompraOrcoNavigation.Activo &&
+                    x.FkidOrdenCompraOrcoNavigation.FkidEstatusOrdenCompraOrco >= 2 &&
+                    x.FkidOrdenCompraOrcoNavigation.FkidEmpresaSis == response.FkidEmpresaSis &&
+                    x.FkidOrdenCompraOrcoNavigation.FkidRequisicionOrcoNavigation.FkidAnioSis == response.FkidAnioSis)
+                .Select(x => new
+                {
+                    x.FkidTipoBienAlma,
+                    x.FkidUnidadesAlma,
+                    x.CantidadSolicitada,
+                    x.CantidadRecibida,
+                    PartidaClave = x.FkidTipoBienAlmaNavigation.FkidPartidaContaNavigation.Clave
+                })
+                .FirstOrDefaultAsync();
+            if (ordenDetalle == null)
+                return Failure<AlmacenResponse>("La orden no existe, no esta autorizada o no pertenece a la empresa y ejercicio activos.", "INVALID_ORDER");
+            if (ordenDetalle.FkidTipoBienAlma != response.FkidTipoBienAlma || ordenDetalle.FkidUnidadesAlma != response.FkidUnidadesAlma)
+                return Failure<AlmacenResponse>("El bien y la unidad deben coincidir con el detalle de la orden.", "ORDER_DETAIL_MISMATCH");
+            if (!string.IsNullOrWhiteSpace(ordenDetalle.PartidaClave) && ordenDetalle.PartidaClave.StartsWith("5", StringComparison.Ordinal))
+                return Failure<AlmacenResponse>("Los bienes del capitulo 5000 deben recibirse desde Patrimonio para generar su inventario individual.", "PATRIMONIAL_RECEIPT_REQUIRED");
+            if (isCreate && response.Cantidad > ordenDetalle.CantidadSolicitada - ordenDetalle.CantidadRecibida)
+                return Failure<AlmacenResponse>("La cantidad excede el saldo pendiente de la orden.", "OVER_RECEIPT");
             response.Costo ??= Math.Round(response.Cantidad * (response.CostoUnitario ?? 0m), 4);
             response.Clave = string.IsNullOrWhiteSpace(response.Clave)
                 ? await BuildClaveAsync(response)
@@ -523,21 +568,40 @@ namespace EG.Application.Services.Almacen
             return null;
         }
 
+        private async Task AdjustOrderReceiptAsync(int? detalleOrdenId, decimal delta, int usuarioActual)
+        {
+            if (detalleOrdenId is not > 0 || delta == 0)
+                return;
+            var detalle = await _context.OrdenCompraDetalles
+                .Include(x => x.FkidOrdenCompraOrcoNavigation)
+                .ThenInclude(x => x.FkidRequisicionOrcoNavigation)
+                .FirstOrDefaultAsync(x => x.PkidOrdenCompraDetalle == detalleOrdenId.Value && x.Activo);
+            if (detalle == null || !detalle.FkidOrdenCompraOrcoNavigation.Activo ||
+                detalle.FkidOrdenCompraOrcoNavigation.FkidEstatusOrdenCompraOrco < 2 ||
+                detalle.FkidOrdenCompraOrcoNavigation.FkidEmpresaSis != _userContext.GetCurrentEmpresaId() ||
+                detalle.FkidOrdenCompraOrcoNavigation.FkidRequisicionOrcoNavigation.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+                throw new InvalidOperationException("El detalle de orden no pertenece al contexto operativo activo.");
+            var nuevaCantidad = detalle.CantidadRecibida + delta;
+            if (nuevaCantidad < 0 || nuevaCantidad > detalle.CantidadSolicitada)
+                throw new InvalidOperationException("La recepcion excede la cantidad solicitada o deja un saldo recibido negativo.");
+            detalle.CantidadRecibida = nuevaCantidad;
+            detalle.FechaModificacion = DateTime.Now;
+            detalle.UsuarioModificacion = usuarioActual;
+        }
+
         private async Task<string> BuildClaveAsync(AlmacenResponse response)
         {
             var tipo = await _context.TipoBiens.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.PkidTipoBien == response.FkidTipoBienAlma);
             var prefix = string.IsNullOrWhiteSpace(tipo?.CodigoClave) ? "ALM" : tipo.CodigoClave.Trim();
-            var next = await _context.Almacens.CountAsync(x => x.FkidTipoBienAlma == response.FkidTipoBienAlma) + 1;
-            return $"{prefix}-{next:00000}";
+            prefix = prefix.Length <= 12 ? prefix : prefix[..12];
+            return $"{prefix}-{Guid.NewGuid():N}"[..Math.Min(30, prefix.Length + 33)].ToUpperInvariant();
         }
 
-        private async Task<string> BuildSalidaClaveAsync(EG.Infraestructure.Models.Almacen origen)
+        private Task<string> BuildSalidaClaveAsync(EG.Infraestructure.Models.Almacen origen)
         {
-            var next = await _context.Almacens.CountAsync(x => x.Activo && !x.AplicaAlmacen && x.Cantidad < 0) + 1;
-            var claveBase = string.IsNullOrWhiteSpace(origen.Clave) ? origen.PkidAlmacen.ToString() : origen.Clave.Trim();
-            var clave = $"SA-{claveBase}-{next:0000}";
-            return clave.Length <= 30 ? clave : $"SA-{origen.PkidAlmacen}-{next:0000}";
+            var clave = $"SA-{origen.PkidAlmacen}-{Guid.NewGuid():N}";
+            return Task.FromResult(clave[..Math.Min(30, clave.Length)].ToUpperInvariant());
         }
 
         private static decimal GetUnitCost(EG.Infraestructure.Models.Almacen entity, decimal? fallback = null)

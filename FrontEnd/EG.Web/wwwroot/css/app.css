@@ -1994,6 +1994,13 @@ body,
     overflow: hidden;
 }
 
+.recepcion-page {
+    height: 100%;
+    min-height: 0;
+    overflow: auto;
+    scrollbar-gutter: stable;
+}
+
 .recepcion-page .orders-panel,
 .recepcion-page .detail-panel {
     min-width: 0;

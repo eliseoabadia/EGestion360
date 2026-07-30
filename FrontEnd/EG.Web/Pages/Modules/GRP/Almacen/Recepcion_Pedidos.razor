@@ -19,7 +19,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
         <PageHeader Title="Recepcion de pedidos"
                     Subtitle="Recepcion contra orden de compra con entradas de almacen trazables"
                     Icon="@Icons.Material.Filled.MoveToInbox"
@@ -237,6 +237,7 @@
         SortLabel = state.SortLabel ?? GetDefaultSortLabel();
         SortDirection = state.SortDirection;
         var filters = new Dictionary<string, object>();
+        filters["FkidEstatusOrdenCompraOrco"] = 2;
         if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
         {
             filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;

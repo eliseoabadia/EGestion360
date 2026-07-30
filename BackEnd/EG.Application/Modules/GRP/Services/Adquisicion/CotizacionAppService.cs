@@ -113,6 +113,16 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<CotizacionResponse>> UpdateAsync(int id, CotizacionResponse response, int usuarioActual)
         {
+            var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
+                x.PkidCotizacion == id && x.Activo &&
+                x.FkidRequisicionOrcoNavigation.Activo &&
+                x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
+            if (!owned)
+                return Failure<CotizacionResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
+            if (await HasDownstreamSuficienciaAsync(id))
+                return Failure<CotizacionResponse>("La cotizacion ya forma parte de una suficiencia y no puede modificarse.", "LOCKED");
+
             var validation = await NormalizeAndValidateAsync(response, requireDetails: false);
             if (validation != null)
             {
@@ -212,12 +222,17 @@ namespace EG.Application.Services.Adquisicion
                 var cotizacion = await _context.Cotizacions
                     .Include(x => x.FkidProveedorSisNavigation)
                     .Include(x => x.FkidRequisicionOrcoNavigation)
-                    .FirstOrDefaultAsync(x => x.PkidCotizacion == cotizacionId && x.Activo);
+                    .FirstOrDefaultAsync(x =>
+                        x.PkidCotizacion == cotizacionId && x.Activo &&
+                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                        x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
 
                 if (cotizacion == null)
                 {
                     return Failure<CotizacionResponse>("La cotizacion no existe o esta inactiva.", "NOT_FOUND");
                 }
+                if (await HasDownstreamSuficienciaAsync(cotizacionId))
+                    return Failure<CotizacionResponse>("La cotizacion ya forma parte de una suficiencia y su envio no puede cambiar.", "LOCKED");
 
                 if (cotizacion.FkidProveedorSisNavigation == null ||
                     string.IsNullOrWhiteSpace(cotizacion.FkidProveedorSisNavigation.Email))
@@ -307,11 +322,16 @@ namespace EG.Application.Services.Adquisicion
             {
                 var exists = await _context.Cotizacions
                     .AsNoTracking()
-                    .AnyAsync(x => x.PkidCotizacion == cotizacionId && x.Activo);
+                    .AnyAsync(x =>
+                        x.PkidCotizacion == cotizacionId && x.Activo &&
+                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                        x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
                 if (!exists)
                 {
                     return Failure<CotizacionResponse>("La cotizacion no existe o esta inactiva.", "NOT_FOUND");
                 }
+                if (await HasDownstreamSuficienciaAsync(cotizacionId))
+                    return Failure<CotizacionResponse>("La cotizacion ya forma parte de una suficiencia y su envio no puede cambiar.", "LOCKED");
 
                 await _envioWorkflow.RejectAsync(
                     EnvioWorkflowProcesos.CotizacionCorreo,
@@ -337,6 +357,13 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
+                    x.PkidCotizacion == cotizacionId && x.Activo &&
+                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                    x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
+                if (!owned)
+                    return Failure<CotizacionDetalleResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
+
                 var items = await GetCotizacionDetallesAsync(cotizacionId);
                 return new PagedResult<CotizacionDetalleResponse>
                 {
@@ -361,6 +388,15 @@ namespace EG.Application.Services.Adquisicion
                 {
                     return Failure<CotizacionDetalleResponse>("Debe existir una cotizacion seleccionada.");
                 }
+
+                var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
+                    x.PkidCotizacion == request.FkidCotizacionOrco && x.Activo &&
+                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                    x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
+                if (!owned)
+                    return Failure<CotizacionDetalleResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
+                if (await HasDownstreamSuficienciaAsync(request.FkidCotizacionOrco))
+                    return Failure<CotizacionDetalleResponse>("La cotizacion ya forma parte de una suficiencia y no puede recibirse nuevamente.", "LOCKED");
 
                 var validItems = request.Items?
                     .Where(x => x.PkidCotizacionDetalle > 0)
@@ -438,6 +474,9 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<CotizacionResponse>("La requisicion no existe o esta inactiva.");
             }
 
+            if (requisicion.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<CotizacionResponse>("La requisicion no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
+
             if (!requisicion.FkidProgramaPres.HasValue || !requisicion.FkidEgresoAutorizadoPres.HasValue)
             {
                 return Failure<CotizacionResponse>(
@@ -491,9 +530,7 @@ namespace EG.Application.Services.Adquisicion
             }
 
             response.Servicio = requisicion.Servicio;
-            response.FkidAnioSis = response.FkidAnioSis.GetValueOrDefault() > 0
-                ? response.FkidAnioSis
-                : requisicion.FkidAnioSis;
+            response.FkidAnioSis = requisicion.FkidAnioSis;
             response.FechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud;
             response.FlDocumento ??= string.Empty;
             response.Entrega ??= string.Empty;
@@ -503,6 +540,12 @@ namespace EG.Application.Services.Adquisicion
 
             return null;
         }
+
+        private Task<bool> HasDownstreamSuficienciaAsync(int cotizacionId) =>
+            _context.Cotizacions.AsNoTracking()
+                .Where(x => x.PkidCotizacion == cotizacionId)
+                .AnyAsync(x => _context.SolicitudSuficiencia.Any(s =>
+                    s.Activo && s.FkidRequisicionOrco == x.FkidRequisicionOrco));
 
         private async Task PopulateEnvioStateAsync(IEnumerable<CotizacionResponse> items)
         {

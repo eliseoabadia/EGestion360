@@ -38,6 +38,14 @@ namespace EG.Business.Services
             "PkIdEmpresa"
         ];
 
+        private static readonly string[] AnioPropertyCandidates =
+        [
+            "FkidAnioSis",
+            "FKIdAnioSIS",
+            "FKIdAnio_SIS",
+            "AnioId"
+        ];
+
         // Propiedad para habilitar/deshabilitar filtro de Activo
         protected bool FilterByActivo { get; set; } = true;
 
@@ -167,6 +175,8 @@ namespace EG.Business.Services
                 query = ApplyEmpresaFilter(query);
             }
 
+            query = ApplyAnioFilterWhenPresent(query);
+
             if (whereCondition != null)
             {
                 query = query.Where(whereCondition);
@@ -177,16 +187,16 @@ namespace EG.Business.Services
 
         private IQueryable<TEntity> ApplyEmpresaFilter(IQueryable<TEntity> query)
         {
-            var empresaId = _userContext?.TryGetCurrentEmpresaId();
-            if (!empresaId.HasValue || empresaId.Value <= 0)
-            {
-                return query;
-            }
-
             var empresaProperty = GetEmpresaProperty(typeof(TEntity));
             if (empresaProperty == null || !IsSupportedEmpresaProperty(empresaProperty.PropertyType))
             {
                 return query;
+            }
+
+            var empresaId = _userContext?.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                return query.Where(_ => false);
             }
 
             var parameter = Expression.Parameter(typeof(TEntity), "e");
@@ -203,6 +213,33 @@ namespace EG.Business.Services
             return query.Where(lambda);
         }
 
+        private IQueryable<TEntity> ApplyAnioFilterWhenPresent(IQueryable<TEntity> query)
+        {
+            var anioProperty = GetAnioProperty(typeof(TEntity));
+            if (anioProperty == null || !IsSupportedEmpresaProperty(anioProperty.PropertyType))
+            {
+                return query;
+            }
+
+            var anioId = _userContext?.TryGetCurrentAnioPresupuestalId();
+            if (!anioId.HasValue || anioId.Value <= 0)
+            {
+                return query.Where(_ => false);
+            }
+
+            var parameter = Expression.Parameter(typeof(TEntity), "e");
+            var propertyAccess = Expression.Property(parameter, anioProperty);
+            var targetType = Nullable.GetUnderlyingType(anioProperty.PropertyType) ?? anioProperty.PropertyType;
+            var convertedAnioId = Convert.ChangeType(anioId.Value, targetType, CultureInfo.InvariantCulture);
+            var constant = Expression.Constant(convertedAnioId, targetType);
+            Expression comparisonValue = anioProperty.PropertyType == targetType
+                ? constant
+                : Expression.Convert(constant, anioProperty.PropertyType);
+            var condition = Expression.Equal(propertyAccess, comparisonValue);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(condition, parameter);
+            return query.Where(lambda);
+        }
+
         private static PropertyInfo? GetEmpresaProperty(Type type)
         {
             foreach (var candidate in EmpresaPropertyCandidates)
@@ -211,6 +248,22 @@ namespace EG.Business.Services
                     candidate,
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
+                if (property != null)
+                {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
+        private static PropertyInfo? GetAnioProperty(Type type)
+        {
+            foreach (var candidate in AnioPropertyCandidates)
+            {
+                var property = type.GetProperty(
+                    candidate,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
                 if (property != null)
                 {
                     return property;
@@ -238,16 +291,16 @@ namespace EG.Business.Services
                 return;
             }
 
-            var empresaId = _userContext?.TryGetCurrentEmpresaId();
-            if (!empresaId.HasValue || empresaId.Value <= 0)
-            {
-                return;
-            }
-
             var empresaProperty = GetEmpresaProperty(target.GetType());
             if (empresaProperty == null || !empresaProperty.CanWrite || !IsSupportedEmpresaProperty(empresaProperty.PropertyType))
             {
                 return;
+            }
+
+            var empresaId = _userContext?.TryGetCurrentEmpresaId();
+            if (!empresaId.HasValue || empresaId.Value <= 0)
+            {
+                throw new InvalidOperationException("No se encontro la empresa activa en la sesion.");
             }
 
             var targetType = Nullable.GetUnderlyingType(empresaProperty.PropertyType) ?? empresaProperty.PropertyType;
@@ -270,7 +323,7 @@ namespace EG.Business.Services
             var empresaId = _userContext?.TryGetCurrentEmpresaId();
             if (!empresaId.HasValue || empresaId.Value <= 0)
             {
-                return true;
+                return false;
             }
 
             var empresaProperty = GetEmpresaProperty(entity.GetType());
@@ -287,6 +340,53 @@ namespace EG.Business.Services
 
             var entityEmpresaId = Convert.ToInt64(value, CultureInfo.InvariantCulture);
             return entityEmpresaId == empresaId.Value;
+        }
+
+        public virtual void ApplyCurrentAnioIfPresent(object? target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            var anioProperty = GetAnioProperty(target.GetType());
+            if (anioProperty == null || !anioProperty.CanWrite || !IsSupportedEmpresaProperty(anioProperty.PropertyType))
+            {
+                return;
+            }
+
+            var anioId = _userContext?.TryGetCurrentAnioPresupuestalId();
+            if (!anioId.HasValue || anioId.Value <= 0)
+            {
+                throw new InvalidOperationException("No se encontro el ejercicio presupuestal activo en la sesion.");
+            }
+
+            var targetType = Nullable.GetUnderlyingType(anioProperty.PropertyType) ?? anioProperty.PropertyType;
+            var convertedAnioId = Convert.ChangeType(anioId.Value, targetType, CultureInfo.InvariantCulture);
+            anioProperty.SetValue(target, convertedAnioId);
+        }
+
+        private bool BelongsToCurrentAnio(object? entity)
+        {
+            if (entity == null)
+            {
+                return false;
+            }
+
+            var anioProperty = GetAnioProperty(entity.GetType());
+            if (anioProperty == null || !IsSupportedEmpresaProperty(anioProperty.PropertyType))
+            {
+                return true;
+            }
+
+            var anioId = _userContext?.TryGetCurrentAnioPresupuestalId();
+            if (!anioId.HasValue || anioId.Value <= 0)
+            {
+                return false;
+            }
+
+            var value = anioProperty.GetValue(entity);
+            return value != null && Convert.ToInt64(value, CultureInfo.InvariantCulture) == anioId.Value;
         }
 
         private IQueryable<TEntity> ApplyActivoFilter(IQueryable<TEntity> query)
@@ -441,9 +541,11 @@ namespace EG.Business.Services
         {
             ApplyCreationAuditIfPresent(dto);
             ApplyCurrentEmpresaIfPresent(dto);
+            ApplyCurrentAnioIfPresent(dto);
             var entity = dto.Adapt<TEntity>();
             ApplyCreationAuditIfPresent(entity);
             ApplyCurrentEmpresaIfPresent(entity);
+            ApplyCurrentAnioIfPresent(entity);
             await _repository.AddAsync(entity);
 
             // Mapear el ID de vuelta al DTO si es necesario
@@ -468,11 +570,15 @@ namespace EG.Business.Services
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
             if (!BelongsToCurrentEmpresa(existing))
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
+            if (!BelongsToCurrentAnio(existing))
+                throw new KeyNotFoundException($"Entidad con ID {id} no encontrada en el ejercicio presupuestal activo.");
 
             ApplyCurrentEmpresaIfPresent(dto);
+            ApplyCurrentAnioIfPresent(dto);
             EntityUpdateMapper.Apply(dto, existing);
             ApplyModificationAuditIfPresent(existing);
             ApplyCurrentEmpresaIfPresent(existing);
+            ApplyCurrentAnioIfPresent(existing);
             await _repository.UpdateAsync(existing, originalRowVersion);
         }
 
@@ -491,6 +597,8 @@ namespace EG.Business.Services
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
             if (!BelongsToCurrentEmpresa(entity))
                 throw new KeyNotFoundException($"Entidad con ID {id} no encontrada.");
+            if (!BelongsToCurrentAnio(entity))
+                throw new KeyNotFoundException($"Entidad con ID {id} no encontrada en el ejercicio presupuestal activo.");
 
             await _repository.SoftDeleteAsync(id);
         }

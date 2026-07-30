@@ -1031,7 +1031,6 @@ namespace EG.Application.Services.Contratos
                     }
 
                     current.Estatus = EstatusConcluido;
-                    current.FkidPolizaConta = poliza.PkidPoliza;
                     current.Observaciones = AppendObservation(current.Observaciones, $"Remanente liberado por {remanente:0.00}.");
                     current.FechaModificacion = now;
                     current.UsuarioModificacion = usuarioActual;
@@ -1436,7 +1435,7 @@ namespace EG.Application.Services.Contratos
                 return Failure<EstadoContratoResponse>("La autorizacion de suficiencia no existe o esta inactiva.");
             }
 
-            if (autorizacion.Estatus < 2)
+            if (autorizacion.Estatus != 2)
             {
                 return Failure<EstadoContratoResponse>("La autorizacion de suficiencia debe estar autorizada antes de generar contrato.");
             }

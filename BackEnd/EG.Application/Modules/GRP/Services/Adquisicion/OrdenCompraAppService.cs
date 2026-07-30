@@ -5,6 +5,7 @@ using EG.Common.Exceptions;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
+using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,11 +19,13 @@ namespace EG.Application.Services.Adquisicion
         private const int EstatusPorSurtir = 2;
 
         private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
 
         public OrdenCompraAppService(
             GenericService<OrdenCompra, OrdenCompraDto, OrdenCompraResponse> service,
             GenericService<VwOrdenCompra, OrdenCompraDto, OrdenCompraResponse> serviceView,
-            EGestionContext context)
+            EGestionContext context,
+            IUserContextService userContext)
             : base(
                 service,
                 serviceView,
@@ -31,6 +34,7 @@ namespace EG.Application.Services.Adquisicion
                 (dto, id) => dto.PkidOrdenCompra = id)
         {
             _context = context;
+            _userContext = userContext;
         }
 
         public override async Task<PagedResult<OrdenCompraResponse>> GetAllAsync()
@@ -319,6 +323,12 @@ namespace EG.Application.Services.Adquisicion
             if (requisicion.FkidEmpresaSis != response.FkidEmpresaSis)
             {
                 return Failure<OrdenCompraResponse>("La requisicion seleccionada pertenece a otra empresa.");
+            }
+
+            if (requisicion.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+            {
+                return Failure<OrdenCompraResponse>(
+                    "La requisicion seleccionada no pertenece al ejercicio presupuestal activo.");
             }
 
             response.CompraDirecta = requisicion.CompraDirecta == true;

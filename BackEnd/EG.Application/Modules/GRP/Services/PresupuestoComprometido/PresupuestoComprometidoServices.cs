@@ -4,6 +4,7 @@ using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Infraestructure.Models;
+using EG.Domain.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -13,7 +14,8 @@ namespace EG.Application.Services.PresupuestoComprometido
     public class AutorizacionSuficienciaAppService(
         GenericService<AutorizacionSuficiencium, AutorizacionSuficienciaDto, AutorizacionSuficienciaResponse> service,
         GenericService<VwAutorizacionSuficiencium, AutorizacionSuficienciaDto, AutorizacionSuficienciaResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<AutorizacionSuficiencium, VwAutorizacionSuficiencium, AutorizacionSuficienciaDto, AutorizacionSuficienciaResponse>(
             service,
             serviceView,
@@ -26,6 +28,7 @@ namespace EG.Application.Services.PresupuestoComprometido
             BuildParameters)
     {
         private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
 
         public override async Task<PagedResult<AutorizacionSuficienciaResponse>> CreateAsync(
             AutorizacionSuficienciaResponse response,
@@ -180,7 +183,10 @@ namespace EG.Application.Services.PresupuestoComprometido
 
             var solicitud = await _context.SolicitudSuficiencia
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PkidSolicitudSuficiencia == response.FkidSolicitudSuficienciaPres && x.Activo);
+                .FirstOrDefaultAsync(x =>
+                    x.PkidSolicitudSuficiencia == response.FkidSolicitudSuficienciaPres &&
+                    x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                    x.Activo);
 
             if (solicitud == null)
             {
@@ -191,6 +197,13 @@ namespace EG.Application.Services.PresupuestoComprometido
             {
                 return Failure<AutorizacionSuficienciaResponse>("No se puede autorizar una solicitud rechazada.");
             }
+
+            var anioRequisicion = await _context.Requisicions.AsNoTracking()
+                .Where(x => x.PkidRequisicion == solicitud.FkidRequisicionOrco && x.Activo)
+                .Select(x => (int?)x.FkidAnioSis)
+                .FirstOrDefaultAsync();
+            if (anioRequisicion != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<AutorizacionSuficienciaResponse>("La solicitud no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
 
             var duplicate = await _context.AutorizacionSuficiencia
                 .AsNoTracking()
@@ -230,6 +243,15 @@ namespace EG.Application.Services.PresupuestoComprometido
                 return Failure<AutorizacionSuficienciaResponse>("La persona autorizadora no existe o esta inactiva.");
             }
 
+            var personaDelUsuario = await _context.VwUsuarioPersonaAreas.AsNoTracking()
+                .AnyAsync(x =>
+                    x.PkIdUsuario == _userContext.GetCurrentUserId() &&
+                    x.PkidPersona == response.AutorizadoPorNom &&
+                    x.UsuarioActivo &&
+                    x.PersonaActivo == true);
+            if (!personaDelUsuario)
+                return Failure<AutorizacionSuficienciaResponse>("La persona autorizadora debe corresponder al usuario actual.", "AUTHORIZER_MISMATCH");
+
             response.FkidEmpresaSis = solicitud.FkidEmpresaSis;
             response.FechaSolicitud = solicitud.FechaSolicitud;
             response.FechaAutorizacion = response.FechaAutorizacion == default
@@ -244,7 +266,7 @@ namespace EG.Application.Services.PresupuestoComprometido
             response.IdGastoNoProgramable ??= solicitud.IdGastoNoProgramable;
             response.IdCompromisoNomina ??= solicitud.IdCompromisoNomina;
             response.Observaciones ??= string.Empty;
-            response.Estatus = response.Estatus <= 0 ? 2 : response.Estatus;
+            response.Estatus = currentId.HasValue ? response.Estatus : 2;
             response.Activo = true;
 
             return null;

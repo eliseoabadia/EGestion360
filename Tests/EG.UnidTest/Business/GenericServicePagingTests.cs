@@ -156,10 +156,13 @@ public sealed class GenericServicePagingTests
         IEnumerable<CatalogEntity> entities,
         IUserContextService? userContext = null)
     {
-        return new GenericService<CatalogEntity, CatalogDto, CatalogResponse>(
+        var service = new GenericService<CatalogEntity, CatalogDto, CatalogResponse>(
             new InMemoryRepository<CatalogEntity>(entities),
             userContext,
             NullLogger<GenericService<CatalogEntity, CatalogDto, CatalogResponse>>.Instance);
+        if (userContext == null)
+            service.DisableEmpresaFilter();
+        return service;
     }
 
     public sealed class CatalogEntity

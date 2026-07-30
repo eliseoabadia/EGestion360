@@ -165,6 +165,36 @@ namespace EG.Application.Services.CuentasXPagar
             _userContext = userContext;
         }
 
+        public override Task<PagedResult<FacturaResponse>> GetAllAsync() =>
+            GetAllPaginadoAsync(CuentasXPagarScope.AllRowsRequest("FechaEmision"));
+
+        public override async Task<PagedResult<FacturaResponse>> GetByIdAsync(int id)
+        {
+            if (!await CurrentIds().AnyAsync(x => x == id))
+                return Failure<FacturaResponse>("Factura no encontrada en la empresa y ejercicio activos.", "NOT_FOUND");
+            return await base.GetByIdAsync(id);
+        }
+
+        public override async Task<PagedResult<FacturaResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            CuentasXPagarScope.Restrict(request, "PkidFactura", await CurrentIds().ToArrayAsync());
+            return await base.GetAllPaginadoAsync(request);
+        }
+
+        private IQueryable<int> CurrentIds()
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
+            return from factura in _context.Facturas.AsNoTracking()
+                   join contrato in _context.Contratos1.AsNoTracking() on factura.FkidContratoPres equals contrato.PkidContrato
+                   join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking() on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                   join solicitud in _context.SolicitudSuficiencia.AsNoTracking() on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                   join requisicion in _context.Requisicions.AsNoTracking() on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                   where factura.Activo && factura.FkidEmpresaSis == empresaId && contrato.Activo && autorizacion.Activo &&
+                         solicitud.Activo && requisicion.Activo && requisicion.FkidAnioSis == anioId
+                   select factura.PkidFactura;
+        }
+
         public override async Task<PagedResult<FacturaResponse>> CreateAsync(FacturaResponse response, int usuarioActual)
         {
             var contextFailure = ApplyEmpresaContext<FacturaResponse>(response);
@@ -172,7 +202,49 @@ namespace EG.Application.Services.CuentasXPagar
                 return contextFailure;
 
             Normalize(response);
-            return await base.CreateAsync(response, usuarioActual);
+            response.Estatus = 3;
+            var validation = await ValidateFacturaAsync(response, requireDetails: true);
+            if (validation != null)
+                return validation;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var poliza = await CuentasXPagarBudgetPosting.CreateAsync(
+                    _context, response.FkidContratoPres, response.FechaEmision,
+                    CuentasXPagarBudgetStage.Devengado,
+                    response.Detalles.Select(x => (x.FkidPartidaConta, x.MontoAplicado)), usuarioActual);
+                response.FkidPolizaConta = poliza.PkidPoliza;
+                var result = await base.CreateAsync(response, usuarioActual);
+                if (!result.Success || response.PkidFactura <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return result;
+                }
+
+                foreach (var detalle in response.Detalles)
+                {
+                    await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context,
+                        "[PRES].[SP_MantenimientoFactura]",
+                        StoredProcedureExecutor.Param("@Action", 5),
+                        StoredProcedureExecutor.Param("@PKIdFactura", response.PkidFactura),
+                        StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
+                        StoredProcedureExecutor.Param("@FKIdContratoDetalle_PRES", detalle.FkidContratoDetallePres),
+                        StoredProcedureExecutor.Param("@FKIdPartida_CONTA", detalle.FkidPartidaConta),
+                        StoredProcedureExecutor.Param("@MontoAplicado", detalle.MontoAplicado),
+                        StoredProcedureExecutor.Param("@Observaciones", detalle.Observaciones),
+                        StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+                }
+
+                await transaction.CommitAsync();
+                return await GetByIdAsync(response.PkidFactura);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Failure<FacturaResponse>($"No fue posible registrar la factura completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
+            }
         }
 
         public override async Task<PagedResult<FacturaResponse>> UpdateAsync(int id, FacturaResponse response, int usuarioActual)
@@ -191,7 +263,9 @@ namespace EG.Application.Services.CuentasXPagar
             if (current.Estatus >= 2)
                 return Failure<FacturaResponse>("La factura ya avanzo a autorizacion y no puede modificarse.", "LOCKED");
 
-            return await base.UpdateAsync(id, response, usuarioActual);
+            response.Estatus = current.Estatus;
+            var validation = await ValidateFacturaAsync(response, requireDetails: false);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -233,6 +307,53 @@ namespace EG.Application.Services.CuentasXPagar
                 : (response.Subtotal ?? 0m) + (response.Iva ?? 0m) - (response.Retencion ?? 0m);
         }
 
+        private async Task<PagedResult<FacturaResponse>?> ValidateFacturaAsync(FacturaResponse response, bool requireDetails)
+        {
+            if (response.FkidContratoPres <= 0 || response.Total <= 0)
+                return Failure<FacturaResponse>("Debe seleccionar un contrato autorizado y capturar un total mayor a cero.", "VALIDATION");
+
+            var flow = await (
+                from contrato in _context.Contratos1.AsNoTracking()
+                join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                    on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                join solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                    on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                join requisicion in _context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where contrato.PkidContrato == response.FkidContratoPres && contrato.Activo && contrato.Estatus == 2 &&
+                      contrato.FkidEmpresaSis == response.FkidEmpresaSis && autorizacion.Activo && autorizacion.Estatus == 2 &&
+                      solicitud.Activo && solicitud.Estatus == 3 && requisicion.Activo
+                select new { requisicion.FkidAnioSis, contrato.FechaContrato, contrato.MontoTotal })
+                .FirstOrDefaultAsync();
+            if (flow == null)
+                return Failure<FacturaResponse>("El contrato no existe, no esta autorizado o no pertenece a la empresa activa.", "INVALID_CONTRACT");
+            if (flow.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<FacturaResponse>("El contrato no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
+
+            var anio = await _context.Anios.AsNoTracking()
+                .Where(x => x.PkidAnio == flow.FkidAnioSis && x.Activo)
+                .Select(x => x.Clave)
+                .FirstOrDefaultAsync();
+            if (response.FechaEmision.Year != anio || response.FechaEmision < flow.FechaContrato)
+                return Failure<FacturaResponse>("La fecha de factura debe pertenecer al ejercicio y ser igual o posterior al contrato.", "INVALID_DATE");
+
+            if (!string.IsNullOrWhiteSpace(response.Uuid) && await _context.Facturas.AsNoTracking().AnyAsync(x =>
+                    x.Activo && x.Uuid == response.Uuid && x.PkidFactura != response.PkidFactura))
+                return Failure<FacturaResponse>("El UUID de la factura ya se encuentra registrado.", "DUPLICATE");
+
+            if (!requireDetails)
+                return null;
+            var detalles = response.Detalles.Where(x => x.MontoAplicado > 0).ToList();
+            if (detalles.Count == 0 || Math.Abs(detalles.Sum(x => x.MontoAplicado) - response.Total) > 0.01m)
+                return Failure<FacturaResponse>("Los detalles de la factura deben existir y sumar exactamente el total.", "DETAIL_TOTAL_MISMATCH");
+            var ids = detalles.Select(x => x.FkidContratoDetallePres).Distinct().ToList();
+            var validos = await _context.ContratoDetalles.AsNoTracking()
+                .CountAsync(x => ids.Contains(x.PkidContratoDetalle) && x.FkidContratoPres == response.FkidContratoPres && x.Activo);
+            if (validos != ids.Count)
+                return Failure<FacturaResponse>("Uno o mas detalles no pertenecen al contrato seleccionado.", "INVALID_DETAIL");
+            return null;
+        }
+
         private static SqlParameter[] BuildParameters(int action, int? id, FacturaResponse? response, int? usuarioActual)
         {
             return new[]
@@ -262,7 +383,8 @@ namespace EG.Application.Services.CuentasXPagar
     public class FacturaDetalleAppService(
         GenericService<FacturaDetalle, FacturaDetalleDto, FacturaDetalleResponse> service,
         GenericService<VwFacturaDetalle, FacturaDetalleDto, FacturaDetalleResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<FacturaDetalle, VwFacturaDetalle, FacturaDetalleDto, FacturaDetalleResponse>(
             service,
             serviceView,
@@ -274,9 +396,52 @@ namespace EG.Application.Services.CuentasXPagar
             response => response.PkidFacturaDetalle,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
         protected override int CreateAction => 5;
         protected override int UpdateAction => 6;
         protected override int DeleteAction => 7;
+
+        public override async Task<PagedResult<FacturaDetalleResponse>> CreateAsync(FacturaDetalleResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<FacturaDetalleResponse>> UpdateAsync(int id, FacturaDetalleResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            var editable = await _context.FacturaDetalles.AsNoTracking().AnyAsync(x =>
+                x.PkidFacturaDetalle == id && x.Activo && x.FkidEmpresaSis == company &&
+                x.FkidFacturaPresNavigation.Activo && x.FkidFacturaPresNavigation.Estatus < 2 &&
+                x.FkidFacturaPresNavigation.FkidEmpresaSis == company);
+            return editable ? await base.DeleteAsync(id) : Failure<bool>("El detalle no existe o la factura ya no es editable.", "LOCKED");
+        }
+
+        private async Task<PagedResult<FacturaDetalleResponse>?> ValidateAsync(FacturaDetalleResponse response, int? id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            response.FkidEmpresaSis = company;
+            if (response.MontoAplicado <= 0)
+                return Failure<FacturaDetalleResponse>("El monto aplicado debe ser mayor a cero.", "VALIDATION");
+            var factura = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidFactura == response.FkidFacturaPres && x.Activo && x.Estatus < 2 && x.FkidEmpresaSis == company);
+            if (factura == null)
+                return Failure<FacturaDetalleResponse>("La factura no existe o ya no es editable.", "LOCKED");
+            var detail = await _context.ContratoDetalles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidContratoDetalle == response.FkidContratoDetallePres && x.FkidContratoPres == factura.FkidContratoPres && x.Activo);
+            if (detail == null || detail.FkidPartidaConta != response.FkidPartidaConta)
+                return Failure<FacturaDetalleResponse>("El detalle y la partida no corresponden al contrato de la factura.", "INVALID_DETAIL");
+            if (id.HasValue && !await _context.FacturaDetalles.AsNoTracking().AnyAsync(x => x.PkidFacturaDetalle == id.Value && x.FkidFacturaPres == factura.PkidFactura && x.Activo))
+                return Failure<FacturaDetalleResponse>("El detalle no pertenece a la factura.", "NOT_FOUND");
+            return null;
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, FacturaDetalleResponse? response, int? usuarioActual)
         {
@@ -320,6 +485,36 @@ namespace EG.Application.Services.CuentasXPagar
             _userContext = userContext;
         }
 
+        public override Task<PagedResult<CLCResponse>> GetAllAsync() =>
+            GetAllPaginadoAsync(CuentasXPagarScope.AllRowsRequest("FechaSolicitud"));
+
+        public override async Task<PagedResult<CLCResponse>> GetByIdAsync(int id)
+        {
+            if (!await CurrentIds().AnyAsync(x => x == id))
+                return Failure<CLCResponse>("CLC no encontrada en la empresa y ejercicio activos.", "NOT_FOUND");
+            return await base.GetByIdAsync(id);
+        }
+
+        public override async Task<PagedResult<CLCResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            CuentasXPagarScope.Restrict(request, "PkidClc", await CurrentIds().ToArrayAsync());
+            return await base.GetAllPaginadoAsync(request);
+        }
+
+        private IQueryable<int> CurrentIds()
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
+            return from clc in _context.Clcs.AsNoTracking()
+                   join contrato in _context.Contratos1.AsNoTracking() on clc.FkidContratoPres equals contrato.PkidContrato
+                   join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking() on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                   join solicitud in _context.SolicitudSuficiencia.AsNoTracking() on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                   join requisicion in _context.Requisicions.AsNoTracking() on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                   where clc.Activo && clc.FkidEmpresaSis == empresaId && contrato.Activo && autorizacion.Activo &&
+                         solicitud.Activo && requisicion.Activo && requisicion.FkidAnioSis == anioId
+                   select clc.PkidClc;
+        }
+
         public override async Task<PagedResult<CLCResponse>> CreateAsync(CLCResponse response, int usuarioActual)
         {
             var contextFailure = ApplyEmpresaContext<CLCResponse>(response);
@@ -327,7 +522,73 @@ namespace EG.Application.Services.CuentasXPagar
                 return contextFailure;
 
             Normalize(response);
-            return await base.CreateAsync(response, usuarioActual);
+            response.Estatus = 3;
+            response.FechaAutorizacion ??= response.FechaSolicitud;
+            var validation = await ValidateClcAsync(response, requireChildren: true);
+            if (validation != null)
+                return validation;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var poliza = await CuentasXPagarBudgetPosting.CreateAsync(
+                    _context, response.FkidContratoPres, response.FechaSolicitud,
+                    CuentasXPagarBudgetStage.Ejercido,
+                    response.Detalles.Select(x => (x.FkidPartidaConta, MonthlyTotal(x))), usuarioActual);
+                response.FkidPolizaConta = poliza.PkidPoliza;
+                var result = await base.CreateAsync(response, usuarioActual);
+                if (!result.Success || response.PkidClc <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return result;
+                }
+
+                foreach (var detalle in response.Detalles)
+                {
+                    await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context, "[PRES].[SP_MantenimientoCLC]",
+                        CuentasXPagarSpParameters.Monthly(
+                            5, ("@PKIdCLC", response.PkidClc), ("@PKIdCLCDetalle", null), response.FkidEmpresaSis,
+                            detalle.FkidPartidaConta, detalle.Enero, detalle.Febrero, detalle.Marzo, detalle.Abril,
+                            detalle.Mayo, detalle.Junio, detalle.Julio, detalle.Agosto, detalle.Septiembre,
+                            detalle.Octubre, detalle.Noviembre, detalle.Diciembre, detalle.Observaciones, usuarioActual,
+                            StoredProcedureExecutor.Param("@FKIdContratoDetalle_PRES", detalle.FkidContratoDetallePres)));
+                }
+
+                foreach (var factura in response.Facturas)
+                {
+                    await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context, "[PRES].[SP_MantenimientoCLC]",
+                        StoredProcedureExecutor.Param("@Action", 9),
+                        StoredProcedureExecutor.Param("@PKIdCLC", response.PkidClc),
+                        StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
+                        StoredProcedureExecutor.Param("@FKIdFactura_PRES", factura.FkidFacturaPres),
+                        StoredProcedureExecutor.Param("@FKIdFacturaDetalle_PRES", factura.FkidFacturaDetallePres),
+                        StoredProcedureExecutor.Param("@MontoAplicado", factura.MontoAplicado),
+                        StoredProcedureExecutor.Param("@Observaciones", factura.Observaciones),
+                        StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+                }
+
+                var facturaIds = response.Facturas.Select(x => x.FkidFacturaPres).Distinct().ToList();
+                var facturasAplicadas = await _context.Facturas
+                    .Where(x => facturaIds.Contains(x.PkidFactura) && x.FkidEmpresaSis == response.FkidEmpresaSis && x.Activo)
+                    .ToListAsync();
+                foreach (var factura in facturasAplicadas)
+                {
+                    factura.Estatus = Math.Max(factura.Estatus, 3);
+                    factura.FechaModificacion = DateTime.Now;
+                    factura.UsuarioModificacion = usuarioActual;
+                }
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return await GetByIdAsync(response.PkidClc);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Failure<CLCResponse>($"No fue posible registrar la CLC completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
+            }
         }
 
         public override async Task<PagedResult<CLCResponse>> UpdateAsync(int id, CLCResponse response, int usuarioActual)
@@ -346,7 +607,9 @@ namespace EG.Application.Services.CuentasXPagar
             if (current.Estatus >= 3)
                 return Failure<CLCResponse>("La CLC ya genero provision de pago y no puede modificarse.", "LOCKED");
 
-            return await base.UpdateAsync(id, response, usuarioActual);
+            response.Estatus = current.Estatus;
+            var validation = await ValidateClcAsync(response, requireChildren: false);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -382,6 +645,63 @@ namespace EG.Application.Services.CuentasXPagar
             response.Observaciones = response.Observaciones?.Trim();
         }
 
+        private async Task<PagedResult<CLCResponse>?> ValidateClcAsync(CLCResponse response, bool requireChildren)
+        {
+            if (response.FkidContratoPres <= 0 || response.ImporteTotal <= 0)
+                return Failure<CLCResponse>("Debe seleccionar un contrato y capturar un importe mayor a cero.", "VALIDATION");
+
+            var flow = await (
+                from contrato in _context.Contratos1.AsNoTracking()
+                join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                    on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                join solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                    on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                join requisicion in _context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where contrato.PkidContrato == response.FkidContratoPres && contrato.Activo && contrato.Estatus == 2 &&
+                      contrato.FkidEmpresaSis == response.FkidEmpresaSis && autorizacion.Activo && autorizacion.Estatus == 2 &&
+                      solicitud.Activo && solicitud.Estatus == 3 && requisicion.Activo
+                select new { requisicion.FkidAnioSis, contrato.MontoTotal, contrato.FechaContrato })
+                .FirstOrDefaultAsync();
+            if (flow == null)
+                return Failure<CLCResponse>("El contrato no esta autorizado o no pertenece a la empresa activa.", "INVALID_CONTRACT");
+            if (flow.FkidAnioSis != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<CLCResponse>("El contrato no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
+            var anio = await _context.Anios.AsNoTracking().Where(x => x.PkidAnio == flow.FkidAnioSis && x.Activo).Select(x => x.Clave).FirstOrDefaultAsync();
+            if (response.FechaSolicitud.Year != anio || response.FechaSolicitud < flow.FechaContrato)
+                return Failure<CLCResponse>("La fecha de CLC debe pertenecer al ejercicio y ser igual o posterior al contrato.", "INVALID_DATE");
+
+            if (!requireChildren)
+                return null;
+            var detalles = response.Detalles.Where(x => MonthlyTotal(x) > 0).ToList();
+            var facturas = response.Facturas.Where(x => x.MontoAplicado > 0).ToList();
+            if (detalles.Count == 0 || facturas.Count == 0 ||
+                Math.Abs(detalles.Sum(MonthlyTotal) - response.ImporteTotal) > 0.01m ||
+                Math.Abs(facturas.Sum(x => x.MontoAplicado) - response.ImporteTotal) > 0.01m)
+                return Failure<CLCResponse>("La CLC requiere detalles y facturas que sumen exactamente el importe total.", "DETAIL_TOTAL_MISMATCH");
+
+            var detalleContratoIds = detalles.Select(x => x.FkidContratoDetallePres).Distinct().ToList();
+            if (await _context.ContratoDetalles.AsNoTracking().CountAsync(x => detalleContratoIds.Contains(x.PkidContratoDetalle) && x.FkidContratoPres == response.FkidContratoPres && x.Activo) != detalleContratoIds.Count)
+                return Failure<CLCResponse>("Uno o mas detalles no pertenecen al contrato.", "INVALID_DETAIL");
+            var facturaIds = facturas.Select(x => x.FkidFacturaPres).Distinct().ToList();
+            if (await _context.Facturas.AsNoTracking().CountAsync(x => facturaIds.Contains(x.PkidFactura) && x.FkidContratoPres == response.FkidContratoPres && x.FkidEmpresaSis == response.FkidEmpresaSis && x.Activo && x.Estatus == 3) != facturaIds.Count)
+                return Failure<CLCResponse>("Una o mas facturas no pertenecen al contrato.", "INVALID_INVOICE");
+            var facturaDetalleIds = facturas.Select(x => x.FkidFacturaDetallePres).Distinct().ToList();
+            if (facturaDetalleIds.Count != facturas.Count ||
+                await _context.FacturaDetalles.AsNoTracking().CountAsync(x => facturaDetalleIds.Contains(x.PkidFacturaDetalle) && facturaIds.Contains(x.FkidFacturaPres) && x.Activo) != facturaDetalleIds.Count)
+                return Failure<CLCResponse>("Una o mas partidas no pertenecen a las facturas seleccionadas.", "INVALID_INVOICE_DETAIL");
+            if (await _context.Clcfacturas.AsNoTracking().AnyAsync(x => x.Activo && facturaDetalleIds.Contains(x.FkidFacturaDetallePres)))
+                return Failure<CLCResponse>("Una o mas partidas de factura ya se encuentran aplicadas en otra CLC activa.", "INVOICE_ALREADY_APPLIED");
+            return null;
+        }
+
+        private static decimal MonthlyTotal(CLCDetalleResponse item) =>
+            item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+            item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() + item.Mayo.GetValueOrDefault() +
+            item.Junio.GetValueOrDefault() + item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+            item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+            item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
+
         private static SqlParameter[] BuildParameters(int action, int? id, CLCResponse? response, int? usuarioActual)
         {
             return new[]
@@ -405,7 +725,8 @@ namespace EG.Application.Services.CuentasXPagar
     public class CLCDetalleAppService(
         GenericService<Clcdetalle, CLCDetalleDto, CLCDetalleResponse> service,
         GenericService<VwClcdetalle, CLCDetalleDto, CLCDetalleResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<Clcdetalle, VwClcdetalle, CLCDetalleDto, CLCDetalleResponse>(
             service,
             serviceView,
@@ -417,9 +738,57 @@ namespace EG.Application.Services.CuentasXPagar
             response => response.PkidClcdetalle,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
         protected override int CreateAction => 5;
         protected override int UpdateAction => 6;
         protected override int DeleteAction => 7;
+
+        public override async Task<PagedResult<CLCDetalleResponse>> CreateAsync(CLCDetalleResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<CLCDetalleResponse>> UpdateAsync(int id, CLCDetalleResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            var editable = await _context.Clcdetalles.AsNoTracking().AnyAsync(x =>
+                x.PkidClcdetalle == id && x.Activo && x.FkidEmpresaSis == company &&
+                x.FkidClcPresNavigation.Activo && x.FkidClcPresNavigation.Estatus < 3 &&
+                x.FkidClcPresNavigation.FkidEmpresaSis == company);
+            return editable ? await base.DeleteAsync(id) : Failure<bool>("El detalle no existe o la CLC ya no es editable.", "LOCKED");
+        }
+
+        private async Task<PagedResult<CLCDetalleResponse>?> ValidateAsync(CLCDetalleResponse response, int? id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            response.FkidEmpresaSis = company;
+            var total = response.Total ?? response.Enero.GetValueOrDefault() + response.Febrero.GetValueOrDefault() +
+                response.Marzo.GetValueOrDefault() + response.Abril.GetValueOrDefault() + response.Mayo.GetValueOrDefault() +
+                response.Junio.GetValueOrDefault() + response.Julio.GetValueOrDefault() + response.Agosto.GetValueOrDefault() +
+                response.Septiembre.GetValueOrDefault() + response.Octubre.GetValueOrDefault() +
+                response.Noviembre.GetValueOrDefault() + response.Diciembre.GetValueOrDefault();
+            if (total <= 0)
+                return Failure<CLCDetalleResponse>("El importe del detalle debe ser mayor a cero.", "VALIDATION");
+            var clc = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidClc == response.FkidClcPres && x.Activo && x.Estatus < 3 && x.FkidEmpresaSis == company);
+            if (clc == null)
+                return Failure<CLCDetalleResponse>("La CLC no existe o ya no es editable.", "LOCKED");
+            var detail = await _context.ContratoDetalles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidContratoDetalle == response.FkidContratoDetallePres && x.FkidContratoPres == clc.FkidContratoPres && x.Activo);
+            if (detail == null || detail.FkidPartidaConta != response.FkidPartidaConta)
+                return Failure<CLCDetalleResponse>("El detalle y la partida no corresponden al contrato de la CLC.", "INVALID_DETAIL");
+            if (id.HasValue && !await _context.Clcdetalles.AsNoTracking().AnyAsync(x => x.PkidClcdetalle == id.Value && x.FkidClcPres == clc.PkidClc && x.Activo))
+                return Failure<CLCDetalleResponse>("El detalle no pertenece a la CLC.", "NOT_FOUND");
+            return null;
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, CLCDetalleResponse? response, int? usuarioActual)
         {
@@ -450,7 +819,8 @@ namespace EG.Application.Services.CuentasXPagar
     public class CLCFacturaAppService(
         GenericService<Clcfactura, CLCFacturaDto, CLCFacturaResponse> service,
         GenericService<VwClcfactura, CLCFacturaDto, CLCFacturaResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<Clcfactura, VwClcfactura, CLCFacturaDto, CLCFacturaResponse>(
             service,
             serviceView,
@@ -462,9 +832,54 @@ namespace EG.Application.Services.CuentasXPagar
             response => response.PkidClcfactura,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
         protected override int CreateAction => 9;
         protected override int UpdateAction => 10;
         protected override int DeleteAction => 11;
+
+        public override async Task<PagedResult<CLCFacturaResponse>> CreateAsync(CLCFacturaResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<CLCFacturaResponse>> UpdateAsync(int id, CLCFacturaResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            var editable = await _context.Clcfacturas.AsNoTracking().AnyAsync(x =>
+                x.PkidClcfactura == id && x.Activo && x.FkidEmpresaSis == company &&
+                x.FkidClcPresNavigation.Activo && x.FkidClcPresNavigation.Estatus < 3 &&
+                x.FkidClcPresNavigation.FkidEmpresaSis == company);
+            return editable ? await base.DeleteAsync(id) : Failure<bool>("La relacion no existe o la CLC ya no es editable.", "LOCKED");
+        }
+
+        private async Task<PagedResult<CLCFacturaResponse>?> ValidateAsync(CLCFacturaResponse response, int? id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            response.FkidEmpresaSis = company;
+            if (response.MontoAplicado <= 0)
+                return Failure<CLCFacturaResponse>("El monto aplicado debe ser mayor a cero.", "VALIDATION");
+            var clc = await _context.Clcs.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidClc == response.FkidClcPres && x.Activo && x.Estatus < 3 && x.FkidEmpresaSis == company);
+            if (clc == null)
+                return Failure<CLCFacturaResponse>("La CLC no existe o ya no es editable.", "LOCKED");
+            var factura = await _context.Facturas.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidFactura == response.FkidFacturaPres && x.FkidContratoPres == clc.FkidContratoPres &&
+                x.FkidEmpresaSis == company && x.Activo);
+            if (factura == null || !await _context.FacturaDetalles.AsNoTracking().AnyAsync(x =>
+                    x.PkidFacturaDetalle == response.FkidFacturaDetallePres && x.FkidFacturaPres == factura.PkidFactura && x.Activo))
+                return Failure<CLCFacturaResponse>("La factura o su detalle no corresponden al contrato de la CLC.", "INVALID_INVOICE");
+            if (id.HasValue && !await _context.Clcfacturas.AsNoTracking().AnyAsync(x => x.PkidClcfactura == id.Value && x.FkidClcPres == clc.PkidClc && x.Activo))
+                return Failure<CLCFacturaResponse>("La relacion no pertenece a la CLC.", "NOT_FOUND");
+            return null;
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, CLCFacturaResponse? response, int? usuarioActual)
         {
@@ -508,10 +923,92 @@ namespace EG.Application.Services.CuentasXPagar
             _userContext = userContext;
         }
 
+        public override Task<PagedResult<ChequeResponse>> GetAllAsync() =>
+            GetAllPaginadoAsync(CuentasXPagarScope.AllRowsRequest("FechaEmision"));
+
+        public override async Task<PagedResult<ChequeResponse>> GetByIdAsync(int id)
+        {
+            if (!await CurrentIds().AnyAsync(x => x == id))
+                return Failure<ChequeResponse>("Cheque no encontrado en la empresa y ejercicio activos.", "NOT_FOUND");
+            return await base.GetByIdAsync(id);
+        }
+
+        public override async Task<PagedResult<ChequeResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            CuentasXPagarScope.Restrict(request, "PkidCheque", await CurrentIds().ToArrayAsync());
+            return await base.GetAllPaginadoAsync(request);
+        }
+
+        private IQueryable<int> CurrentIds()
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var anioId = _userContext.GetCurrentAnioPresupuestalId();
+            return from cheque in _context.Cheques.AsNoTracking()
+                   join clc in _context.Clcs.AsNoTracking() on cheque.FkidClcPres equals clc.PkidClc
+                   join contrato in _context.Contratos1.AsNoTracking() on clc.FkidContratoPres equals contrato.PkidContrato
+                   join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking() on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                   join solicitud in _context.SolicitudSuficiencia.AsNoTracking() on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                   join requisicion in _context.Requisicions.AsNoTracking() on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                   where cheque.Activo && cheque.FkidEmpresaSis == empresaId && clc.Activo && contrato.Activo &&
+                         autorizacion.Activo && solicitud.Activo && requisicion.Activo && requisicion.FkidAnioSis == anioId
+                   select cheque.PkidCheque;
+        }
+
         public override async Task<PagedResult<ChequeResponse>> CreateAsync(ChequeResponse response, int usuarioActual)
         {
             var validation = await ValidateChequeAsync(response, null);
-            return validation ?? await base.CreateAsync(response, usuarioActual);
+            if (validation != null)
+                return validation;
+
+            response.Estatus = 3;
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var clcContratoId = await _context.Clcs.AsNoTracking()
+                    .Where(x => x.PkidClc == response.FkidClcPres)
+                    .Select(x => x.FkidContratoPres)
+                    .FirstAsync();
+                var poliza = await CuentasXPagarBudgetPosting.CreateAsync(
+                    _context, clcContratoId, response.FechaEmision,
+                    CuentasXPagarBudgetStage.Pagado,
+                    response.Partidas.Select(x => (x.FkidPartidaConta, x.MontoPagado)), usuarioActual);
+                response.FkidPolizaConta = poliza.PkidPoliza;
+                var result = await base.CreateAsync(response, usuarioActual);
+                if (!result.Success || response.PkidCheque <= 0)
+                {
+                    await transaction.RollbackAsync();
+                    return result;
+                }
+
+                foreach (var partida in response.Partidas)
+                {
+                    await StoredProcedureExecutor.ExecuteResultAsync(
+                        _context, "[PRES].[SP_MantenimientoCheque]",
+                        StoredProcedureExecutor.Param("@Action", 5),
+                        StoredProcedureExecutor.Param("@PKIdCheque", response.PkidCheque),
+                        StoredProcedureExecutor.Param("@FKIdEmpresa_SIS", response.FkidEmpresaSis),
+                        StoredProcedureExecutor.Param("@FKIdCLCDetalle_PRES", partida.FkidClcdetallePres),
+                        StoredProcedureExecutor.Param("@FKIdPartida_CONTA", partida.FkidPartidaConta),
+                        StoredProcedureExecutor.Param("@MontoPagado", partida.MontoPagado),
+                        StoredProcedureExecutor.Param("@Observaciones", partida.Observaciones),
+                        StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+                }
+
+                var clc = await _context.Clcs.FirstAsync(x => x.PkidClc == response.FkidClcPres && x.Activo && x.FkidEmpresaSis == response.FkidEmpresaSis);
+                clc.Estatus = 4;
+                clc.FechaAutorizacion ??= response.FechaEmision;
+                clc.FechaModificacion = DateTime.Now;
+                clc.UsuarioModificacion = usuarioActual;
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return await GetByIdAsync(response.PkidCheque);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Failure<ChequeResponse>($"No fue posible registrar la provision completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
+            }
         }
 
         public override async Task<PagedResult<ChequeResponse>> UpdateAsync(int id, ChequeResponse response, int usuarioActual)
@@ -624,10 +1121,53 @@ namespace EG.Application.Services.CuentasXPagar
             response.Concepto = response.Concepto?.Trim() ?? string.Empty;
             response.Observaciones = response.Observaciones?.Trim();
 
-            var clcExists = await _context.Clcs.AsNoTracking()
-                .AnyAsync(x => x.PkidClc == response.FkidClcPres && x.Activo && x.FkidEmpresaSis == empresaId.Value);
-            if (!clcExists)
+            var clc = await _context.Clcs.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidClc == response.FkidClcPres && x.Activo && x.FkidEmpresaSis == empresaId.Value);
+            if (clc == null)
                 return Failure<ChequeResponse>("La CLC seleccionada no existe o no esta activa.", "NOT_FOUND");
+            if (clc.Estatus != 3)
+                return Failure<ChequeResponse>("La CLC debe estar autorizada y pendiente de pago para generar el cheque.", "INVALID_STATUS");
+
+            var anioId = await (
+                from contrato in _context.Contratos1.AsNoTracking()
+                join autorizacion in _context.AutorizacionSuficiencia.AsNoTracking()
+                    on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                join solicitud in _context.SolicitudSuficiencia.AsNoTracking()
+                    on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                join requisicion in _context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where contrato.PkidContrato == clc.FkidContratoPres && contrato.Activo && contrato.Estatus == 2 &&
+                      autorizacion.Activo && autorizacion.Estatus == 2 && solicitud.Activo && solicitud.Estatus == 3 && requisicion.Activo
+                select (int?)requisicion.FkidAnioSis).FirstOrDefaultAsync();
+            if (anioId != _userContext.GetCurrentAnioPresupuestalId())
+                return Failure<ChequeResponse>("La CLC no pertenece al ejercicio presupuestal activo.", "YEAR_MISMATCH");
+            var anioClave = await _context.Anios.AsNoTracking().Where(x => x.PkidAnio == anioId && x.Activo).Select(x => x.Clave).FirstOrDefaultAsync();
+            if (response.FechaEmision.Year != anioClave || response.FechaEmision < clc.FechaSolicitud)
+                return Failure<ChequeResponse>("La fecha de emision debe pertenecer al ejercicio y ser posterior a la CLC.", "INVALID_DATE");
+
+            if (!await _context.CuentaBancaria.AsNoTracking().AnyAsync(x =>
+                    x.PkidCuentaBancaria == response.FkidCuentaBancariaTes && x.FkidEmpresaSis == empresaId.Value && x.Activo))
+                return Failure<ChequeResponse>("La cuenta bancaria no pertenece a la empresa activa.", "INVALID_BANK_ACCOUNT");
+
+            var clcDetalle = await _context.Clcdetalles.AsNoTracking()
+                .Where(x => x.FkidClcPres == clc.PkidClc && x.FkidEmpresaSis == empresaId.Value && x.Activo)
+                .Select(x => new { x.PkidClcdetalle, x.FkidPartidaConta, x.Total })
+                .ToListAsync();
+            var totalFacturas = await _context.Clcfacturas.AsNoTracking()
+                .Where(x => x.FkidClcPres == clc.PkidClc && x.FkidEmpresaSis == empresaId.Value && x.Activo)
+                .SumAsync(x => (decimal?)x.MontoAplicado) ?? 0m;
+            if (clcDetalle.Count == 0 || totalFacturas <= 0 ||
+                Math.Abs(clcDetalle.Sum(x => x.Total ?? 0m) - clc.ImporteTotal) > 0.01m ||
+                Math.Abs(totalFacturas - clc.ImporteTotal) > 0.01m)
+                return Failure<ChequeResponse>("La CLC debe tener detalles y facturas completos antes de generar la provision.", "CLC_NOT_READY");
+
+            var partidas = response.Partidas.Where(x => x.MontoPagado > 0).ToList();
+            if (partidas.Count == 0 || Math.Abs(partidas.Sum(x => x.MontoPagado) - response.ImporteTotal) > 0.01m ||
+                Math.Abs(response.ImporteTotal - clc.ImporteTotal) > 0.01m)
+                return Failure<ChequeResponse>("Las partidas del cheque deben sumar exactamente el total de la CLC.", "DETAIL_TOTAL_MISMATCH");
+            var detalleMap = clcDetalle.ToDictionary(x => x.PkidClcdetalle);
+            if (partidas.Any(x => !detalleMap.TryGetValue(x.FkidClcdetallePres, out var d) || d.FkidPartidaConta != x.FkidPartidaConta))
+                return Failure<ChequeResponse>("Una o mas partidas no corresponden al detalle de la CLC.", "INVALID_DETAIL");
 
             var alreadyExists = await _context.Cheques.AsNoTracking()
                 .AnyAsync(x => x.Activo && x.FkidEmpresaSis == empresaId.Value && x.FkidClcPres == response.FkidClcPres && (!currentId.HasValue || x.PkidCheque != currentId.Value));
@@ -662,7 +1202,8 @@ namespace EG.Application.Services.CuentasXPagar
     public class ChequePartidaAppService(
         GenericService<ChequePartida, ChequePartidaDto, ChequePartidaResponse> service,
         GenericService<VwChequePartida, ChequePartidaDto, ChequePartidaResponse> serviceView,
-        EGestionContext context)
+        EGestionContext context,
+        IUserContextService userContext)
         : StoredProcedureCrudAppService<ChequePartida, VwChequePartida, ChequePartidaDto, ChequePartidaResponse>(
             service,
             serviceView,
@@ -674,9 +1215,53 @@ namespace EG.Application.Services.CuentasXPagar
             response => response.PkidChequePartida,
             BuildParameters)
     {
+        private readonly EGestionContext _context = context;
+        private readonly IUserContextService _userContext = userContext;
         protected override int CreateAction => 5;
         protected override int UpdateAction => 6;
         protected override int DeleteAction => 7;
+
+        public override async Task<PagedResult<ChequePartidaResponse>> CreateAsync(ChequePartidaResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, null);
+            return validation ?? await base.CreateAsync(response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<ChequePartidaResponse>> UpdateAsync(int id, ChequePartidaResponse response, int usuarioActual)
+        {
+            var validation = await ValidateAsync(response, id);
+            return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        public override async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            var editable = await _context.ChequePartidas.AsNoTracking().AnyAsync(x =>
+                x.PkidChequePartida == id && x.Activo && x.FkidEmpresaSis == company &&
+                x.FkidChequePresNavigation.Activo && x.FkidChequePresNavigation.Estatus < 2 &&
+                x.FkidChequePresNavigation.FkidEmpresaSis == company);
+            return editable ? await base.DeleteAsync(id) : Failure<bool>("La partida no existe o el cheque ya no es editable.", "LOCKED");
+        }
+
+        private async Task<PagedResult<ChequePartidaResponse>?> ValidateAsync(ChequePartidaResponse response, int? id)
+        {
+            var company = _userContext.GetCurrentEmpresaId();
+            response.FkidEmpresaSis = company;
+            if (response.MontoPagado <= 0)
+                return Failure<ChequePartidaResponse>("El monto pagado debe ser mayor a cero.", "VALIDATION");
+            var cheque = await _context.Cheques.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidCheque == response.FkidChequePres && x.Activo && x.Estatus < 2 && x.FkidEmpresaSis == company);
+            if (cheque == null)
+                return Failure<ChequePartidaResponse>("El cheque no existe o ya no es editable.", "LOCKED");
+            var detalle = await _context.Clcdetalles.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.PkidClcdetalle == response.FkidClcdetallePres && x.FkidClcPres == cheque.FkidClcPres &&
+                x.FkidEmpresaSis == company && x.Activo);
+            if (detalle == null || detalle.FkidPartidaConta != response.FkidPartidaConta)
+                return Failure<ChequePartidaResponse>("La partida no corresponde al detalle de la CLC.", "INVALID_DETAIL");
+            if (id.HasValue && !await _context.ChequePartidas.AsNoTracking().AnyAsync(x => x.PkidChequePartida == id.Value && x.FkidChequePres == cheque.PkidCheque && x.Activo))
+                return Failure<ChequePartidaResponse>("La partida no pertenece al cheque.", "NOT_FOUND");
+            return null;
+        }
 
         private static SqlParameter[] BuildParameters(int action, int? id, ChequePartidaResponse? response, int? usuarioActual)
         {
@@ -1096,6 +1681,150 @@ namespace EG.Application.Services.CuentasXPagar
             => string.IsNullOrWhiteSpace(clave)
                 ? descripcion ?? string.Empty
                 : string.IsNullOrWhiteSpace(descripcion) ? clave : $"{clave} - {descripcion}";
+    }
+
+    internal static class CuentasXPagarScope
+    {
+        public static PagedRequest AllRowsRequest(string sortLabel) => new()
+        {
+            Page = 1,
+            PageSize = int.MaxValue,
+            Filtro = string.Empty,
+            SearchString = string.Empty,
+            SortLabel = sortLabel,
+            SortDirection = "Descending"
+        };
+
+        public static void Restrict(PagedRequest request, string idProperty, int[] ids)
+        {
+            request.AdditionalFilters ??= new Dictionary<string, object>();
+            request.AdditionalFilters[$"{idProperty}__in"] = ids;
+        }
+    }
+
+    internal enum CuentasXPagarBudgetStage
+    {
+        Devengado,
+        Ejercido,
+        Pagado
+    }
+
+    internal static class CuentasXPagarBudgetPosting
+    {
+        public static async Task<Poliza> CreateAsync(
+            EGestionContext context,
+            int contratoId,
+            DateOnly fecha,
+            CuentasXPagarBudgetStage stage,
+            IEnumerable<(int PartidaId, decimal Importe)> sourceDetails,
+            int usuarioActual)
+        {
+            var scope = await (
+                from contrato in context.Contratos1.AsNoTracking()
+                join autorizacion in context.AutorizacionSuficiencia.AsNoTracking()
+                    on contrato.FkidAutorizacionSuficienciaPres equals autorizacion.PkidAutorizacionSuficiencia
+                join solicitud in context.SolicitudSuficiencia.AsNoTracking()
+                    on autorizacion.FkidSolicitudSuficienciaPres equals solicitud.PkidSolicitudSuficiencia
+                join requisicion in context.Requisicions.AsNoTracking()
+                    on solicitud.FkidRequisicionOrco equals requisicion.PkidRequisicion
+                where contrato.PkidContrato == contratoId && contrato.Activo && contrato.Estatus == 2 &&
+                      autorizacion.Activo && autorizacion.Estatus == 2 && solicitud.Activo && solicitud.Estatus == 3 && requisicion.Activo
+                select new
+                {
+                    requisicion.FkidAnioSis,
+                    ProgramaId = requisicion.FkidProgramaPres,
+                    TipoGastoId = requisicion.FkidTipoGastoPres
+                }).FirstOrDefaultAsync();
+            if (scope == null || !scope.FkidAnioSis.HasValue || !scope.ProgramaId.HasValue || !scope.TipoGastoId.HasValue)
+                throw new InvalidOperationException("El contrato no tiene una clasificacion presupuestal autorizada.");
+
+            var details = sourceDetails
+                .Where(x => x.PartidaId > 0 && x.Importe > 0)
+                .GroupBy(x => x.PartidaId)
+                .Select(x => (PartidaId: x.Key, Importe: decimal.Round(x.Sum(y => y.Importe), 2)))
+                .ToList();
+            if (details.Count == 0)
+                throw new InvalidOperationException("No existen importes presupuestales para generar la poliza.");
+
+            var matrices = await context.MatrizConversions.AsNoTracking()
+                .Where(x => x.Activo && x.FkidAnioSis == scope.FkidAnioSis &&
+                            x.FkidProgramaPres == scope.ProgramaId.Value &&
+                            x.FkidTipoGastoPres == scope.TipoGastoId.Value &&
+                            details.Select(d => d.PartidaId).Contains(x.FkidPartidaSis))
+                .ToListAsync();
+            foreach (var detail in details)
+            {
+                var count = matrices.Count(x => x.FkidPartidaSis == detail.PartidaId);
+                if (count != 1)
+                    throw new InvalidOperationException($"La matriz de conversion para la partida {detail.PartidaId} debe existir una sola vez; se encontraron {count} registros activos.");
+            }
+
+            var now = DateTime.Now;
+            var stageName = stage.ToString().ToUpperInvariant();
+            var poliza = new Poliza
+            {
+                FkidAnioSis = scope.FkidAnioSis.Value,
+                FkidMesSis = fecha.Month,
+                FkidTipoPolizaSis = 4,
+                ClavePoliza = $"{stageName[..Math.Min(3, stageName.Length)]}-{fecha:yyyyMMdd}-{Guid.NewGuid():N}"[..30],
+                NombrePoliza = $"{stageName} CUENTAS POR PAGAR",
+                FechaPoliza = fecha.ToDateTime(TimeOnly.MinValue),
+                EstaBalanceado = true,
+                Activo = true,
+                FechaCreacion = now,
+                UsuarioCreacion = usuarioActual,
+                PermitirModificar = false,
+                Autorizado = true,
+                FechaSolicitud = now,
+                FechaAutorizacion = now
+            };
+            context.Polizas.Add(poliza);
+            await context.SaveChangesAsync();
+
+            foreach (var detail in details)
+            {
+                var matrix = matrices.Single(x => x.FkidPartidaSis == detail.PartidaId);
+                var debitAccount = stage switch
+                {
+                    CuentasXPagarBudgetStage.Devengado => matrix.FkidCuentaContableDevengado,
+                    CuentasXPagarBudgetStage.Ejercido => matrix.FkidCuentaContableEjercido,
+                    _ => matrix.FkidCuentaContablePagado
+                };
+                var creditAccount = stage switch
+                {
+                    CuentasXPagarBudgetStage.Devengado => matrix.FkidCuentaContableComprometido,
+                    CuentasXPagarBudgetStage.Ejercido => matrix.FkidCuentaContableDevengado,
+                    _ => matrix.FkidCuentaContableEjercido
+                };
+                context.PolizaDetalles.AddRange(
+                    new PolizaDetalle
+                    {
+                        FkidCuentaContableConta = debitAccount,
+                        FkidPolizaConta = poliza.PkidPoliza,
+                        Descripcion = $"{stageName} PARTIDA {detail.PartidaId}",
+                        ImporteDebe = detail.Importe,
+                        ImporteHaber = null,
+                        FkidTipoDetallePolizaSis = 1,
+                        Activo = true,
+                        FechaCreacion = now,
+                        UsuarioCreacion = usuarioActual
+                    },
+                    new PolizaDetalle
+                    {
+                        FkidCuentaContableConta = creditAccount,
+                        FkidPolizaConta = poliza.PkidPoliza,
+                        Descripcion = $"{stageName} PARTIDA {detail.PartidaId}",
+                        ImporteDebe = null,
+                        ImporteHaber = detail.Importe,
+                        FkidTipoDetallePolizaSis = 2,
+                        Activo = true,
+                        FechaCreacion = now,
+                        UsuarioCreacion = usuarioActual
+                    });
+            }
+            await context.SaveChangesAsync();
+            return poliza;
+        }
     }
 
     internal static class CuentasXPagarSpParameters

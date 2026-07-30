@@ -258,6 +258,8 @@ namespace EG.Application.Services.Adquisicion
 
         private async Task ValidateClasificacionAsync(RequisicionResponse response, int? requisicionId = null)
         {
+            response.FkidEmpresaSis = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
+            response.FkidAnioSis = _userContext.GetCurrentAnioPresupuestalId();
             if (string.IsNullOrWhiteSpace(response.Descripcion))
                 response.Descripcion = string.Empty;
             if (response.FkidAreaSis <= 0)
@@ -321,6 +323,7 @@ namespace EG.Application.Services.Adquisicion
 
             var posicion = await _context.VwEgresoDisponibles.AsNoTracking().FirstOrDefaultAsync(x =>
                 x.PkidEgresoAutorizado == response.FkidEgresoAutorizadoPres.Value &&
+                x.FkidEmpresaSis == response.FkidEmpresaSis &&
                 x.FkidAnioSis == response.FkidAnioSis &&
                 x.FkidAreaSis == response.FkidAreaSis);
             if (posicion == null)

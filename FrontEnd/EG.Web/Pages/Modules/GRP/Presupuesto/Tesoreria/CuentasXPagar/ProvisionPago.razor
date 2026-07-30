@@ -18,7 +18,7 @@
 @inject SucursalStateService SucursalStateService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height:100%;overflow:visible;">
+    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
         @if (SelectedClc == null)
         {
             <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
@@ -47,7 +47,7 @@
                                                        FkidEmpresaSis="@context.Item.FkidEmpresaSis"
                                                        RegistroTitulo="@TextOrDash(context.Item.NumClc)"
                                                        RegistroDescripcion="@($"{TextOrDash(context.Item.NumeroContrato)} | {TextOrDash(context.Item.ProveedorNombre)}")" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(context.Item)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(context.Item))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@(!CanGenerateCheque(context.Item))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(context.Item))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidClc))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidClc))" />
                             </CellTemplate></TemplateColumn>
@@ -73,7 +73,7 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
-                    <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@(!CanGenerateCheque(SelectedClc))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
                     <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />
                 </MudPaper>
@@ -151,6 +151,7 @@
     private static string Money(decimal value) => value.ToString("$0.00", Culture);
     private static Color StatusColor(int e) => e switch { 2 => Color.Info, 3 => Color.Success, 4 => Color.Success, 5 => Color.Error, _ => Color.Warning };
     private static bool IsLocked(CLCResponse item) => item.Estatus >= 3;
+    private static bool CanGenerateCheque(CLCResponse item) => item.Estatus == 3;
     private async Task SelectClc(CLCResponse item) { SelectedClc = item; await InvokeAsync(StateHasChanged); }
     private async Task BackToTable() { SelectedClc = null; if (table != null) await table.ReloadData(); }
 
@@ -242,8 +243,6 @@
         var dialog = await DialogService.ShowAsync<ChequeDialog>("Provision de pago", parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if ((await dialog.Result) is { Canceled: false })
         {
-            clc.Estatus = Math.Max(clc.Estatus, 3);
-            await Service.UpdateAsync(clc, clc.PkidClc);
             await ReloadData();
         }
     }
