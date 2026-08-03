@@ -2,7 +2,7 @@
 @typeparam TItem
 @inject NavigationManager Navigation
 
-<MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
+<MudDialog id="@DialogId" MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="true" Class="@DialogCssClass">
     <TitleContent>
         <div class="crud-dialog-title">
             <div class="crud-dialog-operation" aria-label="Tipo de operación">
@@ -83,6 +83,7 @@
     [Parameter] public string? Subtitle { get; set; }
     [Parameter] public string? TitleIcon { get; set; }
     [Parameter] public MaxWidth MaxWidth { get; set; } = MaxWidth.Medium;
+    [Parameter] public string? DialogId { get; set; }
     [Parameter] public string? DialogClass { get; set; }
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
     [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;

@@ -599,7 +599,13 @@
                 else if (sucursalesUsuario.Items.Count > 1)
                 {
                     var parameters = new DialogParameters { { "Sucursales", sucursalesUsuario.Items.ToList() } };
-                    var options = new DialogOptions { CloseOnEscapeKey = false };
+                    var options = new DialogOptions
+                    {
+                        CloseOnEscapeKey = false,
+                        FullWidth = true,
+                        MaxWidth = MaxWidth.Small,
+                        BackdropClick = false
+                    };
                     var dialog = await DialogService.ShowAsync<SelectSucursalDialog>("Seleccionar Sucursal", parameters, options);
                     var dialogResult = await dialog.Result;
 

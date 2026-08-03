@@ -1,0 +1,13 @@
+GestionEmpresarial - Correccion de Matriz de Conversion 2026-07-30
+
+1. Respaldar la base GestionEmpresarial.
+2. Ejecutar 20260730_Corregir_MatrizConversion_Duplicados.sql.
+3. Confirmar el resultado esperado:
+   - 6,797 matrices activas.
+   - 0 matrices con Activo = 0.
+   - 0 grupos duplicados activos.
+   - PK 6875: programa 1176, partida 21101, cuenta aprobada 266542.
+4. Publicar Back.rar y Front.rar generados para esta version.
+
+El script es transaccional: si alguno de sus controles no coincide, revierte
+todo el cambio. Debe ejecutarse despues de las migraciones del 2026-07-28.

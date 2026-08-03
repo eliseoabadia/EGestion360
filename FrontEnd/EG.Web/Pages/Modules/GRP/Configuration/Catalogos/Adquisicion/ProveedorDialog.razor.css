@@ -1,0 +1,123 @@
+.proveedor-form {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.proveedor-section {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.6rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 88%, transparent);
+    border-radius: 0.7rem;
+    background: color-mix(in srgb, var(--mud-palette-surface) 96%, var(--mud-palette-background));
+}
+
+.proveedor-section::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0.2rem;
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 78%, transparent);
+    content: "";
+}
+
+.proveedor-section-heading {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 0.5rem;
+    padding: 0 0.05rem 0.35rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 76%, transparent);
+}
+
+.proveedor-section-heading > div {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.proveedor-section-icon {
+    display: inline-grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 1.75rem;
+    place-items: center;
+    border-radius: 0.5rem;
+    color: var(--eg-primary, var(--mud-palette-primary));
+    background: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 11%, var(--mud-palette-surface));
+}
+
+.proveedor-section-icon ::deep .mud-icon-root {
+    font-size: 0.95rem;
+}
+
+.proveedor-section-title {
+    flex: 0 0 auto;
+    color: var(--mud-palette-text-primary);
+    font-size: 0.84rem;
+    font-weight: 750;
+    line-height: 1.25;
+}
+
+.proveedor-section-subtitle {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--mud-palette-text-secondary);
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.proveedor-section ::deep > .mud-grid {
+    margin: -0.12rem;
+}
+
+.proveedor-section ::deep > .mud-grid > .mud-grid-item {
+    padding: 0.12rem;
+}
+
+.proveedor-form ::deep .mud-input-control {
+    margin-top: 0.15rem;
+    margin-bottom: 0.1rem;
+}
+
+.proveedor-form ::deep .mud-input-outlined-border {
+    border-radius: 0.65rem;
+}
+
+.proveedor-form ::deep .mud-input-label {
+    font-size: 0.76rem;
+}
+
+.proveedor-field-help {
+    display: flex;
+    align-items: center;
+    min-height: 1rem;
+    margin: 0.05rem 0.15rem -0.05rem;
+    font-size: 0.7rem;
+    color: var(--mud-palette-text-secondary);
+    line-height: 1.35;
+}
+
+@media (max-width: 700px) {
+    .proveedor-form {
+        gap: 0.4rem;
+    }
+
+    .proveedor-section {
+        gap: 0.4rem;
+        padding: 0.55rem;
+    }
+
+    .proveedor-section-heading > div {
+        display: grid;
+        gap: 0.1rem;
+    }
+
+    .proveedor-section-subtitle {
+        white-space: normal;
+    }
+}

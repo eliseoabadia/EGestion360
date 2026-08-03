@@ -16,6 +16,7 @@
                  ValueChanged="HandleValueChanged"
                  Label="@Label"
                  Variant="@Variant"
+                 Margin="@Margin"
                  SearchFunc="SearchAsync"
                  ToStringFunc="item => item?.Text ?? string.Empty"
                  OnClearButtonClick="HandleClearAsync"
@@ -111,6 +112,7 @@
     [Parameter] public bool Virtualize { get; set; } = true;
     [Parameter] public bool OpenOnFocus { get; set; } = true;
     [Parameter] public Variant Variant { get; set; } = Variant.Outlined;
+    [Parameter] public Margin Margin { get; set; } = Margin.None;
     [Parameter] public Color ProgressIndicatorColor { get; set; } = Color.Primary;
     [Parameter] public Color LoadMoreButtonColor { get; set; } = Color.Primary;
     [Parameter] public string LoadMoreText { get; set; } = "Cargar más";

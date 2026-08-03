@@ -4,42 +4,79 @@
 
 @inject SucursalStateService SucursalStateService
 
-<MudDialog>
-<TitleContent>
-<MudText Typo="Typo.h6">
-<MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Class="mr-2" />
-Selecciona una Sucursal
-</MudText>
-</TitleContent>
+<MudDialog Class="sucursal-dialog">
+    <TitleContent>
+        <div class="sucursal-dialog__header">
+            <div class="sucursal-dialog__header-icon" aria-hidden="true">
+                <MudIcon Icon="@Icons.Material.Filled.AccountTree" />
+            </div>
+            <div class="sucursal-dialog__heading">
+                <MudText Typo="Typo.overline" Class="sucursal-dialog__eyebrow">Espacio de trabajo</MudText>
+                <MudText Typo="Typo.h5" Class="sucursal-dialog__title">Elige una sucursal</MudText>
+            </div>
+            <span class="sucursal-dialog__count">@Sucursales.Count @(Sucursales.Count == 1 ? "opción" : "opciones")</span>
+        </div>
+    </TitleContent>
 
-<DialogContent>
-<MudText Class="mb-4">
-Tienes asignadas varias sucursales. Por favor, selecciona una para continuar:
-</MudText>
+    <DialogContent>
+        <div class="sucursal-dialog__content">
+            <MudText Typo="Typo.body2" Class="sucursal-dialog__description">
+                Tu cuenta tiene acceso a varias sucursales. Selecciona aquella con la que deseas trabajar.
+            </MudText>
 
-@foreach (var sucursal in Sucursales)
-{
-<MudCard Class="mb-2 cursor-pointer" @onclick="() => SeleccionarSucursal(sucursal)" Style="cursor: pointer;">
-<MudCardContent>
-<div class="d-flex align-center">
-<MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-3" Color="Color.Primary" />
-<div>
-<MudText><strong>@sucursal.NombreSucursal</strong></MudText>
-<MudText Typo="Typo.caption">@sucursal.NombreEmpresa</MudText>
-<MudText Typo="Typo.caption">@sucursal.DireccionSucursal</MudText>
-</div>
-</div>
-</MudCardContent>
-</MudCard>
-}
-</DialogContent>
+            <ul class="sucursal-dialog__list" aria-label="Sucursales disponibles">
+                @foreach (var sucursal in Sucursales)
+                {
+                    <li @key="sucursal.IdSucursal" class="sucursal-dialog__list-item">
+                        <button type="button"
+                                class="sucursal-option"
+                                aria-label="Seleccionar sucursal @sucursal.NombreSucursal"
+                                @onclick="() => SeleccionarSucursal(sucursal)">
+                            <span class="sucursal-option__icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Business" />
+                            </span>
+
+                            <span class="sucursal-option__details">
+                                <span class="sucursal-option__name">@sucursal.NombreSucursal</span>
+
+                                @if (!string.IsNullOrWhiteSpace(sucursal.NombreEmpresa))
+                                {
+                                    <span class="sucursal-option__meta">
+                                        <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Small" />
+                                        <span>@sucursal.NombreEmpresa</span>
+                                    </span>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(sucursal.DireccionSucursal))
+                                {
+                                    <span class="sucursal-option__meta sucursal-option__address">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                                        <span>@sucursal.DireccionSucursal</span>
+                                    </span>
+                                }
+                            </span>
+
+                            <span class="sucursal-option__action" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" />
+                            </span>
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <div class="sucursal-dialog__hint">
+                <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" />
+                <MudText Typo="Typo.caption">Podrás cambiar de sucursal más adelante desde el menú principal.</MudText>
+            </div>
+        </div>
+    </DialogContent>
 </MudDialog>
 
 @code {
-[Parameter]
-public List<UsuarioSucursalResponse> Sucursales { get; set; } = new();
+    [Parameter]
+    public List<UsuarioSucursalResponse> Sucursales { get; set; } = new();
 
-[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private async Task SeleccionarSucursal(UsuarioSucursalResponse sucursal)
     {

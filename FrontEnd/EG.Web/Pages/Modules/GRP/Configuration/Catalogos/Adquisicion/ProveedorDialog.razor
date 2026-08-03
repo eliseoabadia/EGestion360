@@ -12,8 +12,9 @@
                 Title="@dialogTitle"
                 Subtitle="Identificacion fiscal, control contable, domicilio y contacto del proveedor."
                 TitleIcon="@Icons.Material.Filled.Business"
-                MaxWidth="MaxWidth.ExtraExtraLarge"
-                DialogClass="proveedor-dialog crud-dialog-wide-xl"
+                MaxWidth="MaxWidth.ExtraLarge"
+                DialogId="proveedor-dialog"
+                DialogClass="proveedor-dialog crud-dialog-wide"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
                 LoadingMessage="Cargando datos..."
@@ -26,38 +27,41 @@
                     CatalogMode="true">
 
         <div class="proveedor-form">
-        <section class="proveedor-section proveedor-section-identity">
+        <section class="proveedor-section proveedor-section-identity" aria-labelledby="proveedor-identidad-title">
             <div class="proveedor-section-heading">
                 <span class="proveedor-section-icon" aria-hidden="true">
                     <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
                 </span>
                 <div>
-                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Identificacion fiscal</MudText>
+                    <MudText Id="proveedor-identidad-title" Typo="Typo.subtitle2" Class="proveedor-section-title">Identificación fiscal</MudText>
                     <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Datos principales y clasificacion operativa.</MudText>
                 </div>
             </div>
 
             <MudGrid GutterSize="2">
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="3">
                 <MudTextField @bind-Value="item.Clave"
                               Label="Clave"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Required="true"
                               RequiredError="La clave es requerida"
                               MaxLength="10" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="2">
                 <MudTextField @bind-Value="item.Rfc"
                               Label="RFC"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Required="true"
                               RequiredError="El RFC es requerido"
                               MaxLength="50" />
             </MudItem>
-            <MudItem xs="12">
+            <MudItem xs="12" sm="7">
                 <MudTextField @bind-Value="item.Nombre"
                               Label="Nombre"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Required="true"
                               RequiredError="El nombre es requerido"
                               MaxLength="500" />
@@ -66,6 +70,7 @@
                 <PagedAutocomplete Value="@_selectedTipo"
                                    ValueChanged="value => _selectedTipo = value"
                                    Label="Tipo de proveedor"
+                                   Margin="Margin.Dense"
                                    Required="true"
                                    RequiredError="El tipo de proveedor es requerido"
                                    LoadPage="LoadTiposPageAsync" />
@@ -74,6 +79,7 @@
                 <PagedAutocomplete Value="@_selectedEstatus"
                                    ValueChanged="value => _selectedEstatus = value"
                                    Label="Estatus"
+                                   Margin="Margin.Dense"
                                    Required="true"
                                    RequiredError="El estatus es requerido"
                                    LoadPage="LoadEstatusPageAsync" />
@@ -81,13 +87,13 @@
             </MudGrid>
         </section>
 
-        <section class="proveedor-section proveedor-section-accounting">
+        <section class="proveedor-section proveedor-section-accounting" aria-labelledby="proveedor-contabilidad-title">
             <div class="proveedor-section-heading">
                 <span class="proveedor-section-icon" aria-hidden="true">
                     <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" />
                 </span>
                 <div>
-                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Control contable</MudText>
+                    <MudText Id="proveedor-contabilidad-title" Typo="Typo.subtitle2" Class="proveedor-section-title">Control contable</MudText>
                     <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Cuenta auxiliar utilizada para controlar el saldo del proveedor.</MudText>
                 </div>
             </div>
@@ -97,67 +103,75 @@
                 <PagedAutocomplete Value="@_selectedCuentaAuxiliar"
                                    ValueChanged="value => _selectedCuentaAuxiliar = value"
                                    Label="Auxiliar contable de proveedores por pagar (2.1.1.2)"
+                                   Margin="Margin.Dense"
                                    Clearable="true"
                                    LoadPage="LoadCuentasAuxiliaresPageAsync" />
-                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <MudText Typo="Typo.caption" Class="proveedor-field-help">
                     Esta cuenta controla el saldo por proveedor; la cuenta de gasto o activo se obtiene de la matriz COG + TG.
                 </MudText>
             </MudItem>
             </MudGrid>
         </section>
 
-        <section class="proveedor-section proveedor-section-address">
+        <section class="proveedor-section proveedor-section-address" aria-labelledby="proveedor-domicilio-title">
             <div class="proveedor-section-heading">
                 <span class="proveedor-section-icon" aria-hidden="true">
                     <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
                 </span>
                 <div>
-                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Domicilio fiscal</MudText>
+                    <MudText Id="proveedor-domicilio-title" Typo="Typo.subtitle2" Class="proveedor-section-title">Domicilio fiscal</MudText>
                     <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Ubicacion registrada para operaciones y documentos fiscales.</MudText>
                 </div>
             </div>
 
             <MudGrid GutterSize="2">
-            <MudItem xs="12">
+            <MudItem xs="12" sm="8">
                 <MudTextField @bind-Value="item.Calle"
                               Label="Calle"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="50" />
             </MudItem>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="2">
                 <MudTextField @bind-Value="item.Numero"
-                              Label="Numero"
+                              Label="Número"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="10" />
             </MudItem>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="2">
                 <MudTextField @bind-Value="item.NumeroInt"
-                              Label="Numero interior"
+                              Label="Núm. interior"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="10" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="5">
                 <MudTextField @bind-Value="item.Colonia"
                               Label="Colonia"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="50" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="2">
                 <MudTextField @bind-Value="item.Cp"
-                              Label="Codigo postal"
+                              Label="Código postal"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="50" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="5">
                 <MudTextField @bind-Value="item.Ciudad"
                               Label="Ciudad"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="4">
                 <PagedAutocomplete Value="@_selectedPais"
                                    ValueChanged="OnPaisChanged"
-                                   Label="Pais"
+                                   Label="País"
+                                   Margin="Margin.Dense"
                                    Required="true"
                                    LoadPage="LoadPaisesPageAsync" />
             </MudItem>
@@ -165,6 +179,7 @@
                 <PagedAutocomplete Value="@_selectedEstado"
                                    ValueChanged="OnEstadoChanged"
                                    Label="Estado"
+                                   Margin="Margin.Dense"
                                    Required="true"
                                    LoadPage="LoadEstadosPageAsync" />
             </MudItem>
@@ -172,48 +187,53 @@
                 <PagedAutocomplete Value="@_selectedMunicipio"
                                    ValueChanged="value => _selectedMunicipio = value"
                                    Label="Municipio"
+                                   Margin="Margin.Dense"
                                    Required="true"
                                    LoadPage="LoadMunicipiosPageAsync" />
             </MudItem>
             </MudGrid>
         </section>
 
-        <section class="proveedor-section proveedor-section-contact">
+        <section class="proveedor-section proveedor-section-contact" aria-labelledby="proveedor-contacto-title">
             <div class="proveedor-section-heading">
                 <span class="proveedor-section-icon" aria-hidden="true">
                     <MudIcon Icon="@Icons.Material.Filled.ContactMail" Size="Size.Small" />
                 </span>
                 <div>
-                    <MudText Typo="Typo.subtitle2" Class="proveedor-section-title">Contacto y notas</MudText>
+                    <MudText Id="proveedor-contacto-title" Typo="Typo.subtitle2" Class="proveedor-section-title">Contacto y notas</MudText>
                     <MudText Typo="Typo.caption" Class="proveedor-section-subtitle">Canales de comunicacion e informacion complementaria.</MudText>
                 </div>
             </div>
 
             <MudGrid GutterSize="2">
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="4">
                 <MudTextField @bind-Value="item.Email"
                               Label="Email"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Required="true"
                               RequiredError="El email es requerido"
                               MaxLength="50" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="4">
                 <MudTextField @bind-Value="item.TelefonoInstitucional"
-                              Label="Telefono"
+                              Label="Teléfono"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="20" />
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="4">
                 <MudTextField @bind-Value="item.PaginaWeb"
-                              Label="Pagina web"
+                              Label="Página web"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="100" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField @bind-Value="item.Notas"
                               Label="Notas"
                               Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               MaxLength="500"
                               Lines="2" />
             </MudItem>

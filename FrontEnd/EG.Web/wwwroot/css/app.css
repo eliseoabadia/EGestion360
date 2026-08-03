@@ -2267,3 +2267,155 @@ body,
 .eg-progressive-popover .eg-progressive-menu-item.is-destructive {
     color: var(--mud-palette-error);
 }
+/* Selector de sucursal mostrado durante el inicio de sesion. El contenedor de
+   MudDialog vive fuera del alcance del CSS aislado del componente. */
+.mud-dialog.sucursal-dialog {
+    width: min(38rem, calc(100vw - 2rem));
+    max-width: 38rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+    border-radius: 1.25rem;
+    background: var(--mud-palette-surface);
+    box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--mud-palette-text-primary) 24%, transparent);
+}
+
+.mud-dialog.sucursal-dialog::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 0.25rem;
+    background: linear-gradient(90deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+    content: "";
+}
+
+.mud-dialog.sucursal-dialog .mud-dialog-title {
+    padding: 1.75rem 1.75rem 1.25rem;
+}
+
+.mud-dialog.sucursal-dialog .mud-dialog-content {
+    padding: 0 1.75rem 1.75rem;
+}
+
+@media (max-width: 600px) {
+    .mud-dialog.sucursal-dialog {
+        width: calc(100vw - 1rem);
+        border-radius: 1rem;
+    }
+
+    .mud-dialog.sucursal-dialog .mud-dialog-title {
+        padding: 1.4rem 1.15rem 1rem;
+    }
+
+    .mud-dialog.sucursal-dialog .mud-dialog-content {
+        padding: 0 1.15rem 1.25rem;
+    }
+}
+/* Formulario piloto: proveedor. Mantiene los ajustes del dialogo aislados
+   hasta validar el patron antes de extenderlo a los demas catalogos. */
+#proveedor-dialog.mud-dialog {
+    width: min(1280px, calc(100vw - 48px)) !important;
+    max-width: min(1280px, calc(100vw - 48px)) !important;
+    max-height: calc(100dvh - 32px) !important;
+}
+
+#proveedor-dialog.mud-dialog .mud-dialog-title {
+    min-height: 70px !important;
+    padding: 8px 16px 8px !important;
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 10%, transparent), transparent 48%),
+        color-mix(in srgb, var(--mud-palette-surface) 96%, var(--mud-palette-background)) !important;
+}
+
+#proveedor-dialog .crud-dialog-operation {
+    color: color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 76%, var(--mud-palette-text-secondary));
+}
+
+#proveedor-dialog .crud-dialog-operation-pulse {
+    background: var(--eg-primary, var(--mud-palette-primary));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--eg-primary, var(--mud-palette-primary)) 16%, transparent);
+}
+
+#proveedor-dialog .crud-dialog-title-text,
+#proveedor-dialog .crud-dialog-subtitle {
+    color: var(--mud-palette-text-primary);
+}
+
+#proveedor-dialog .crud-dialog-subtitle {
+    color: var(--mud-palette-text-secondary);
+}
+
+#proveedor-dialog .mud-dialog-content {
+    padding: 8px !important;
+}
+
+#proveedor-dialog .crud-dialog-shell {
+    margin: 0;
+    padding: 0 0 48px !important;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none !important;
+}
+
+#proveedor-dialog .crud-dialog-shell::after {
+    display: none;
+}
+
+#proveedor-dialog .crud-dialog-actions {
+    position: sticky;
+    bottom: -8px;
+    z-index: 4;
+    margin: 0 -8px -56px;
+    padding: 7px 12px;
+    border-top: 1px solid var(--mud-palette-lines-default);
+    backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--mud-palette-surface) 92%, transparent);
+}
+
+@media (max-width: 700px) {
+    #proveedor-dialog.mud-dialog {
+        width: calc(100vw - 16px) !important;
+        max-width: calc(100vw - 16px) !important;
+        max-height: calc(100dvh - 16px) !important;
+        margin: 8px !important;
+    }
+
+    #proveedor-dialog.mud-dialog .mud-dialog-title {
+        min-height: 74px !important;
+        padding: 10px 13px !important;
+    }
+}
+/* Compactacion vertical general de formularios CRUD. Solo reduce 4 px del
+   relleno inferior nativo; no modifica etiquetas, altura minima ni layout. */
+.mud-dialog.crud-dialog input.mud-input-root-outlined,
+.mud-dialog.crud-dialog div.mud-input-slot.mud-input-root-outlined {
+    padding-bottom: 14.5px;
+}
+
+.mud-dialog.crud-dialog input.mud-input-root-outlined.mud-input-root-margin-dense,
+.mud-dialog.crud-dialog div.mud-input-slot.mud-input-root-outlined.mud-input-root-margin-dense {
+    padding-bottom: 6px;
+}
+/* El formulario de usuario agrega bloques de forma asincrona. Se reserva su
+   tamano final desde el inicio para evitar saltos de ancho y alto. */
+#usuario-dialog.mud-dialog {
+    width: min(1280px, calc(100vw - 48px)) !important;
+    max-width: min(1280px, calc(100vw - 48px)) !important;
+    height: min(720px, calc(100dvh - 24px)) !important;
+    max-height: calc(100dvh - 24px) !important;
+}
+
+#usuario-dialog .mud-dialog-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+}
+
+@media (max-width: 700px) {
+    #usuario-dialog.mud-dialog {
+        width: calc(100vw - 16px) !important;
+        max-width: calc(100vw - 16px) !important;
+        height: calc(100dvh - 16px) !important;
+        max-height: calc(100dvh - 16px) !important;
+        margin: 8px !important;
+    }
+}
