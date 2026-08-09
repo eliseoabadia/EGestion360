@@ -17,8 +17,6 @@ public partial class Paaasdetalle
 
     public int? FkidUnidadesAlma { get; set; }
 
-    public int? FkidMesSis { get; set; }
-
     public decimal Cantidad { get; set; }
 
     public string Observaciones { get; set; }
@@ -34,6 +32,8 @@ public partial class Paaasdetalle
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int? FkidMesSis { get; set; }
 
     public virtual ICollection<EstudioMercadoDetalle> EstudioMercadoDetalles { get; set; } = new List<EstudioMercadoDetalle>();
 

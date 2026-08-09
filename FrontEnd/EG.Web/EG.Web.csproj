@@ -45,7 +45,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BackEnd\EG.Common\EG.Common.csproj" />
-    <ProjectReference Include="..\..\BackEnd\EG.Domain\EG.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\EG.Contracts\EG.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

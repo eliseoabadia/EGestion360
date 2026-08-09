@@ -49,6 +49,8 @@ public partial class VwSolicitudSalidum
 
     public int? UsuarioAutorizacion { get; set; }
 
+    public int? FkidPolizaConta { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }
@@ -58,6 +60,4 @@ public partial class VwSolicitudSalidum
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
-
-    public int? FkidPolizaConta { get; set; }
 }

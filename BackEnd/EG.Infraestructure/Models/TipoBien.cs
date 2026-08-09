@@ -67,6 +67,8 @@ public partial class TipoBien
 
     public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
 
+    public virtual ICollection<CierreInventario> CierreInventarios { get; set; } = new List<CierreInventario>();
+
     public virtual ICollection<ConteoDetalleEscaneo> ConteoDetalleEscaneos { get; set; } = new List<ConteoDetalleEscaneo>();
 
     public virtual ICollection<Conteo> Conteos { get; set; } = new List<Conteo>();
@@ -90,6 +92,8 @@ public partial class TipoBien
     public virtual ICollection<OrdenCompraDetalle> OrdenCompraDetalles { get; set; } = new List<OrdenCompraDetalle>();
 
     public virtual ICollection<Paaasdetalle> Paaasdetalles { get; set; } = new List<Paaasdetalle>();
+
+    public virtual PlanConteoCiclico PlanConteoCiclico { get; set; }
 
     public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
 

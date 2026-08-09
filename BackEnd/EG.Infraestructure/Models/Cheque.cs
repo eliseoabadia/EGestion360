@@ -39,6 +39,8 @@ public partial class Cheque
 
     public int? UsuarioModificacion { get; set; }
 
+    public byte[] RowVersion { get; set; }
+
     public virtual ICollection<ChequePartida> ChequePartida { get; set; } = new List<ChequePartida>();
 
     public virtual Clc FkidClcPresNavigation { get; set; }
@@ -48,6 +50,8 @@ public partial class Cheque
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual Poliza FkidPolizaContaNavigation { get; set; }
+
+    public virtual RegresoChequeSuficiencium RegresoChequeSuficiencium { get; set; }
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

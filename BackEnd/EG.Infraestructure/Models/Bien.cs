@@ -9,8 +9,6 @@ public partial class Bien
 {
     public int PkidBien { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
-
     public int? FkidGrupoBienAlma { get; set; }
 
     public int FkidTipoBienAlma { get; set; }
@@ -123,9 +121,13 @@ public partial class Bien
 
     public int? UsuarioModificacion { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public virtual Baja Baja { get; set; }
 
     public virtual Area FkidAreaSisNavigation { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual EstadoBien FkidEstadoBienAlmaNavigation { get; set; }
 

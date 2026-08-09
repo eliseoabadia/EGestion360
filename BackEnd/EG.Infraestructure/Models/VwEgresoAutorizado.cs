@@ -9,9 +9,9 @@ public partial class VwEgresoAutorizado
 {
     public int PkidEgresoAutorizado { get; set; }
 
-    public int? FkidEgresoProyectadoPres { get; set; }
-
     public int FkidEmpresaSis { get; set; }
+
+    public int? FkidEgresoProyectadoPres { get; set; }
 
     public int? FkidAnioSis { get; set; }
 

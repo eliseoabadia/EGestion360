@@ -157,6 +157,11 @@ BEGIN
 END;
 GO
 
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+
 CREATE OR ALTER PROCEDURE [SIS].[spNodeMenu]
     @NoEmploye int,
     @Lenguaje char(3)
@@ -169,10 +174,26 @@ BEGIN
         SELECT TOP (0)
             M.[PKIdMenu], M.[Nombre], M.[Tipo],
             CONVERT(int, 0) AS [FKIdMenuSIS], M.[LegacyName], M.[Ruta],
-            M.[ImageUrl], M.[Activo], M.[Lenguaje], CONVERT(nvarchar(450), N'') AS [UserId], M.[Orden]
+            M.[ImageUrl], M.[Activo], M.[Lenguaje], CONVERT(nvarchar(128), N'') AS [UserId], M.[Orden]
         FROM SIS.Menu AS M;
         RETURN;
     END;
+
+    DECLARE @AllowedMenu TABLE
+    (
+        PKIdMenu int NOT NULL PRIMARY KEY CLUSTERED,
+        Nombre nvarchar(150) NOT NULL,
+        Tipo int NOT NULL,
+        FKIdMenu_SIS int NULL,
+        LegacyName nvarchar(80) NULL,
+        Ruta nvarchar(200) NULL,
+        ImageUrl nvarchar(120) NULL,
+        Activo bit NOT NULL,
+        Lenguaje char(3) NOT NULL,
+        UserId nvarchar(128) NOT NULL,
+        Orden int NULL,
+        INDEX IX_AllowedMenu_Parent NONCLUSTERED (FKIdMenu_SIS)
+    );
 
     ;WITH UserRoles AS
     (
@@ -183,10 +204,14 @@ BEGIN
         WHERE U.PkIdUsuario = @NoEmploye
           AND U.Activo = 1
     )
+    INSERT INTO @AllowedMenu
+    (
+        PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName,
+        Ruta, ImageUrl, Activo, Lenguaje, UserId, Orden
+    )
     SELECT DISTINCT
         M.PKIdMenu, M.Nombre, M.Tipo, M.FKIdMenu_SIS, M.LegacyName,
         M.Ruta, M.ImageUrl, M.Activo, M.Lenguaje, UR.UserId, M.Orden
-    INTO #AllowedMenu
     FROM UserRoles AS UR
     INNER JOIN SIS.MenuRole AS MR
         ON MR.RoleId = UR.RoleId AND MR.Activo = 1
@@ -195,16 +220,13 @@ BEGIN
     WHERE M.Activo = 1
       AND M.Lenguaje = @Lenguaje;
 
-    CREATE UNIQUE CLUSTERED INDEX [IX_AllowedMenu_Id] ON #AllowedMenu ([PKIdMenu]);
-    CREATE INDEX [IX_AllowedMenu_Parent] ON #AllowedMenu ([FKIdMenu_SIS]);
-
     ;WITH MenuTree AS
     (
-        SELECT * FROM #AllowedMenu WHERE FKIdMenu_SIS IS NULL
+        SELECT * FROM @AllowedMenu WHERE FKIdMenu_SIS IS NULL
         UNION ALL
         SELECT Child.*
         FROM MenuTree AS Parent
-        INNER JOIN #AllowedMenu AS Child ON Child.FKIdMenu_SIS = Parent.PKIdMenu
+        INNER JOIN @AllowedMenu AS Child ON Child.FKIdMenu_SIS = Parent.PKIdMenu
     )
     SELECT DISTINCT
         T.PKIdMenu, T.Nombre, T.Tipo,

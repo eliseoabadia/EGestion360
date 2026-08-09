@@ -33,8 +33,6 @@ public partial class EgresoAutorizado
 
     public int? FkidEgresoProyectadoPres { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
-
     public decimal Enero { get; set; }
 
     public decimal Febrero { get; set; }
@@ -75,6 +73,10 @@ public partial class EgresoAutorizado
 
     public int? FkidPyPres { get; set; }
 
+    public byte[] RowVersion { get; set; }
+
+    public int FkidEmpresaSis { get; set; }
+
     public virtual ICollection<EgreAdecuacionDetalle> EgreAdecuacionDetalles { get; set; } = new List<EgreAdecuacionDetalle>();
 
     public virtual Area FkidAreaSisNavigation { get; set; }
@@ -84,6 +86,8 @@ public partial class EgresoAutorizado
     public virtual DigitoIdentificador FkidDigitoIdentificadorPresNavigation { get; set; }
 
     public virtual EgresoProyectado FkidEgresoProyectadoPresNavigation { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual FuenteFinanciamiento FkidFuenteFinanciamientoPresNavigation { get; set; }
 
@@ -96,6 +100,8 @@ public partial class EgresoAutorizado
     public virtual Py FkidPyPresNavigation { get; set; }
 
     public virtual TipoGasto FkidTipoGastoPresNavigation { get; set; }
+
+    public virtual ICollection<RequisicionPartidum> RequisicionPartida { get; set; } = new List<RequisicionPartidum>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 

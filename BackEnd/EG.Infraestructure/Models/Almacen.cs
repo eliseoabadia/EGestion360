@@ -11,8 +11,6 @@ public partial class Almacen
 
     public int FkidEmpresaSis { get; set; }
 
-    public int? FkidAnioSis { get; set; }
-
     public int? FkidAreaSis { get; set; }
 
     public int FkidTipoBienAlma { get; set; }
@@ -57,7 +55,11 @@ public partial class Almacen
 
     public int? UsuarioModificacion { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public virtual ICollection<DetalleSolicitudSalidum> DetalleSolicitudSalida { get; set; } = new List<DetalleSolicitudSalidum>();
+
+    public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual Area FkidAreaSisNavigation { get; set; }
 

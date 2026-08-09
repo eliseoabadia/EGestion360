@@ -189,26 +189,26 @@ BEGIN
         )
             THROW 51008, N'La solicitud tiene otra autorización activa. No se puede regresar una rama compartida.', 1;
 
-        CREATE TABLE #Facturas
+        DECLARE @Facturas TABLE
         (
             PKIdFactura INT NOT NULL PRIMARY KEY,
             FKIdPoliza_CONTA INT NOT NULL
         );
 
-        INSERT INTO #Facturas (PKIdFactura, FKIdPoliza_CONTA)
+        INSERT INTO @Facturas (PKIdFactura, FKIdPoliza_CONTA)
         SELECT F.PKIdFactura, F.FKIdPoliza_CONTA
         FROM PRES.Factura F WITH (UPDLOCK, HOLDLOCK)
         WHERE F.FKIdContrato_PRES = @PKIdContrato
           AND F.FKIdEmpresa_SIS = @FKIdEmpresa_SIS
           AND F.Activo = 1;
 
-        CREATE TABLE #EtapasPoliza
+        DECLARE @EtapasPoliza TABLE
         (
             FKIdPoliza_CONTA INT NOT NULL,
             Etapa NVARCHAR(50) NOT NULL
         );
 
-        INSERT INTO #EtapasPoliza (FKIdPoliza_CONTA, Etapa)
+        INSERT INTO @EtapasPoliza (FKIdPoliza_CONTA, Etapa)
         SELECT FKIdPoliza_CONTA, N'Cheque'
         FROM PRES.Cheque WHERE PKIdCheque = @PKIdCheque
         UNION ALL
@@ -219,27 +219,27 @@ BEGIN
         FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND FKIdPoliza_CONTA IS NOT NULL
         UNION ALL
         SELECT FKIdPoliza_CONTA, N'Factura'
-        FROM #Facturas;
+        FROM @Facturas;
 
-        CREATE TABLE #Polizas
+        DECLARE @Polizas TABLE
         (
             FKIdPolizaOriginal_CONTA INT NOT NULL PRIMARY KEY,
             Etapas NVARCHAR(250) NOT NULL
         );
 
-        INSERT INTO #Polizas (FKIdPolizaOriginal_CONTA, Etapas)
+        INSERT INTO @Polizas (FKIdPolizaOriginal_CONTA, Etapas)
         SELECT E.FKIdPoliza_CONTA,
                STRING_AGG(CONVERT(NVARCHAR(MAX), E.Etapa), N', ')
-        FROM (SELECT DISTINCT FKIdPoliza_CONTA, Etapa FROM #EtapasPoliza) E
+        FROM (SELECT DISTINCT FKIdPoliza_CONTA, Etapa FROM @EtapasPoliza) E
         GROUP BY E.FKIdPoliza_CONTA;
 
-        IF NOT EXISTS (SELECT 1 FROM #Polizas)
+        IF NOT EXISTS (SELECT 1 FROM @Polizas)
             THROW 51009, N'La cadena no tiene pólizas asociadas que puedan revertirse.', 1;
 
         IF EXISTS
         (
             SELECT 1
-            FROM #Polizas X
+            FROM @Polizas X
             LEFT JOIN CONTA.Poliza P WITH (UPDLOCK, HOLDLOCK)
               ON P.PKIdPoliza = X.FKIdPolizaOriginal_CONTA AND P.Activo = 1
             WHERE P.PKIdPoliza IS NULL
@@ -262,7 +262,7 @@ BEGIN
         IF EXISTS
         (
             SELECT 1
-            FROM #Polizas X
+            FROM @Polizas X
             WHERE EXISTS (SELECT 1 FROM ALMA.Bajas B WHERE B.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
                OR EXISTS (SELECT 1 FROM ALMA.SolicitudSalida S WHERE S.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
                OR EXISTS (SELECT 1 FROM ORCO.OrdenCompra O WHERE O.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
@@ -275,7 +275,7 @@ BEGIN
                   (
                       SELECT 1 FROM PRES.Factura F
                       WHERE F.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA
-                        AND NOT EXISTS (SELECT 1 FROM #Facturas T WHERE T.PKIdFactura = F.PKIdFactura)
+                        AND NOT EXISTS (SELECT 1 FROM @Facturas T WHERE T.PKIdFactura = F.PKIdFactura)
                   )
                OR EXISTS (SELECT 1 FROM PRES.Contrato C WHERE C.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA AND C.PKIdContrato <> @PKIdContrato)
         )
@@ -316,7 +316,7 @@ BEGIN
 
         DECLARE PolizasCursor CURSOR LOCAL FAST_FORWARD FOR
             SELECT X.FKIdPolizaOriginal_CONTA, X.Etapas
-            FROM #Polizas X
+            FROM @Polizas X
             ORDER BY X.FKIdPolizaOriginal_CONTA;
 
         OPEN PolizasCursor;
@@ -469,7 +469,7 @@ BEGIN
               FKIdCLC_PRES = @PKIdCLC
               OR EXISTS
                  (
-                     SELECT 1 FROM #Facturas F
+                     SELECT 1 FROM @Facturas F
                      WHERE F.PKIdFactura = PRES.CLCFactura.FKIdFactura_PRES
                  )
           );
@@ -490,7 +490,7 @@ BEGIN
         UPDATE D
         SET D.Activo = 0, D.FechaModificacion = SYSDATETIME(), D.UsuarioModificacion = @IdUser
         FROM PRES.FacturaDetalle D
-        INNER JOIN #Facturas F ON F.PKIdFactura = D.FKIdFactura_PRES
+        INNER JOIN @Facturas F ON F.PKIdFactura = D.FKIdFactura_PRES
         WHERE D.Activo = 1;
 
         UPDATE F
@@ -501,7 +501,7 @@ BEGIN
             F.FechaModificacion = SYSDATETIME(),
             F.UsuarioModificacion = @IdUser
         FROM PRES.Factura F
-        INNER JOIN #Facturas T ON T.PKIdFactura = F.PKIdFactura
+        INNER JOIN @Facturas T ON T.PKIdFactura = F.PKIdFactura
         WHERE F.Activo = 1;
 
         UPDATE PRES.ContratoDetalle

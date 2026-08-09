@@ -43,6 +43,8 @@ public partial class Poliza
 
     public DateTime? FechaAutorizacion { get; set; }
 
+    public byte[] RowVersion { get; set; }
+
     public virtual ICollection<Baja> Bajas { get; set; } = new List<Baja>();
 
     public virtual ICollection<Cheque> Cheques { get; set; } = new List<Cheque>();
@@ -66,6 +68,10 @@ public partial class Poliza
     public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
 
     public virtual ICollection<PolizaDetalle> PolizaDetalles { get; set; } = new List<PolizaDetalle>();
+
+    public virtual ICollection<RegresoChequeSuficienciaPoliza> RegresoChequeSuficienciaPolizaFkidPolizaOriginalContaNavigations { get; set; } = new List<RegresoChequeSuficienciaPoliza>();
+
+    public virtual RegresoChequeSuficienciaPoliza RegresoChequeSuficienciaPolizaFkidPolizaReversionContaNavigation { get; set; }
 
     public virtual ICollection<SolicitudSalidum> SolicitudSalida { get; set; } = new List<SolicitudSalidum>();
 

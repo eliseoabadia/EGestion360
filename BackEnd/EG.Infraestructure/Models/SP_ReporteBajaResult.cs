@@ -12,6 +12,7 @@ namespace EG.Infraestructure.Models
         [StringLength(30)]
         public string Folio { get; set; }
         public int FKIdEmpresa_SIS { get; set; }
+        public int? FKIdAnio_SIS { get; set; }
         [StringLength(128)]
         public string EmpresaNombre { get; set; }
         public int? FKIdArea_SIS { get; set; }

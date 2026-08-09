@@ -87,6 +87,8 @@ public partial class Contrato
 
     public virtual Modalidad FkidModalidadOrcoNavigation { get; set; }
 
+    public virtual OrdenCompra FkidOrdenCompraOrcoNavigation { get; set; }
+
     public virtual ProcedimientoContratacion FkidProcedimientoContratacionOrcoNavigation { get; set; }
 
     public virtual TipoContrato FkidTipoContratoOrcoNavigation { get; set; }

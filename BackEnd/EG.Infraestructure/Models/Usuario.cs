@@ -377,6 +377,10 @@ public partial class Usuario
 
     public virtual ICollection<Ramo> RamoUsuarioModificacionNavigations { get; set; } = new List<Ramo>();
 
+    public virtual ICollection<RegresoChequeSuficiencium> RegresoChequeSuficiencia { get; set; } = new List<RegresoChequeSuficiencium>();
+
+    public virtual ICollection<RegresoChequeSuficienciaPoliza> RegresoChequeSuficienciaPolizas { get; set; } = new List<RegresoChequeSuficienciaPoliza>();
+
     public virtual ICollection<RequisicionDetalle> RequisicionDetalleUsuarioCreacionNavigations { get; set; } = new List<RequisicionDetalle>();
 
     public virtual ICollection<RequisicionDetalle> RequisicionDetalleUsuarioModificacionNavigations { get; set; } = new List<RequisicionDetalle>();

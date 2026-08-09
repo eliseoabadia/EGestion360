@@ -18,12 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\Requests\ConteoCiclico\" />
-    <Folder Include="DTOs\Responses\ConteoCiclico\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\EG.Common\EG.Common.csproj" />
+    <ProjectReference Include="..\..\Shared\EG.Contracts\EG.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

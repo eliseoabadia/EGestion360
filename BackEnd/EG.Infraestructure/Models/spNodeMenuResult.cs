@@ -8,10 +8,10 @@ namespace EG.Infraestructure.Models
 {
     public partial class spNodeMenuResult
     {
-        public int? PKIdMenu { get; set; }
+        public int PKIdMenu { get; set; }
         [StringLength(150)]
         public string Nombre { get; set; }
-        public int? Tipo { get; set; }
+        public int Tipo { get; set; }
         public int? FKIdMenuSIS { get; set; }
         [StringLength(80)]
         public string LegacyName { get; set; }
@@ -19,7 +19,7 @@ namespace EG.Infraestructure.Models
         public string Ruta { get; set; }
         [StringLength(120)]
         public string ImageUrl { get; set; }
-        public bool? Activo { get; set; }
+        public bool Activo { get; set; }
         public string Lenguaje { get; set; }
         [StringLength(128)]
         public string UserId { get; set; }

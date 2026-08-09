@@ -8,7 +8,7 @@ namespace EG.Infraestructure.Models
 {
     public partial class SP_CargaInicialConteoResult
     {
-        [StringLength(2147483647)]
+        [StringLength(4000)]
         public string ResultJson { get; set; }
     }
 }

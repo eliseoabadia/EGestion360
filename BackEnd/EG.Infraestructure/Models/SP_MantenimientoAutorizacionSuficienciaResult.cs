@@ -14,6 +14,7 @@ namespace EG.Infraestructure.Models
         public string EmpresaNombre { get; set; }
         public int FKIdSolicitudSuficiencia_PRES { get; set; }
         public int FKIdRequisicion_ORCO { get; set; }
+        public int? FKIdAnio_SIS { get; set; }
         [StringLength(100)]
         public string RequisicionDescripcion { get; set; }
         public DateOnly FechaSolicitud { get; set; }

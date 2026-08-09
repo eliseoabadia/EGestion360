@@ -21,6 +21,12 @@ public partial class Anio
 
     public int? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Almacen> Almacens { get; set; } = new List<Almacen>();
+
+    public virtual ICollection<Baja> Bajas { get; set; } = new List<Baja>();
+
+    public virtual ICollection<CierreInventario> CierreInventarios { get; set; } = new List<CierreInventario>();
+
     public virtual ICollection<ConsecutivoPoliza> ConsecutivoPolizas { get; set; } = new List<ConsecutivoPoliza>();
 
     public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
@@ -40,6 +46,8 @@ public partial class Anio
     public virtual ICollection<Programa> Programas { get; set; } = new List<Programa>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
+
+    public virtual ICollection<SolicitudSalidum> SolicitudSalida { get; set; } = new List<SolicitudSalidum>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 

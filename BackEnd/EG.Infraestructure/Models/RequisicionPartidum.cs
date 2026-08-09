@@ -15,8 +15,6 @@ public partial class RequisicionPartidum
 
     public int FkidPartidaConta { get; set; }
 
-    public int? FkidEgresoAutorizadoPres { get; set; }
-
     public decimal? Monto { get; set; }
 
     public string Observaciones { get; set; }
@@ -30,6 +28,10 @@ public partial class RequisicionPartidum
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int? FkidEgresoAutorizadoPres { get; set; }
+
+    public virtual EgresoAutorizado FkidEgresoAutorizadoPresNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

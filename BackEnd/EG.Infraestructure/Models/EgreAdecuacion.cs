@@ -21,8 +21,6 @@ public partial class EgreAdecuacion
 
     public int? FkidPolizaConta { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
-
     public int FkidAnioSis { get; set; }
 
     public bool? Autorizado { get; set; }
@@ -43,9 +41,13 @@ public partial class EgreAdecuacion
 
     public int? UsuarioModificacion { get; set; }
 
+    public int FkidEmpresaSis { get; set; }
+
     public virtual ICollection<EgreAdecuacionDetalle> EgreAdecuacionDetalles { get; set; } = new List<EgreAdecuacionDetalle>();
 
     public virtual AccionAdecuacionMaster FkidAccionAdecuacionMasterPresNavigation { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual EstatusAdecuacion FkidEstatusAdecuacionPresNavigation { get; set; }
 

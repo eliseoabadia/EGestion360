@@ -9,8 +9,6 @@ public partial class TipoGasto
 {
     public int PkidTipoGasto { get; set; }
 
-    public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
-
     public int Clave { get; set; }
 
     public string Descripcion { get; set; }
@@ -30,6 +28,8 @@ public partial class TipoGasto
     public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
     public virtual ICollection<IngresoAutorizado> IngresoAutorizados { get; set; } = new List<IngresoAutorizado>();
+
+    public virtual ICollection<MatrizConversion> MatrizConversions { get; set; } = new List<MatrizConversion>();
 
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 

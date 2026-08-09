@@ -13,8 +13,6 @@ public partial class OrdenCompra
 
     public int FkidRequisicionOrco { get; set; }
 
-    public int? FkidCotizacionOrco { get; set; }
-
     public int FkidProveedorSis { get; set; }
 
     public int? FkidPolizaConta { get; set; }
@@ -62,6 +60,14 @@ public partial class OrdenCompra
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public byte[] RowVersion { get; set; }
+
+    public int? FkidCotizacionOrco { get; set; }
+
+    public virtual Contrato Contrato { get; set; }
+
+    public virtual Cotizacion FkidCotizacionOrcoNavigation { get; set; }
 
     public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 

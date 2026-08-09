@@ -55,6 +55,8 @@ public partial class Cotizacion
 
     public virtual Requisicion FkidRequisicionOrcoNavigation { get; set; }
 
+    public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
+
     public virtual Usuario UsuarioCreacionNavigation { get; set; }
 
     public virtual Usuario UsuarioModificacionNavigation { get; set; }

@@ -41,6 +41,8 @@ public partial class SolicitudSuficiencium
 
     public virtual Requisicion FkidRequisicionOrcoNavigation { get; set; }
 
+    public virtual ICollection<RegresoChequeSuficiencium> RegresoChequeSuficiencia { get; set; } = new List<RegresoChequeSuficiencium>();
+
     public virtual ICollection<SolicitudSuficienciaDetalle> SolicitudSuficienciaDetalles { get; set; } = new List<SolicitudSuficienciaDetalle>();
 
     public virtual Usuario UsuarioCreacionNavigation { get; set; }

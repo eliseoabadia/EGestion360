@@ -35,6 +35,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ALMA].[CierreInventario]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ALMA].[Conteo]",
          "ObjectType": 0
       },
@@ -116,6 +120,10 @@
       },
       {
          "Name": "[ALMA].[PeriodoConteo]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ALMA].[PlanConteoCiclico]",
          "ObjectType": 0
       },
       {
@@ -487,11 +495,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[ORCO].[ExpedienteContratacionControl]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[ORCO].[Fraccion]",
          "ObjectType": 0
       },
       {
          "Name": "[ORCO].[FundamentoJuridico]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[FundamentoProcedimiento]",
          "ObjectType": 0
       },
       {
@@ -524,6 +540,10 @@
       },
       {
          "Name": "[ORCO].[ProcedimientoContratacion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[ORCO].[ProveedorCumplimiento]",
          "ObjectType": 0
       },
       {
@@ -875,6 +895,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[PRES].[RegresoChequeSuficiencia]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[PRES].[RegresoChequeSuficienciaPoliza]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[PRES].[Resultado]",
          "ObjectType": 0
       },
@@ -1003,6 +1031,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[SIS].[EnvioWorkflow]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[SIS].[Escolaridad]",
          "ObjectType": 0
       },
@@ -1040,6 +1072,14 @@
       },
       {
          "Name": "[SIS].[Municipios]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NormaJuridica]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[SIS].[NormaJuridicaVersion]",
          "ObjectType": 0
       },
       {
@@ -2247,7 +2287,15 @@
          "ObjectType": 3
       },
       {
+         "Name": "[ALMA].[SP_ActualizarPlanConteoCiclico]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[ALMA].[SP_CargaInicialConteo]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_CerrarRecepcionPatrimonial]",
          "ObjectType": 1
       },
       {
@@ -2259,11 +2307,19 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ALMA].[SP_GenerarConteosCiclicosSugeridos]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[ALMA].[SP_MantenimientoBajas]",
          "ObjectType": 1
       },
       {
          "Name": "[ALMA].[SP_MantenimientoBien]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SP_MantenimientoBienEmpresa]",
          "ObjectType": 1
       },
       {
@@ -2292,6 +2348,10 @@
       },
       {
          "Name": "[ALMA].[SP_ReporteSolicitudSalida]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ALMA].[SPR_Entrada]",
          "ObjectType": 1
       },
       {
@@ -2947,11 +3007,19 @@
          "ObjectType": 1
       },
       {
+         "Name": "[ORCO].[SP_MantenimientoPAAASV2]",
+         "ObjectType": 1
+      },
+      {
          "Name": "[ORCO].[SP_MantenimientoRequisicion]",
          "ObjectType": 1
       },
       {
          "Name": "[ORCO].[SP_ReportePAAAS]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[ORCO].[SPR_Entrada_A]",
          "ObjectType": 1
       },
       {
@@ -3012,6 +3080,14 @@
       },
       {
          "Name": "[PRES].[SP_MantenimientoSolicitudSuficiencia]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[SP_RegresarChequeASolicitudSuficiencia]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[PRES].[sp_ValidarAdecuacionEgreso]",
          "ObjectType": 1
       },
       {
@@ -3108,6 +3184,10 @@
       },
       {
          "Name": "[SIS].[spNodeMenu]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[SIS].[usp_BackupGestionEmpresarial]",
          "ObjectType": 1
       },
       {

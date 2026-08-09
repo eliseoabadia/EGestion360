@@ -55,8 +55,6 @@ public partial class EgresoProyectado
 
     public int? UsuarioModificacion { get; set; }
 
-    public int FkidEmpresaSis { get; set; }
-
     public int? FkidFuenteFinanciamientoPres { get; set; }
 
     public int? FkidTipoGastoPres { get; set; }
@@ -67,6 +65,10 @@ public partial class EgresoProyectado
 
     public int? FkidPyPres { get; set; }
 
+    public byte[] RowVersion { get; set; }
+
+    public int FkidEmpresaSis { get; set; }
+
     public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
 
     public virtual Area FkidAreaSisNavigation { get; set; }
@@ -74,6 +76,8 @@ public partial class EgresoProyectado
     public virtual DestinoGasto FkidDestinoGastoPresNavigation { get; set; }
 
     public virtual DigitoIdentificador FkidDigitoIdentificadorPresNavigation { get; set; }
+
+    public virtual Empresa FkidEmpresaSisNavigation { get; set; }
 
     public virtual FuenteFinanciamiento FkidFuenteFinanciamientoPresNavigation { get; set; }
 

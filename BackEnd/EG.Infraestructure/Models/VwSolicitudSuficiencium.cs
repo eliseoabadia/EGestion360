@@ -17,8 +17,6 @@ public partial class VwSolicitudSuficiencium
 
     public int? FkidAnioSis { get; set; }
 
-    public int? FkidAreaSis { get; set; }
-
     public string RequisicionDescripcion { get; set; }
 
     public DateTime? FechaRequisicion { get; set; }

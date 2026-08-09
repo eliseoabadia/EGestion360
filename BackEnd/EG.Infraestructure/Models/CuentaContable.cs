@@ -65,6 +65,8 @@ public partial class CuentaContable
 
     public int IsCuentaDetalle { get; set; }
 
+    public string ClaveOrdNormalizada { get; set; }
+
     public virtual ICollection<CuentaBancarium> CuentaBancaria { get; set; } = new List<CuentaBancarium>();
 
     public virtual ICollection<CuentaEspecial> CuentaEspecials { get; set; } = new List<CuentaEspecial>();

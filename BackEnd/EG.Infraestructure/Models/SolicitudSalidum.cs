@@ -11,8 +11,6 @@ public partial class SolicitudSalidum
 
     public int FkidEmpresaSis { get; set; }
 
-    public int? FkidAnioSis { get; set; }
-
     public int? FkidAreaSolicitaSis { get; set; }
 
     public int? FkidAreaEntregaSis { get; set; }
@@ -49,7 +47,11 @@ public partial class SolicitudSalidum
 
     public int? FkidPolizaConta { get; set; }
 
+    public int? FkidAnioSis { get; set; }
+
     public virtual ICollection<DetalleSolicitudSalidum> DetalleSolicitudSalida { get; set; } = new List<DetalleSolicitudSalidum>();
+
+    public virtual Anio FkidAnioSisNavigation { get; set; }
 
     public virtual Area FkidAreaEntregaSisNavigation { get; set; }
 

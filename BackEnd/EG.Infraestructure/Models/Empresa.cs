@@ -67,11 +67,15 @@ public partial class Empresa
 
     public virtual ICollection<Banco> Bancos { get; set; } = new List<Banco>();
 
+    public virtual ICollection<Bien> Biens { get; set; } = new List<Bien>();
+
     public virtual ICollection<CalendarioInventario> CalendarioInventarios { get; set; } = new List<CalendarioInventario>();
 
     public virtual ICollection<ChequePartida> ChequePartida { get; set; } = new List<ChequePartida>();
 
     public virtual ICollection<Cheque> Cheques { get; set; } = new List<Cheque>();
+
+    public virtual ICollection<CierreInventario> CierreInventarios { get; set; } = new List<CierreInventario>();
 
     public virtual ICollection<Clcdetalle> Clcdetalles { get; set; } = new List<Clcdetalle>();
 
@@ -102,6 +106,12 @@ public partial class Empresa
     public virtual ICollection<CuentaContable> CuentaContables { get; set; } = new List<CuentaContable>();
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
+
+    public virtual ICollection<EgreAdecuacion> EgreAdecuacions { get; set; } = new List<EgreAdecuacion>();
+
+    public virtual ICollection<EgresoAutorizado> EgresoAutorizados { get; set; } = new List<EgresoAutorizado>();
+
+    public virtual ICollection<EgresoProyectado> EgresoProyectados { get; set; } = new List<EgresoProyectado>();
 
     public virtual ICollection<EmpresaEstado> EmpresaEstados { get; set; } = new List<EmpresaEstado>();
 
@@ -138,6 +148,8 @@ public partial class Empresa
     public virtual ICollection<PlazaAutorizadum> PlazaAutorizada { get; set; } = new List<PlazaAutorizadum>();
 
     public virtual ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
+
+    public virtual ICollection<RegresoChequeSuficiencium> RegresoChequeSuficiencia { get; set; } = new List<RegresoChequeSuficiencium>();
 
     public virtual ICollection<RequisicionDetalle> RequisicionDetalles { get; set; } = new List<RequisicionDetalle>();
 

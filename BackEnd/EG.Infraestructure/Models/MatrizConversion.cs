@@ -15,8 +15,6 @@ public partial class MatrizConversion
 
     public int FkidPartidaSis { get; set; }
 
-    public int FkidTipoGastoPres { get; set; }
-
     public int FkidCuentaContableAprobado { get; set; }
 
     public int FkidCuentaContablePorEjercer { get; set; }
@@ -42,6 +40,8 @@ public partial class MatrizConversion
     public DateTime? FechaModificacion { get; set; }
 
     public int? UsuarioModificacion { get; set; }
+
+    public int FkidTipoGastoPres { get; set; }
 
     public virtual Anio FkidAnioSisNavigation { get; set; }
 

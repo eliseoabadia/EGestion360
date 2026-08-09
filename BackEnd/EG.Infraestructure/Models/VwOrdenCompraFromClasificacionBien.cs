@@ -37,7 +37,7 @@ public partial class VwOrdenCompraFromClasificacionBien
 
     public int FkidEstatusOrdenCompraOrco { get; set; }
 
-    public int Color { get; set; }
+    public int? Color { get; set; }
 
     public decimal? PrecioUnitario { get; set; }
 

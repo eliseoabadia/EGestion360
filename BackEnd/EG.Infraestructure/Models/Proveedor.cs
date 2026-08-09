@@ -93,5 +93,7 @@ public partial class Proveedor
 
     public virtual ICollection<OrdenCompra> OrdenCompras { get; set; } = new List<OrdenCompra>();
 
+    public virtual ICollection<ProveedorCumplimiento> ProveedorCumplimientos { get; set; } = new List<ProveedorCumplimiento>();
+
     public virtual ICollection<SolicitudCotizacion> SolicitudCotizacions { get; set; } = new List<SolicitudCotizacion>();
 }

@@ -63,6 +63,8 @@ public partial class Area
 
     public virtual ICollection<PersonaArea> PersonaAreas { get; set; } = new List<PersonaArea>();
 
+    public virtual ICollection<PlanConteoCiclico> PlanConteoCiclicos { get; set; } = new List<PlanConteoCiclico>();
+
     public virtual ICollection<Requisicion> Requisicions { get; set; } = new List<Requisicion>();
 
     public virtual ICollection<Resguardo> Resguardos { get; set; } = new List<Resguardo>();

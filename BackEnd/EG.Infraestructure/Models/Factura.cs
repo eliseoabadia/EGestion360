@@ -49,6 +49,8 @@ public partial class Factura
 
     public int? UsuarioModificacion { get; set; }
 
+    public byte[] RowVersion { get; set; }
+
     public virtual ICollection<Clcfactura> Clcfacturas { get; set; } = new List<Clcfactura>();
 
     public virtual ICollection<FacturaDetalle> FacturaDetalles { get; set; } = new List<FacturaDetalle>();
