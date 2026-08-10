@@ -21,6 +21,7 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 
 <BaseCrudDialog TItem="RequisicionResponse"
                 Title="@dialogTitle"
@@ -71,12 +72,42 @@
 
                     <MudItem xs="12" md="6">
                         <PagedAutocomplete Value="@_selectedPersona"
-                                           ValueChanged="value => _selectedPersona = value"
+                                           ValueChanged="OnPersonaChanged"
                                            Label="Solicitante"
                                            Required="true"
                                            RequiredError="El solicitante es requerido"
                                            LoadPage="LoadPersonasPageAsync" />
                     </MudItem>
+
+                    @if (!string.IsNullOrWhiteSpace(_solicitanteWarning))
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="req-alert">
+                                <strong>Falta habilitar al solicitante.</strong> @_solicitanteWarning
+                            </MudAlert>
+                        </MudItem>
+                    }
+
+                    @if (_requesterAreasLoaded && !_hasRequesterAreas)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="req-alert">
+                                <div class="requester-help">
+                                    <div>
+                                        <strong>Tu usuario todavía no puede crear requisiciones.</strong>
+                                        <span>Menú: <b>Configuración › Sistema › Usuarios</b>. Busca tu usuario, elige <b>Editar</b> y en <b>Persona y áreas</b> usa <b>Asignar área</b>. Si no tienes acceso, pide estos pasos a Administración del sistema.</span>
+                                    </div>
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.ManageAccounts"
+                                               OnClick="OpenUserConfiguration">
+                                        Abrir Usuarios
+                                    </MudButton>
+                                </div>
+                            </MudAlert>
+                        </MudItem>
+                    }
 
                     <MudItem xs="12" md="4">
                         <MudDatePicker @bind-Date="_fechaRequisicion"
@@ -304,6 +335,9 @@
     private LookupItem? _selectedDestino;
     private LookupItem? _selectedPosicion;
     private EgresoDisponibleResponse? _selectedDisponible;
+    private string? _solicitanteWarning;
+    private bool _requesterAreasLoaded;
+    private bool _hasRequesterAreas;
 
     private string dialogTitle => Id.HasValue ? "Editar Requisicion" : "Nueva Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -313,6 +347,7 @@
     {
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
+        await RefreshRequesterAvailabilityAsync();
 
         if (Id.HasValue)
         {
@@ -333,6 +368,7 @@
                 _fechaRequiereFin = item.FechaRequiereFin;
                 _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, item.FkidPersonaNom) };
                 _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+                await ValidateLoadedRequesterAssignmentAsync();
 
                 if (item.FkidProyectoOrco.HasValue)
                 {
@@ -461,7 +497,7 @@
 
         var response = await AreaService.GetAllAsync();
         var items = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
-            .Where(x => x.PkidArea == _selectedArea.Id && x.PkidPersona > 0 && x.EsSolicitante)
+            .Where(x => x.Activo && x.PkidArea == _selectedArea.Id && x.PkidPersona > 0 && x.EsSolicitante)
             .Where(x => string.IsNullOrWhiteSpace(filter) ||
                         $"{x.PersonaNombre} {x.PersonaPaterno} {x.PersonaMaterno}".Contains(filter, StringComparison.OrdinalIgnoreCase))
             .GroupBy(x => x.PkidPersona)
@@ -478,13 +514,34 @@
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await AreaService.GetAllAsync();
-        var items = FilterUsuarioAreas(response?.Items, filter)
+        var requesterAreas = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Where(x => x.Activo)
             .Where(x => x.EsSolicitante)
             .GroupBy(x => x.PkidArea)
             .Select(x => x.First())
+            .ToList();
+
+        _requesterAreasLoaded = true;
+        _hasRequesterAreas = requesterAreas.Count > 0;
+
+        var items = FilterUsuarioAreas(requesterAreas, filter)
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private async Task RefreshRequesterAvailabilityAsync()
+    {
+        var response = await AreaService.GetAllAsync();
+        _hasRequesterAreas = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+            .Any(x => x.Activo && x.EsSolicitante && x.PkidArea > 0 && x.PkidPersona > 0);
+        _requesterAreasLoaded = true;
+    }
+
+    private void OpenUserConfiguration()
+    {
+        MudDialog.Cancel();
+        NavigationManager.NavigateTo("/configuracion/sistema/usuarios");
     }
 
     private async Task<ComboLookupResult> LoadProyectosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -544,8 +601,39 @@
     {
         _selectedArea = value;
         _selectedPersona = null;
+        _solicitanteWarning = null;
         ClearPosicion();
         return Task.CompletedTask;
+    }
+
+    private Task OnPersonaChanged(LookupItem? value)
+    {
+        _selectedPersona = value;
+        _solicitanteWarning = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task ValidateLoadedRequesterAssignmentAsync()
+    {
+        if (_selectedArea == null || _selectedPersona == null)
+            return;
+
+        var response = await AreaService.GetAllAsync();
+        var assignmentIsValid = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>()).Any(x =>
+            x.Activo &&
+            x.EsSolicitante &&
+            x.PkidArea == _selectedArea.Id &&
+            x.PkidPersona == _selectedPersona.Id);
+
+        if (assignmentIsValid)
+            return;
+
+        var requesterName = _selectedPersona.Text;
+        var areaName = _selectedArea.Text;
+        _selectedPersona = null;
+        _solicitanteWarning =
+            $"{requesterName} ya no está autorizado para solicitar en {areaName}. " +
+            "Selecciona una persona disponible o pide a Administración de personal/sistema que active su relación Persona–Área y marque 'Es solicitante'.";
     }
 
     private async Task OnPosicionChanged(LookupItem? value)

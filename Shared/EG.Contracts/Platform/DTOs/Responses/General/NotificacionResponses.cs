@@ -44,4 +44,12 @@ namespace EG.Domain.DTOs.Responses.General
     {
         public string Mensaje { get; set; } = string.Empty;
     }
+
+    public class SolicitudAyudaProcesoRequest
+    {
+        public string ClaveAyuda { get; set; } = string.Empty;
+        public long EntidadId { get; set; }
+        public string Referencia { get; set; } = string.Empty;
+        public string Detalle { get; set; } = string.Empty;
+    }
 }

@@ -2,8 +2,10 @@
 @page "/Adquisiciones/Requisicion/{RequisicionId:int}"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.General
 @using EG.Web.Contracts
 @using EG.Web.Models
+@using EG.Web.Models.ProcessAssistance
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Shared
@@ -19,14 +21,15 @@
 @inject IGenericCrudService<RequisicionPartidaResponse> PartidaService
 @inject IGenericCrudService<RequisicionDetalleResponse> DetalleService
 @inject IGenericCrudService<CotizacionDetalleResponse> CotizacionDetalleService
+@inject INotificacionService NotificacionService
 
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="px-3 d-flex flex-column requisition-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedRequisicion == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Class="requisition-list-view">
                 <PageHeader Title="Requisiciones"
                             Subtitle="Selecciona una requisicion para administrar sus partidas y detalles"
                             Icon="@Icons.Material.Filled.Assignment"
@@ -34,7 +37,7 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <div Class="requisition-list-shell">
                     <GenericDataGrid TItem="RequisicionResponse"
                                   @ref="table"
                                   Title="Lista de Requisiciones"
@@ -45,6 +48,8 @@
                                   SearchString="@SearchString"
                                   SearchStringChanged="(s) => SearchString = s"
                                   OnSearch="OnSearch"
+                                  FillAvailableHeight="false"
+                                  ShowDetailHint="false"
                                   OnRowDoubleClick="OpenReadOnlyDetail">
             <Columns>
                 <TemplateColumn T="RequisicionResponse"
@@ -89,12 +94,12 @@
                         @cell.Item.PkidRequisicion
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="RequisicionResponse" Title="Descripcion" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
+                <TemplateColumn T="RequisicionResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
                         @cell.Item.Descripcion
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="RequisicionResponse" Title="Area" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
+                <TemplateColumn T="RequisicionResponse" Title="Área" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
                     <CellTemplate Context="cell">
                         @TextOrDash(cell.Item.AreaNombre)
                     </CellTemplate>
@@ -121,12 +126,20 @@
                         </MudChip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="RequisicionResponse" Title="Clasificacion" Identifier="__column_8" Sortable="false" Filterable="false">
+                <TemplateColumn T="RequisicionResponse" Title="Clasificación presupuestal" Identifier="__column_8" Sortable="false" Filterable="false">
                     <CellTemplate Context="cell">
-                        <div>FF: @ClassificationText(cell.Item.FuenteFinanciamientoClave, cell.Item.FuenteFinanciamientoDescripcion)</div>
-                        <div>TG: @ClassificationText(cell.Item.TipoGastoClave?.ToString(), cell.Item.TipoGastoDescripcion)</div>
-                        <div>DI: @ClassificationText(cell.Item.DigitoIdentificadorClave, cell.Item.DigitoIdentificadorDescripcion)</div>
-                        <div>DG: @ClassificationText(cell.Item.DestinoGastoClave, cell.Item.DestinoGastoDescripcion)</div>
+                        <div class="requisition-classification" title="@ClassificationTooltip(cell.Item)">
+                            <div class="requisition-classification-primary">
+                                <span class="requisition-classification-label">FF</span>
+                                <strong>@CodeOrDash(cell.Item.FuenteFinanciamientoClave)</strong>
+                                <span>@TextOrDash(cell.Item.FuenteFinanciamientoDescripcion)</span>
+                            </div>
+                            <div class="requisition-classification-codes" aria-label="Clasificación complementaria">
+                                <span><b>TG</b> @CodeOrDash(cell.Item.TipoGastoClave?.ToString())</span>
+                                <span><b>DI</b> @CodeOrDash(cell.Item.DigitoIdentificadorClave)</span>
+                                <span><b>DG</b> @CodeOrDash(cell.Item.DestinoGastoClave)</span>
+                            </div>
+                        </div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionResponse" Title="Flujo" Identifier="__column_9" Sortable="false" Filterable="false">
@@ -134,7 +147,9 @@
                         <MudChip T="string"
                         Color="@GetWorkflowColor(cell.Item)"
                         Variant="Variant.Outlined"
-                        Size="Size.Small">
+                        Size="Size.Small"
+                        Icon="@GetWorkflowIcon(cell.Item)"
+                        Class="requisition-flow-chip">
                         @GetWorkflowLabel(cell.Item)
                         </MudChip>
                     </CellTemplate>
@@ -146,15 +161,17 @@
         }
         else
         {
-            <div @key="SelectedRequisicion.PkidRequisicion" Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+            <div @key="SelectedRequisicion.PkidRequisicion" Class="requisition-detail-view">
+                <MudPaper Elevation="0" Class="requisition-object-header">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
                                    Size="Size.Medium"
                                    OnClick="BackToTable"
                                    Tooltip="Volver al listado" />
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;" Class="ml-2">
-                        @SelectedRequisicion.Descripcion
+                    <MudText Typo="Typo.h6" Class="requisition-object-title ml-2">
+                        <span class="requisition-object-id">REQ-@SelectedRequisicion.PkidRequisicion.ToString("D6")</span>
+                        <span class="requisition-object-separator">·</span>
+                        <span>@TextOrDash(SelectedRequisicion.Descripcion)</span>
                     </MudText>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@(SelectedRequisicion.Activo ? Color.Success : Color.Error)">
@@ -182,11 +199,11 @@
                     </ProgressiveActions>
                 </MudPaper>
 
-                <MudCard Elevation="1" Style="flex-shrink: 0;">
-                    <MudCardContent Style="padding: 8px 12px;">
+                <MudCard Elevation="1" Class="requisition-summary-card">
+                    <MudCardContent Class="requisition-summary-content">
                         <MudGrid Spacing="1">
                             <MudItem xs="12" md="3">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Area</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Área</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.AreaNombre)</MudText>
                             </MudItem>
                             <MudItem xs="12" md="3">
@@ -216,7 +233,7 @@
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">@TextOrDash(SelectedRequisicion.FuenteFinanciamientoDescripcion)</MudText>
                             </MudItem>
                             <MudItem xs="12" md="4">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Clasificacion presupuestal</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Clasificación presupuestal</MudText>
                                 <MudText Typo="Typo.body2" Style="font-weight: 500;">
                                     TG @ClassificationText(SelectedRequisicion.TipoGastoClave?.ToString(), SelectedRequisicion.TipoGastoDescripcion) ·
                                     DI @ClassificationText(SelectedRequisicion.DigitoIdentificadorClave, SelectedRequisicion.DigitoIdentificadorDescripcion) ·
@@ -231,11 +248,25 @@
                     </MudCardContent>
                 </MudCard>
 
-                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
-                    <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
+                @{ var diagnosis = DiagnoseRequisition(SelectedRequisicion); }
+                <ProcessAssistancePanel Assistance="@diagnosis"
+                                        Eyebrow="Asistente de esta REQ"
+                                        ContextLabel="@($"REQ-{SelectedRequisicion.PkidRequisicion:D6}")"
+                                        AriaLabel="Asistente de esta requisicion"
+                                        IsNotifying="@_sendingHelpNotification"
+                                        OnAction="ExecuteDiagnosisAsync"
+                                        OnNotify="NotifyDiagnosisOwnerAsync" />
+
+                <MudGrid Spacing="2" Class="requisition-related-grid">
+                    <MudItem xs="12" lg="5" Class="d-flex flex-column requisition-related-item">
                         <GenericDataGrid TItem="RequisicionPartidaResponse"
                                       @ref="partidaTable"
                                       Title="Partidas"
+                                      Eyebrow="ESTRUCTURA PRESUPUESTAL"
+                                      FillAvailableHeight="false"
+                                      ShowDetailHint="false"
+                                      EmptyTitle="Sin partidas presupuestales"
+                                      EmptyMessage="Agrega una partida para comenzar a capturar bienes o servicios."
                                       SearchPlaceholder="Buscar partida..."
                                       ShowSearch="false"
                                       ShowExportButton="false"
@@ -275,10 +306,15 @@
         </GenericDataGrid>
                     </MudItem>
 
-                    <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
+                    <MudItem xs="12" lg="7" Class="d-flex flex-column requisition-related-item">
                         <GenericDataGrid TItem="RequisicionDetalleResponse"
                                       @ref="detalleTable"
                                       Title="@DetalleTableTitle"
+                                      Eyebrow="BIENES Y SERVICIOS"
+                                      FillAvailableHeight="false"
+                                      ShowDetailHint="false"
+                                      EmptyTitle="@DetalleEmptyTitle"
+                                      EmptyMessage="@DetalleEmptyMessage"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowSearch="false"
                                       ShowExportButton="false"
@@ -333,14 +369,21 @@
     private GenericDataGrid<RequisicionPartidaResponse>? partidaTable;
     private GenericDataGrid<RequisicionDetalleResponse>? detalleTable;
     private RequisicionResponse? SelectedRequisicion;
+    private bool _sendingHelpNotification;
     private RequisicionPartidaResponse? SelectedPartida;
     private string partidaSearchString = string.Empty;
     private string detalleSearchString = string.Empty;
     private bool openingRequisicion;
     private int? loadedRequisicionId;
     private string DetalleTableTitle => SelectedPartida == null
-        ? "Detalle de Requisicion"
-        : $"Detalle de Requisicion - {SelectedPartida.PartidaClave}";
+        ? "Detalle de la partida"
+        : $"Partida {SelectedPartida.PartidaClave}";
+    private string DetalleEmptyTitle => SelectedPartida == null
+        ? "Selecciona una partida"
+        : "Sin bienes o servicios";
+    private string DetalleEmptyMessage => SelectedPartida == null
+        ? "Elige una partida del panel izquierdo para consultar su contenido."
+        : "Agrega el primer bien o servicio asociado a esta partida.";
     private bool IsSelectedLocked => IsLocked(SelectedRequisicion);
 
     protected override string ModuleName => "Adquisiciones";
@@ -988,6 +1031,13 @@
             requisicion = completedRequisicion;
         }
 
+        var readinessMessage = GetQuoteReadinessMessage(requisicion);
+        if (readinessMessage != null)
+        {
+            Snackbar.Add(readinessMessage, Severity.Warning);
+            return;
+        }
+
         if (!HasSelectedAnio())
         {
             Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
@@ -1115,6 +1165,15 @@
         if (string.IsNullOrWhiteSpace(clave) && string.IsNullOrWhiteSpace(descripcion)) return "FALTA";
         return string.IsNullOrWhiteSpace(descripcion) ? clave! : $"{clave} - {descripcion}".Trim(' ', '-');
     }
+
+    private static string CodeOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "—" : value.Trim();
+
+    private static string ClassificationTooltip(RequisicionResponse item) =>
+        $"Fuente: {ClassificationText(item.FuenteFinanciamientoClave, item.FuenteFinanciamientoDescripcion)}\n" +
+        $"Tipo de gasto: {ClassificationText(item.TipoGastoClave?.ToString(), item.TipoGastoDescripcion)}\n" +
+        $"Dígito identificador: {ClassificationText(item.DigitoIdentificadorClave, item.DigitoIdentificadorDescripcion)}\n" +
+        $"Destino del gasto: {ClassificationText(item.DestinoGastoClave, item.DestinoGastoDescripcion)}";
 
     private async Task OpenSolicitudSuficienciaFromRequisicion(RequisicionResponse? requisicion)
     {
@@ -1304,6 +1363,8 @@
             ? "edit"
             : !hasPartidas || !hasDetalles
                 ? "open"
+                : !requisicion.ListaParaCotizar
+                    ? "open"
                 : !hasCotizacion
                     ? "quote"
                     : !requisicion.TodosLosDetallesCotizados
@@ -1368,7 +1429,7 @@
                 Order = 30,
                 IsPrimary = primaryActionId == "quote",
                 Visible = CanCreate,
-                Enabled = classificationComplete && hasDetalles && !hasCotizacion,
+                Enabled = requisicion.ListaParaCotizar && !hasCotizacion,
                 DisabledReason = GetQuoteDisabledReason(requisicion),
                 ExecuteAsync = () => OpenCotizacionFromRequisicion(requisicion)
             },
@@ -1436,6 +1497,8 @@
                 ? "add-partida"
                 : !hasDetalles
                     ? SelectedPartida == null ? "select-partida" : "add-detail"
+                    : !requisicion.ListaParaCotizar
+                        ? "edit"
                     : !hasCotizacion
                         ? "quote"
                         : !requisicion.TodosLosDetallesCotizados
@@ -1510,7 +1573,7 @@
                 Order = 40,
                 IsPrimary = primaryActionId == "quote",
                 Visible = CanCreate,
-                Enabled = classificationComplete && hasDetalles && !hasCotizacion,
+                Enabled = requisicion.ListaParaCotizar && !hasCotizacion,
                 DisabledReason = GetQuoteDisabledReason(requisicion),
                 ExecuteAsync = () => OpenCotizacionFromRequisicion(requisicion)
             },
@@ -1632,6 +1695,9 @@
     {
         if (!HasCompleteBudgetClassification(requisicion))
             return "Completa la clasificacion presupuestal.";
+        var readinessMessage = GetQuoteReadinessMessage(requisicion);
+        if (readinessMessage != null)
+            return readinessMessage;
         if (requisicion.DetallesActivos <= 0)
             return "Agrega al menos un bien o servicio.";
         if (requisicion.CotizacionesActivas > 0)
@@ -1639,6 +1705,89 @@
 
         return null;
     }
+
+    private static string? GetQuoteReadinessMessage(RequisicionResponse requisicion)
+    {
+        if (!requisicion.TienePosicionPresupuestalValida)
+            return "Selecciona una posición presupuestal válida en la requisición.";
+        if (requisicion.PartidasActivas <= 0)
+            return "Agrega al menos una partida presupuestal.";
+        if (requisicion.PartidasConPosicionPresupuestal < requisicion.PartidasActivas)
+            return "Asigna una posición presupuestal a todas las partidas.";
+        if (requisicion.MontoPartidas != requisicion.Importe.GetValueOrDefault())
+            return $"Distribuye el importe completo en partidas: {MoneyOrDash(requisicion.MontoPartidas)} de {MoneyOrDash(requisicion.Importe)}.";
+
+        return null;
+    }
+
+    private static ProcessAssistanceModel DiagnoseRequisition(RequisicionResponse requisicion)
+    {
+        if (!HasCompleteBudgetClassification(requisicion))
+            return new("Falta configuración", "Completar clasificación presupuestal", "Selecciona una posición presupuestal válida; de ella se obtienen programa, fuente, TG, DI y DG.", "Adquisiciones › Requisición › Editar", "Área solicitante; Presupuesto si no existe una posición con saldo", "Completar clasificación", "edit", "EGRESO_PRESUPUESTO", Icons.Material.Filled.AccountBalance, Color.Warning);
+        if (requisicion.PartidasActivas <= 0)
+            return new("Falta captura", "Agregar una partida", "Distribuye el importe de la requisición en al menos una partida presupuestal.", "Esta REQ › Partidas › Agregar", "Área solicitante", "Agregar partida", "add-partida", null, Icons.Material.Filled.PlaylistAdd, Color.Warning);
+        if (requisicion.PartidasConPosicionPresupuestal < requisicion.PartidasActivas)
+            return new("Requiere atención", "Completar posición de las partidas", "Hay partidas sin una posición presupuestal asociada. Edita cada partida incompleta antes de cotizar.", "Esta REQ › Partidas › Editar", "Área solicitante; Presupuesto si falta disponibilidad", "Revisar partidas", "review-partidas", "EGRESO_PRESUPUESTO", Icons.Material.Filled.Rule, Color.Warning);
+        if (requisicion.MontoPartidas != requisicion.Importe.GetValueOrDefault())
+            return new("Requiere atención", "Distribuir el importe completo", $"Las partidas suman {MoneyOrDash(requisicion.MontoPartidas)} y la REQ {MoneyOrDash(requisicion.Importe)}. Ambas cantidades deben coincidir.", "Esta REQ › Partidas › Editar", "Área solicitante", "Revisar partidas", "review-partidas", null, Icons.Material.Filled.Calculate, Color.Warning);
+        if (requisicion.DetallesActivos <= 0)
+            return new("Falta captura", "Agregar bienes o servicios", "Selecciona una partida y agrega las sillas, telas u otros conceptos con cantidad y unidad.", "Esta REQ › Partidas › seleccionar › Bienes y servicios › Agregar", "Área solicitante; Almacén si el bien no existe en catálogo", "Agregar bien o servicio", "add-detail", "ALMACEN_CATALOGO", Icons.Material.Filled.AddShoppingCart, Color.Warning);
+        if (requisicion.CotizacionesActivas <= 0)
+            return new("Lista para avanzar", "Generar cotización", "La REQ ya tiene clasificación, partidas e insumos. Continúa con proveedores, precios y vigencia.", "Adquisiciones › Cotización", "Compras", "Generar cotización", "quote", "ADQ_COMPRAS", Icons.Material.Filled.RequestQuote, Color.Success);
+        if (!requisicion.TodosLosDetallesCotizados)
+            return new("En proceso", "Completar precios de cotización", "Faltan precios válidos en uno o más bienes. Abre Cotización y completa el comparativo del proveedor.", "Adquisiciones › Cotización", "Compras / Padrón de proveedores", "Abrir cotizaciones", "open-quotes", "ADQ_COMPRAS", Icons.Material.Filled.PriceCheck, Color.Info);
+        if (!requisicion.TodosLosDetallesEnSuficiencia)
+            return new("Lista para avanzar", "Solicitar suficiencia", "Todos los bienes están cotizados. Envía el expediente a Presupuesto para validar el recurso.", "Adquisiciones › Solicitud Suficiencia", "Área solicitante; autoriza Presupuesto", "Solicitar suficiencia", "sufficiency", "EGRESO_PRESUPUESTO", Icons.Material.Filled.AssignmentTurnedIn, Color.Success);
+
+        return new("En suficiencia", "Dar seguimiento a Presupuesto", "La REQ ya recorrió captura y cotización. Consulta la solicitud de suficiencia y su autorización.", "Adquisiciones › Solicitud Suficiencia", "Presupuesto", "Abrir suficiencias", "open-sufficiencies", "EGRESO_PRESUPUESTO", Icons.Material.Filled.FactCheck, Color.Info);
+    }
+
+    private async Task ExecuteDiagnosisAsync(ProcessAssistanceModel diagnosis)
+    {
+        if (SelectedRequisicion == null)
+            return;
+
+        switch (diagnosis.Action)
+        {
+            case "edit": await EditItem(SelectedRequisicion.PkidRequisicion); break;
+            case "add-partida": await AddPartida(); break;
+            case "add-detail":
+                if (SelectedPartida == null)
+                    Snackbar.Add("Selecciona primero una partida en la tabla izquierda; después pulsa Agregar bien o servicio.", Severity.Info);
+                else
+                    await AddDetalle();
+                break;
+            case "quote": await OpenCotizacionFromRequisicion(SelectedRequisicion); break;
+            case "sufficiency": await OpenSolicitudSuficienciaFromRequisicion(SelectedRequisicion); break;
+            case "open-quotes": NavigationManager.NavigateTo("/Adquisiciones/Cotizacion"); break;
+            case "open-sufficiencies": NavigationManager.NavigateTo("/Adquisiciones/Solicitud_Suficiencia"); break;
+            default: Snackbar.Add("Revisa las partidas de esta REQ; usa el menú de acciones de la fila que requiere corrección.", Severity.Info); break;
+        }
+    }
+
+    private async Task NotifyDiagnosisOwnerAsync(ProcessAssistanceModel diagnosis)
+    {
+        if (SelectedRequisicion == null || string.IsNullOrWhiteSpace(diagnosis.HelpKey) || _sendingHelpNotification)
+            return;
+
+        _sendingHelpNotification = true;
+        try
+        {
+            var response = await NotificacionService.SolicitarAyudaProcesoAsync(new SolicitudAyudaProcesoRequest
+            {
+                ClaveAyuda = diagnosis.HelpKey,
+                EntidadId = SelectedRequisicion.PkidRequisicion,
+                Referencia = $"REQ-{SelectedRequisicion.PkidRequisicion:D6} · {SelectedRequisicion.Descripcion}",
+                Detalle = diagnosis.Detail
+            });
+            Snackbar.Add(response?.Message ?? "Solicitud enviada al responsable.", response?.Success == true ? Severity.Success : Severity.Warning);
+        }
+        finally
+        {
+            _sendingHelpNotification = false;
+        }
+    }
+
 
     private static string GetEditTooltip(RequisicionResponse requisicion) =>
         IsLocked(requisicion)
@@ -1663,6 +1812,11 @@
             return "Falta clasificacion";
         if (requisicion.PartidasActivas <= 0)
             return "Falta partida";
+        if (!requisicion.TienePosicionPresupuestalValida ||
+            requisicion.PartidasConPosicionPresupuestal < requisicion.PartidasActivas)
+            return "Falta posición presupuestal";
+        if (requisicion.MontoPartidas != requisicion.Importe.GetValueOrDefault())
+            return "Importe sin distribuir";
         if (requisicion.DetallesActivos <= 0)
             return "Faltan bienes";
         if (requisicion.CotizacionesActivas <= 0)
@@ -1679,6 +1833,8 @@
     {
         if (!HasCompleteBudgetClassification(requisicion) ||
             requisicion.PartidasActivas <= 0 ||
+            !requisicion.TienePosicionPresupuestalValida ||
+            !requisicion.PartidasPresupuestalesCompletas ||
             requisicion.DetallesActivos <= 0)
         {
             return Color.Warning;
@@ -1691,6 +1847,27 @@
         }
 
         return requisicion.TodosLosDetallesEnSuficiencia ? Color.Info : Color.Primary;
+    }
+
+    private static string GetWorkflowIcon(RequisicionResponse requisicion)
+    {
+        if (!HasCompleteBudgetClassification(requisicion) ||
+            requisicion.PartidasActivas <= 0 ||
+            !requisicion.TienePosicionPresupuestalValida ||
+            !requisicion.PartidasPresupuestalesCompletas ||
+            requisicion.DetallesActivos <= 0)
+        {
+            return Icons.Material.Filled.ErrorOutline;
+        }
+
+        if (requisicion.CotizacionesActivas <= 0)
+            return Icons.Material.Filled.RequestQuote;
+        if (!requisicion.TodosLosDetallesCotizados)
+            return Icons.Material.Filled.HourglassTop;
+        if (!requisicion.TodosLosDetallesEnSuficiencia)
+            return Icons.Material.Filled.TaskAlt;
+
+        return Icons.Material.Filled.AccountBalanceWallet;
     }
 
     private Task NavigateToCotizacionesAsync()

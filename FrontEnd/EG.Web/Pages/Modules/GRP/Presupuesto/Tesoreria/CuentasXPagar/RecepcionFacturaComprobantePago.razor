@@ -30,6 +30,8 @@
 
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="FacturaResponse" @ref="table" Title="Facturas recibidas"
+                                  FillAvailableHeight="false"
+                                  ShowDetailHint="false"
                                   SearchPlaceholder="Buscar factura, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -90,6 +92,7 @@
 
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
+                                  FillAvailableHeight="false"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetallesServerData"
                                   SearchString="@detalleSearch"

@@ -1,0 +1,176 @@
+.requisition-list-view {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-height: 0;
+    gap: 16px;
+    padding-bottom: 18px;
+}
+
+.requisition-list-shell {
+    flex: 0 0 auto;
+    min-height: 0;
+}
+
+.requisition-classification {
+    display: grid;
+    min-width: 220px;
+    max-width: 290px;
+    gap: 5px;
+    line-height: 1.15;
+}
+
+.requisition-classification-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+}
+
+.requisition-classification-primary > span:last-child {
+    overflow: hidden;
+    color: var(--mud-palette-text-primary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.requisition-classification-label,
+.requisition-classification-codes b {
+    color: var(--mud-palette-primary);
+    font-size: .65rem;
+    font-weight: 850;
+    letter-spacing: .035em;
+}
+
+.requisition-classification-codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.requisition-classification-codes > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 18%, var(--mud-palette-lines-default));
+    border-radius: 6px;
+    color: var(--mud-palette-text-secondary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-surface));
+    font-size: .68rem;
+    white-space: nowrap;
+}
+
+.requisition-flow-chip {
+    min-width: max-content;
+    font-weight: 700;
+}
+
+.requisition-detail-view {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-height: 0;
+    gap: 10px;
+    overflow: visible;
+    padding-bottom: 18px;
+}
+
+.requisition-detail-view ::deep .requisition-object-header {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    min-width: 0;
+    padding: 2px 0;
+    background: transparent;
+}
+
+.requisition-detail-view ::deep .requisition-object-title {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    font-weight: 650;
+}
+
+.requisition-object-title > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.requisition-object-id {
+    flex: 0 0 auto;
+    color: var(--mud-palette-primary);
+    font-size: .72rem;
+    font-weight: 850;
+    letter-spacing: .06em;
+}
+
+.requisition-object-separator {
+    margin: 0 8px;
+    color: var(--mud-palette-text-disabled);
+}
+
+.requisition-detail-view ::deep .requisition-summary-card {
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-lines-default) 82%, var(--mud-palette-primary));
+    border-radius: 12px;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--mud-palette-text-primary) 6%, transparent);
+}
+
+.requisition-detail-view ::deep .requisition-summary-content {
+    padding: 10px 14px;
+}
+
+.requisition-summary-card ::deep .mud-grid-item {
+    min-width: 0;
+}
+
+.requisition-summary-card ::deep .mud-typography-caption {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--mud-palette-primary);
+    font-size: .66rem;
+    font-weight: 750;
+    letter-spacing: .025em;
+}
+
+.requisition-summary-card ::deep .mud-typography-body2 {
+    overflow: hidden;
+    color: var(--mud-palette-text-primary);
+    font-weight: 600 !important;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+}
+
+.requisition-related-grid {
+    flex: 0 0 auto;
+    align-items: flex-start;
+    min-height: 0;
+}
+
+.requisition-related-item {
+    align-self: flex-start;
+    min-height: 0;
+}
+
+@media (max-width: 900px) {
+    .requisition-list-view {
+        gap: 12px;
+    }
+
+    .requisition-classification {
+        min-width: 190px;
+    }
+
+    .requisition-detail-view ::deep .requisition-object-header {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    .requisition-detail-view ::deep .requisition-object-title {
+        flex: 1 1 calc(100% - 52px);
+    }
+
+}

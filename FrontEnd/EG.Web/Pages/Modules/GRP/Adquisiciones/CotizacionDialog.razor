@@ -46,6 +46,15 @@
                                    LoadPage="LoadProveedoresPageAsync" />
             </MudItem>
 
+            @if (!Id.HasValue && _selectedRequisicionData != null && !_selectedRequisicionData.ListaParaCotizar)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Warning" Dense="true" Variant="Variant.Outlined">
+                        @GetQuoteReadinessMessage(_selectedRequisicionData)
+                    </MudAlert>
+                </MudItem>
+            }
+
             @if (!Id.HasValue)
             {
                 <MudItem xs="12">
@@ -133,6 +142,7 @@
     };
     private DateTime? _fechaSolicitud = DateTime.Today;
     private LookupItem? _selectedRequisicion;
+    private RequisicionResponse? _selectedRequisicionData;
     private LookupItem? _selectedProveedor;
     private bool _enviarCorreo;
 
@@ -157,6 +167,7 @@
                 Id = RequisicionId,
                 Text = TextOrDefault(RequisicionNombre, RequisicionId)
             };
+            _selectedRequisicionData = await LoadRequisicionAsync(RequisicionId);
         }
     }
 
@@ -187,10 +198,12 @@
         }
     }
 
-    private Task OnRequisicionChanged(LookupItem? value)
+    private async Task OnRequisicionChanged(LookupItem? value)
     {
         _selectedRequisicion = value;
-        return Task.CompletedTask;
+        _selectedRequisicionData = value == null
+            ? null
+            : await LoadRequisicionAsync(value.Id);
     }
 
     private async Task GuardarCambiosAsync()
@@ -211,6 +224,17 @@
         {
             Snackbar.Add("Debe seleccionar un proveedor.", Severity.Warning);
             return;
+        }
+
+        if (!Id.HasValue)
+        {
+            _selectedRequisicionData ??= await LoadRequisicionAsync(_selectedRequisicion.Id);
+            var readinessMessage = GetQuoteReadinessMessage(_selectedRequisicionData);
+            if (readinessMessage != null)
+            {
+                Snackbar.Add(readinessMessage, Severity.Warning);
+                return;
+            }
         }
 
         if (!_fechaSolicitud.HasValue)
@@ -309,8 +333,32 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem
         {
             Id = x.PkidRequisicion,
-            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+            Text = $"{x.PkidRequisicion} - {x.Descripcion}{(x.ListaParaCotizar ? string.Empty : " · incompleta")}"
         }), response?.TotalCount);
+    }
+
+    private async Task<RequisicionResponse?> LoadRequisicionAsync(int requisicionId)
+    {
+        var response = await RequisicionService.GetByIdAsync(requisicionId);
+        return response?.Success == true ? response.Data : null;
+    }
+
+    private static string? GetQuoteReadinessMessage(RequisicionResponse? requisicion)
+    {
+        if (requisicion == null)
+            return "No fue posible validar la requisición seleccionada.";
+        if (!requisicion.TienePosicionPresupuestalValida)
+            return "La requisición no tiene una posición presupuestal válida. Corrígela antes de cotizar.";
+        if (requisicion.PartidasActivas <= 0)
+            return "La requisición no tiene partidas presupuestales.";
+        if (requisicion.PartidasConPosicionPresupuestal < requisicion.PartidasActivas)
+            return "Todas las partidas deben tener una posición presupuestal antes de cotizar.";
+        if (requisicion.MontoPartidas != requisicion.Importe.GetValueOrDefault())
+            return $"El importe distribuido en partidas ({requisicion.MontoPartidas:C2}) debe coincidir con el importe de la requisición ({requisicion.Importe.GetValueOrDefault():C2}).";
+        if (requisicion.DetallesActivos <= 0)
+            return "La requisición debe tener al menos un bien o servicio antes de cotizar.";
+
+        return null;
     }
 
     private async Task<ComboLookupResult> LoadProveedoresPageAsync(int page, int pageSize, string filter, CancellationToken ct)

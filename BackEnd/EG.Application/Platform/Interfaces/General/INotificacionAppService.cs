@@ -11,5 +11,6 @@ namespace EG.Application.Interfaces.General
         Task<PagedResult<bool>> MarcarLeidaAsync(long notificacionDestinoId, int usuarioId);
         Task<PagedResult<bool>> AtenderAsync(long notificacionDestinoId, int usuarioId);
         Task<PagedResult<bool>> ResponderAsync(long notificacionDestinoId, int usuarioId, string mensaje);
+        Task<PagedResult<bool>> SolicitarAyudaProcesoAsync(int usuarioId, SolicitudAyudaProcesoRequest request);
     }
 }

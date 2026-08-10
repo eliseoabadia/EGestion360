@@ -115,13 +115,27 @@
                         <MudDivider Class="mb-3" />
 
                         <MudGrid Spacing="2" Class="mb-3">
-                            <MudItem xs="12" md="8">
+                            <MudItem xs="12" md="6">
                                 <PagedAutocomplete Value="@_selectedArea"
                                                    ValueChanged="@((LookupItem? item) => _selectedArea = item)"
                                                    Label="Seleccione un area"
                                                    LoadPage="LoadAreasPageAsync" />
                             </MudItem>
-                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                            <MudItem xs="12" md="3" Class="d-flex align-center flex-wrap gap-2">
+                                <MudCheckBox T="bool"
+                                             @bind-Value="_newAreaIsAdscrito"
+                                             Color="Color.Info"
+                                             Label="Adscrito" />
+                                <MudCheckBox T="bool"
+                                             @bind-Value="_newAreaEsSolicitante"
+                                             Color="Color.Success"
+                                             Label="Solicitante" />
+                                <MudCheckBox T="bool"
+                                             @bind-Value="_newAreaEsAutorizador"
+                                             Color="Color.Warning"
+                                             Label="Autorizador" />
+                            </MudItem>
+                            <MudItem xs="12" md="3" Class="d-flex align-end">
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            FullWidth="true"
@@ -130,6 +144,11 @@
                                            OnClick="AsignarAreaPersonaAsync">
                                     Asignar area
                                 </MudButton>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Activa <strong>Solicitante</strong> para permitir que esta persona cree requisiciones con el área seleccionada.
+                                </MudText>
                             </MudItem>
                         </MudGrid>
 
@@ -163,19 +182,28 @@
                         <TemplateColumn T="UsuarioAreaResponse" Title="Permisos" Identifier="__local_1" Sortable="false" Filterable="false">
                             <CellTemplate Context="cell">
                                 <div DataLabel="Permisos">
-                                <div class="d-flex flex-wrap gap-2">
-                                @if (cell.Item.IsAdscrito)
-                                {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Adscrito</MudChip>
-                                }
-                                @if (cell.Item.EsSolicitante)
-                                {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Solicitante</MudChip>
-                                }
-                                @if (cell.Item.EsAutorizador)
-                                {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Autorizador</MudChip>
-                                }
+                                <div class="d-flex flex-wrap align-center gap-3">
+                                    <MudSwitch T="bool"
+                                               Value="@cell.Item.IsAdscrito"
+                                               ValueChanged="@((bool value) => ActualizarPermisosAreaAsync(cell.Item, isAdscrito: value))"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               Label="Adscrito"
+                                               Disabled="@_savingArea" />
+                                    <MudSwitch T="bool"
+                                               Value="@cell.Item.EsSolicitante"
+                                               ValueChanged="@((bool value) => ActualizarPermisosAreaAsync(cell.Item, esSolicitante: value))"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               Label="Solicitante"
+                                               Disabled="@_savingArea" />
+                                    <MudSwitch T="bool"
+                                               Value="@cell.Item.EsAutorizador"
+                                               ValueChanged="@((bool value) => ActualizarPermisosAreaAsync(cell.Item, esAutorizador: value))"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               Label="Autorizador"
+                                               Disabled="@_savingArea" />
                                 </div>
                                 </div>
                             </CellTemplate>
@@ -227,29 +255,39 @@
                     }
                     else
                     {
-                        <MudGrid Spacing="2" Class="mb-3">
-                            <MudItem xs="12" md="7">
-                                <PagedAutocomplete Value="@_selectedDepartamento"
-                                                   ValueChanged="@((LookupItem? item) => _selectedDepartamento = item)"
-                                                   Label="Seleccione un departamento de sus empresas"
-                                                   LoadPage="LoadDepartamentosPageAsync" />
-                            </MudItem>
-                            <MudItem xs="12" md="2" Class="d-flex align-center">
-                                <MudCheckBox @bind-Value="_departamentoEsJefe"
-                                             Color="Color.Primary"
-                                             Label="Es jefe" />
-                            </MudItem>
-                            <MudItem xs="12" md="3" Class="d-flex align-end">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           FullWidth="true"
-                                           StartIcon="@Icons.Material.Filled.AccountTree"
-                                           Disabled="@(_selectedDepartamento == null || _savingDepartamento)"
-                                           OnClick="AsignarDepartamentoUsuarioAsync">
-                                    Asignar departamento
-                                </MudButton>
-                            </MudItem>
-                        </MudGrid>
+                        @if (_departmentOptionsLoaded && _availableDepartmentCount == 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+                                Todos los departamentos disponibles para las empresas de este usuario ya están asignados. Para cambiar una asignación, usa las acciones del listado inferior.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <MudGrid Spacing="2" Class="mb-3">
+                                <MudItem xs="12" md="7">
+                                    <PagedAutocomplete @key="_departmentPickerVersion"
+                                                       Value="@_selectedDepartamento"
+                                                       ValueChanged="OnDepartamentoChanged"
+                                                       Label="Agregar un departamento disponible"
+                                                       LoadPage="LoadDepartamentosPageAsync" />
+                                </MudItem>
+                                <MudItem xs="12" md="2" Class="d-flex align-center">
+                                    <MudCheckBox @bind-Value="_departamentoEsJefe"
+                                                 Color="Color.Primary"
+                                                 Label="Es jefe" />
+                                </MudItem>
+                                <MudItem xs="12" md="3" Class="d-flex align-end">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               FullWidth="true"
+                                               StartIcon="@Icons.Material.Filled.AccountTree"
+                                               Disabled="@(_selectedDepartamento == null || _savingDepartamento)"
+                                               OnClick="AsignarDepartamentoUsuarioAsync">
+                                        Asignar departamento
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        }
 
                         @if (_loadingDepartamentosUsuario)
                         {
@@ -472,11 +510,17 @@
     private List<UsuarioAreaResponse> _areasPersona = new();
     private bool _loadingAreasPersona;
     private bool _savingArea;
+    private bool _newAreaIsAdscrito = true;
+    private bool _newAreaEsSolicitante = true;
+    private bool _newAreaEsAutorizador;
     private LookupItem? _selectedDepartamento;
     private List<UsuarioDepartamentoResponse> _departamentosUsuario = new();
     private bool _loadingDepartamentosUsuario;
     private bool _savingDepartamento;
     private bool _departamentoEsJefe;
+    private bool _departmentOptionsLoaded;
+    private int _availableDepartmentCount;
+    private int _departmentPickerVersion;
 
     protected override async Task OnInitializedAsync()
     {
@@ -686,9 +730,9 @@
             {
                 PersonaId = _selectedPersona.Id,
                 AreaId = _selectedArea.Id,
-                IsAdscrito = true,
-                EsSolicitante = true,
-                EsAutorizador = false
+                IsAdscrito = _newAreaIsAdscrito,
+                EsSolicitante = _newAreaEsSolicitante,
+                EsAutorizador = _newAreaEsAutorizador
             };
 
             var response = await usuarioAreaService.PostActionAsync("persona-area", request);
@@ -696,6 +740,9 @@
             {
                 _areasPersona = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
                 _selectedArea = null;
+                _newAreaIsAdscrito = true;
+                _newAreaEsSolicitante = true;
+                _newAreaEsAutorizador = false;
                 Snackbar.Add(response.Message ?? "Area asignada correctamente", Severity.Success);
             }
             else
@@ -706,6 +753,51 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error al asignar area: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
+        }
+        finally
+        {
+            _savingArea = false;
+        }
+    }
+
+    private async Task ActualizarPermisosAreaAsync(
+        UsuarioAreaResponse area,
+        bool? isAdscrito = null,
+        bool? esSolicitante = null,
+        bool? esAutorizador = null)
+    {
+        if (_selectedPersona == null || area.PkidArea <= 0)
+        {
+            Snackbar.Add("No se pudo identificar la persona o el area", Severity.Warning);
+            return;
+        }
+
+        _savingArea = true;
+        try
+        {
+            var request = new UsuarioAreaAsignacionRequest
+            {
+                PersonaId = _selectedPersona.Id,
+                AreaId = area.PkidArea,
+                IsAdscrito = isAdscrito ?? area.IsAdscrito,
+                EsSolicitante = esSolicitante ?? area.EsSolicitante,
+                EsAutorizador = esAutorizador ?? area.EsAutorizador
+            };
+
+            var response = await usuarioAreaService.PostActionAsync("persona-area", request);
+            if (response?.Success == true)
+            {
+                _areasPersona = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+                Snackbar.Add("Permisos del area actualizados", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "No se pudieron actualizar los permisos del area", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al actualizar permisos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
@@ -781,10 +873,21 @@
             }
         }
 
-        var query = departamentos
+        var assignedDepartmentIds = _departamentosUsuario
+            .Where(x => x.Activo)
+            .Select(x => x.DepartamentoId)
+            .ToHashSet();
+
+        var availableDepartments = departamentos
+            .Where(x => !assignedDepartmentIds.Contains(x.PkidDepartamento))
             .GroupBy(x => x.PkidDepartamento)
             .Select(x => x.First())
-            .AsEnumerable();
+            .ToList();
+
+        _availableDepartmentCount = availableDepartments.Count;
+        _departmentOptionsLoaded = true;
+
+        IEnumerable<DepartamentoResponse> query = availableDepartments;
 
         if (!string.IsNullOrWhiteSpace(filter))
         {
@@ -812,6 +915,17 @@
         };
     }
 
+    private Task OnDepartamentoChanged(LookupItem? item)
+    {
+        _selectedDepartamento = item;
+        if (item == null)
+        {
+            _departamentoEsJefe = false;
+        }
+
+        return Task.CompletedTask;
+    }
+
     private async Task CargarDepartamentosUsuario()
     {
         if (!Id.HasValue)
@@ -824,6 +938,13 @@
             if (response?.Success == true)
             {
                 _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
+                if (_selectedDepartamento != null && _departamentosUsuario.Any(x => x.Activo && x.DepartamentoId == _selectedDepartamento.Id))
+                {
+                    _selectedDepartamento = null;
+                    _departamentoEsJefe = false;
+                }
+                _departmentOptionsLoaded = false;
+                _departmentPickerVersion++;
             }
             else
             {
@@ -856,11 +977,13 @@
             return;
         }
 
-        if (_departamentosUsuario.Any(x => x.DepartamentoId == _selectedDepartamento.Id))
+        if (_departamentosUsuario.Any(x => x.Activo && x.DepartamentoId == _selectedDepartamento.Id))
         {
-            Snackbar.Add("El departamento ya esta asignado al usuario", Severity.Info);
+            Snackbar.Add("Ese departamento ya aparece en el listado de asignaciones. Selecciona otro disponible.", Severity.Info);
             _selectedDepartamento = null;
             _departamentoEsJefe = false;
+            _departmentOptionsLoaded = false;
+            _departmentPickerVersion++;
             return;
         }
 
@@ -880,6 +1003,8 @@
                 _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
                 _selectedDepartamento = null;
                 _departamentoEsJefe = false;
+                _departmentOptionsLoaded = false;
+                _departmentPickerVersion++;
                 Snackbar.Add(response.Message ?? "Departamento asignado correctamente", Severity.Success);
             }
             else
@@ -909,6 +1034,8 @@
             if (response?.Success == true)
             {
                 _departamentosUsuario = response.Items?.ToList() ?? new List<UsuarioDepartamentoResponse>();
+                _departmentOptionsLoaded = false;
+                _departmentPickerVersion++;
                 Snackbar.Add(response.Message ?? "Departamento retirado correctamente", Severity.Success);
             }
             else

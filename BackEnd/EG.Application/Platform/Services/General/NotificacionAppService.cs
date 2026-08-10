@@ -186,6 +186,82 @@ namespace EG.Application.Services.General
                 .Where(x => x.FkIdUsuarioDestino == usuarioId);
         }
 
+        public async Task<PagedResult<bool>> SolicitarAyudaProcesoAsync(int usuarioId, SolicitudAyudaProcesoRequest request)
+        {
+            if (request == null || request.EntidadId <= 0 || string.IsNullOrWhiteSpace(request.ClaveAyuda))
+            {
+                return ErrorBool("Indica el expediente y el tipo de ayuda requerido.");
+            }
+
+            if (!ProcessHelpTargets.TryGetValue(request.ClaveAyuda.Trim(), out var target))
+            {
+                return ErrorBool("El tipo de ayuda solicitado no esta habilitado.");
+            }
+
+            try
+            {
+                var requisitionExists = await _context.Requisicions
+                    .AsNoTracking()
+                    .AnyAsync(x => x.PkidRequisicion == request.EntidadId && x.Activo);
+                if (!requisitionExists)
+                {
+                    return ErrorBool("La requisicion indicada no existe o ya no esta activa.");
+                }
+
+                var reference = string.IsNullOrWhiteSpace(request.Referencia)
+                    ? $"Expediente #{request.EntidadId}"
+                    : TrimTo(request.Referencia, 180);
+                var detail = string.IsNullOrWhiteSpace(request.Detalle)
+                    ? target.DefaultMessage
+                    : TrimTo(request.Detalle, 1200);
+                var idNotificacion = new OutputParameter<long?>();
+
+                await _context.Procedures.sp_NotificacionCrearPorPermisoAsync(
+                    claveTipo: "AYUDA_PROCESO",
+                    fk_IdUsuarioOrigen: usuarioId,
+                    modulo: target.Module,
+                    subModulo: target.SubModule,
+                    accion: target.Action,
+                    evento: "Solicitud de ayuda",
+                    entidad: target.Entity,
+                    fk_IdEntidad: request.EntidadId,
+                    titulo: $"Ayuda requerida: {reference}",
+                    mensaje: $"{detail} Ruta para atender: {target.MenuPath}.",
+                    url: target.Route,
+                    jsonData: null,
+                    idUser: usuarioId,
+                    idNotificacion: idNotificacion);
+
+                return SuccessBool("Solicitud enviada al equipo responsable.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al solicitar ayuda {ClaveAyuda} para entidad {EntidadId}", request.ClaveAyuda, request.EntidadId);
+                return ErrorBool("No fue posible enviar la solicitud de ayuda. Verifica que exista un responsable con el permiso indicado.");
+            }
+        }
+
+        private static readonly IReadOnlyDictionary<string, ProcessHelpTarget> ProcessHelpTargets =
+            new Dictionary<string, ProcessHelpTarget>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["SISTEMA_USUARIO"] = new("Sistema", "Usuario", "update", "ORCO.Requisicion", "/configuracion/sistema/usuarios", "Configuracion > Sistema > Usuarios", "Se requiere habilitar la persona y el area solicitante."),
+                ["EGRESO_PRESUPUESTO"] = new("Egreso", "Presupuesto_Autorizado", "update", "ORCO.Requisicion", "/Presupuesto/Egreso/Presupuesto_Autorizado", "Presupuesto > Egreso > Presupuesto autorizado", "Se requiere revisar la posicion y disponibilidad presupuestal."),
+                ["ADQ_COMPRAS"] = new("Adquisiciones", "requisicion", "update", "ORCO.Requisicion", "/Adquisiciones/Requisicion", "Adquisiciones > Requisicion", "Se requiere apoyo de Compras para continuar el expediente."),
+                ["ALMACEN_CATALOGO"] = new("Almacen", "Tipo_Bien", "update", "ORCO.Requisicion", "/configuracion/Patrimonio/Bienes_Servicios", "Configuracion > Patrimonio > Bienes y servicios", "Se requiere revisar el bien, servicio o su partida contable.")
+            };
+
+        private static string TrimTo(string value, int maxLength) =>
+            value.Trim().Length <= maxLength ? value.Trim() : value.Trim()[..maxLength];
+
+        private sealed record ProcessHelpTarget(
+            string Module,
+            string SubModule,
+            string Action,
+            string Entity,
+            string Route,
+            string MenuPath,
+            string DefaultMessage);
+
         private IQueryable<Notificacion1> BuildConversationQuery(VwNotificacionUsuario origen)
         {
             var query = _context.Notificacions1

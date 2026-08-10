@@ -64,5 +64,12 @@ namespace EG.ApiCoreBS.Controllers.General
             var result = await _service.ResponderAsync(id, _userContext.GetCurrentUserId(), request.Mensaje);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("solicitar-ayuda-proceso")]
+        public async Task<ActionResult<PagedResult<bool>>> SolicitarAyudaProceso([FromBody] SolicitudAyudaProcesoRequest request)
+        {
+            var result = await _service.SolicitarAyudaProcesoAsync(_userContext.GetCurrentUserId(), request);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

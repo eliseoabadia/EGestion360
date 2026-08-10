@@ -43,10 +43,6 @@ namespace EG.Application.Services.General
                     }
                 }
 
-                if (result.Count == 0)
-                {
-                    result = await GetAreasPersonaViewAsync(null);
-                }
                 return new PagedResult<UsuarioAreaResponse>
                 {
                     Success = true,

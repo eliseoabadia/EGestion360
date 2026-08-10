@@ -46,7 +46,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
                 </span>
                 <div class="eg-data-grid-title-copy">
-                    <span class="eg-data-grid-title-eyebrow">CENTRO DE DATOS</span>
+                    <span class="eg-data-grid-title-eyebrow">@Eyebrow</span>
                     <div class="eg-data-grid-title-row">
                         <MudText Typo="Typo.h6">@Title</MudText>
                         <span class="eg-data-grid-count">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
             </div>
-            @if (OnRowDoubleClick.HasDelegate)
+            @if (ShowDetailHint && OnRowDoubleClick.HasDelegate)
             {
                 <div class="eg-data-grid-detail-hint" title="Haz doble clic sobre cualquier registro para consultar su expediente">
                     <MudIcon Icon="@Icons.Material.Filled.TouchApp" Size="Size.Small" />
@@ -195,8 +195,8 @@
         <NoRecordsContent>
             <div class="eg-data-grid-empty" role="status">
                 <MudIcon Icon="@(string.IsNullOrWhiteSpace(lastLoadError) ? Icons.Material.Filled.Inbox : Icons.Material.Filled.CloudOff)" Size="Size.Medium" />
-                <strong>@(string.IsNullOrWhiteSpace(lastLoadError) ? "Aún no hay registros" : "No pudimos cargar la información")</strong>
-                <span>@(lastLoadError ?? "Revisa el contexto activo, permisos o filtros aplicados.")</span>
+                <strong>@(string.IsNullOrWhiteSpace(lastLoadError) ? EmptyTitle : "No pudimos cargar la información")</strong>
+                <span>@(lastLoadError ?? EmptyMessage)</span>
                 @if (!string.IsNullOrWhiteSpace(lastLoadError))
                 {
                     <MudButton Variant="Variant.Outlined"
@@ -228,6 +228,9 @@
 
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Eyebrow { get; set; } = "CENTRO DE DATOS";
+    [Parameter] public string EmptyTitle { get; set; } = "Aún no hay registros";
+    [Parameter] public string EmptyMessage { get; set; } = "Revisa el contexto activo, permisos o filtros aplicados.";
     [Parameter] public int Elevation { get; set; } = 2;
     [Parameter] public string SearchPlaceholder { get; set; } = "Buscar...";
     [Parameter] public bool ShowSearch { get; set; } = true;
@@ -246,6 +249,8 @@
     [Parameter] public Color AddButtonColor { get; set; } = Color.Success;
     [Parameter] public EventCallback OnAdd { get; set; }
     [Parameter] public bool ShowToolbar { get; set; } = true;
+    [Parameter] public bool ShowDetailHint { get; set; } = true;
+    [Parameter] public bool FillAvailableHeight { get; set; } = true;
     [Parameter] public bool EnableColumnOptions { get; set; } = true;
     [Parameter] public bool EnableColumnReordering { get; set; } = true;
     [Parameter] public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Column;
@@ -290,7 +295,7 @@
     // El elemento raiz debe ser HTML nativo para que Blazor agregue el atributo
     // de aislamiento CSS. MudPaper no propagaba ese atributo y dejaba sin efecto
     // las reglas de altura, flex y overflow del grid compartido.
-    private string GridClass => $"mud-paper mud-elevation-{Elevation} themed-table eg-generic-data-grid{(OnRowDoubleClick.HasDelegate ? " eg-grid-has-detail" : string.Empty)}";
+    private string GridClass => $"mud-paper mud-elevation-{Elevation} themed-table eg-generic-data-grid{(OnRowDoubleClick.HasDelegate ? " eg-grid-has-detail" : string.Empty)}{(FillAvailableHeight ? string.Empty : " eg-grid-auto-height")}";
 
     private async Task HandleRowClickAsync(DataGridRowClickEventArgs<TItem> args)
     {

@@ -304,7 +304,20 @@ namespace EG.Application.Services.Adquisicion
                 x.EsSolicitante == true &&
                 x.Activo);
             if (!areaSolicitanteValido)
-                throw new ArgumentException("El solicitante no esta activo o no pertenece al area seleccionada.");
+            {
+                var solicitante = await _context.Personas.AsNoTracking()
+                    .Where(x => x.PkidPersona == response.FkidPersonaNom)
+                    .Select(x => $"{x.Nombre} {x.Paterno} {x.Materno}")
+                    .FirstOrDefaultAsync();
+                var area = await _context.Areas.AsNoTracking()
+                    .Where(x => x.PkidArea == response.FkidAreaSis)
+                    .Select(x => x.Nombre)
+                    .FirstOrDefaultAsync();
+
+                throw new ArgumentException(
+                    $"{(string.IsNullOrWhiteSpace(solicitante) ? "El solicitante" : solicitante.Trim())} no está habilitado como solicitante del área {(string.IsNullOrWhiteSpace(area) ? response.FkidAreaSis : area)}. " +
+                    "Selecciona otro solicitante o pide a Administración de personal/sistema activar la relación Persona–Área con el permiso 'Es solicitante'.");
+            }
 
             var usuarioId = _userContext.GetCurrentUserId();
             var areaDelUsuario = await _context.VwUsuarioPersonaAreas.AsNoTracking().AnyAsync(x =>
@@ -316,7 +329,10 @@ namespace EG.Application.Services.Adquisicion
                 x.AreaActivo == true &&
                 x.EsSolicitante == true);
             if (!areaDelUsuario)
-                throw new ArgumentException("El solicitante y el area deben corresponder al usuario actual y tener permiso para solicitar.");
+                throw new ArgumentException(
+                    "Tu usuario no tiene asignada esa persona y area como solicitante. " +
+                    "Ve a Configuracion > Sistema > Usuarios, edita tu usuario y en 'Persona y areas' asigna el area. " +
+                    "Si no tienes acceso, solicitalo a Administracion del sistema.");
 
             if (!response.FkidEgresoAutorizadoPres.HasValue)
                 throw new ArgumentException("Debe seleccionar una posicion de presupuesto disponible.");
@@ -396,7 +412,14 @@ namespace EG.Application.Services.Adquisicion
                 .AsNoTracking()
                 .Where(x => x.Activo && requisicionIds.Contains(x.FkidRequisicionOrco))
                 .GroupBy(x => x.FkidRequisicionOrco)
-                .ToDictionaryAsync(x => x.Key, x => x.Count());
+                .Select(group => new
+                {
+                    RequisicionId = group.Key,
+                    Total = group.Count(),
+                    ConPosicionPresupuestal = group.Count(x => x.FkidEgresoAutorizadoPres.HasValue),
+                    Monto = group.Sum(x => x.Monto ?? 0m)
+                })
+                .ToDictionaryAsync(x => x.RequisicionId);
 
             var detalles = await _context.RequisicionDetalles
                 .AsNoTracking()
@@ -448,7 +471,18 @@ namespace EG.Application.Services.Adquisicion
                 item.SuficienciasActivas = suficiencias.TryGetValue(item.PkidRequisicion, out var suficienciaActivaCount)
                     ? suficienciaActivaCount
                     : 0;
-                item.PartidasActivas = partidas.TryGetValue(item.PkidRequisicion, out var partidaCount) ? partidaCount : 0;
+                if (partidas.TryGetValue(item.PkidRequisicion, out var partidaState))
+                {
+                    item.PartidasActivas = partidaState.Total;
+                    item.PartidasConPosicionPresupuestal = partidaState.ConPosicionPresupuestal;
+                    item.MontoPartidas = partidaState.Monto;
+                }
+                else
+                {
+                    item.PartidasActivas = 0;
+                    item.PartidasConPosicionPresupuestal = 0;
+                    item.MontoPartidas = 0m;
+                }
                 item.DetallesActivos = detalles.TryGetValue(item.PkidRequisicion, out var detalleCount) ? detalleCount : 0;
                 item.DetallesCotizados = cotizados.TryGetValue(item.PkidRequisicion, out var cotizadoCount) ? cotizadoCount : 0;
                 item.DetallesEnSuficiencia = enSuficiencia.TryGetValue(item.PkidRequisicion, out var suficienciaCount) ? suficienciaCount : 0;

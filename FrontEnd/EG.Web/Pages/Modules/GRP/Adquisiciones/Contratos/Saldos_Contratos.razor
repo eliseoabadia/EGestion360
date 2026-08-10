@@ -51,6 +51,8 @@
         <GenericDataGrid TItem="SaldosContratoResponse"
                       @ref="table"
                       Title="Contratos con saldo por devengar"
+                      FillAvailableHeight="false"
+                      ShowDetailHint="false"
                       SearchPlaceholder="Buscar por contrato, requisicion, proveedor, poliza o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"

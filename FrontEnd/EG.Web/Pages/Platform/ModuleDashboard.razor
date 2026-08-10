@@ -22,11 +22,21 @@
             </div>
 
             <div class="hero-status">
-                <span>@Current.Signal</span>
-                <strong>Etapa @(RecommendedStageIndex + 1) de @Current.Stages.Count</strong>
+                @if (IsAcquisitionsDashboard)
+                {
+                    <span>Objetivo operativo</span>
+                    <strong>Orden de compra · 4 pasos</strong>
+                }
+                else
+                {
+                    <span>@Current.Signal</span>
+                    <strong>Etapa @(RecommendedStageIndex + 1) de @Current.Stages.Count</strong>
+                }
             </div>
         </header>
 
+        @if (!IsAcquisitionsDashboard)
+        {
         <section class="metric-strip" aria-label="Indicadores del modulo">
             @foreach (var metric in Current.Metrics)
             {
@@ -40,8 +50,112 @@
                 </article>
             }
         </section>
+        }
 
-        @if (RecommendedStage is { } recommendedStage)
+        @if (IsAcquisitionsDashboard)
+        {
+            <section class="purchase-guide" aria-label="Guía para generar una orden de compra">
+                <header class="purchase-guide-header">
+                    <div>
+                        <span class="eyebrow">Tu objetivo</span>
+                        <h2>Generar una orden de compra</h2>
+                        <p>Ejemplo: necesitas comprar sillas, tela o cualquier bien. Éste es el camino mínimo y quién puede ayudarte si algo falta.</p>
+                    </div>
+                    <button type="button" class="next-button" @onclick="@(() => OpenPurchaseStep(PurchaseGoalSteps[0]))">
+                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" />
+                        Comenzar requisición
+                    </button>
+                </header>
+
+                <div class="purchase-readiness">
+                    <div class="purchase-readiness-title">
+                        <MudIcon Icon="@Icons.Material.Filled.Checklist" Size="Size.Small" />
+                        <div><strong>Antes de capturar</strong><span>Confirma estos tres puntos; evitan la mayoría de los bloqueos.</span></div>
+                    </div>
+                    <div class="purchase-prerequisites">
+                        <article>
+                            <span class="prerequisite-number">1</span>
+                            <div>
+                                <strong>Solicitante y área habilitados</strong>
+                                <p>Tu persona debe estar activa, ligada al área y marcada como “Es solicitante”.</p>
+                                <small class="prerequisite-menu">Menú: Configuración › Sistema › Usuarios</small>
+                                <button type="button" class="support-route-button" @onclick="@(() => OpenSupportRoute(UsersConfigurationRoute))">
+                                    Abrir Usuarios <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
+                                </button>
+                            </div>
+                        </article>
+                        <article>
+                            <span class="prerequisite-number">2</span>
+                            <div>
+                                <strong>Presupuesto disponible</strong>
+                                <p>El año debe estar activo y debe existir una posición con saldo para tu área y partida.</p>
+                                <small class="prerequisite-menu">Menú: Presupuesto › Egreso › Presupuesto autorizado</small>
+                                <button type="button" class="support-route-button" @onclick="@(() => OpenSupportRoute(BudgetConfigurationRoute))">
+                                    Revisar presupuesto <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
+                                </button>
+                            </div>
+                        </article>
+                        <article>
+                            <span class="prerequisite-number">3</span>
+                            <div>
+                                <strong>Bien y proveedor en catálogo</strong>
+                                <p>El bien debe tener partida contable; después necesitarás proveedores activos.</p>
+                                <small class="prerequisite-menu">Menú: Configuración › Patrimonio › Bienes y servicios</small>
+                                <div class="prerequisite-actions">
+                                    <button type="button" class="support-route-button" @onclick="@(() => OpenSupportRoute(GoodsConfigurationRoute))">Abrir bienes</button>
+                                    <button type="button" class="support-route-button" @onclick="@(() => OpenSupportRoute(SuppliersConfigurationRoute))">Abrir proveedores</button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="purchase-path-heading">
+                    <div><span>Camino a tu orden</span><strong>Cuatro pasos, en este orden</strong></div>
+                    <small>El contrato es posterior y sólo aplica cuando el procedimiento lo requiere.</small>
+                </div>
+
+                <div class="purchase-path">
+                    @foreach (var step in PurchaseGoalSteps)
+                    {
+                        <article class="purchase-step">
+                            <div class="purchase-step-top">
+                                <span>@step.Number</span>
+                                <MudIcon Icon="@step.Icon" Size="Size.Small" />
+                            </div>
+                            <strong>@step.Title</strong>
+                            <p>@step.Action</p>
+                            <dl>
+                                <div><dt>Necesitas</dt><dd>@step.Requirement</dd></div>
+                                <div><dt>Si falta</dt><dd>@step.Owner</dd></div>
+                            </dl>
+                            <button type="button" class="stage-action" @onclick="@(() => OpenPurchaseStep(step))">
+                                Abrir @step.Title
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" Size="Size.Small" />
+                            </button>
+                        </article>
+                    }
+                </div>
+
+                <aside class="purchase-blocker">
+                    <span class="purchase-blocker-icon"><MudIcon Icon="@Icons.Material.Filled.SupportAgent" Size="Size.Small" /></span>
+                    <div>
+                        <span>Si aparece “El solicitante no está activo o no pertenece al área”</span>
+                        <strong>No es un error de presupuesto: falta habilitar tu usuario.</strong>
+                        <ol class="blocker-steps">
+                            <li>Abre <b>Configuración › Sistema › Usuarios</b>.</li>
+                            <li>Busca tu usuario y selecciona <b>Editar</b>.</li>
+                            <li>En <b>Persona y áreas</b>, vincula la persona correcta y usa <b>Asignar área</b>.</li>
+                            <li>Vuelve a abrir la requisición. Si no tienes permiso, pide estos pasos a Administración del sistema.</li>
+                        </ol>
+                        <button type="button" class="support-route-button blocker-action" @onclick="@(() => OpenSupportRoute(UsersConfigurationRoute))">
+                            Ir a Usuarios ahora <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                        </button>
+                    </div>
+                </aside>
+            </section>
+        }
+        else if (RecommendedStage is { } recommendedStage)
         {
             <section class="guide-panel" aria-label="Guía de avance del módulo">
                 <div class="guide-heading">
@@ -91,6 +205,8 @@
                         <div class="guide-requirements">
                             <small><b>Necesitas:</b> @GetStageRequirement(RecommendedStageIndex)</small>
                             <small><b>Obtienes:</b> @GetStageResult(RecommendedStageIndex)</small>
+                            <small><b>Dónde:</b> Menú @Current.Title › @recommendedStage.Title</small>
+                            <small><b>Responsable:</b> @Current.Owner</small>
                         </div>
                     </article>
 
@@ -106,6 +222,8 @@
             </section>
         }
 
+        @if (!IsAcquisitionsDashboard)
+        {
         <section class="module-grid">
             <article class="workflow-panel">
                 <div class="panel-heading">
@@ -222,6 +340,7 @@
                 </article>
             </aside>
         </section>
+        }
     </section>
 </MudContainer>
 
@@ -229,6 +348,20 @@
     [Parameter] public string? ModuleSlug { get; set; }
 
     private ModuleModel Current { get; set; } = Catalog["default"];
+    private bool IsAcquisitionsDashboard => NormalizeKey(ModuleSlug) == "adquisiciones";
+
+    private static readonly IReadOnlyList<PurchaseGoalStep> PurchaseGoalSteps =
+    [
+        new("01", "Requisición", "Describe lo que necesitas, cantidades, fechas e importe estimado.", "Solicitante, área, posición presupuestal y bienes ligados a una partida.", "Administración para el solicitante; Presupuesto para saldo; Almacén/Contabilidad para el bien.", Icons.Material.Filled.Article, "/Adquisiciones/Requisicion"),
+        new("02", "Cotización", "Solicita y registra precios, vigencia y condiciones de los proveedores.", "Requisición completa, partidas que sumen el importe y proveedores activos.", "Compras o Padrón de proveedores.", Icons.Material.Filled.RequestQuote, "/Adquisiciones/Cotizacion"),
+        new("03", "Suficiencia", "Envía el expediente para validar que existe recurso presupuestal.", "Cotización con todos los bienes y precios capturados.", "Área de Presupuesto para revisar o autorizar.", Icons.Material.Filled.AssignmentTurnedIn, "/Adquisiciones/Solicitud_Suficiencia"),
+        new("04", "Orden de compra", "Emite la orden con proveedor, partidas, cantidades y total autorizados.", "Suficiencia autorizada y proveedor seleccionado.", "Compras; si la suficiencia está detenida, Presupuesto.", Icons.Material.Filled.ShoppingCart, "/Adquisiciones/Orden_Compra")
+    ];
+
+    private const string UsersConfigurationRoute = "/configuracion/sistema/usuarios";
+    private const string BudgetConfigurationRoute = "/Presupuesto/Egreso/Presupuesto_Autorizado";
+    private const string GoodsConfigurationRoute = "/configuracion/Patrimonio/Bienes_Servicios";
+    private const string SuppliersConfigurationRoute = "/configuracion/adquisiciones/proveedores";
 
     private int AccessibleStageCount => Current.Stages.Count(CanOpenStage);
     private int RecommendedStageIndex =>
@@ -288,6 +421,12 @@
             NavigationManager.NavigateTo(stage.Route);
         }
     }
+
+    private void OpenPurchaseStep(PurchaseGoalStep step) =>
+        NavigationManager.NavigateTo(step.Route);
+
+    private void OpenSupportRoute(string route) =>
+        NavigationManager.NavigateTo(route);
 
     private bool CanOpenStage(StageModel? stage)
     {
@@ -770,6 +909,15 @@
         IReadOnlyList<DocumentModel> Documents);
 
     private sealed record MetricModel(string Label, string Value, string Detail, string Icon, string Tone);
+
+    private sealed record PurchaseGoalStep(
+        string Number,
+        string Title,
+        string Action,
+        string Requirement,
+        string Owner,
+        string Icon,
+        string Route);
 
     private sealed record StageModel(
         string Title,
@@ -1514,7 +1662,290 @@
         white-space: normal;
     }
 
+    .purchase-guide {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid var(--eg-border-soft, var(--mud-palette-lines-default));
+        border-radius: 14px;
+        background: var(--mud-palette-surface);
+        box-shadow: var(--eg-shadow-sm, 0 8px 24px rgba(0, 0, 0, .08));
+    }
+
+    .purchase-guide-header,
+    .purchase-path-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .purchase-guide-header h2 {
+        margin: 2px 0 3px;
+        color: var(--mud-palette-text-primary);
+        font-size: 1.42rem;
+        line-height: 1.15;
+    }
+
+    .purchase-guide-header p,
+    .purchase-path-heading small {
+        margin: 0;
+        color: var(--mud-palette-text-secondary);
+        font-size: .78rem;
+    }
+
+    .purchase-readiness {
+        display: grid;
+        gap: 10px;
+        padding: 13px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 22%, var(--mud-palette-lines-default));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--module-accent) 5%, var(--mud-palette-surface));
+    }
+
+    .purchase-readiness-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--module-accent);
+    }
+
+    .purchase-readiness-title div {
+        display: grid;
+        gap: 1px;
+    }
+
+    .purchase-readiness-title span {
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+    }
+
+    .purchase-prerequisites {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .purchase-prerequisites article {
+        display: flex;
+        gap: 9px;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid var(--eg-border-soft, var(--mud-palette-lines-default));
+        border-radius: 10px;
+        background: var(--mud-palette-surface);
+    }
+
+    .prerequisite-number {
+        display: grid;
+        flex: 0 0 25px;
+        width: 25px;
+        height: 25px;
+        place-items: center;
+        border-radius: 7px;
+        color: var(--mud-palette-primary-text);
+        background: var(--module-accent);
+        font-size: .7rem;
+        font-weight: 850;
+    }
+
+    .purchase-prerequisites article > div,
+    .purchase-step {
+        min-width: 0;
+    }
+
+    .purchase-prerequisites strong,
+    .purchase-prerequisites p,
+    .purchase-prerequisites small {
+        display: block;
+    }
+
+    .purchase-prerequisites p {
+        margin: 3px 0 7px;
+        color: var(--mud-palette-text-secondary);
+        font-size: .72rem;
+        line-height: 1.35;
+    }
+
+    .purchase-prerequisites small {
+        color: var(--module-accent);
+        font-size: .68rem;
+    }
+
+    .purchase-prerequisites .prerequisite-menu {
+        min-height: 28px;
+        color: var(--mud-palette-text-secondary);
+        line-height: 1.35;
+    }
+
+    .prerequisite-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .support-route-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 29px;
+        margin-top: 7px;
+        padding: 5px 9px;
+        border: 1px solid color-mix(in srgb, var(--module-accent) 48%, var(--mud-palette-lines-default));
+        border-radius: 7px;
+        color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 7%, transparent);
+        font: inherit;
+        font-size: .68rem;
+        font-weight: 850;
+        cursor: pointer;
+    }
+
+    .support-route-button:hover,
+    .support-route-button:focus-visible {
+        border-color: var(--module-accent);
+        background: color-mix(in srgb, var(--module-accent) 14%, transparent);
+    }
+
+    .purchase-path-heading > div {
+        display: grid;
+        gap: 2px;
+    }
+
+    .purchase-path-heading span {
+        color: var(--module-accent);
+        font-size: .66rem;
+        font-weight: 850;
+        letter-spacing: .055em;
+        text-transform: uppercase;
+    }
+
+    .purchase-path {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .purchase-step {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--eg-border-soft, var(--mud-palette-lines-default));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--mud-palette-background) 30%, var(--mud-palette-surface));
+    }
+
+    .purchase-step-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--module-accent);
+    }
+
+    .purchase-step-top span {
+        font-size: .72rem;
+        font-weight: 900;
+        letter-spacing: .06em;
+    }
+
+    .purchase-step > p {
+        min-height: 38px;
+        margin: 0;
+        color: var(--mud-palette-text-secondary);
+        font-size: .73rem;
+        line-height: 1.35;
+    }
+
+    .purchase-step dl {
+        display: grid;
+        gap: 7px;
+        margin: 0 0 4px;
+    }
+
+    .purchase-step dl div {
+        display: grid;
+        gap: 1px;
+    }
+
+    .purchase-step dt {
+        color: var(--module-accent);
+        font-size: .62rem;
+        font-weight: 850;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .purchase-step dd {
+        margin: 0;
+        color: var(--mud-palette-text-secondary);
+        font-size: .68rem;
+        line-height: 1.32;
+    }
+
+    .purchase-step .stage-action {
+        justify-content: space-between;
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .purchase-blocker {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 12px 14px;
+        border: 1px solid color-mix(in srgb, var(--eg-status-warning) 42%, var(--mud-palette-lines-default));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--eg-status-warning) 7%, var(--mud-palette-surface));
+    }
+
+    .purchase-blocker-icon {
+        display: grid;
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 9px;
+        color: var(--eg-status-warning);
+        background: color-mix(in srgb, var(--eg-status-warning) 14%, transparent);
+    }
+
+    .purchase-blocker div {
+        display: grid;
+        gap: 2px;
+    }
+
+    .purchase-blocker div > span {
+        color: var(--eg-status-warning);
+        font-size: .67rem;
+        font-weight: 850;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+    }
+
+    .blocker-steps {
+        display: grid;
+        gap: 3px;
+        margin: 5px 0 1px;
+        padding-left: 20px;
+        color: var(--mud-palette-text-secondary);
+        font-size: .73rem;
+        line-height: 1.4;
+    }
+
+    .blocker-action {
+        width: fit-content;
+        border-color: color-mix(in srgb, var(--eg-status-warning) 62%, var(--mud-palette-lines-default));
+        color: var(--eg-status-warning);
+        background: color-mix(in srgb, var(--eg-status-warning) 8%, transparent);
+    }
+
     @@media (max-width: 1180px) {
+        .purchase-path {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .module-grid {
             grid-template-columns: 1fr;
         }
@@ -1525,6 +1956,19 @@
 
         .guide-summary {
             grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .purchase-guide-header,
+        .purchase-path-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .purchase-prerequisites,
+        .purchase-path {
+            grid-template-columns: 1fr;
         }
     }
 

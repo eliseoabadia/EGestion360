@@ -1,0 +1,54 @@
+@using EG.Web.Models.ProcessAssistance
+
+<section class="process-assistant" aria-label="@AriaLabel">
+    <div class="process-assistant-heading">
+        <span class="process-assistant-icon"><MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" /></span>
+        <div>
+            <span>@Eyebrow</span>
+            <strong>Qué falta y quién puede resolverlo</strong>
+            <small>Diagnóstico calculado con el estado actual de @ContextLabel.</small>
+        </div>
+        <MudChip T="string" Size="Size.Small" Color="@Assistance.Color" Variant="Variant.Outlined">@Assistance.Status</MudChip>
+    </div>
+    <div class="process-assistant-body">
+        <div class="process-assistant-next">
+            <span>Siguiente acción</span>
+            <strong>@Assistance.Title</strong>
+            <p>@Assistance.Detail</p>
+        </div>
+        <dl class="process-assistant-routing">
+            <div><dt>Dónde</dt><dd>@Assistance.MenuPath</dd></div>
+            <div><dt>Responsable</dt><dd>@Assistance.Owner</dd></div>
+        </dl>
+        <div class="process-assistant-actions">
+            <MudButton Variant="Variant.Filled"
+                       Color="@Assistance.Color"
+                       Size="Size.Small"
+                       StartIcon="@Assistance.Icon"
+                       OnClick="@(() => OnAction.InvokeAsync(Assistance))">
+                @Assistance.ActionLabel
+            </MudButton>
+            @if (!string.IsNullOrWhiteSpace(Assistance.HelpKey))
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.NotificationsActive"
+                           Disabled="@IsNotifying"
+                           OnClick="@(() => OnNotify.InvokeAsync(Assistance))">
+                    @(IsNotifying ? "Enviando..." : "Avisar al responsable")
+                </MudButton>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public ProcessAssistanceModel Assistance { get; set; } = null!;
+    [Parameter] public string Eyebrow { get; set; } = "Asistente del expediente";
+    [Parameter] public string ContextLabel { get; set; } = "este expediente";
+    [Parameter] public string AriaLabel { get; set; } = "Asistente contextual del proceso";
+    [Parameter] public bool IsNotifying { get; set; }
+    [Parameter] public EventCallback<ProcessAssistanceModel> OnAction { get; set; }
+    [Parameter] public EventCallback<ProcessAssistanceModel> OnNotify { get; set; }
+}

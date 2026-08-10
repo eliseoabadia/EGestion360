@@ -23,6 +23,27 @@
     box-shadow: 0 12px 34px color-mix(in srgb, var(--mud-palette-text-primary) 9%, transparent);
 }
 
+/* Las listas cortas no deben simular un lienzo vacío. Conservan scroll y
+   paginación al crecer, pero ajustan el panel al contenido disponible. */
+.eg-generic-data-grid.eg-grid-auto-height {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+}
+
+.eg-generic-data-grid.eg-grid-auto-height ::deep .mud-table {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+}
+
+.eg-generic-data-grid.eg-grid-auto-height ::deep .mud-table-container {
+    flex: 0 0 auto;
+    height: auto !important;
+    max-height: min(58vh, 620px);
+}
+
 .eg-grid-has-detail ::deep .mud-table-body .mud-table-row {
     cursor: zoom-in;
 }

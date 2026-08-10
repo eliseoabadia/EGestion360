@@ -73,11 +73,25 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
         public string ClaveNombre { get; set; } = string.Empty;
         public int CotizacionesActivas { get; set; }
         public int PartidasActivas { get; set; }
+        public int PartidasConPosicionPresupuestal { get; set; }
+        public decimal MontoPartidas { get; set; }
         public int DetallesActivos { get; set; }
         public int DetallesCotizados { get; set; }
         public int DetallesEnSuficiencia { get; set; }
         public int SuficienciasActivas { get; set; }
         public bool BloqueadaPorCotizacion => CotizacionesActivas > 0 || SuficienciasActivas > 0;
+        public bool TienePosicionPresupuestalValida =>
+            FkidProgramaPres.HasValue && FkidProgramaPres.Value > 0 &&
+            FkidEgresoAutorizadoPres.HasValue && FkidEgresoAutorizadoPres.Value > 0;
+        public bool PartidasPresupuestalesCompletas =>
+            PartidasActivas > 0 &&
+            PartidasConPosicionPresupuestal == PartidasActivas &&
+            Importe.HasValue &&
+            MontoPartidas == Importe.Value;
+        public bool ListaParaCotizar =>
+            TienePosicionPresupuestalValida &&
+            PartidasPresupuestalesCompletas &&
+            DetallesActivos > 0;
         public bool TodosLosDetallesCotizados =>
             DetallesActivos > 0 && DetallesCotizados >= DetallesActivos;
         public bool TodosLosDetallesEnSuficiencia =>

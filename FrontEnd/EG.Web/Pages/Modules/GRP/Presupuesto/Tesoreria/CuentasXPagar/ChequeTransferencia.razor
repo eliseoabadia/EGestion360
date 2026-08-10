@@ -26,6 +26,8 @@
                             OnRefresh="() => table.ReloadData()" />
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
+                                  FillAvailableHeight="false"
+                                  ShowDetailHint="false"
                                   SearchPlaceholder="Buscar cheque, CLC, contrato o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -89,6 +91,7 @@
                 </MudPaper>
                 <div Style="flex-grow:1;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="ChequePartidaResponse" @ref="partidaTable" Title="Partidas pagadas"
+                                  FillAvailableHeight="false"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadPartidas"
                                   SearchString="@partidaSearch"

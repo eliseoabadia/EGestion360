@@ -54,6 +54,8 @@
         <GenericDataGrid TItem="EstadoContratoResponse"
                       @ref="table"
                       Title="Estados de contrato"
+                      FillAvailableHeight="false"
+                      ShowDetailHint="false"
                       SearchPlaceholder="Buscar por contrato, proveedor, requisicion o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"

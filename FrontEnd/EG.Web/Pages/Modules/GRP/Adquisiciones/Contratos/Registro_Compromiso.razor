@@ -53,6 +53,8 @@
         <GenericDataGrid TItem="OrcoContratoResponse"
                       @ref="table"
                       Title="Compromisos registrados"
+                      FillAvailableHeight="false"
+                      ShowDetailHint="false"
                       SearchPlaceholder="Buscar por contrato, proveedor, orden de compra o descripcion..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"

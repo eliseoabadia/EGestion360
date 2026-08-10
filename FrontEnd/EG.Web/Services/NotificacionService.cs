@@ -2,6 +2,7 @@ using EG.Common.Helper;
 using EG.Web.Contracts;
 using EG.Web.Models;
 using EG.Web.Models.Notificaciones;
+using EG.Domain.DTOs.Responses.General;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -57,7 +58,16 @@ public class NotificacionService : BaseService, INotificacionService
     {
         return await PostAsync<ApiResponse<bool>>(
                 $"{Endpoint}/{id}/responder",
-                new NotificacionResponderRequest { Mensaje = mensaje },
+                new EG.Web.Models.Notificaciones.NotificacionResponderRequest { Mensaje = mensaje },
+                useBaseUrl: false)
+            ?? new ApiResponse<bool>();
+    }
+
+    public async Task<ApiResponse<bool>> SolicitarAyudaProcesoAsync(SolicitudAyudaProcesoRequest request)
+    {
+        return await PostAsync<ApiResponse<bool>>(
+                $"{Endpoint}/solicitar-ayuda-proceso",
+                request,
                 useBaseUrl: false)
             ?? new ApiResponse<bool>();
     }

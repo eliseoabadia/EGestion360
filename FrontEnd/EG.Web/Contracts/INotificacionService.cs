@@ -1,5 +1,6 @@
 using EG.Web.Models;
 using EG.Web.Models.Notificaciones;
+using EG.Domain.DTOs.Responses.General;
 
 namespace EG.Web.Contracts;
 
@@ -11,4 +12,5 @@ public interface INotificacionService
     Task<ApiResponse<bool>> MarcarLeidaAsync(long id);
     Task<ApiResponse<bool>> AtenderAsync(long id);
     Task<ApiResponse<bool>> ResponderAsync(long id, string mensaje);
+    Task<ApiResponse<bool>> SolicitarAyudaProcesoAsync(SolicitudAyudaProcesoRequest request);
 }
