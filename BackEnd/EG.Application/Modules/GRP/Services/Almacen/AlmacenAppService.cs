@@ -83,7 +83,10 @@ namespace EG.Application.Services.Almacen
 
             try
             {
-                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                var strategy = _context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 await AdjustOrderReceiptAsync(response.FkidDetalleOrdenCompraOrco, response.Cantidad, usuarioActual);
                 _context.Almacens.Add(entity);
                 await _context.SaveChangesAsync();
@@ -91,6 +94,7 @@ namespace EG.Application.Services.Almacen
                 var result = await GetByIdAsync(entity.PkidAlmacen);
                 result.Message = "Movimiento de almacen registrado correctamente.";
                 return result;
+                });
             }
             catch (Exception ex)
             {

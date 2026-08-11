@@ -207,7 +207,10 @@ namespace EG.Application.Services.CuentasXPagar
             if (validation != null)
                 return validation;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var poliza = await CuentasXPagarBudgetPosting.CreateAsync(
@@ -216,6 +219,7 @@ namespace EG.Application.Services.CuentasXPagar
                     response.Detalles.Select(x => (x.FkidPartidaConta, x.MontoAplicado)), usuarioActual);
                 response.FkidPolizaConta = poliza.PkidPoliza;
                 var result = await base.CreateAsync(response, usuarioActual);
+                response.PkidFactura = result.Data?.PkidFactura ?? result.Items?.FirstOrDefault()?.PkidFactura ?? response.PkidFactura;
                 if (!result.Success || response.PkidFactura <= 0)
                 {
                     await transaction.RollbackAsync();
@@ -245,6 +249,7 @@ namespace EG.Application.Services.CuentasXPagar
                 await transaction.RollbackAsync();
                 return Failure<FacturaResponse>($"No fue posible registrar la factura completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
             }
+            });
         }
 
         public override async Task<PagedResult<FacturaResponse>> UpdateAsync(int id, FacturaResponse response, int usuarioActual)

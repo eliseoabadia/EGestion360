@@ -13,8 +13,8 @@
     <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando autorización..." LoadingSkeletonRows="8">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
                 <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
@@ -24,7 +24,7 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4"><MudTextField @bind-Value="item.GastoNoProgramable" Label="Gasto no programable" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Required="true" Lines="3" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Required="true" Immediate="true" Lines="3" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
         </MudGrid>
 

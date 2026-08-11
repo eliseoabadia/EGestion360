@@ -57,7 +57,7 @@ namespace EG.Application.Services.Adquisicion
             try
             {
                 await ApplyTipoBienDefaultsAsync(response);
-                await ValidatePartidaAndStockAsync(response, null);
+                await ValidatePartidaAsync(response);
                 var spResult = await ExecuteDetalleAsync(4, null, response, usuarioActual);
                 var id = spResult.GetId() ?? 0;
                 var result = await GetByIdAsync(id);
@@ -99,7 +99,7 @@ namespace EG.Application.Services.Adquisicion
             try
             {
                 await ApplyTipoBienDefaultsAsync(response);
-                await ValidatePartidaAndStockAsync(response, id);
+                await ValidatePartidaAsync(response);
                 var spResult = await ExecuteDetalleAsync(5, id, response, usuarioActual);
                 var result = await GetByIdAsync(id);
                 result.Message = spResult.Mensaje;
@@ -211,9 +211,7 @@ namespace EG.Application.Services.Adquisicion
                 .FirstOrDefaultAsync();
         }
 
-        private async Task ValidatePartidaAndStockAsync(
-            RequisicionDetalleResponse response,
-            int? currentDetalleId)
+        private async Task ValidatePartidaAsync(RequisicionDetalleResponse response)
         {
             var tipoBien = await _context.TipoBiens.AsNoTracking().FirstOrDefaultAsync(x =>
                 x.PkidTipoBien == response.FkidTipoBienAlma && x.Activo);
@@ -227,23 +225,9 @@ namespace EG.Application.Services.Adquisicion
             if (!partidaAsignada)
                 throw new ArgumentException("El bien no pertenece a una partida activa de la requisicion.");
 
-            var existencia = await _context.VwExistencias.AsNoTracking()
-                .Where(x => x.PkidTipoBien == response.FkidTipoBienAlma)
-                .Select(x => (decimal?)x.Existencias)
-                .FirstOrDefaultAsync();
-            if (!existencia.HasValue)
-                return;
-
-            var yaCapturado = await _context.RequisicionDetalles.AsNoTracking()
-                .Where(x =>
-                    x.FkidRequisicionOrco == response.FkidRequisicionOrco &&
-                    x.FkidTipoBienAlma == response.FkidTipoBienAlma &&
-                    x.Activo &&
-                    (!currentDetalleId.HasValue || x.PkidRequisicionDetalle != currentDetalleId.Value))
-                .SumAsync(x => (decimal?)x.Cantidad) ?? 0m;
-            if (yaCapturado + response.Cantidad > existencia.Value)
-                throw new ArgumentException(
-                    $"La cantidad solicitada excede la existencia disponible ({existencia.Value:0.##}).");
+            // Una requisicion expresa una necesidad de compra. La existencia actual puede
+            // orientar la decision, pero no debe impedir solicitar un bien agotado. El
+            // control de disponibilidad corresponde a las salidas de almacen, no a compras.
         }
 
         private static PagedResult<RequisicionDetalleResponse> NotFoundResult() => new()

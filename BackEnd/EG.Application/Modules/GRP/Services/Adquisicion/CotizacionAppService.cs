@@ -116,7 +116,7 @@ namespace EG.Application.Services.Adquisicion
             var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
                 x.PkidCotizacion == id && x.Activo &&
                 x.FkidRequisicionOrcoNavigation.Activo &&
-                x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext) &&
                 x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
             if (!owned)
                 return Failure<CotizacionResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
@@ -224,7 +224,7 @@ namespace EG.Application.Services.Adquisicion
                     .Include(x => x.FkidRequisicionOrcoNavigation)
                     .FirstOrDefaultAsync(x =>
                         x.PkidCotizacion == cotizacionId && x.Activo &&
-                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext) &&
                         x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
 
                 if (cotizacion == null)
@@ -324,7 +324,7 @@ namespace EG.Application.Services.Adquisicion
                     .AsNoTracking()
                     .AnyAsync(x =>
                         x.PkidCotizacion == cotizacionId && x.Activo &&
-                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
+                        x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext) &&
                         x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
                 if (!exists)
                 {
@@ -357,10 +357,10 @@ namespace EG.Application.Services.Adquisicion
         {
             try
             {
+                var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
                 var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
                     x.PkidCotizacion == cotizacionId && x.Activo &&
-                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
-                    x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
+                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == empresaId);
                 if (!owned)
                     return Failure<CotizacionDetalleResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
 
@@ -389,10 +389,10 @@ namespace EG.Application.Services.Adquisicion
                     return Failure<CotizacionDetalleResponse>("Debe existir una cotizacion seleccionada.");
                 }
 
+                var empresaId = RequisicionWorkflowGuard.GetCurrentEmpresaId(_userContext);
                 var owned = await _context.Cotizacions.AsNoTracking().AnyAsync(x =>
                     x.PkidCotizacion == request.FkidCotizacionOrco && x.Activo &&
-                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId() &&
-                    x.FkidRequisicionOrcoNavigation.FkidAnioSis == _userContext.GetCurrentAnioPresupuestalId());
+                    x.FkidRequisicionOrcoNavigation.FkidEmpresaSis == empresaId);
                 if (!owned)
                     return Failure<CotizacionDetalleResponse>("La cotizacion no pertenece a la empresa y ejercicio activos.", "NOT_FOUND");
                 if (await HasDownstreamSuficienciaAsync(request.FkidCotizacionOrco))

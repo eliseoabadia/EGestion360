@@ -1,4 +1,4 @@
-﻿@using System.Globalization
+@using System.Globalization
 @using EG.Common.GenericModel
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Domain.DTOs.Responses.CuentasXPagar
@@ -10,6 +10,7 @@
 @inject IGenericCrudService<FacturaResponse> Service
 @inject IGenericCrudService<FacturaDetalleResponse> DetalleService
 @inject IGenericCrudService<ContratoResponse> ContratoService
+@inject IGenericCrudService<ContratoDetalleResponse> ContratoDetalleService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -17,16 +18,16 @@
     <BaseEntityForm TEntity="FacturaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><PagedAutocomplete Value="@contrato" ValueChanged="value => contrato = value" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
+            <MudItem xs="12" md="4"><PagedAutocomplete Value="@contrato" ValueChanged="OnContratoChangedAsync" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
             <MudItem xs="12" md="4"><MudAlert Severity="Severity.Info" Dense="true">Póliza de devengado automática</MudAlert></MudItem>
-            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.NumFactura" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.SerieFactura" Label="Serie" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.NumFactura" Immediate="true" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.SerieFactura" Immediate="true" Label="Serie" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaRecepcion" Label="Fecha recepcion" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Subtotal" Label="Subtotal" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Iva" Label="IVA" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Retencion" Label="Retencion" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.Total" Label="Total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Subtotal" Immediate="true" Label="Subtotal" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Iva" Immediate="true" Label="IVA" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Retencion" Immediate="true" Label="Retencion" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.Total" Immediate="true" Label="Total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudTextField @bind-Value="item.Uuid" Label="UUID" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
                 <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
@@ -194,6 +195,51 @@
     {
         contrato = item.FkidContratoPres > 0 ? new LookupItem { Id = item.FkidContratoPres, Text = TextOrDash(item.NumeroContrato) } : null;
     }
+    private async Task OnContratoChangedAsync(LookupItem? value)
+    {
+        contrato = value;
+        detalleItems.Clear();
+        if (value == null)
+        {
+            return;
+        }
+
+        var response = await ContratoDetalleService.GetAllPaginadoAsync(
+            1,
+            int.MaxValue,
+            string.Empty,
+            "PartidaClave",
+            SortDirection.Ascending,
+            new Dictionary<string, object> { ["FkidContratoPres"] = value.Id });
+        var detalles = response?.Items?.Where(x => x.Activo).ToList() ?? new List<ContratoDetalleResponse>();
+        detalleItems = detalles.Select(detail => new FacturaDetalleResponse
+        {
+            FkidEmpresaSis = detail.FkidEmpresaSis,
+            FkidContratoDetallePres = detail.PkidContratoDetalle,
+            FkidContratoPres = value.Id,
+            NumeroContrato = value.Text.Split(" - ", 2)[0],
+            FkidPartidaConta = detail.FkidPartidaConta,
+            PartidaClave = detail.PartidaClave,
+            PartidaDescripcion = detail.PartidaDescripcion,
+            PartidaClaveNombre = detail.PartidaClaveNombre,
+            MontoAplicado = DetailTotal(detail),
+            Observaciones = detail.Observaciones,
+            Activo = true
+        }).ToList();
+
+        var total = detalleItems.Sum(x => x.MontoAplicado);
+        item.Subtotal = total;
+        item.Total = total;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static decimal DetailTotal(ContratoDetalleResponse item) =>
+        item.Total ?? item.Enero.GetValueOrDefault() + item.Febrero.GetValueOrDefault() +
+        item.Marzo.GetValueOrDefault() + item.Abril.GetValueOrDefault() +
+        item.Mayo.GetValueOrDefault() + item.Junio.GetValueOrDefault() +
+        item.Julio.GetValueOrDefault() + item.Agosto.GetValueOrDefault() +
+        item.Septiembre.GetValueOrDefault() + item.Octubre.GetValueOrDefault() +
+        item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
     private async Task<ComboLookupResult> LoadContratosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
         var response = await ContratoService.GetAllPaginadoAsync(page, pageSize, filter, "NumeroContrato", SortDirection.Ascending, CompanyFilter());

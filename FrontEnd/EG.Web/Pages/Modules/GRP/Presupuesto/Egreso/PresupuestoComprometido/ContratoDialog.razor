@@ -44,12 +44,12 @@
                                    Clearable="true"
                                    LoadPage="LoadPolizasPageAsync" />
             </MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.NumeroContrato" Label="Numero contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.NumeroContrato" Label="Numero contrato" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaContrato" Label="Fecha contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaFin" Label="Fin vigencia" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.MontoTotal" Label="Monto total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.MontoTotal" Label="Monto total" Required="true" Immediate="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4"><MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
                 <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">

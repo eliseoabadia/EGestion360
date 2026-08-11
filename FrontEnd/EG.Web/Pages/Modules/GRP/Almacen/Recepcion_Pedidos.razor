@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Recepcion_Pedidos"
+@page "/Almacen/Recepcion_Pedidos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Almacen
@@ -95,6 +95,14 @@
                         <span>Orden seleccionada</span>
                         <strong>@(selectedOrden == null ? "Selecciona una orden" : selectedOrden.NumeroOrdenCompra)</strong>
                     </div>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.AddBox"
+                               Disabled="@(selectedDetalle == null || selectedDetalle.CantidadPendiente.GetValueOrDefault() <= 0)"
+                               OnClick="@(() => selectedDetalle == null ? Task.CompletedTask : RegistrarEntrada(selectedDetalle))">
+                        Registrar entrada
+                    </MudButton>
                 </div>
 
                 <GenericDataGrid TItem="OrdenCompraDetalleResponse"
