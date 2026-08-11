@@ -34,6 +34,15 @@ BEGIN
 END;
 GO
 
+-- Compatibilidad: la bitacora conserva ahora el punto real de regreso.
+IF COL_LENGTH(N'PRES.RegresoChequeSuficiencia', N'FKIdRequisicion_ORCO') IS NULL
+    ALTER TABLE PRES.RegresoChequeSuficiencia ADD FKIdRequisicion_ORCO INT NULL;
+IF COL_LENGTH(N'PRES.RegresoChequeSuficiencia', N'FKIdOrdenCompra_ORCO') IS NULL
+    ALTER TABLE PRES.RegresoChequeSuficiencia ADD FKIdOrdenCompra_ORCO INT NULL;
+IF COL_LENGTH(N'PRES.RegresoChequeSuficiencia', N'FKIdCotizacion_ORCO') IS NULL
+    ALTER TABLE PRES.RegresoChequeSuficiencia ADD FKIdCotizacion_ORCO INT NULL;
+GO
+
 IF OBJECT_ID(N'PRES.RegresoChequeSuficienciaPoliza', N'U') IS NULL
 BEGIN
     CREATE TABLE PRES.RegresoChequeSuficienciaPoliza
@@ -90,6 +99,9 @@ BEGIN
         @PKIdContrato INT,
         @PKIdAutorizacion INT,
         @PKIdSolicitud INT,
+        @PKIdRequisicion INT,
+        @PKIdOrdenCompra INT,
+        @PKIdCotizacion INT,
         @PKIdRegreso INT,
         @PolizasGeneradas INT = 0;
 
@@ -97,7 +109,8 @@ BEGIN
         BEGIN TRANSACTION;
 
         SELECT @PKIdRegreso = R.PKIdRegresoChequeSuficiencia,
-               @PKIdSolicitud = R.FKIdSolicitudSuficiencia_PRES
+               @PKIdSolicitud = R.FKIdSolicitudSuficiencia_PRES,
+               @PKIdRequisicion = R.FKIdRequisicion_ORCO
         FROM PRES.RegresoChequeSuficiencia R WITH (UPDLOCK, HOLDLOCK)
         WHERE R.FKIdCheque_PRES = @PKIdCheque
           AND R.FKIdEmpresa_SIS = @FKIdEmpresa_SIS;
@@ -113,6 +126,7 @@ BEGIN
 
             SELECT @PKIdRegreso AS PKIdRegresoChequeSuficiencia,
                    @PKIdSolicitud AS PKIdSolicitudSuficiencia,
+                   @PKIdRequisicion AS PKIdRequisicion,
                    @PolizasGeneradas AS PolizasGeneradas,
                    CAST(1 AS BIT) AS YaProcesado;
             RETURN;
@@ -145,6 +159,46 @@ BEGIN
         WHERE A.PKIdAutorizacionSuficiencia = @PKIdAutorizacion
           AND A.FKIdEmpresa_SIS = @FKIdEmpresa_SIS
           AND A.Activo = 1;
+
+        SELECT @PKIdRequisicion = S.FKIdRequisicion_ORCO
+        FROM PRES.SolicitudSuficiencia S WITH (UPDLOCK, HOLDLOCK)
+        WHERE S.PKIdSolicitudSuficiencia = @PKIdSolicitud
+          AND S.FKIdEmpresa_SIS = @FKIdEmpresa_SIS
+          AND S.Activo = 1;
+
+        IF @PKIdRequisicion IS NULL OR NOT EXISTS
+        (
+            SELECT 1 FROM ORCO.Requisicion R WITH (UPDLOCK, HOLDLOCK)
+            WHERE R.PKIdRequisicion = @PKIdRequisicion
+              AND R.FKIdEmpresa_SIS = @FKIdEmpresa_SIS AND R.Activo = 1
+        )
+            THROW 51013, N'La requisicion de origen ya no esta activa o no pertenece a la empresa actual.', 1;
+
+        SELECT @PKIdOrdenCompra = MIN(O.PKIdOrdenCompra)
+        FROM ORCO.OrdenCompra O WITH (UPDLOCK, HOLDLOCK)
+        WHERE O.FKIdRequisicion_ORCO = @PKIdRequisicion
+          AND O.FKIdEmpresa_SIS = @FKIdEmpresa_SIS AND O.Activo = 1;
+
+        IF (SELECT COUNT(*) FROM ORCO.OrdenCompra O WITH (UPDLOCK, HOLDLOCK)
+            WHERE O.FKIdRequisicion_ORCO = @PKIdRequisicion
+              AND O.FKIdEmpresa_SIS = @FKIdEmpresa_SIS AND O.Activo = 1) > 1
+            THROW 51014, N'La requisicion tiene mas de una orden activa. Resuelva las ramas adicionales antes de regresar el cheque.', 1;
+
+        SELECT @PKIdCotizacion = O.FKIdCotizacion_ORCO
+        FROM ORCO.OrdenCompra O WHERE O.PKIdOrdenCompra = @PKIdOrdenCompra;
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM ALMA.Almacen A WITH (UPDLOCK, HOLDLOCK)
+            INNER JOIN ORCO.OrdenCompraDetalle OD
+                ON OD.PKIdOrdenCompraDetalle = A.FKIdDetalleOrdenCompra_ORCO
+            WHERE OD.FKIdOrdenCompra_ORCO = @PKIdOrdenCompra AND A.Activo = 1
+              AND (A.InventarioCerrado = 1 OR A.EsContabilizado = 1
+                   OR EXISTS (SELECT 1 FROM ALMA.DetalleSolicitudSalida DS
+                              WHERE DS.FKIdAlmacen_ALMA = A.PKIdAlmacen AND DS.Activo = 1))
+        )
+            THROW 51015, N'La orden tiene entradas cerradas, contabilizadas o con salidas. Primero tramite su devolucion en Almacen.', 1;
 
         IF @PKIdContrato IS NULL OR @PKIdAutorizacion IS NULL OR @PKIdSolicitud IS NULL
             THROW 51003, N'La cadena cheque, CLC, contrato, autorización y solicitud está incompleta o ya fue modificada.', 1;
@@ -219,7 +273,11 @@ BEGIN
         FROM PRES.Contrato WHERE PKIdContrato = @PKIdContrato AND FKIdPoliza_CONTA IS NOT NULL
         UNION ALL
         SELECT FKIdPoliza_CONTA, N'Factura'
-        FROM @Facturas;
+        FROM @Facturas
+        UNION ALL
+        SELECT FKIdPoliza_CONTA, N'Orden de compra'
+        FROM ORCO.OrdenCompra
+        WHERE PKIdOrdenCompra = @PKIdOrdenCompra AND FKIdPoliza_CONTA IS NOT NULL;
 
         DECLARE @Polizas TABLE
         (
@@ -265,7 +323,7 @@ BEGIN
             FROM @Polizas X
             WHERE EXISTS (SELECT 1 FROM ALMA.Bajas B WHERE B.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
                OR EXISTS (SELECT 1 FROM ALMA.SolicitudSalida S WHERE S.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
-               OR EXISTS (SELECT 1 FROM ORCO.OrdenCompra O WHERE O.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
+               OR EXISTS (SELECT 1 FROM ORCO.OrdenCompra O WHERE O.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA AND O.PKIdOrdenCompra <> COALESCE(@PKIdOrdenCompra, -1))
                OR EXISTS (SELECT 1 FROM PRES.EgresoAutorizado E WHERE E.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
                OR EXISTS (SELECT 1 FROM PRES.IngreAdecuacion I WHERE I.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
                OR EXISTS (SELECT 1 FROM PRES.IngresoAutorizado I WHERE I.FKIdPoliza_CONTA = X.FKIdPolizaOriginal_CONTA)
@@ -286,6 +344,9 @@ BEGIN
             FKIdEmpresa_SIS,
             FKIdCheque_PRES,
             FKIdSolicitudSuficiencia_PRES,
+            FKIdRequisicion_ORCO,
+            FKIdOrdenCompra_ORCO,
+            FKIdCotizacion_ORCO,
             Motivo,
             UsuarioCreacion
         )
@@ -294,6 +355,9 @@ BEGIN
             @FKIdEmpresa_SIS,
             @PKIdCheque,
             @PKIdSolicitud,
+            @PKIdRequisicion,
+            @PKIdOrdenCompra,
+            @PKIdCotizacion,
             @Motivo,
             @IdUser
         );
@@ -522,7 +586,7 @@ BEGIN
         WHERE FKIdAutorizacionSuficiencia_PRES = @PKIdAutorizacion AND Activo = 1;
 
         UPDATE PRES.AutorizacionSuficiencia
-        SET Estatus = 4,
+        SET Estatus = 3,
             Activo = 0,
             Observaciones = LEFT(CONCAT(COALESCE(Observaciones + N' | ', N''),
                 N'Regresada desde cheque. Motivo: ', @Motivo), 1000),
@@ -532,21 +596,79 @@ BEGIN
 
         UPDATE PRES.SolicitudSuficiencia
         SET Estatus = 1,
-            Activo = 1,
+            Activo = 0,
             Justificacion = LEFT(CONCAT(COALESCE(Justificacion + N' | ', N''),
                 N'Regresada desde cheque para corrección. Motivo: ', @Motivo), 2000),
             FechaModificacion = SYSDATETIME(),
             UsuarioModificacion = @IdUser
         WHERE PKIdSolicitudSuficiencia = @PKIdSolicitud;
 
+        UPDATE PRES.SolicitudSuficienciaDetalle
+        SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE FKIdSolicitudSuficiencia_PRES = @PKIdSolicitud AND Activo = 1;
+
+        -- Entradas abiertas: se anulan; las cerradas, contabilizadas o consumidas
+        -- fueron bloqueadas antes para exigir una devolucion formal.
+        UPDATE A
+        SET A.Activo = 0, A.FechaModificacion = SYSDATETIME(), A.UsuarioModificacion = @IdUser
+        FROM ALMA.Almacen A
+        INNER JOIN ORCO.OrdenCompraDetalle OD
+            ON OD.PKIdOrdenCompraDetalle = A.FKIdDetalleOrdenCompra_ORCO
+        WHERE OD.FKIdOrdenCompra_ORCO = @PKIdOrdenCompra AND A.Activo = 1;
+
+        UPDATE ORCO.OrdenCompraDetalle
+        SET CantidadRecibida = 0, Activo = 0,
+            FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE FKIdOrdenCompra_ORCO = @PKIdOrdenCompra AND Activo = 1;
+
+        UPDATE ORCO.OrdenCompraPartida
+        SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE FKIdOrdenCompra_ORCO = @PKIdOrdenCompra AND Activo = 1;
+
+        UPDATE ORCO.Contratos
+        SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE FKIdOrdenCompra_ORCO = @PKIdOrdenCompra AND Activo = 1;
+
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_ORDER_REVERSAL', @value = 1;
+
+        UPDATE ORCO.OrdenCompra
+        SET Activo = 0,
+            FechaCancelacion = CONVERT(date, SYSDATETIME()),
+            MotivoCancelacion = LEFT(@Motivo, 1000),
+            Observaciones = LEFT(CONCAT(COALESCE(Observaciones + N' | ', N''),
+                N'Regresada hasta requisicion desde cheque ', @PKIdCheque, N'.'), 2000),
+            FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE PKIdOrdenCompra = @PKIdOrdenCompra AND Activo = 1;
+
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_ORDER_REVERSAL', @value = NULL;
+
+        UPDATE CD
+        SET CD.Activo = 0, CD.FechaModificacion = SYSDATETIME(), CD.UsuarioModificacion = @IdUser
+        FROM ORCO.CotizacionDetalle CD
+        INNER JOIN ORCO.Cotizacion C ON C.PKIdCotizacion = CD.FKIdCotizacion_ORCO
+        WHERE C.FKIdRequisicion_ORCO = @PKIdRequisicion AND CD.Activo = 1;
+
+        UPDATE ORCO.Cotizacion
+        SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE FKIdRequisicion_ORCO = @PKIdRequisicion AND Activo = 1;
+
+        UPDATE ORCO.Requisicion
+        SET Activo = 1,
+            Observaciones = LEFT(CONCAT(COALESCE(Observaciones + N' | ', N''),
+                N'Expediente reabierto desde cheque ', @PKIdCheque, N'. Motivo: ', @Motivo), 2000),
+            FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
+        WHERE PKIdRequisicion = @PKIdRequisicion;
+
         COMMIT TRANSACTION;
 
         SELECT @PKIdRegreso AS PKIdRegresoChequeSuficiencia,
                @PKIdSolicitud AS PKIdSolicitudSuficiencia,
+               @PKIdRequisicion AS PKIdRequisicion,
                @PolizasGeneradas AS PolizasGeneradas,
                CAST(0 AS BIT) AS YaProcesado;
     END TRY
     BEGIN CATCH
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_ORDER_REVERSAL', @value = NULL;
         IF CURSOR_STATUS('local', 'PolizasCursor') >= 0
             CLOSE PolizasCursor;
         IF CURSOR_STATUS('local', 'PolizasCursor') >= -1

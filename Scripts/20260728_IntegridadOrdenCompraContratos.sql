@@ -350,7 +350,8 @@ BEGIN
         SELECT 1
         FROM inserted i
         INNER JOIN deleted d ON d.PKIdOrdenCompra = i.PKIdOrdenCompra
-        WHERE d.FKIdEstatusOrdenCompra_ORCO > 1
+        WHERE COALESCE(TRY_CONVERT(int, SESSION_CONTEXT(N'EG_ALLOW_ORDER_REVERSAL')), 0) <> 1
+          AND d.FKIdEstatusOrdenCompra_ORCO > 1
           AND (
               i.Activo <> d.Activo OR
               i.FKIdEstatusOrdenCompra_ORCO < d.FKIdEstatusOrdenCompra_ORCO OR

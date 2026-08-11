@@ -247,6 +247,7 @@ try
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseMiddleware<RejectedMutationAuditMiddleware>();
     app.MapMethods("/api/Navigate/ping", ["GET", "POST"], () =>
         Results.Ok(new { success = true, message = "pong" })).AllowAnonymous();
     app.MapGet("/api/Navigate/version", (IConfiguration configuration) =>

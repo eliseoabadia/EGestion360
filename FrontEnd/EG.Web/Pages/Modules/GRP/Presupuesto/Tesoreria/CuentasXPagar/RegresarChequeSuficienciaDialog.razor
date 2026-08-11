@@ -4,13 +4,14 @@
     <DialogContent>
         <MudStack Spacing="2">
             <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
-                Esta acción regresará el cheque <strong>@NumeroCheque</strong> hasta su solicitud de suficiencia.
-                Se cancelarán lógicamente cheque, CLC, facturas, contrato y autorización, y se crearán
+                Esta acción regresará el cheque <strong>@NumeroCheque</strong> hasta su requisición.
+                Se cancelarán lógicamente cheque, CLC, facturas, contratos, orden, suficiencia y cotizaciones, y se crearán
                 pólizas de reversión por cada póliza contable de la cadena.
             </MudAlert>
 
             <MudText Typo="Typo.body2">
-                La solicitud quedará nuevamente en borrador para corregirse y volver a autorizarse.
+                La requisición quedará disponible como punto de reinicio. Si existen entradas cerradas,
+                contabilizadas o ya consumidas, el sistema bloqueará la operación y solicitará una devolución de almacén.
                 El historial original se conservará para auditoría.
             </MudText>
 
@@ -33,7 +34,7 @@
                    Color="Color.Warning"
                    Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.Undo">
-            Regresar a suficiencia
+            Regresar a requisición
         </MudButton>
     </DialogActions>
 </MudDialog>

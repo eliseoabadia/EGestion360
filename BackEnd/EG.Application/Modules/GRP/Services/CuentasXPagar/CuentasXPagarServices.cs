@@ -1092,20 +1092,20 @@ namespace EG.Application.Services.CuentasXPagar
                 {
                     Success = true,
                     Code = "SUCCESS",
-                    Message = "Cheque regresado a solicitud de suficiencia. Se canceló la cadena posterior y se generaron las pólizas de reversión.",
+                    Message = "Cheque regresado hasta la requisición. Se canceló la cadena posterior, se reabrió el origen y se generaron las pólizas de reversión.",
                     TotalCount = 0
                 };
             }
             catch (SqlException ex)
             {
                 var message = ex.Message.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
-                    ?? "No fue posible regresar el cheque a solicitud de suficiencia.";
+                    ?? "No fue posible regresar el cheque hasta la requisición.";
                 return Failure<ChequeResponse>(message, "BUSINESS_RULE");
             }
             catch (Exception ex)
             {
-                LogException("regresar a solicitud de suficiencia", ex);
-                return Failure<ChequeResponse>("No fue posible regresar el cheque a solicitud de suficiencia.", "ERROR");
+                LogException("regresar hasta la requisición", ex);
+                return Failure<ChequeResponse>("No fue posible regresar el cheque hasta la requisición.", "ERROR");
             }
         }
 

@@ -17,6 +17,27 @@ GO
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    INSERT CONTA.Poliza
+    (
+        FKIdAnio_SIS, FKIdMes_SIS, FKIdTipoPoliza_SIS, ClavePoliza,
+        NombrePoliza, FechaPoliza, EstaBalanceado, Activo, FechaCreacion,
+        UsuarioCreacion, PermitirModificar, Autorizado
+    )
+    VALUES
+        (2026, 1, 1, N'PRUEBA-REVERSA', N'Poliza temporal prueba reversa',
+         GETDATE(), 1, 1, SYSDATETIME(), 1, 0, 1);
+    DECLARE @PolizaPruebaId int = SCOPE_IDENTITY();
+
+    INSERT CONTA.PolizaDetalle
+    (
+        FKIdCuentaContable_CONTA, FKIdPoliza_CONTA, Descripcion,
+        ImporteDebe, ImporteHaber, FKIdTipoDetallePoliza_SIS,
+        Activo, FechaCreacion, UsuarioCreacion
+    )
+    VALUES
+        (255048, @PolizaPruebaId, N'Cargo prueba', 100, 0, 1, 1, SYSDATETIME(), 1),
+        (255049, @PolizaPruebaId, N'Abono prueba', 0, 100, 2, 1, SYSDATETIME(), 1);
+
     IF NOT EXISTS (SELECT 1 FROM ORCO.Proyecto WHERE PKIdProyecto = 10006)
     BEGIN
         SET IDENTITY_INSERT ORCO.Proyecto ON;
@@ -27,26 +48,16 @@ BEGIN TRY
         SET IDENTITY_INSERT ORCO.Proyecto OFF;
     END;
 
-    INSERT PRES.EgresoAutorizado (
-        FKIdPrograma_PRES, FKIdPartida_CONTA, FKIdArea_SIS, Descripcion,
-        Fecha, FKIdPoliza_CONTA, Activo, FechaCreacion, UsuarioCreacion,
-        FKIdEgresoProyectado_PRES, Enero, Febrero, Marzo, Abril, Mayo,
-        Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre,
-        FechaAutorizacion, UsuarioAutorizacion,
-        FKIdFuenteFinanciamiento_PRES, FKIdTipoGasto_PRES,
-        FKIdDigitoIdentificador_PRES, FKIdDestinoGasto_PRES, FKIdPY_PRES
-    )
-    SELECT
-        FKIdPrograma_PRES, 21101, FKIdArea_SIS, N'Posicion prueba transaccional',
-        Fecha, FKIdPoliza_CONTA, 1, SYSDATETIME(), 1,
-        FKIdEgresoProyectado_PRES, 100, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        FechaAutorizacion, UsuarioAutorizacion,
-        FKIdFuenteFinanciamiento_PRES, FKIdTipoGasto_PRES,
-        FKIdDigitoIdentificador_PRES, FKIdDestinoGasto_PRES, FKIdPY_PRES
-    FROM PRES.EgresoAutorizado
-    WHERE PKIdEgresoAutorizado = 1;
-    DECLARE @EgresoId int = SCOPE_IDENTITY();
+    DECLARE @EgresoId int =
+    (
+        SELECT TOP (1) PKIdEgresoAutorizado
+        FROM PRES.EgresoAutorizado
+        WHERE Activo = 1 AND FKIdEmpresa_SIS = 1 AND FKIdPartida_CONTA = 21101
+        ORDER BY PKIdEgresoAutorizado DESC
+    );
+
+    IF @EgresoId IS NULL
+        THROW 51040, 'La prueba requiere una posicion autorizada activa para la partida 21101.', 1;
 
     INSERT ORCO.Requisicion (
         FKIdEmpresa_SIS, FKIdPersona_NOM, FKIdArea_SIS, Descripcion,
@@ -59,7 +70,7 @@ BEGIN TRY
     )
     SELECT
         1, 3, FKIdArea_SIS, N'', N'Prueba flujo rollback',
-        GETDATE(), 0, 10006, GETDATE(), DATEADD(day, 1, GETDATE()),
+        GETDATE(), 0, FKIdPY_PRES, GETDATE(), DATEADD(day, 1, GETDATE()),
         FKIdPrograma_PRES, 100, FKIdFuenteFinanciamiento_PRES, FKIdAnio_SIS,
         FKIdTipoGasto_PRES, FKIdDigitoIdentificador_PRES,
         FKIdDestinoGasto_PRES, @EgresoId, 0, 1, SYSDATETIME(), 1
@@ -229,7 +240,7 @@ BEGIN TRY
         FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @AutorizacionId, 1, 1, N'PRUEBA-ROLLBACK',
+        (1, @AutorizacionId, 1, @PolizaPruebaId, N'PRUEBA-ROLLBACK',
          N'Prueba', GETDATE(), 100, 1, 1, SYSDATETIME(), 1);
     DECLARE @ContratoId int = SCOPE_IDENTITY();
 
@@ -249,7 +260,7 @@ BEGIN TRY
         Estatus, Activo, FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @ContratoId, 1, N'FACT-ROLLBACK', GETDATE(),
+        (1, @ContratoId, @PolizaPruebaId, N'FACT-ROLLBACK', GETDATE(),
          100, 0, 0, 100, 1, 1, SYSDATETIME(), 1);
     DECLARE @FacturaId int = SCOPE_IDENTITY();
 
@@ -269,7 +280,7 @@ BEGIN TRY
         FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @ContratoId, 1, N'CLC-ROLLBACK', GETDATE(),
+        (1, @ContratoId, @PolizaPruebaId, N'CLC-ROLLBACK', GETDATE(),
          100, 1, 1, SYSDATETIME(), 1);
     DECLARE @ClcId int = SCOPE_IDENTITY();
 
@@ -297,8 +308,8 @@ BEGIN TRY
         ImporteTotal, Estatus, Activo, FechaCreacion, UsuarioCreacion
     )
     VALUES
-        (1, @ClcId, 1, 1, GETDATE(), N'CH-ROLLBACK',
-         N'Prueba', 100, 1, 1, SYSDATETIME(), 1);
+        (1, @ClcId, 1, @PolizaPruebaId, GETDATE(), N'CH-ROLLBACK',
+         N'Prueba', 100, 2, 1, SYSDATETIME(), 1);
     DECLARE @ChequeId int = SCOPE_IDENTITY();
 
     INSERT PRES.ChequePartidas (
@@ -351,8 +362,29 @@ BEGIN TRY
        @PartidaCheque <> 21101
         THROW 51050, 'La partida no se heredo correctamente hasta cheque.', 1;
 
+    EXEC PRES.SP_RegresarChequeASolicitudSuficiencia
+        @PKIdCheque = @ChequeId,
+        @FKIdEmpresa_SIS = 1,
+        @Motivo = N'Prueba automatizada de regreso completo a requisicion',
+        @IdUser = 1;
+
+    IF NOT EXISTS (SELECT 1 FROM ORCO.Requisicion WHERE PKIdRequisicion = @RequisicionId AND Activo = 1)
+        THROW 51051, 'La requisicion no quedo activa como punto de reinicio.', 1;
+    IF EXISTS (SELECT 1 FROM ORCO.Cotizacion WHERE FKIdRequisicion_ORCO = @RequisicionId AND Activo = 1)
+        THROW 51052, 'Quedaron cotizaciones activas despues de la reversa.', 1;
+    IF EXISTS (SELECT 1 FROM PRES.SolicitudSuficiencia WHERE PKIdSolicitudSuficiencia = @SolicitudId AND Activo = 1)
+        THROW 51053, 'La suficiencia permanecio activa despues de la reversa.', 1;
+    IF EXISTS (SELECT 1 FROM PRES.Cheque WHERE PKIdCheque = @ChequeId AND Activo = 1)
+        THROW 51054, 'El cheque permanecio activo despues de la reversa.', 1;
+    IF NOT EXISTS
+    (
+        SELECT 1 FROM PRES.RegresoChequeSuficiencia R
+        WHERE R.FKIdCheque_PRES = @ChequeId AND R.FKIdRequisicion_ORCO = @RequisicionId
+    )
+        THROW 51055, 'No se genero la bitacora del regreso a requisicion.', 1;
+
     ROLLBACK TRANSACTION;
-    PRINT 'PRUEBA CORRECTA: partida 21101 heredada hasta cheque. Sin cambios persistidos.';
+    PRINT 'PRUEBA CORRECTA: flujo hasta cheque y regreso atomico a requisicion. Sin cambios persistidos.';
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

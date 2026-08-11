@@ -42,6 +42,10 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
         {
             response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             ClearMonthsBeforeStartDate(response);
+            var validation = ValidateAmounts(response);
+            if (validation != null)
+                return Task.FromResult(validation);
+
             return base.CreateAsync(response, usuarioActual);
         }
 
@@ -54,7 +58,31 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
             response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
             ClearMonthsBeforeStartDate(response);
+            var validation = ValidateAmounts(response);
+            if (validation != null)
+                return validation;
+
             return await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        private PagedResult<EgresoProyectadoResponse>? ValidateAmounts(EgresoProyectadoResponse response)
+        {
+            var months = new[]
+            {
+                response.Enero, response.Febrero, response.Marzo, response.Abril,
+                response.Mayo, response.Junio, response.Julio, response.Agosto,
+                response.Septiembre, response.Octubre, response.Noviembre, response.Diciembre
+            };
+
+            if (months.Any(amount => amount < 0m))
+                return Failure<EgresoProyectadoResponse>("Los importes mensuales del anteproyecto no pueden ser negativos.", "INVALID_AMOUNT");
+
+            var total = months.Sum();
+            if (total <= 0m)
+                return Failure<EgresoProyectadoResponse>("El anteproyecto debe contener al menos un importe mensual mayor a cero.", "INVALID_AMOUNT");
+
+            response.Total = total;
+            return null;
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)

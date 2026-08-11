@@ -91,6 +91,7 @@ namespace EG.Application.Services.Almacen
                 _context.Almacens.Add(entity);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await NotifyPendingReceiptAsync(response.FkidDetalleOrdenCompraOrco, usuarioActual);
                 var result = await GetByIdAsync(entity.PkidAlmacen);
                 result.Message = "Movimiento de almacen registrado correctamente.";
                 return result;
@@ -413,6 +414,45 @@ namespace EG.Application.Services.Almacen
             var items = entities.Select(ToResponse).ToList();
 
             return Success(items, "Entradas de orden de compra obtenidas correctamente", total);
+        }
+
+        private async Task NotifyPendingReceiptAsync(int? orderDetailId, int currentUserId)
+        {
+            if (!orderDetailId.HasValue)
+                return;
+
+            try
+            {
+                var detail = await _context.OrdenCompraDetalles
+                    .AsNoTracking()
+                    .Include(x => x.FkidOrdenCompraOrcoNavigation)
+                    .FirstOrDefaultAsync(x => x.PkidOrdenCompraDetalle == orderDetailId.Value && x.Activo);
+
+                if (detail == null || detail.CantidadRecibida >= detail.CantidadSolicitada)
+                    return;
+
+                var recipientId = detail.FkidOrdenCompraOrcoNavigation.UsuarioCreacion;
+                if (recipientId <= 0)
+                    return;
+
+                var pending = detail.CantidadSolicitada - detail.CantidadRecibida;
+                var users = new DataTable();
+                users.Columns.Add("Fk_IdUsuarioDestino", typeof(int));
+                users.Rows.Add(recipientId);
+                var notificationId = new OutputParameter<long?>();
+                var orderId = detail.FkidOrdenCompraOrco;
+                await _context.Procedures.sp_NotificacionCrearAsync(
+                    "RECEPCION_PARCIAL", currentUserId, "Almacen", "Recepcion_Pedidos",
+                    "RecepcionParcial", "OrdenCompra", orderId,
+                    $"Recepcion parcial de la orden {orderId}",
+                    $"La entrega quedo incompleta. Cantidad recibida: {detail.CantidadRecibida:N2}; pendiente: {pending:N2}.",
+                    "/Almacen/Recepcion_Pedidos", $"{{\"ordenCompraId\":{orderId},\"detalleId\":{detail.PkidOrdenCompraDetalle},\"pendiente\":{pending}}}",
+                    users, currentUserId, notificationId);
+            }
+            catch
+            {
+                // Una notificacion no debe revertir una recepcion valida.
+            }
         }
 
         private async Task<PagedResult<AlmacenResponse>> GetExistenciasRegistradasAsync(PagedRequest request, int anioId)

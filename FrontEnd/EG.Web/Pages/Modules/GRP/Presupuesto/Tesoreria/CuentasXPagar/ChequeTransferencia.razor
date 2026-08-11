@@ -170,7 +170,7 @@
             ["NumeroCheque"] = TextOrDash(cheque.NumeroCheque)
         };
         var dialog = await DialogService.ShowAsync<RegresarChequeSuficienciaDialog>(
-            "Regresar cheque a solicitud de suficiencia",
+            "Regresar cheque hasta la requisición",
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true });
         var result = await dialog.Result;
