@@ -112,8 +112,6 @@ namespace EG.Application.Services.Patrimonio
                     return Failure<ResguardoDetalleResponse>("El bien ya tiene un resguardo activo.");
                 }
 
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-
                 var estadoBien = response.FkidEstadoBienAlma ?? bien.FkidEstadoBienAlma;
                 var detalle = new ResguardoDetalle
                 {
@@ -128,22 +126,27 @@ namespace EG.Application.Services.Patrimonio
                     UsuarioCreacion = usuarioActual
                 };
 
-                _context.ResguardoDetalles.Add(detalle);
-                await _context.SaveChangesAsync();
+                var executionStrategy = _context.Database.CreateExecutionStrategy();
+                await executionStrategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    _context.ResguardoDetalles.Add(detalle);
+                    await _context.SaveChangesAsync();
 
-                var resguardoAnterior = bien.Resguardo;
-                bien.ResguardoAnterior = resguardoAnterior;
-                bien.Resguardo = response.FkidResguardoAlma;
-                bien.EstaResguardado = true;
-                bien.FechaResguardado = DateTime.Now;
-                bien.FkidAreaSis = resguardo.FkidAreaSis ?? bien.FkidAreaSis;
-                bien.FkidEstadoBienAlma = estadoBien ?? bien.FkidEstadoBienAlma;
-                bien.FechaModificacion = DateTime.Now;
-                bien.UsuarioModificacion = usuarioActual;
+                    var resguardoAnterior = bien.Resguardo;
+                    bien.ResguardoAnterior = resguardoAnterior;
+                    bien.Resguardo = response.FkidResguardoAlma;
+                    bien.EstaResguardado = true;
+                    bien.FechaResguardado = DateTime.Now;
+                    bien.FkidAreaSis = resguardo.FkidAreaSis ?? bien.FkidAreaSis;
+                    bien.FkidEstadoBienAlma = estadoBien ?? bien.FkidEstadoBienAlma;
+                    bien.FechaModificacion = DateTime.Now;
+                    bien.UsuarioModificacion = usuarioActual;
 
-                AddMovimiento(detalle.PkidResguardoDetalle, bien.PkidBien, resguardoAnterior, response.FkidResguardoAlma, "ASIGNACION", response.Observaciones, usuarioActual);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    AddMovimiento(detalle.PkidResguardoDetalle, bien.PkidBien, resguardoAnterior, response.FkidResguardoAlma, "ASIGNACION", response.Observaciones, usuarioActual);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                });
 
                 var refreshed = await GetByIdAsync(detalle.PkidResguardoDetalle);
                 refreshed.Message = "Bien asignado al resguardo correctamente.";
@@ -223,30 +226,32 @@ namespace EG.Application.Services.Patrimonio
                     };
                 }
 
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-
                 var usuarioActual = _userContext.GetCurrentUserId();
                 var bien = await _context.Biens.FirstOrDefaultAsync(x => x.PkidBien == detalle.FkidBienAlma && x.Activo);
                 var resguardoOrigen = detalle.FkidResguardoAlma;
-
-                detalle.Activo = false;
-                detalle.FechaLiberacion = DateTime.Now;
-                detalle.FechaModificacion = DateTime.Now;
-                detalle.UsuarioModificacion = usuarioActual;
-
-                if (bien != null)
+                var executionStrategy = _context.Database.CreateExecutionStrategy();
+                await executionStrategy.ExecuteAsync(async () =>
                 {
-                    bien.ResguardoAnterior = bien.Resguardo;
-                    bien.Resguardo = null;
-                    bien.EstaResguardado = false;
-                    bien.FechaResguardado = null;
-                    bien.FechaModificacion = DateTime.Now;
-                    bien.UsuarioModificacion = usuarioActual;
-                }
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    detalle.Activo = false;
+                    detalle.FechaLiberacion = DateTime.Now;
+                    detalle.FechaModificacion = DateTime.Now;
+                    detalle.UsuarioModificacion = usuarioActual;
 
-                AddMovimiento(detalle.PkidResguardoDetalle, detalle.FkidBienAlma, resguardoOrigen, null, "LIBERACION", detalle.Observaciones, usuarioActual);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    if (bien != null)
+                    {
+                        bien.ResguardoAnterior = bien.Resguardo;
+                        bien.Resguardo = null;
+                        bien.EstaResguardado = false;
+                        bien.FechaResguardado = null;
+                        bien.FechaModificacion = DateTime.Now;
+                        bien.UsuarioModificacion = usuarioActual;
+                    }
+
+                    AddMovimiento(detalle.PkidResguardoDetalle, detalle.FkidBienAlma, resguardoOrigen, null, "LIBERACION", detalle.Observaciones, usuarioActual);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                });
 
                 return new PagedResult<bool>
                 {

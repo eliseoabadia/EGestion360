@@ -338,6 +338,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUserIpService, UserIpService>();
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IBitacoraService, BitacoraService>();
 
             // Catalog services - Clave programa
             services.AddScoped<IGfService, GfService>();

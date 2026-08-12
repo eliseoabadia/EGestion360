@@ -1,0 +1,25 @@
+@using EG.Domain.DTOs.Responses.Seguridad
+<MudDialog>
+    <DialogContent>
+        <MudAlert Severity="@SeverityFor(Item.Level)" Variant="Variant.Outlined" Class="mb-4">@Text(Item.Message)</MudAlert>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Fecha y hora</MudText><MudText>@Item.Date?.ToString("dd/MM/yyyy HH:mm:ss.fff")</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Usuario</MudText><MudText>@Text(Item.EmployeeNo)</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Área / módulo</MudText><MudText>@Text(Item.ProgName)</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Acción</MudText><MudText>@Text(Item.Category)</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Método</MudText><MudText>@Text(Item.MethodName)</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Duración</MudText><MudText>@(Item.ExecutionTime.HasValue ? $"{Item.ExecutionTime:N0} ms" : "—")</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Dirección IP</MudText><MudText>@Text(Item.Ipclient)</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Equipo</MudText><MudText>@Text(Item.HostName)</MudText></MudItem>
+            <MudItem xs="12"><MudText Typo="Typo.caption">Identificador de evidencia</MudText><MudText Style="font-family:monospace">LOG-@Item.PkidSystemLog.ToString("D10")</MudText></MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions><MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Primary">Cerrar</MudButton></DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = null!;
+    [Parameter, EditorRequired] public BitacoraResponse Item { get; set; } = new();
+    private void Close() => Dialog.Close();
+    private static string Text(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static Severity SeverityFor(string? level) => level?.ToUpperInvariant() switch { "ERROR" or "FATAL" => Severity.Error, "WARN" => Severity.Warning, _ => Severity.Info };
+}

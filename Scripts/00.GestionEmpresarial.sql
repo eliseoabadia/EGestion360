@@ -1,443 +1,33 @@
--- =============================================
--- CREACIÓN DE BASE DE DATOS (opcional)
--- =============================================
--- Si la base de datos no existe, créala:
--- IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'GestionEmpresarial')
--- BEGIN
---     CREATE DATABASE GestionEmpresarial;
--- END
--- GO
 
-USE [GestionEmpresarial];
-GO
 
--- =============================================
--- ESQUEMAS
--- =============================================
-CREATE SCHEMA SIS;  -- Sistema (catálogos generales)
-GO
-CREATE SCHEMA NOM;  -- Nómina
-GO
-CREATE SCHEMA ALMA; -- Almacén
-GO
-CREATE SCHEMA CONTA; -- Contabilidad
-GO
-CREATE SCHEMA ORCO;
-GO
-CREATE SCHEMA PRES;
-GO
-CREATE SCHEMA TES; --//tesoreria
-GO
-CREATE SCHEMA HIS;
-GO
--- =============================================
--- TIPO DE DATO PERSONALIZADO
--- =============================================
-CREATE TYPE [dbo].[dmoney] FROM [decimal](20, 4) NULL;
-GO
+update  sis.Menu set Ruta = replace(Ruta,'/~/','/')
+select * from sis.Menu
+select * from sis.MenuRole
+select * from dbo.AspNetClaims
+select * from dbo.AspNetClaimValues
 
--- =============================================
--- CATÁLOGOS BASE
--- =============================================
+truncate table  dbo.aspnetclaimvalues
+delete  dbo.AspNetClaims
 
--- Tabla de Idiomas
-CREATE TABLE SIS.Idioma (
-    PKIdIdioma INT IDENTITY(1,1) NOT NULL,
-    Nombre NVARCHAR(50) NOT NULL,
-    CodigoISO639_1 CHAR(2) NOT NULL,
-    NombreNativo NVARCHAR(50) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    CONSTRAINT PK_Idioma PRIMARY KEY CLUSTERED (PKIdIdioma),
-    CONSTRAINT UQ_Idioma_Codigo UNIQUE (CodigoISO639_1)
+delete  dbo.AspNetClaims
+truncate table  sis.MenuRole
+delete   sis.Menu
+
+DECLARE @maxId INT;
+SELECT @maxId = ISNULL(MAX(Id), 0) FROM dbo.AspNetClaims;
+DBCC CHECKIDENT ('dbo.AspNetClaims', RESEED, @maxId);
+
+DECLARE @maxId2 INT;
+SELECT @maxId2 = ISNULL(MAX(PKIdMenu), 0) FROM sis.Menu;
+DBCC CHECKIDENT ('sis.Menu', RESEED, @maxId2);
+
+
+UPDATE SIS.Menu
+SET ImageUrl = 'MudBlazorIcons.Filled.FolderSpecial'
+WHERE PKIdMenu IN (
+    SELECT DISTINCT FKIdMenu_SIS FROM SIS.Menu WHERE FKIdMenu_SIS IS NOT NULL
 );
 
--- Tabla de Monedas
-CREATE TABLE SIS.Moneda (
-    PKIdMoneda INT IDENTITY(1,1) NOT NULL,
-    Nombre NVARCHAR(50) NOT NULL,
-    CodigoISO4217 CHAR(3) NOT NULL,
-    Simbolo NVARCHAR(5) NOT NULL,
-    Decimales INT NOT NULL DEFAULT 2,
-    Activo BIT NOT NULL DEFAULT 1,
-    CONSTRAINT PK_Moneda PRIMARY KEY CLUSTERED (PKIdMoneda),
-    CONSTRAINT UQ_Moneda_Codigo UNIQUE (CodigoISO4217)
-);
-
--- Tabla de Países
-CREATE TABLE SIS.Paises (
-    PKIdPais INT IDENTITY(1,1) NOT NULL,
-    Nombre VARCHAR(64) NOT NULL,
-    CodigoISO2 CHAR(2) NOT NULL,
-    CodigoISO3 CHAR(3) NOT NULL,
-    FKIdIdiomaPrincipal_SIS INT NULL,
-    FKIdMonedaPrincipal_SIS INT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    CONSTRAINT PK_Paises PRIMARY KEY CLUSTERED (PKIdPais),
-    CONSTRAINT FK_Paises_Idioma FOREIGN KEY (FKIdIdiomaPrincipal_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
-    CONSTRAINT FK_Paises_Moneda FOREIGN KEY (FKIdMonedaPrincipal_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
-    CONSTRAINT UQ_Paises_CodigoISO2 UNIQUE (CodigoISO2),
-    CONSTRAINT UQ_Paises_CodigoISO3 UNIQUE (CodigoISO3)
-);
-
--- Tabla de Estados
-CREATE TABLE SIS.Estados (
-    PKIdEstado INT IDENTITY(1,1) NOT NULL,
-    FKIdPais_SIS INT NOT NULL,
-    Nombre VARCHAR(64) NOT NULL,
-    CodigoEstado VARCHAR(10) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    CONSTRAINT PK_Estados PRIMARY KEY CLUSTERED (PKIdEstado),
-    CONSTRAINT FK_Estados_Paises FOREIGN KEY (FKIdPais_SIS) REFERENCES SIS.Paises(PKIdPais),
-    CONSTRAINT UQ_Estados_Pais_Nombre UNIQUE (FKIdPais_SIS, Nombre)
-);
-
--- Tabla de Municipios
-CREATE TABLE SIS.Municipios (
-    PKIdMunicipio INT IDENTITY(1,1) NOT NULL,
-    FKIdEstado_SIS INT NOT NULL,
-    Nombre VARCHAR(100) NOT NULL,
-    CodigoMunicipio VARCHAR(10) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    CONSTRAINT PK_Municipios PRIMARY KEY CLUSTERED (PKIdMunicipio),
-    CONSTRAINT FK_Municipios_Estados FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado)
-    -- CONSTRAINT UQ_Municipios_Estado_Nombre UNIQUE (FKIdEstado_SIS, Nombre)  -- Comentada según original
-);
-
--- =============================================
--- ESTRUCTURA DE EMPRESA
--- =============================================
-
--- Tabla de Empresa
-CREATE TABLE SIS.Empresa (
-    PKIdEmpresa INT IDENTITY(1,1) NOT NULL,
-    Nombre NVARCHAR(128) NOT NULL,
-    NombreCorto NVARCHAR(64) NULL,
-    RFC NVARCHAR(13) NOT NULL,
-    RazonSocial NVARCHAR(255) NULL,
-    Giro NVARCHAR(100) NULL,
-    FKIdMonedaBase_SIS INT NOT NULL,
-    FKIdIdiomaPreferido_SIS INT NULL,
-    Logo NVARCHAR(1024) NULL,
-    LogoEmpresa VARBINARY(MAX) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    RegIMSS NVARCHAR(25) NULL,
-    RegInfonavit NVARCHAR(25) NULL,
-    CedEmpadronam NVARCHAR(25) NULL,
-    NoFonacot NVARCHAR(25) NULL,
-    UsAdmin NVARCHAR(100) NULL,
-    EmailAdmin NVARCHAR(100) NULL,
-    FKIdPeriodoPago_SIS INT NULL,
-    PrimaRiesgoIMSS DECIMAL(18, 4) NULL,
-    UsaSueldoTabular BIT NOT NULL DEFAULT 0,
-    FKIdTipoPago_NOM INT NULL,    CONSTRAINT PK_Empresa PRIMARY KEY CLUSTERED (PKIdEmpresa),
-    CONSTRAINT FK_Empresa_Moneda FOREIGN KEY (FKIdMonedaBase_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
-    CONSTRAINT FK_Empresa_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
-    CONSTRAINT UQ_Empresa_RFC UNIQUE (RFC)
-);
-
--- Tabla de relación Empresa-Estado (dónde opera la empresa)
-CREATE TABLE SIS.EmpresaEstado (
-    FKIdEmpresa_SIS INT NOT NULL,
-    FKIdEstado_SIS INT NOT NULL,
-    FechaApertura DATE NULL,
-    EsOficinaPrincipal BIT NOT NULL DEFAULT 0,
-    Activo BIT NOT NULL DEFAULT 1,
-    CONSTRAINT PK_EmpresaEstado PRIMARY KEY CLUSTERED (FKIdEmpresa_SIS, FKIdEstado_SIS),
-    CONSTRAINT FK_EmpresaEstado_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_EmpresaEstado_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado)
-);
-
--- Catálogo de Tipos de Sucursal
-CREATE TABLE SIS.CatTipoSucursal (
-    PKIdTipoSucursal INT IDENTITY(1,1) NOT NULL,
-    Descripcion NVARCHAR(50) NOT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    CONSTRAINT PK_TipoSucursal PRIMARY KEY CLUSTERED (PKIdTipoSucursal),
-    CONSTRAINT UQ_TipoSucursal_Descripcion UNIQUE (Descripcion)
-);
-
--- Tabla de Sucursal
-CREATE TABLE SIS.Sucursal (
-    PKIdSucursal INT IDENTITY(1,1) NOT NULL,
-    FKIdEmpresa_SIS INT NOT NULL,
-    FKIdEstado_SIS INT NOT NULL,
-    Nombre NVARCHAR(128) NOT NULL,
-    NombreCorto NVARCHAR(64) NULL,
-    CodigoSucursal NVARCHAR(20) NOT NULL,
-    Alias NVARCHAR(50) NULL,
-    FKIdTipoSucursal INT NOT NULL DEFAULT 2,
-    FKIdMonedaLocal_SIS INT NULL,
-    Direccion NVARCHAR(256) NOT NULL,
-    Colonia NVARCHAR(100) NULL,
-    Ciudad NVARCHAR(100) NULL,
-    CodigoPostal NVARCHAR(10) NULL,
-    TelefonoPrincipal NVARCHAR(20) NULL,
-    TelefonoSecundario NVARCHAR(20) NULL,
-    Email NVARCHAR(100) NULL,
-    HorarioApertura TIME NULL,
-    HorarioCierre TIME NULL,
-    EsMatriz BIT NOT NULL DEFAULT 0,
-    EsActiva BIT NOT NULL DEFAULT 1,
-    Latitud DECIMAL(9,6) NULL,
-    Longitud DECIMAL(9,6) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_Sucursal PRIMARY KEY CLUSTERED (PKIdSucursal),
-    CONSTRAINT FK_Sucursal_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_Sucursal_Estado FOREIGN KEY (FKIdEstado_SIS) REFERENCES SIS.Estados(PKIdEstado),
-    CONSTRAINT FK_Sucursal_Tipo FOREIGN KEY (FKIdTipoSucursal) REFERENCES SIS.CatTipoSucursal(PKIdTipoSucursal),
-    CONSTRAINT FK_Sucursal_Moneda FOREIGN KEY (FKIdMonedaLocal_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
-    CONSTRAINT UQ_Sucursal_Codigo UNIQUE (CodigoSucursal)
-);
-
--- Tabla de Departamento
-CREATE TABLE SIS.Departamento (
-    PKIdDepartamento INT IDENTITY(1,1) NOT NULL,
-    FKIdEmpresa_SIS INT NOT NULL,
-    FKIdSucursal_SIS INT NULL,
-    Nombre NVARCHAR(128) NOT NULL,
-    NombreCorto NVARCHAR(64) NULL,
-    Descripcion NVARCHAR(255) NULL,
-    NivelJerarquico INT DEFAULT 1,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_Departamento PRIMARY KEY CLUSTERED (PKIdDepartamento),
-    CONSTRAINT FK_Departamento_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_Departamento_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
-);
-
--- =============================================
--- USUARIOS (Integración con ASP.NET Identity)
--- =============================================
-
--- =============================================
--- 6. NOM.Persona (desde RHCT.Persona)
--- =============================================
--- Tabla Persona
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Persona' AND schema_id = SCHEMA_ID('NOM'))
-BEGIN
-    CREATE TABLE NOM.Persona (
-        PKIdPersona INT IDENTITY(1,1) NOT NULL,
-        Clave NVARCHAR(15) NOT NULL,
-        Iniciales NVARCHAR(3) NULL,
-        Nombre NVARCHAR(50) NOT NULL,
-        Paterno NVARCHAR(50) NOT NULL,
-        Materno NVARCHAR(50) NOT NULL,
-        Sexo NVARCHAR(10) NULL,
-        FechaNacimiento DATETIME NOT NULL,
-        ESTADO_CIVIL NVARCHAR(20) NULL,
-        RFC NVARCHAR(15) NOT NULL,
-        Curp NVARCHAR(18) NOT NULL,
-        REG_IMSS NVARCHAR(12) NULL,
-        NoCartilla NVARCHAR(16) NULL,
-        NoLicencia NVARCHAR(16) NULL,
-        NoPasaporte NVARCHAR(16) NULL,
-        NoCredencialElector NVARCHAR(32) NULL,
-        Gafete NVARCHAR(11) NULL,
-        CORREO_ELECTRONICO NVARCHAR(250) NULL,
-        Telefono_particular NVARCHAR(15) NULL,
-        Telefono_movil NVARCHAR(15) NULL,
-        Calle NVARCHAR(40) NULL,
-        Num_exterior NVARCHAR(10) NULL,
-        Num_interior NVARCHAR(10) NULL,
-        Colonia NVARCHAR(40) NULL,
-        CP NVARCHAR(6) NULL,
-        Municipio NVARCHAR(20) NULL,
-        Estado NVARCHAR(30) NULL,
-        Fecha_de_Inicio DATETIME NOT NULL,
-        Fecha_Fin DATETIME NULL,
-        TIPO_CONTRATACION NVARCHAR(50) NULL,
-        PUESTO NVARCHAR(100) NULL,
-        SUELDO_BASE FLOAT NULL,
-        COMPENSACION_GARANTIZADA FLOAT NULL,
-        BANCO NVARCHAR(100) NULL,
-        NUMERO_CUENTA NVARCHAR(25) NULL,
-        CLABE NVARCHAR(50) NULL,
-        Activo BIT NOT NULL DEFAULT 1,
-        FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-        UsuarioCreacion INT NOT NULL,
-        FechaModificacion DATETIME2 NULL,
-        UsuarioModificacion INT NULL,
-        CONSTRAINT PK_Persona PRIMARY KEY (PKIdPersona)
-    );
-END
-GO
-
--- Tabla Usuario
-CREATE TABLE SIS.Usuario (
-    PkIdUsuario INT IDENTITY(1,1) NOT NULL,
-    FKIdEmpresa_SIS INT NOT NULL,
-    FKIdPersona_NOM INT NOT NULL,
-    AspNetUserId NVARCHAR(450) NOT NULL,
-    PayrollID NVARCHAR(20) NOT NULL,
-    FKIdIdiomaPreferido_SIS INT NULL,
-    FKIdMonedaPreferida_SIS INT NULL,
-    EsAdministrador BIT NOT NULL DEFAULT 0,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_Usuario PRIMARY KEY (PkIdUsuario),
-    CONSTRAINT FK_Usuario_Empresa FOREIGN KEY (FKIdEmpresa_SIS) REFERENCES SIS.Empresa(PKIdEmpresa),
-    CONSTRAINT FK_Usuario_Idioma FOREIGN KEY (FKIdIdiomaPreferido_SIS) REFERENCES SIS.Idioma(PKIdIdioma),
-    CONSTRAINT FK_Usuario_Moneda FOREIGN KEY (FKIdMonedaPreferida_SIS) REFERENCES SIS.Moneda(PKIdMoneda),
-    CONSTRAINT UQ_Usuario_AspNetUserId UNIQUE (AspNetUserId),
-    CONSTRAINT UQ_Usuario_PayrollID UNIQUE (PayrollID)
-);
-GO
-
--- FK en Persona hacia Usuario
-ALTER TABLE NOM.Persona
-ADD CONSTRAINT FK_Persona_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_Persona_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-
--- FK en Usuario hacia Persona
-ALTER TABLE SIS.Usuario
-ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
-GO
-
---update sis.usuario  set FKIdPersona_NOM = 9997 where pkIdUsuario = 1 
-
---ALTER TABLE SIS.Usuario ADD FKIdPersona_NOM INT NULL;
---ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_Persona FOREIGN KEY (FKIdPersona_NOM) REFERENCES NOM.Persona(PKIdPersona);
--- =============================================
--- RELACIONES USUARIO-SUCURSAL-DEPARTAMENTO
--- =============================================
-
--- Relación Usuario-Sucursal (acceso directo a sucursales)
-CREATE TABLE SIS.UsuarioSucursal (
-    FKIdUsuario_SIS INT NOT NULL,
-    FKIdSucursal_SIS INT NOT NULL,
-    PuedeAcceder BIT NOT NULL DEFAULT 1,
-    PuedeConfigurar BIT NOT NULL DEFAULT 0,
-    PuedeOperar BIT NOT NULL DEFAULT 1,
-    PuedeReportes BIT NOT NULL DEFAULT 0,
-    EsGerente BIT NOT NULL DEFAULT 0,
-    EsSupervisor BIT NOT NULL DEFAULT 0,
-    FechaAsignacion DATETIME2 DEFAULT SYSDATETIME(),
-    FechaFinAsignacion DATETIME2 NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_UsuarioSucursal PRIMARY KEY (FKIdUsuario_SIS, FKIdSucursal_SIS),
-    CONSTRAINT FK_UsuarioSucursal_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_UsuarioSucursal_Sucursal FOREIGN KEY (FKIdSucursal_SIS) REFERENCES SIS.Sucursal(PKIdSucursal)
-);
-
--- Relación Usuario-Departamento (solo relación, SIN permisos duplicados)
-CREATE TABLE SIS.UsuarioDepartamento (
-    FKIdUsuario_SIS INT NOT NULL,
-    FKIdDepartamento_SIS INT NOT NULL,
-    EsJefe BIT NOT NULL DEFAULT 0,
-    FechaAsignacion DATETIME2 DEFAULT SYSDATETIME(),
-    FechaFinAsignacion DATETIME2 NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT PK_UsuarioDepartamento PRIMARY KEY (FKIdUsuario_SIS, FKIdDepartamento_SIS, FechaAsignacion),
-    CONSTRAINT FK_UsuarioDepartamento_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PkIdUsuario),
-    CONSTRAINT FK_UsuarioDepartamento_Departamento FOREIGN KEY (FKIdDepartamento_SIS) REFERENCES SIS.Departamento(PKIdDepartamento)
-);
-
--- =============================================
--- ÍNDICES PARA OPTIMIZACIÓN
--- =============================================
-
---CREATE INDEX IX_Usuario_Empresa ON SIS.Usuario(FKIdEmpresa_SIS) INCLUDE (Nombre, ApellidoPaterno, Email) WHERE Activo = 1;
---CREATE INDEX IX_Usuario_AspNetUserId ON SIS.Usuario(AspNetUserId) INCLUDE (PkIdUsuario, FKIdEmpresa_SIS);
---CREATE INDEX IX_Usuario_Email ON SIS.Usuario(Email) INCLUDE (Activo) WHERE Activo = 1;
-
-----CREATE INDEX IX_UsuarioSucursal_Usuario ON SIS.UsuarioSucursal(FKIdUsuario_SIS) INCLUDE (FKIdSucursal_SIS, PuedeAcceder) WHERE Activo = 1;
-----CREATE INDEX IX_UsuarioSucursal_Sucursal ON SIS.UsuarioSucursal(FKIdSucursal_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
-
-----drop index  IX_UsuarioDepartamento_Usuario
-----drop index IX_UsuarioDepartamento_Departamento
-----CREATE INDEX IX_UsuarioDepartamento_Usuario ON SIS.UsuarioDepartamento(FKIdUsuario_SIS) INCLUDE (FKIdDepartamento_SIS, EsJefe) WHERE Activo = 1;
-----CREATE INDEX IX_UsuarioDepartamento_Departamento ON SIS.UsuarioDepartamento(FKIdDepartamento_SIS) INCLUDE (FKIdUsuario_SIS) WHERE Activo = 1;
-
---CREATE INDEX IX_Sucursal_Empresa ON SIS.Sucursal(FKIdEmpresa_SIS) INCLUDE (Nombre, CodigoSucursal, Ciudad) WHERE Activo = 1;
---CREATE INDEX IX_Departamento_Empresa ON SIS.Departamento(FKIdEmpresa_SIS) INCLUDE (Nombre) WHERE Activo = 1;
---CREATE INDEX IX_Departamento_Sucursal ON SIS.Departamento(FKIdSucursal_SIS) INCLUDE (Nombre) WHERE Activo = 1;
-
--- =============================================
--- TABLAS DE ASP.NET IDENTITY
--- =============================================
-
-/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
-/*
-user:ADMIN001
-pasword: Tecno.2025
-*/
-/*  ---------------------------------------------------------------------------                   ------------------------------------------------------------------------*/
-
--- Roles
-CREATE TABLE dbo.AspNetRoles (
-    Id NVARCHAR(128) NOT NULL,
-    Name NVARCHAR(256) NOT NULL,
-    Code NVARCHAR(10),
-    CONSTRAINT CONSTRAINT_PK_AspNetRoles PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT CONSTRAINT_UX_AspNetRoles_Name UNIQUE NONCLUSTERED (Name)
-);
-GO
-
-INSERT INTO [dbo].[AspNetRoles] ([Id], [Name], [Code]) VALUES 
-('71804e93-9753-4684-84fd-cf037349c111', 'SYSTEMADMIN', '10000'),
-('739CC754-488B-4BB4-B7FB-62F6BF3C26D0', 'SOPORTE', '20000'),
-('67A6E679-DBC4-402D-AE6E-7F28DDB11BD8', 'CONFIGURATION', '30000');
-
-/* user */
-INSERT INTO [dbo].[AspNetUsers]
-([Id],[Email],[EmailConfirmed],[PasswordHash],[SecurityStamp],[PhoneNumber],[PhoneNumberConfirmed],[TwoFactorEnabled],[LockoutEndDateUtc],[LockoutEnabled],[AccessFailedCount]
-,[ReferenceId],[AccessNumber],[PkIdUsuario])
-VALUES (NEWID(),'',1,'UOxg2B7HCZwZZ/drSkwHrA==','C5F91B8B-9E25-4576-96E7-CD3317F1AB87',null,0,0,null,0,0,10000,'0000010000',1)
-
--- Claim Types
-CREATE TABLE dbo.AspNetClaimTypes (
-    Id INT IDENTITY(1,1) NOT NULL,
-    Name NVARCHAR(50) NOT NULL,
-    Created DATETIME NOT NULL,
-    CONSTRAINT CONSTRAINT_PK_AspNetClaimTypes PRIMARY KEY CLUSTERED (Id)
-);
-GO
-
-INSERT INTO dbo.AspNetClaimTypes (Name, Created) VALUES ('Template', GETDATE()), ('Role', GETDATE());
-
--- Claims
-CREATE TABLE dbo.AspNetClaims (
-    Id INT IDENTITY(1,1) NOT NULL,
-    ClaimTypeId INT,
-    Name NVARCHAR(150) NOT NULL,
-    [Group] NVARCHAR(100),
-    RoleId NVARCHAR(128),
-    TokenFormat NVARCHAR(50),
-    Created DATETIME NOT NULL,
-    SubGroup NVARCHAR(100),
-    Code NVARCHAR(10),
-    Description NVARCHAR(200),
-    [Values] VARCHAR(MAX),
-    ReferenceId INT NOT NULL CONSTRAINT CONSTRAINT_DF_AspNetClaims_ReferenceId DEFAULT (0),
-    CONSTRAINT CONSTRAINT_PK_AspNetClaims PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT CONSTRAINT_FK_AspNetClaims_ClaimType FOREIGN KEY (ClaimTypeId) REFERENCES dbo.AspNetClaimTypes(Id),
-    CONSTRAINT CONSTRAINT_FK_AspNetClaims_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
-);
-GO
 
 -- Insert claims (role-independientes)
 -- =====================================================================
@@ -453,6 +43,10 @@ VALUES
 (2, 'Reportes CxC', 'Reportes CxC', NULL, 'app://{0}/{1}', GETDATE(), 'Reportes CxC', 'RPT001', 'Reportes CxC', 'view,view-menu', 8),
 (2, 'PBR', 'PBR', NULL, 'app://{0}/{1}', GETDATE(), 'PBR', 'PBR001', 'PBR', 'view,view-menu', 9),
 (2, 'Ayuda', 'Ayuda', NULL, 'app://{0}/{1}', GETDATE(), 'Ayuda', 'HLP001', 'Ayuda', 'view,view-menu', 10),
+(2, 'Administracion', 'Administracion', NULL, 'app://{0}/{1}', GETDATE(), 'Administracion', 'ADMON001', 'Ayuda', 'view,view-menu', 11),
+
+(2, 'Administracion', 'Administracion', NULL, 'app://{0}/{1}', GETDATE(), 'Seguridad', 'ADMONSE001', 'Sistema', 'view,view-menu', 20),
+(2, 'Administracion', 'Seguridad', NULL, 'app://{0}/{1}', GETDATE(), 'Bitacora', 'ADMSE001', 'Mi Perfil', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
 
 (2, 'Configuracion', 'Configuracion', NULL, 'app://{0}/{1}', GETDATE(), 'Sistema', 'CONSIS01', 'Sistema', 'view,view-menu', 20),
 (2, 'Configuracion', 'Sistema', NULL, 'app://{0}/{1}', GETDATE(), 'MiPerfil', 'CONSISS01', 'Mi Perfil', 'view,view-menu,delete,new,update,CanExportToExcel', 0),
@@ -676,8 +270,8 @@ VALUES
 
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Recepcion_Pedidos', 'ALMS01', 'Recepción de Pedidos', 'view,view-menu,delete,new,update,CanExportToExcel', 500),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Entradas_Ajuste', 'ALMS02', 'Entradas por Ajuste', 'view,view-menu,delete,new,update,CanExportToExcel', 501),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitudes_Salida', 'ALMS03', 'Solicitudes de Salida', 'view,view-menu,delete,new,update,CanExportToExcel', 502),
-(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Suministros_Salida', 'ALMS04', 'Suministros de Salida', 'view,view-menu,delete,new,update,CanExportToExcel', 503),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Solicitudes_Salida', 'ALMS03', 'Solicitudes de Salida', 'view,view-menu,delete,new,update,authorize,CanExportToExcel ', 502),
+(2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Suministros_Salida', 'ALMS04', 'Suministros de Salida', 'view,view-menu,update,authorize,CanExportToExcel', 503),
 --Falta salidas por ajuste
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Existencias_Registradas', 'ALMS06', 'Existencias Registradas', 'view,view-menu,delete,new,update,CanExportToExcel', 505),
 (2, 'Almacen', 'Almacen', NULL, 'app://{0}/{1}', GETDATE(), 'Conteo_ciclico', 'ALMS07', 'Conteo Cí­clico', 'view,view-menu,delete,new,update,CanExportToExcel', 506),
@@ -851,19 +445,9 @@ VALUES
 
 SELECT 'EXEC spConfiguracionDeRolYClaims ''' + [Group] + ''', ''' + [SubGroup] + ''', ''10000'', ''' + [Values] + ''';'
 from dbo.AspNetClaims
+where [Values] <> 'view,view-menu'
 
----- Ejecución del procedimiento para asignar valores a los roles
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Configuracion', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Presupuesto', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Contabilidad', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Adquisiciones', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Patrimonio', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Almacen', 'Almacen', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes CxC', 'Reportes CxC', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'PBR', 'PBR', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Ayuda', 'Ayuda', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Sistema', '10000', 'view,view-menu';
+EXEC spConfiguracionDeRolYClaims 'Seguridad', 'Bitacora', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'MiPerfil', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Usuario', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Menu', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -871,9 +455,7 @@ EXEC spConfiguracionDeRolYClaims 'Sistema', 'General', '10000', 'view,view-menu,
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Empresa', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Departamento', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Sistema', 'Configurar_Accesos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Catalogos_presupuestales', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Programas_Presupuestales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'ClavePrograma', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'UnidadResponsable', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Finalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Funcion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -887,7 +469,6 @@ EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Fuente_Financiamiento', '1000
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'PG', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Ramo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'ClavePrograma', 'Proyecto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Catalogos_presupuestales', 'Contabilidad', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Tipo_Polizas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Tipo_detalles_Polizas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Matriz_Conversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -895,7 +476,6 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Matriz_Conversion_Ingresos', '
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Partidas_Presupuestales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Cuentas_Contables', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Formas_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Adquisiciones', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Modalidad', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Tipo_Documentos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -905,7 +485,6 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Estatus_Requisicion', '10000'
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Proveedores', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Articulo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Fraccion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Patrimonio', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Familia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Grupo_Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes_Servicios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -913,7 +492,6 @@ EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Tipo_Patrimonio', '10000', 'view
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Tipo_Adquisicion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Marca', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Personas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Almacen', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Movimiento_Entrada_Salida', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Estatus_Solicitud', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Unidades', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -922,7 +500,6 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'Familia', '10000', 'view,view-menu,
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Tipo_Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Bien', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Numero_Conteo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Configuracion', 'Tesoreria', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Cambio', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Inversion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Moneda', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -930,43 +507,31 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_Pago', '10000', 'view,view-m
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_PagoSF', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_SolicitudCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Tipo_DoctoCLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Egreso', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Planeacion', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Catalogos_Planeacion', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_Planeacion', 'Indicadores', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Catalogos_Planeacion', 'Resumen_Narrativo', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Planeacion', 'Anteproyecto_Egresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Autorizado', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Modificado', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Ampliaciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reducciones', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Disponible', '10000', 'view,view-menu,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Egreso', 'Presupuesto_Comprometido', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Solicitud_Suficiencia', '10000', 'view,view-menu,new,update,delete,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Autorizacion_Suficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Comprometido', 'Registro_Comprometido', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Presupuesto', 'Tesoreria', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXCobrar', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Ley_Ingresos_Estimados', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Presupuesto_Modificado', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Adecuaciones_Compensadas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Aumento_Presupuesto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Presupuesto_Modificado', 'Reduccion_Presupuesto', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Ingresos_Devengados', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Ingresos_Devengados', 'Ingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Ingresos_Devengados', 'Ingresos_Propios', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Ingresos_Recaudar', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Depositos_CLC', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Otros_Ingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'CuentasXCobrar', 'Reportes_CxC', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Antiguedad_Saldos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Integracion_Saldos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Estado_Cuenta', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Analisis_Saldos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Reportes_CxC', 'Consulta_Documentos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'CuentasXPagar', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'CuentasXPagar', 'PEF_Unipartida_TES', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'PEF_Unipartida_TES', 'RecepcionFactura_ComprobantePago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'PEF_Unipartida_TES', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'PEF_Unipartida_TES', 'ElaboracionCheque_Transferencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
@@ -975,7 +540,6 @@ EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Saldos_Cuentas', '10000', 'view,v
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Solicitud_Reintegros', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Autorizar_Solicitud_Reingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Provision_Pago', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Tesoreria', 'Inversiones', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Banco', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Cuenta_Bancaria', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Inversiones', 'Intermediarios_Financiero', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -989,7 +553,6 @@ EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Polizas', '10000', 'view,view-
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Autorizacion_Polizas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Balanza_Comprobacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Auxiliares', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Reportes_Contabilidad', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Libro_Diario', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Libro_Mayor', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Libro_Inventarios_Materiales', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1001,7 +564,6 @@ EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Reporte_Depreciacion_
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Reporte_Activos_Fijos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Reporte_Facturas_Emitidas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Reportes_Contabilidad', 'Reporte_DIOT', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'EI_Contable', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Estados_Actividades', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Estado_Situacion_Financiera', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Estado_VHP', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1012,7 +574,6 @@ EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Estado_ADOP', '10000', 'view,vi
 EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Informe_Pasivos_Contingentes', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'EI_Contable', 'Notas_Estados_Financieros', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'Conciliacion_IE', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Contabilidad', 'EI_Presupuestarios', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'EI_Presupuestarios', 'Estado_Analitico_Ingresos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'EI_Presupuestarios', 'Estado_AECA', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'EI_Presupuestarios', 'Estado_AECE', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1034,10 +595,9 @@ EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Requisicion', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Cotizacion', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'SolicitudSuficiencia', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
 EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'OrdenCompra', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Adquisiciones', 'Contratos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Registro_Compromiso', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Saldos_Contratos', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
+EXEC spConfiguracionDeRolYClaims 'Contratos', 'Estado_Contrato', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bienes', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Clasificacion_Bienes_Muebles', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Patrimonio', 'Bajas', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
@@ -1056,66 +616,37 @@ EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_ciclico', '10000', 'view,vie
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_Conteo', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Conteo_ciclico_anual', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
 EXEC spConfiguracionDeRolYClaims 'Almacen', 'Reporte_diferencias_conteo_anual', '10000', 'view,view-menu,delete,new,update,CanExportToExcel';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina_Calculo', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Infonavit', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Procesos', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Catalogos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Periodos', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Tablas_ISR', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_Subsidios_ISR', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Nomina_IMSS', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Recursos_Humanos', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Empleados', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Movimientos_Personal', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'De_Personal', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Reporte Quincenal MP', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Recursos_Humanos', 'Creditos_Trabajadores', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Nomina', 'Nomina_Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Calculo', 'Calculo_2050', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Auxiliares', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Calculo_ISSSTE_4134', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Calculo_ISR_2053', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Calculo_FOVISSSTE_4136', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Calculo_Infonavit_139', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Auxiliares', 'Calculo_IMSS_3084', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Productos', 'Resumen', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Productos', 'Recibos', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos', 'Archivos_Dispersion', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos', 'Archivos_Timbrado', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Productos', 'Reporte_Cuotas_IMSS', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Productos', 'Reporte_Nomina', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Productos', 'Reporte_ISR', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Productos', 'Editar_Reg_Quincenal', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos', 'Editar_Reg_Mensual', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Incidencias', 'Captura_Incidencias', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Incidencias', 'Justificacion_Incidencias', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Incidencias', 'Reporte_Incidencias', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Pagos_Extraordinarios', 'Conceptos_Variables', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Cierre_Periodo', 'Cierre_Periodo', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Finiquito_Liquidacion', 'Liquidacion', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nominas_Especiales', 'Calc_Aguinaldo', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nominas_Especiales', 'Configura_Aguinaldo', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Nominas_Especiales', 'Aguinaldo', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Nominas_Especiales', 'Faltas_Especial', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Historicos', 'Historicos_Nomina', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Consulta_Nomina', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Analisis', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Recibos_Historicos', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Archivos_Dispersion_Historicos', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Archivos_Timbrado_Historicos', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Reporte_Nomina_Quincenal', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Resumen_Nomina_Historica', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Reporte_Nomina_Historica', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Productos_Historicos', 'Cubo_Nomina_Historica', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_IMSS_Historicos', 'Salario_Base_Cotizacion', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_IMSS_Historicos', 'Acumulados_IMSS', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_IMSS_Historicos', 'SBC_Historico', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_IMSS_Historicos', 'Acumulados_Bimestre_IMSS', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_SAT_Historicos', 'Acumulado_Mensual_ISR', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Reportes_SAT_Historicos', 'Acumulados_ISR', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Impuestos_Locales_Historicos', 'Impuestos_Locales', '10000', 'view,view-menu';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_Nominas', 'Configuracion_Nominas', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Catalogos', 'Tipo_Nomina', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Catalogos', 'Cuotas_IMSS', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Catalogos', 'Conceptos_Nomina', '10000', 'view,view-menu,delete,new,update';
@@ -1148,7 +679,6 @@ EXEC spConfiguracionDeRolYClaims 'IMSS', 'Prestaciones_Minimas', '10000', 'view,
 EXEC spConfiguracionDeRolYClaims 'IMSS', 'Clase_IMSS', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'IMSS', 'Fraccion_IMSS', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'IMSS', 'Base_Gravable_IMSS', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Configuracion_RH', 'Configuracion_RH', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Plazas_Autorizadas', 'Plazas_Autorizadas', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Universo', 'Universo', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Nivel', 'Nivel', '10000', 'view,view-menu,delete,new,update';
@@ -1159,7 +689,6 @@ EXEC spConfiguracionDeRolYClaims 'Tipo_Parentesco', 'Tipo_Parentesco', '10000', 
 EXEC spConfiguracionDeRolYClaims 'Estado', 'Estado', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Banco', 'Banco', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Municipio', 'Municipio', '10000', 'view,view-menu,delete,new,update';
-EXEC spConfiguracionDeRolYClaims 'Contratos', 'Contratos', '10000', 'view,view-menu';
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Base_Pago', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Metodo_Pago', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Contratos', 'Tipo_Regimen', '10000', 'view,view-menu,delete,new,update';
@@ -1182,100 +711,6 @@ EXEC spConfiguracionDeRolYClaims 'Movimiento_RH', 'Movimiento_RH', '10000', 'vie
 EXEC spConfiguracionDeRolYClaims 'Nomina', 'Vacaciones', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Vacaciones', 'Solicitud_Vacaciones', '10000', 'view,view-menu,delete,new,update';
 EXEC spConfiguracionDeRolYClaims 'Vacaciones', 'Autorizacion_Vacaciones', '10000', 'view,view-menu,delete,new,update,CanExportToExcel,authorize';
--- Tabla AspNetUsers
-CREATE TABLE dbo.AspNetUsers (
-    Id NVARCHAR(128) NOT NULL,
-    Email NVARCHAR(256),
-    EmailConfirmed BIT NOT NULL,
-    PasswordHash NVARCHAR(MAX),
-    SecurityStamp NVARCHAR(MAX),
-    PhoneNumber NVARCHAR(MAX),
-    PhoneNumberConfirmed BIT NOT NULL,
-    TwoFactorEnabled BIT NOT NULL,
-    LockoutEndDateUtc DATETIME,
-    LockoutEnabled BIT NOT NULL,
-    AccessFailedCount INT NOT NULL,
-    ReferenceId INT,
-    AccessNumber NVARCHAR(25),
-    PkIdUsuario INT,
-    CONSTRAINT CONSTRAINT_PK_AspNetUsers PRIMARY KEY CLUSTERED (Id),
-    CONSTRAINT CONSTRAINT_FK_AspNetUsers_Usuario FOREIGN KEY (PkIdUsuario) REFERENCES SIS.Usuario(PkIdUsuario)
-);
-GO
-
--- Insertar usuarios de prueba
-update [dbo].[AspNetUsers] set [PasswordHash] = 'UOxg2B7HCZwZZ/drSkwHrA==', [SecurityStamp] = 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87' where PkIdUsuario in (1,2,3);
-INSERT INTO [dbo].[AspNetUsers] (
-    [Id], [Email], [EmailConfirmed], [PasswordHash], [SecurityStamp], [PhoneNumber],
-    [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEndDateUtc], [LockoutEnabled],
-    [AccessFailedCount], [ReferenceId], [AccessNumber], [PkIdUsuario]
-)
-VALUES 
-    (NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 1)--,
-    --(NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 2),
-    --(NEWID(), '', 1, 'UOxg2B7HCZwZZ/drSkwHrA==', 'C5F91B8B-9E25-4576-96E7-CD3317F1AB87', NULL, 0, 0, NULL, 0, 0, 10000, '0000010000', 3);
-
--- Tabla AspNetUserRoles
---drop table dbo.AspNetUserRoles
-update AspNetUserRoles set  UserId = '52BEDE02-1F81-41E2-A93E-8666AB0873CE'
-CREATE TABLE dbo.AspNetUserRoles (
-    UserId NVARCHAR(128) NOT NULL,
-    RoleId NVARCHAR(128) NOT NULL,
-    ExpireDate DATETIME,
-    CONSTRAINT CONSTRAINT_PK_AspNetUserRoles PRIMARY KEY CLUSTERED (UserId, RoleId),
-    CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_User FOREIGN KEY (UserId) REFERENCES dbo.AspNetUsers(Id),
-    CONSTRAINT CONSTRAINT_FK_AspNetUserRoles_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
-);
-GO
-
-INSERT INTO [dbo].[AspNetUserRoles] ([UserId], [RoleId], [ExpireDate])
-SELECT [Id], '71804e93-9753-4684-84fd-cf037349c111', '2027-12-31'
-FROM [dbo].[AspNetUsers]
-WHERE PkIdUsuario  IN (1,2,3);
-
--- =============================================
--- MENÚS
--- =============================================
---select * from SIS.Menu where nombre like '%Usu%'
---drop table SIS.Menu
-CREATE TABLE SIS.Menu (
-    PKIdMenu INT IDENTITY NOT NULL,
-    Nombre NVARCHAR(150) NOT NULL,
-    Tipo INT NOT NULL,
-    FKIdMenu_SIS INT NULL,
-    LegacyName NVARCHAR(80),
-    Ruta NVARCHAR(200),
-    ImageUrl NVARCHAR(120),
-    Lenguaje CHAR(3) NOT NULL,
-    [Orden] INT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    CreatedByOperatorId INT,
-    CreatedDateTime DATETIME NOT NULL DEFAULT GETDATE(),
-    ModifiedByOperatorId INT,
-    ModifiedDateTime DATETIME,
-    CONSTRAINT CONSTRAINT_PK_Menu PRIMARY KEY CLUSTERED (PKIdMenu),
-    CONSTRAINT CONSTRAINT_FK_Menu_Padre FOREIGN KEY (FKIdMenu_SIS) REFERENCES SIS.Menu(PKIdMenu)
-);
-GO
---drop table SIS.MenuRole
-CREATE TABLE SIS.MenuRole (
-    FKIdMenu_SIS INT NOT NULL,
-    RoleId NVARCHAR(128) NOT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    CreatedByOperatorId INT,
-    CreatedDateTime DATETIME NOT NULL DEFAULT GETDATE(),
-    ModifiedByOperatorId INT,
-    ModifiedDateTime DATETIME,
-    CONSTRAINT CONSTRAINT_PK_MenuRole PRIMARY KEY CLUSTERED (FKIdMenu_SIS, RoleId),
-    CONSTRAINT CONSTRAINT_FK_MenuRole_Menu FOREIGN KEY (FKIdMenu_SIS) REFERENCES SIS.Menu(PKIdMenu),
-    CONSTRAINT CONSTRAINT_FK_MenuRole_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id)
-);
-GO
-
-select * from sis.Empresa
-select * from sis.Sucursal
---update sis.Sucursal set Nombre = 'Sucursal Operativa', CodigoSucursal = 'PCI-MAT-001' where PKIdSucursal = 1
-
 /*
 UPDATE SIS.Menu
 SET Tipo = CASE WHEN Ruta = '/' THEN 1 ELSE 2 END
@@ -1298,6 +733,7 @@ USING (VALUES
     (8, N'Reportes CxC', 1, NULL, N'Reportes CxC', N'/', N'FaChartLine', 1, N'ESP', 8, 1, GETDATE()),
     (9, N'PBR', 2, NULL, N'PBR', N'/PBR', N'FaDashboard', 1, N'ESP', 9, 1, GETDATE()),
     (10, N'Ayuda', 2, NULL, N'Ayuda', N'/ayuda', N'FaInfo', 1, N'ESP', 10, 1, GETDATE()),
+    (11, N'Administración', 1, NULL, N'Administración', N'/', N'FaCogs', 1, N'ESP', 11, 1, GETDATE()),
 
     -- Configuración -> Sistema
     (20, N'Sistema', 1, 1, N'Sistema', N'/', N'FaTools', 1, N'ESP', 1, 1, GETDATE()),
@@ -1703,7 +1139,12 @@ USING (VALUES
     (927, N'Situacion Plaza', 1, 900, N'Situacion_Plaza', N'/rh/configuracion/situacion-plaza', N'FaVerified', 1, N'ESP', 21, 1, GETDATE()),
     (928, N'Situacion Movimiento', 1, 900, N'Situacion_Movimiento', N'/rh/configuracion/situacion-movimiento', N'FaDocument', 1, N'ESP', 22, 1, GETDATE()),
     (929, N'Clase Movimiento', 1, 900, N'Clase_Movimiento', N'/rh/configuracion/clase-movimiento', N'FaDocument', 1, N'ESP', 23, 1, GETDATE()),
-    (930, N'Movimiento RH', 1, 900, N'Movimiento_RH', N'/rh/configuracion/movimiento', N'FaDocument', 1, N'ESP', 24, 1, GETDATE())--,
+    (930, N'Movimiento RH', 1, 900, N'Movimiento_RH', N'/rh/configuracion/movimiento', N'FaDocument', 1, N'ESP', 24, 1, GETDATE()),
+
+    
+    -- Administración -> Seguridad
+    (1000, N'Seguridad', 1, 11, N'Seguridad', N'/', N'FaShieldAlt', 1, N'ESP', 1, 1, GETDATE()),
+    (1001, N'Bitácora', 2, 1000, N'Bitácora', N'/Administracin/Seguridad/Bitacora', N'FaHistory', 1, N'ESP', 1, 1, GETDATE())
 ) AS SOURCE (PKIdMenu, Nombre, Tipo, FKIdMenu_SIS, LegacyName, Ruta, ImageUrl, Activo, Lenguaje, [Orden], CreatedByOperatorId, CreatedDateTime)
 ON TARGET.PKIdMenu = SOURCE.PKIdMenu
 WHEN MATCHED THEN
@@ -1751,174 +1192,3 @@ WHEN NOT MATCHED BY TARGET THEN
     VALUES (SOURCE.FKIdMenu_SIS, SOURCE.RoleId, SOURCE.Activo, SOURCE.CreatedByOperatorId, SOURCE.CreatedDateTime)
 WHEN NOT MATCHED BY SOURCE THEN DELETE;
 GO
-
--- =============================================
--- TABLAS ADICIONALES (Perfil, Logs, Parámetros)
--- =============================================
-CREATE TABLE SIS.PerfilUsuario (
-    FKIdUsuario_SIS INT PRIMARY KEY,
-    Fotografia VARBINARY(MAX),
-    ContentType NVARCHAR(50),
-    [FileName] NVARCHAR(64) NULL,
-    [FileExtension] NVARCHAR(8) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT FK_PerfilUsuario_Usuario FOREIGN KEY (FKIdUsuario_SIS) REFERENCES SIS.Usuario(PKIdUsuario) ON DELETE CASCADE
-);
-GO
-
-CREATE TABLE SIS.OrigenLogMessage (
-    PKIdOrigenLogMessage INT NOT NULL,
-    Descripcion NVARCHAR(50) NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT CONSTRAINT_PK_OrigenLogMessage PRIMARY KEY CLUSTERED (PKIdOrigenLogMessage)
-);
-GO
-
-INSERT INTO SIS.OrigenLogMessage (PKIdOrigenLogMessage, Descripcion, UsuarioCreacion) VALUES
-(1, 'Sistema', 1),
-(2, 'Aplicación', 1),
-(3, 'Seguridad', 1),
-(4, 'Base de Datos', 1),
-(5, 'Red', 1),
-(6, 'Hardware', 1),
-(7, 'Usuario', 1),
-(8, 'Otro', 1);
-GO
-
-CREATE TABLE SIS.SystemLog (
-    PKIdSystemLog INT IDENTITY(1,1) NOT NULL,
-    FKIdOrigenLogMessage_SIS INT NOT NULL,
-    [Date] DATETIME2 DEFAULT SYSDATETIME(),
-    [Type] NVARCHAR(24) NULL,
-    ProgName NVARCHAR(256) NULL,
-    EmployeeNo NVARCHAR(24) NULL,
-    Category NVARCHAR(24) NULL,
-    IPClient NVARCHAR(24) NULL,
-    HostName NVARCHAR(32) NULL,
-    Thread VARCHAR(255) NULL,
-    [Level] VARCHAR(20) NULL,
-    Logger VARCHAR(255) NULL,
-    Message VARCHAR(4000) NULL,
-    Exception NVARCHAR(4000) NULL,
-    Context NVARCHAR(10) NULL,
-    MethodName NVARCHAR(200) NULL,
-    Parameters NVARCHAR(4000) NULL,
-    ExecutionTime INT NULL,
-    CONSTRAINT CONSTRAINT_PK_SystemLog PRIMARY KEY CLUSTERED (PKIdSystemLog),
-    CONSTRAINT CONSTRAINT_FK_SystemLog_OrigenLogMessage FOREIGN KEY (FKIdOrigenLogMessage_SIS) REFERENCES SIS.OrigenLogMessage(PKIdOrigenLogMessage)
-);
-GO
-
-CREATE TABLE SIS.SystemParamCatalog (
-    PKIdSystemParamCatalog INT NOT NULL,
-    Code NVARCHAR(50) NOT NULL,
-    Name VARCHAR(100) NOT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT CONSTRAINT_PK_SystemParamCatalog PRIMARY KEY CLUSTERED (PKIdSystemParamCatalog)
-);
-GO
-
-INSERT INTO SIS.SystemParamCatalog (PKIdSystemParamCatalog, Code, Name, Activo, UsuarioCreacion) VALUES
-(1, 'SISTEMA', 'SISTEMA', 1, 1),
-(2, 'CATALOGOS', 'CATALOGOS', 1, 1);
-GO
-
-CREATE TABLE SIS.SystemParamValue (
-    PKIdSystemParamValue INT NOT NULL,
-    FKIdSystemParamCatalog_SIS INT NOT NULL,
-    Value NVARCHAR(MAX) NOT NULL,
-    Descripcion VARCHAR(128) NOT NULL,
-    Activo BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME2 DEFAULT SYSDATETIME(),
-    UsuarioCreacion INT NOT NULL,
-    FechaModificacion DATETIME2 NULL,
-    UsuarioModificacion INT NULL,
-    CONSTRAINT CONSTRAINT_PK_SystemParamValue PRIMARY KEY CLUSTERED (PKIdSystemParamValue),
-    CONSTRAINT CONSTRAINT_FK_SystemParamCatalog_SystemParamValue FOREIGN KEY (FKIdSystemParamCatalog_SIS) REFERENCES SIS.SystemParamCatalog(PKIdSystemParamCatalog)
-);
-GO
-
-INSERT INTO SIS.SystemParamValue (PKIdSystemParamValue, FKIdSystemParamCatalog_SIS, Value, Descripcion, Activo, UsuarioCreacion) VALUES
-(1, 1, '1', 'Variable que activa o desactiva el poder insertar en la tabla SystemLog', 1, 1);
-GO
-
--- =============================================
--- AGREGAR CLAVES FORÁNEAS FALTANTES
--- =============================================
--- Relación de SIS.Usuario con dbo.AspNetUsers
---ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_AspNetUsers FOREIGN KEY (AspNetUserId) REFERENCES dbo.AspNetUsers(Id);
---GO
-
--- Auditoría (columnas UsuarioCreacion, UsuarioModificacion) – todas referencian SIS.Usuario
--- Se agregan después de que la tabla SIS.Usuario ya existe
-ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Empresa ADD CONSTRAINT FK_Empresa_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Sucursal ADD CONSTRAINT FK_Sucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Departamento ADD CONSTRAINT FK_Departamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.Usuario ADD CONSTRAINT FK_Usuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.UsuarioSucursal ADD CONSTRAINT FK_UsuarioSucursal_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.UsuarioDepartamento ADD CONSTRAINT FK_UsuarioDepartamento_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.PerfilUsuario ADD CONSTRAINT FK_PerfilUsuario_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.OrigenLogMessage ADD CONSTRAINT FK_OrigenLogMessage_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.SystemParamCatalog ADD CONSTRAINT FK_SystemParamCatalog_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioCreacion FOREIGN KEY (UsuarioCreacion) REFERENCES SIS.Usuario(PkIdUsuario);
-ALTER TABLE SIS.SystemParamValue ADD CONSTRAINT FK_SystemParamValue_UsuarioModificacion FOREIGN KEY (UsuarioModificacion) REFERENCES SIS.Usuario(PkIdUsuario);
-GO
-
--- Nota: Las claves foráneas existentes ya siguen el patrón FK_<tabla>_<tabla_referenciada>
--- y se han conservado tal cual. Solo se agregaron las que faltaban.
-
-select * from sis.SystemLog
-
-truncate table [SIS].[SystemLog]
-
-select * from [BD_PRESUPUESTO].SIS.TipoPoliza
-select * from [BD_PRESUPUESTO].SIS.TipoDetallePoliza
-select * from [BD_PRESUPUESTO].CONTA.TipoDoctoPago
-select * from [BD_PRESUPUESTO].CONTA.MatrizConversion
-select * from [BD_PRESUPUESTO].CONTA.MatrizIngreso
-select * from [BD_PRESUPUESTO].[SIS].[Concepto]                  --Partidas Presupuestales
-select * from [BD_PRESUPUESTO].SIS.CuentaContable
-select * from [BD_PRESUPUESTO].
-select * from [BD_PRESUPUESTO].
-select * from [BD_PRESUPUESTO].
-select * from [BD_PRESUPUESTO].
-select * from [BD_PRESUPUESTO].
-select * from CONTA.TipoDoctoPago
-
-select * from SIS.TipoPoliza
-select * from SIS.TipoDetallePoliza
-
-select * from CONTA.MatrizConversion
-select * from CONTA.MatrizIngreso
-select * from [SIS].[Concepto]                  --Partidas Presupuestales
-select * from SIS.CuentaContable

@@ -1,0 +1,201 @@
+@page "/Administracin/Seguridad/Bitacora"
+@page "/Administracion/Seguridad/Bitacora"
+@using EG.Domain.DTOs.Requests.Seguridad
+@using EG.Domain.DTOs.Responses.Seguridad
+@inherits BaseCrudPage<BitacoraResponse, BitacoraResponse>
+
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height:100%;min-height:0;overflow:auto">
+        <PageHeader Title="Bitácora de seguridad"
+                    Subtitle="Actividad, accesos y eventos de los usuarios de la empresa activa"
+                    Icon="@Icons.Material.Filled.History"
+                    ShowCreateButton="false"
+                    OnRefresh="ApplyFiltersAsync" />
+
+        <MudPaper Class="pa-3 mb-3" Elevation="0" Outlined="true">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End" Style="flex-wrap:wrap">
+                <MudSelect T="string" Label="Periodo" Variant="Variant.Outlined" Dense="true" Value="@_period" ValueChanged="SetPeriodAsync" Style="min-width:170px">
+                    <MudSelectItem Value="@("today")">Hoy</MudSelectItem>
+                    <MudSelectItem Value="@("24h")">Últimas 24 horas</MudSelectItem>
+                    <MudSelectItem Value="@("week")">Últimos 7 días</MudSelectItem>
+                    <MudSelectItem Value="@("month")">Últimos 30 días</MudSelectItem>
+                    <MudSelectItem Value="@("custom")">Personalizado</MudSelectItem>
+                </MudSelect>
+                <MudDatePicker Label="Desde" Variant="Variant.Outlined" Dense="true" Date="@_desde" DateChanged="SetDesde" />
+                <MudTimePicker Label="Hora desde" Variant="Variant.Outlined" Dense="true" Time="@_horaDesde" TimeChanged="SetHoraDesde" />
+                <MudDatePicker Label="Hasta" Variant="Variant.Outlined" Dense="true" Date="@_hasta" DateChanged="SetHasta" />
+                <MudTimePicker Label="Hora hasta" Variant="Variant.Outlined" Dense="true" Time="@_horaHasta" TimeChanged="SetHoraHasta" />
+                <MudAutocomplete T="string" Label="Usuario" Placeholder="Todos los usuarios" Variant="Variant.Outlined" Dense="true" @bind-Value="_usuarioScope" SearchFunc="SearchUsers" ToStringFunc="UserLabel" Clearable="true" />
+                <MudAutocomplete T="string" Label="Área / módulo" Placeholder="Todas las áreas" Variant="Variant.Outlined" Dense="true" @bind-Value="_modulo" SearchFunc="SearchModules" ToStringFunc="ModuleLabel" Clearable="true" />
+                <MudAutocomplete T="string" Label="Tipo de evento" Placeholder="Todos los eventos" Variant="Variant.Outlined" Dense="true" @bind-Value="_categoria" SearchFunc="SearchCategories" Clearable="true" />
+                <MudTextField T="string" Label="Folio o registro" Placeholder="Ej. factura 1542" Variant="Variant.Outlined" Dense="true" @bind-Value="_referencia" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Tag" />
+                <MudSelect T="string" Label="Nivel" Variant="Variant.Outlined" Dense="true" @bind-Value="_nivel" Clearable="true" Style="min-width:130px">
+                    <MudSelectItem Value="@("INFO")">Información</MudSelectItem>
+                    <MudSelectItem Value="@("WARN")">Advertencia</MudSelectItem>
+                    <MudSelectItem Value="@("ERROR")">Error</MudSelectItem>
+                    <MudSelectItem Value="@("FATAL")">Crítico</MudSelectItem>
+                    <MudSelectItem Value="@("DEBUG")">Depuración</MudSelectItem>
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FilterAlt" OnClick="ApplyFiltersAsync">Consultar</MudButton>
+            </MudStack>
+        </MudPaper>
+
+        <MudGrid Spacing="2" Class="mb-3">
+            <MudItem xs="6" md="3"><MudPaper Class="pa-3" Outlined="true"><MudText Typo="Typo.caption">RESULTADOS</MudText><MudText Typo="Typo.h5">@TotalCount.ToString("N0")</MudText></MudPaper></MudItem>
+            <MudItem xs="6" md="3"><MudPaper Class="pa-3" Outlined="true"><MudText Typo="Typo.caption">USUARIOS EN PÁGINA</MudText><MudText Typo="Typo.h5">@VisibleUsers</MudText></MudPaper></MudItem>
+            <MudItem xs="6" md="3"><MudPaper Class="pa-3" Outlined="true"><MudText Typo="Typo.caption">ERRORES EN PÁGINA</MudText><MudText Typo="Typo.h5" Color="Color.Error">@VisibleErrors</MudText></MudPaper></MudItem>
+            <MudItem xs="6" md="3"><MudPaper Class="pa-3" Outlined="true"><MudText Typo="Typo.caption">EVENTOS LENTOS</MudText><MudText Typo="Typo.h5" Color="Color.Warning">@VisibleSlow</MudText></MudPaper></MudItem>
+        </MudGrid>
+
+        <div Style="flex:1 1 auto;min-height:420px">
+            <GenericTable TItem="BitacoraResponse" @ref="table" Title="Eventos registrados"
+                          SearchPlaceholder="Buscar usuario, módulo, acción, mensaje o IP..."
+                          ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel"
+                          ShowExportButton="@CanExport" SearchString="@SearchString"
+                          SearchStringChanged="s => SearchString = s" OnSearch="OnSearch"
+                          PageSize="20" PageSizeOptions="new[] { 10, 20, 50, 100 }" TableHeight="calc(100vh - 355px)">
+                <Header>
+                    <MudTh><MudTableSortLabel T="BitacoraResponse" SortLabel="Date">Fecha y hora</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="BitacoraResponse" SortLabel="EmployeeNo">Usuario</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="BitacoraResponse" SortLabel="ProgName">Módulo</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="BitacoraResponse" SortLabel="Category">Acción / categoría</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel T="BitacoraResponse" SortLabel="Level">Nivel</MudTableSortLabel></MudTh>
+                    <MudTh>Detalle</MudTh><MudTh>Origen</MudTh><MudTh>Duración</MudTh><MudTh></MudTh>
+                </Header>
+                <Row Context="item">
+                    <MudTd DataLabel="Fecha y hora">@item.Date?.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+                    <MudTd DataLabel="Usuario"><strong>@Text(item.EmployeeNo)</strong></MudTd>
+                    <MudTd DataLabel="Módulo">@Text(item.ProgName)</MudTd>
+                    <MudTd DataLabel="Acción / categoría">@Text(item.Category)</MudTd>
+                    <MudTd DataLabel="Nivel"><MudChip T="string" Size="Size.Small" Color="@LevelColor(item.Level)">@Text(item.Level)</MudChip></MudTd>
+                    <MudTd DataLabel="Detalle"><MudTooltip Text="@Text(item.Message)"><span class="d-inline-block text-truncate" style="max-width:300px">@Text(item.Message)</span></MudTooltip></MudTd>
+                    <MudTd DataLabel="Origen">@Text(item.Ipclient)</MudTd>
+                    <MudTd DataLabel="Duración">@(item.ExecutionTime.HasValue ? $"{item.ExecutionTime:N0} ms" : "—")</MudTd>
+                    <MudTd><MudTooltip Text="Ver evidencia"><MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ShowDetailAsync(item))" /></MudTooltip></MudTd>
+                </Row>
+            </GenericTable>
+        </div>
+    </MudContainer>
+</AccessVerification>
+
+@code {
+    private GenericTable<BitacoraResponse> table = null!;
+    private DateTime? _desde = DateTime.Today;
+    private DateTime? _hasta = DateTime.Today;
+    private TimeSpan? _horaDesde = TimeSpan.Zero;
+    private TimeSpan? _horaHasta = new(23, 59, 59);
+    private string _period = "today";
+    private string? _usuarioScope;
+    private string? _modulo;
+    private string? _categoria;
+    private string? _referencia;
+    private string? _nivel;
+    private List<BitacoraResponse> _filterOptions = [];
+    private int VisibleUsers => Elements.Select(x => x.EmployeeNo).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+    private int VisibleErrors => Elements.Count(x => x.Level is not null && (x.Level.Equals("ERROR", StringComparison.OrdinalIgnoreCase) || x.Level.Equals("FATAL", StringComparison.OrdinalIgnoreCase)));
+    private int VisibleSlow => Elements.Count(x => x.ExecutionTime >= 1000);
+
+    protected override string ModuleName => "Seguridad";
+    protected override string SubModuleName => "Bitacora";
+    protected override Type CreateDialogType => typeof(DeleteDialog<BitacoraResponse>);
+    protected override Type EditDialogType => typeof(DeleteDialog<BitacoraResponse>);
+    protected override Type DeleteDialogType => typeof(DeleteDialog<BitacoraResponse>);
+    protected override string GetDefaultSortLabel() => "Date";
+
+    protected override async Task<TableData<BitacoraResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var request = BuildRequest(state.Page + 1, state.PageSize, state.SortLabel, state.SortDirection);
+            var response = await Service.PostActionAsync("GetAllPaginado", request);
+            Elements = response?.Items?.ToList() ?? [];
+            TotalCount = response?.TotalCount ?? 0;
+            if (response?.Success != true)
+                Snackbar.Add(response?.Message ?? "No fue posible consultar la bitácora.", Severity.Error);
+            return new TableData<BitacoraResponse> { Items = Elements, TotalItems = TotalCount };
+        }
+        catch (Exception ex)
+        {
+            NotifyUnexpectedError(ex, "consultar la bitácora", "No fue posible consultar la bitácora. Intenta nuevamente.");
+            return new TableData<BitacoraResponse> { Items = [], TotalItems = 0 };
+        }
+    }
+
+    private BitacoraRequest BuildRequest(int page, int pageSize, string? sort, SortDirection direction)
+    {
+        var desde = (_desde ?? DateTime.Today).Date.Add(_horaDesde ?? TimeSpan.Zero);
+        var hasta = (_hasta ?? DateTime.Today).Date.Add(_horaHasta ?? new TimeSpan(23, 59, 59)).AddTicks(1);
+        return new BitacoraRequest { Page = page, PageSize = pageSize, Filtro = SearchString, SearchString = SearchString,
+            SortLabel = string.IsNullOrWhiteSpace(sort) ? "Date" : sort, SortDirection = direction == MudBlazor.SortDirection.Descending ? "Descending" : "Ascending",
+            Desde = desde, Hasta = hasta, Usuario = _usuarioScope,
+            Modulo = _modulo, Nivel = _nivel, Categoria = _categoria, Referencia = _referencia };
+    }
+
+    private async Task SetPeriodAsync(string value)
+    {
+        _period = value;
+        var now = DateTime.Now;
+        (_desde, _horaDesde, _hasta, _horaHasta) = value switch {
+            "24h" => (now.AddHours(-24).Date, now.AddHours(-24).TimeOfDay, now.Date, now.TimeOfDay),
+            "week" => (now.AddDays(-7).Date, TimeSpan.Zero, now.Date, now.TimeOfDay),
+            "month" => (now.AddDays(-30).Date, TimeSpan.Zero, now.Date, now.TimeOfDay),
+            _ => (now.Date, TimeSpan.Zero, now.Date, new TimeSpan(23, 59, 59)) };
+        if (value != "custom") await ApplyFiltersAsync();
+    }
+
+    private void SetDesde(DateTime? value) { _desde = value; _period = "custom"; }
+    private void SetHasta(DateTime? value) { _hasta = value; _period = "custom"; }
+    private void SetHoraDesde(TimeSpan? value) { _horaDesde = value; _period = "custom"; }
+    private void SetHoraHasta(TimeSpan? value) { _horaHasta = value; _period = "custom"; }
+
+    protected override async Task OnInitializedAsync() { await base.OnInitializedAsync(); await LoadFilterOptionsAsync(); }
+    private async Task LoadFilterOptionsAsync()
+    {
+        var response = await Service.PostActionAsync("Filtros", BuildRequest(1, 1, "Date", MudBlazor.SortDirection.Descending));
+        _filterOptions = response?.Items?.ToList() ?? [];
+    }
+    private async Task ApplyFiltersAsync() { await LoadFilterOptionsAsync(); if (table is not null) await table.ReloadData(); }
+    protected override Task ReloadData() => ApplyFiltersAsync();
+    protected override async Task ExportToExcel()
+    {
+        if (!CanExport) { Snackbar.Add("No tienes permisos para exportar.", Severity.Warning); return; }
+        try
+        {
+            var exported = new List<BitacoraResponse>();
+            const int batchSize = 1000;
+            for (var page = 1; exported.Count < MaxExportRows; page++)
+            {
+                var response = await Service.PostActionAsync("GetAllPaginado", BuildRequest(page, batchSize, "Date", MudBlazor.SortDirection.Descending));
+                if (response?.Success != true || response.Items is null) break;
+                var batch = response.Items.Take(MaxExportRows - exported.Count).ToList();
+                exported.AddRange(batch);
+                if (batch.Count < batchSize) break;
+            }
+            if (exported.Count == 0) { Snackbar.Add("No hay datos para exportar con el rango seleccionado.", Severity.Warning); return; }
+            using var stream = new MemoryStream();
+            await stream.SaveAsAsync(MapToExcelData(exported));
+            await JsRuntime.InvokeVoidAsync("downloadFile", Convert.ToBase64String(stream.ToArray()),
+                $"Bitacora_{DateTime.Now:yyyyMMddHHmmss}.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            Snackbar.Add($"Exportación exitosa: {exported.Count:N0} registros.", Severity.Success);
+        }
+        catch (Exception ex) { NotifyUnexpectedError(ex, "exportar la bitácora", "No fue posible generar el archivo."); }
+    }
+
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<BitacoraResponse> items) => items.Select(x => new {
+        Fecha = x.Date?.ToString("dd/MM/yyyy HH:mm:ss"), Usuario = x.EmployeeNo, Modulo = x.ProgName, Accion = x.Category,
+        Nivel = x.Level, Detalle = x.Message, Metodo = x.MethodName, IP = x.Ipclient, Equipo = x.HostName,
+        DuracionMs = x.ExecutionTime });
+    private static string Text(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static Color LevelColor(string? level) => level?.ToUpperInvariant() switch { "ERROR" or "FATAL" => Color.Error, "WARN" => Color.Warning, "INFO" => Color.Info, _ => Color.Default };
+    private Task<IEnumerable<string>> SearchUsers(string value, CancellationToken token)
+    {
+        var values = _filterOptions.Where(x => x.TipoCatalogo == "usuario" && (string.IsNullOrWhiteSpace(value) || UserOptionText(x).Contains(value, StringComparison.OrdinalIgnoreCase))).Select(x => x.Valor!).Take(50).ToList();
+        return Task.FromResult<IEnumerable<string>>(values);
+    }
+    private Task<IEnumerable<string>> SearchModules(string value, CancellationToken token) => Task.FromResult<IEnumerable<string>>(_filterOptions.Where(x => x.TipoCatalogo == "modulo" && (string.IsNullOrWhiteSpace(value) || (x.Etiqueta ?? "").Contains(value, StringComparison.OrdinalIgnoreCase))).Select(x => x.Valor!).Take(50));
+    private Task<IEnumerable<string>> SearchCategories(string value, CancellationToken token) => Task.FromResult<IEnumerable<string>>(_filterOptions.Where(x => x.TipoCatalogo == "categoria" && (string.IsNullOrWhiteSpace(value) || (x.Etiqueta ?? "").Contains(value, StringComparison.OrdinalIgnoreCase))).Select(x => x.Valor!).Take(50));
+    private string UserLabel(string? value) => _filterOptions.FirstOrDefault(x => x.TipoCatalogo == "usuario" && x.Valor == value) is { } option ? UserOptionText(option) : value ?? "Todos los usuarios";
+    private string ModuleLabel(string? value) => _filterOptions.FirstOrDefault(x => x.TipoCatalogo == "modulo" && x.Valor == value) is { } option ? $"{option.Etiqueta} ({option.Cantidad:N0})" : value ?? "Todas las áreas";
+    private static string UserOptionText(BitacoraResponse x) => string.IsNullOrWhiteSpace(x.Etiqueta) ? x.Valor ?? "" : $"{x.Etiqueta} · {x.Valor}";
+    private async Task ShowDetailAsync(BitacoraResponse item) => await DialogService.ShowAsync<BitacoraDetalleDialog>("Evidencia del evento", new DialogParameters { ["Item"] = item }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+}

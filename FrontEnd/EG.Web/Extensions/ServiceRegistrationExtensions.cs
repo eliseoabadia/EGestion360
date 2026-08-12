@@ -14,6 +14,7 @@ using EG.Domain.DTOs.Responses.PresupuestoComprometido;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.Tesoreria;
+using EG.Domain.DTOs.Responses.Seguridad;
 using EG.Dommain.DTOs.Responses;
 using EG.Web.Contracts;
 using EG.Web.Contracts.Configuration;
@@ -50,6 +51,7 @@ public static class ApiServiceExtensions
         RegisterCrud<UsuarioAreaResponse>(services, "api/UsuarioArea");
         RegisterCrud<UsuarioDepartamentoResponse>(services, "api/UsuarioDepartamento");
         RegisterCrud<SucursalResponse>(services, "api/Sucursal");
+        RegisterCrud<BitacoraResponse>(services, "api/Bitacora");
 
         RegisterCrud<PeriodoConteoResponse>(services, "api/PeriodoConteo");
         RegisterCrud<ConteoPlanificacionResponse>(services, "api/PeriodoConteo");

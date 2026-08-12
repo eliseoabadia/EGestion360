@@ -205,33 +205,36 @@ namespace EG.Application.Services.Almacen
 
             try
             {
-                await using var transaction = await _context.Database.BeginTransactionAsync();
-
-                if (diferenciaSalida != 0)
+                var executionStrategy = _context.Database.CreateExecutionStrategy();
+                await executionStrategy.ExecuteAsync(async () =>
                 {
-                    almacen.Cantidad -= diferenciaSalida;
-                    almacen.FechaModificacion = DateTime.Now;
-                    almacen.UsuarioModificacion = usuarioActual;
-                }
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    if (diferenciaSalida != 0)
+                    {
+                        almacen.Cantidad -= diferenciaSalida;
+                        almacen.FechaModificacion = DateTime.Now;
+                        almacen.UsuarioModificacion = usuarioActual;
+                    }
 
-                current.CantidadEntregada = cantidadEntregada;
-                current.CantidadPendiente = Math.Max(0m, cantidadAutorizada - cantidadEntregada);
-                current.Observaciones = response.Observaciones ?? current.Observaciones ?? string.Empty;
-                current.FechaModificacion = DateTime.Now;
-                current.UsuarioModificacion = usuarioActual;
+                    current.CantidadEntregada = cantidadEntregada;
+                    current.CantidadPendiente = Math.Max(0m, cantidadAutorizada - cantidadEntregada);
+                    current.Observaciones = response.Observaciones ?? current.Observaciones ?? string.Empty;
+                    current.FechaModificacion = DateTime.Now;
+                    current.UsuarioModificacion = usuarioActual;
 
-                await _context.SaveChangesAsync();
-                var surtidaTotalmente = await UpdateSolicitudStatusAfterDeliveryAsync(solicitud.PkidSolicitudSalida, usuarioActual);
-                if (surtidaTotalmente && !solicitud.FkidPolizaConta.HasValue)
-                {
-                    await StoredProcedureExecutor.ExecuteResultAsync(
-                        _context,
-                        "[ALMA].[SP_CREATE_PolizaSalidaAlmacen]",
-                        StoredProcedureExecutor.Param("@PKIdSolicitudSalida", solicitud.PkidSolicitudSalida),
-                        StoredProcedureExecutor.Param("@IdUser", usuarioActual));
-                    await _context.Entry(solicitud).ReloadAsync();
-                }
-                await transaction.CommitAsync();
+                    await _context.SaveChangesAsync();
+                    var surtidaTotalmente = await UpdateSolicitudStatusAfterDeliveryAsync(solicitud.PkidSolicitudSalida, usuarioActual);
+                    if (surtidaTotalmente && !solicitud.FkidPolizaConta.HasValue)
+                    {
+                        await StoredProcedureExecutor.ExecuteResultAsync(
+                            _context,
+                            "[ALMA].[SP_CREATE_PolizaSalidaAlmacen]",
+                            StoredProcedureExecutor.Param("@PKIdSolicitudSalida", solicitud.PkidSolicitudSalida),
+                            StoredProcedureExecutor.Param("@IdUser", usuarioActual));
+                        await _context.Entry(solicitud).ReloadAsync();
+                    }
+                    await transaction.CommitAsync();
+                });
 
                 var refreshed = await GetByIdAsync(id);
                 refreshed.Message = "Entrega actualizada correctamente.";
