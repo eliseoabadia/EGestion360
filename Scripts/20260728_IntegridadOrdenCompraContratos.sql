@@ -523,6 +523,7 @@ BEGIN
         FROM inserted i
         INNER JOIN deleted d ON d.PKIdContrato = i.PKIdContrato
         WHERE d.Estatus > 1
+          AND COALESCE(TRY_CONVERT(int, SESSION_CONTEXT(N'EG_ALLOW_CONTRACT_REVERSAL')), 0) <> 1
           AND (
               i.Activo <> d.Activo OR
               i.Estatus < d.Estatus OR

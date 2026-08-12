@@ -568,6 +568,8 @@ BEGIN
         INNER JOIN @Facturas T ON T.PKIdFactura = F.PKIdFactura
         WHERE F.Activo = 1;
 
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_CONTRACT_REVERSAL', @value = 1;
+
         UPDATE PRES.ContratoDetalle
         SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
         WHERE FKIdContrato_PRES = @PKIdContrato AND Activo = 1;
@@ -580,6 +582,8 @@ BEGIN
             FechaModificacion = SYSDATETIME(),
             UsuarioModificacion = @IdUser
         WHERE PKIdContrato = @PKIdContrato AND Activo = 1;
+
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_CONTRACT_REVERSAL', @value = NULL;
 
         UPDATE PRES.AutorizacionSuficienciaDetalle
         SET Activo = 0, FechaModificacion = SYSDATETIME(), UsuarioModificacion = @IdUser
@@ -669,6 +673,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         EXEC sys.sp_set_session_context @key = N'EG_ALLOW_ORDER_REVERSAL', @value = NULL;
+        EXEC sys.sp_set_session_context @key = N'EG_ALLOW_CONTRACT_REVERSAL', @value = NULL;
         IF CURSOR_STATUS('local', 'PolizasCursor') >= 0
             CLOSE PolizasCursor;
         IF CURSOR_STATUS('local', 'PolizasCursor') >= -1

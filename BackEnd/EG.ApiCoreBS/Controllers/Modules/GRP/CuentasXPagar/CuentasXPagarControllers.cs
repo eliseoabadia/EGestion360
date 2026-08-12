@@ -151,7 +151,9 @@ namespace EG.ApiCoreBS.Controllers.CuentasXPagar
             [FromBody] RegresarChequeSuficienciaRequest request)
         {
             if (!await HasPermissionAsync("authorize")) return Forbid();
-            var result = await service.RegresarASolicitudSuficienciaAsync(id, request.Motivo);
+            // Un cuerpo vacío o malformado no debe convertirse en un error 500 para el usuario.
+            // El servicio transforma el motivo vacío en una validación clara y recuperable.
+            var result = await service.RegresarASolicitudSuficienciaAsync(id, request?.Motivo ?? string.Empty);
             if (result.Success)
                 return Ok(result);
 

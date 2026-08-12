@@ -533,15 +533,19 @@ namespace EG.Application.Services.CuentasXPagar
             if (validation != null)
                 return validation;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
                 var poliza = await CuentasXPagarBudgetPosting.CreateAsync(
                     _context, response.FkidContratoPres, response.FechaSolicitud,
                     CuentasXPagarBudgetStage.Ejercido,
                     response.Detalles.Select(x => (x.FkidPartidaConta, MonthlyTotal(x))), usuarioActual);
                 response.FkidPolizaConta = poliza.PkidPoliza;
                 var result = await base.CreateAsync(response, usuarioActual);
+                response.PkidClc = result.Data?.PkidClc ?? result.Items?.FirstOrDefault()?.PkidClc ?? response.PkidClc;
                 if (!result.Success || response.PkidClc <= 0)
                 {
                     await transaction.RollbackAsync();
@@ -586,14 +590,15 @@ namespace EG.Application.Services.CuentasXPagar
                 }
                 await _context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-                return await GetByIdAsync(response.PkidClc);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return Failure<CLCResponse>($"No fue posible registrar la CLC completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
-            }
+                    await transaction.CommitAsync();
+                    return await GetByIdAsync(response.PkidClc);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Failure<CLCResponse>($"No fue posible registrar la CLC completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
+                }
+            });
         }
 
         public override async Task<PagedResult<CLCResponse>> UpdateAsync(int id, CLCResponse response, int usuarioActual)
@@ -966,9 +971,12 @@ namespace EG.Application.Services.CuentasXPagar
                 return validation;
 
             response.Estatus = 3;
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
                 var clcContratoId = await _context.Clcs.AsNoTracking()
                     .Where(x => x.PkidClc == response.FkidClcPres)
                     .Select(x => x.FkidContratoPres)
@@ -979,6 +987,7 @@ namespace EG.Application.Services.CuentasXPagar
                     response.Partidas.Select(x => (x.FkidPartidaConta, x.MontoPagado)), usuarioActual);
                 response.FkidPolizaConta = poliza.PkidPoliza;
                 var result = await base.CreateAsync(response, usuarioActual);
+                response.PkidCheque = result.Data?.PkidCheque ?? result.Items?.FirstOrDefault()?.PkidCheque ?? response.PkidCheque;
                 if (!result.Success || response.PkidCheque <= 0)
                 {
                     await transaction.RollbackAsync();
@@ -1006,14 +1015,15 @@ namespace EG.Application.Services.CuentasXPagar
                 clc.UsuarioModificacion = usuarioActual;
                 await _context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-                return await GetByIdAsync(response.PkidCheque);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return Failure<ChequeResponse>($"No fue posible registrar la provision completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
-            }
+                    await transaction.CommitAsync();
+                    return await GetByIdAsync(response.PkidCheque);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Failure<ChequeResponse>($"No fue posible registrar la provision completa: {ex.GetBaseException().Message}", "TRANSACTION_FAILED");
+                }
+            });
         }
 
         public override async Task<PagedResult<ChequeResponse>> UpdateAsync(int id, ChequeResponse response, int usuarioActual)
