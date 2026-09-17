@@ -1,0 +1,20 @@
+INSTALACION AUTOMATICA EGestion360
+
+En el servidor, ejecutar Instalar-EGestion360.exe y aceptar el permiso de administrador de Windows.
+El EXE contiene Front y Back: no es necesario extraer los RAR ni ejecutar comandos.
+Los RAR tambien se entregan para instalacion manual o respaldo del paquete.
+
+Este instalador esta preparado para el servidor existente:
+Front: C:\GestionEmpresarial\Front (sitio IIS HTTPS 443 con certificado existente).
+Back: C:\GestionEmpresarial\GE_BACK, http://localhost:5555/.
+Requiere ASP.NET Core Runtime 10 x64, IIS, URL Rewrite y ARR, ya presentes en el servidor diagnosticado.
+
+Hace respaldo de archivos y configuracion IIS; conserva appsettings del backend instalado y cambia solamente el alojamiento a localhost:5555 sin redireccion HTTPS.
+Detiene el sitio IIS GE_BACK si usa 5555 y deshabilita su inicio automatico. Activa ARR Proxy y publica la regla /api del frontend.
+Sustituye el CMD manual por la tarea EGestion360-Backend-5555 bajo NETWORK SERVICE, sin contrasena, que arranca con Windows y reintenta ante fallos. No usa el puerto 8440 para conexiones.
+El EXE verifica la API local y publica. Esperar INSTALACION CORRECTA antes de cerrar.
+
+Registro backend: C:\GestionEmpresarial\GE_BACK\logs\backend.log
+Respaldos y registro instalador: C:\GestionEmpresarial\RespaldosDeploy\fecha-hora
+Si falla una comprobacion muestra el error; no restaura automaticamente archivos ni configuracion.
+No iniciar nuevamente el CMD manual ni el sitio IIS GE_BACK mientras este activa la tarea automatica.

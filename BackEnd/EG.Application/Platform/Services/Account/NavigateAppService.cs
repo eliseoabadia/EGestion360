@@ -1,5 +1,6 @@
 using EG.Application.Interfaces.Account;
 using EG.Business.Interfaces;
+using EG.Domain.Platform.Licensing;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
 
@@ -8,10 +9,12 @@ namespace EG.Application.Services.Account
     public class NavigateAppService : INavigateAppService
     {
         private readonly INavigateService _navigateService;
+        private readonly ILicenseRuntimeState _licensing;
 
-        public NavigateAppService(INavigateService navigateService)
+        public NavigateAppService(INavigateService navigateService, ILicenseRuntimeState licensing)
         {
             _navigateService = navigateService;
+            _licensing = licensing;
         }
 
         public async Task<IEnumerable<spNodeMenuResponse>> GetMenuAsync(int userId)
@@ -28,7 +31,7 @@ namespace EG.Application.Services.Account
                 if (menu == null)
                     throw new KeyNotFoundException($"Menú para usuario {userId} no encontrado");
 
-                return menu;
+                return FilterLicensedMenu(menu);
             }
             catch (KeyNotFoundException)
             {
@@ -37,6 +40,84 @@ namespace EG.Application.Services.Account
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Error al obtener menú: {ex.Message}", ex);
+            }
+        }
+
+        private IReadOnlyList<spNodeMenuResponse> FilterLicensedMenu(IEnumerable<spNodeMenuResponse> source)
+        {
+            var items = source.ToList();
+            var byId = items
+                .Where(item => item.PKIdMenu.HasValue)
+                .GroupBy(item => item.PKIdMenu!.Value)
+                .ToDictionary(group => group.Key, group => group.First());
+            var included = new HashSet<long>();
+
+            foreach (var item in items)
+            {
+                if (!item.PKIdMenu.HasValue)
+                    continue;
+
+                var ancestorContext = BuildAncestorContext(item, byId);
+                var moduleCode = LicenseModuleResolver.ResolveMenuModule(
+                    item.Nombre,
+                    item.LegacyName,
+                    item.Ruta,
+                    ancestorContext);
+
+                var allowed = moduleCode is not null
+                    ? _licensing.Evaluate(moduleCode).Allowed
+                    : LicenseModuleResolver.IsCoreMenu(
+                        item.Nombre,
+                        item.LegacyName,
+                        item.Ruta,
+                        ancestorContext);
+
+                if (allowed)
+                    AddWithParents(item, byId, included);
+            }
+
+            return items
+                .Where(item => item.PKIdMenu.HasValue && included.Contains(item.PKIdMenu.Value))
+                .ToList();
+        }
+
+        private static string BuildAncestorContext(
+            spNodeMenuResponse item,
+            IReadOnlyDictionary<long, spNodeMenuResponse> byId)
+        {
+            var values = new List<string>();
+            var visited = new HashSet<long>();
+            var parentId = item.FkidMenuSis;
+
+            while (parentId.HasValue && parentId.Value > 0 && visited.Add(parentId.Value) &&
+                   byId.TryGetValue(parentId.Value, out var parent))
+            {
+                values.Add($"{parent.Nombre} {parent.LegacyName} {parent.Ruta}");
+                parentId = parent.FkidMenuSis;
+            }
+
+            values.Reverse();
+            return string.Join(' ', values);
+        }
+
+        private static void AddWithParents(
+            spNodeMenuResponse item,
+            IReadOnlyDictionary<long, spNodeMenuResponse> byId,
+            ISet<long> included)
+        {
+            var current = item;
+            var visited = new HashSet<long>();
+
+            while (current.PKIdMenu.HasValue && visited.Add(current.PKIdMenu.Value))
+            {
+                included.Add(current.PKIdMenu.Value);
+                if (!current.FkidMenuSis.HasValue || current.FkidMenuSis.Value <= 0 ||
+                    !byId.TryGetValue(current.FkidMenuSis.Value, out var parent))
+                {
+                    break;
+                }
+
+                current = parent;
             }
         }
 

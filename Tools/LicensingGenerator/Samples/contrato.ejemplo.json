@@ -1,0 +1,16 @@
+{
+  "licenseId": "00000000-0000-0000-0000-000000000000",
+  "serial": 1,
+  "modules": [
+    {
+      "code": "GRP.ALMA",
+      "startsAtUtc": "2026-09-12T18:00:00Z",
+      "endsAtUtc": "2026-10-12T18:00:00Z"
+    },
+    {
+      "code": "GRP.CONTA",
+      "startsAtUtc": "2026-09-12T18:00:00Z",
+      "endsAtUtc": null
+    }
+  ]
+}

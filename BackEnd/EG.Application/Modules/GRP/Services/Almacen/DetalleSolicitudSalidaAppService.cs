@@ -2,9 +2,11 @@ using EG.Application.Interfaces.Almacen;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Contracts.Platform.Licensing;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.Interfaces;
+using EG.Domain.Platform.Licensing;
 using EG.Infraestructure.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -17,17 +19,20 @@ namespace EG.Application.Services.Almacen
         private readonly GenericService<VwDetalleSolicitudSalidum, DetalleSolicitudSalidaDto, DetalleSolicitudSalidaResponse> _serviceView;
         private readonly EGestionContext _context;
         private readonly IUserContextService _userContext;
+        private readonly ILicenseRuntimeState _licensing;
 
         public DetalleSolicitudSalidaAppService(
             GenericService<DetalleSolicitudSalidum, DetalleSolicitudSalidaDto, DetalleSolicitudSalidaResponse> service,
             GenericService<VwDetalleSolicitudSalidum, DetalleSolicitudSalidaDto, DetalleSolicitudSalidaResponse> serviceView,
             EGestionContext context,
-            IUserContextService userContext)
+            IUserContextService userContext,
+            ILicenseRuntimeState licensing)
         {
             _service = service;
             _serviceView = serviceView;
             _context = context;
             _userContext = userContext;
+            _licensing = licensing;
         }
 
         public async Task<PagedResult<DetalleSolicitudSalidaResponse>> GetAllAsync()
@@ -226,6 +231,14 @@ namespace EG.Application.Services.Almacen
                     var surtidaTotalmente = await UpdateSolicitudStatusAfterDeliveryAsync(solicitud.PkidSolicitudSalida, usuarioActual);
                     if (surtidaTotalmente && !solicitud.FkidPolizaConta.HasValue)
                     {
+                        var accountingDecision = _licensing.Evaluate(LicenseModuleCodes.GrpContabilidad);
+                        if (!accountingDecision.Allowed)
+                        {
+                            throw new LicenseOperationException(
+                                accountingDecision.Code,
+                                $"La salida quedó totalmente surtida y debe generar una póliza. La integración requiere Contabilidad. {accountingDecision.Message}");
+                        }
+
                         await StoredProcedureExecutor.ExecuteResultAsync(
                             _context,
                             "[ALMA].[SP_CREATE_PolizaSalidaAlmacen]",
@@ -239,6 +252,10 @@ namespace EG.Application.Services.Almacen
                 var refreshed = await GetByIdAsync(id);
                 refreshed.Message = "Entrega actualizada correctamente.";
                 return refreshed;
+            }
+            catch (LicenseOperationException ex)
+            {
+                return Failure<DetalleSolicitudSalidaResponse>(ex.Message, ex.Code);
             }
             catch (Exception ex)
             {

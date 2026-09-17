@@ -1,0 +1,290 @@
+@page "/configuracion/sistema/licencia-modulos"
+@using System.Text.Json
+@using EG.Contracts.Platform.Licensing
+@using EG.Web.Auth
+@using EG.Web.Contracts.Configuration
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+
+@inject ILicensingClientService Licensing
+@inject AuthenticationProviderJWT AuthProvider
+@inject MenuStateService MenuState
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+<PageTitle>Licencia y módulos</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="license-page">
+    @if (_loading)
+    {
+        <div class="license-loading">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            <MudText>Cargando licencia...</MudText>
+        </div>
+    }
+    else if (!_hasAccess)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+            No tienes permiso para consultar la licencia de esta instalación.
+        </MudAlert>
+    }
+    else
+    {
+        <section class="license-hero">
+            <div>
+                <span class="license-eyebrow">Configuración del contrato</span>
+                <MudText Typo="Typo.h4">Licencia y módulos</MudText>
+                <MudText Typo="Typo.body2">
+                    La instalación contiene todo el sistema. Aquí sólo puedes apagar módulos incluidos en la licencia firmada.
+                </MudText>
+            </div>
+            <MudChip T="string"
+                     Color="@(_snapshot.HasValidLicense ? Color.Success : Color.Warning)"
+                     Variant="Variant.Filled"
+                     Icon="@(_snapshot.HasValidLicense ? Icons.Material.Filled.Verified : Icons.Material.Filled.WarningAmber)">
+                @(_snapshot.HasValidLicense ? $"Licencia {_snapshot.Serial}" : "Sin licencia válida")
+            </MudChip>
+        </section>
+
+        <MudAlert Severity="@StatusSeverity" Variant="Variant.Outlined" Class="mb-4">
+            @_snapshot.Message
+        </MudAlert>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" lg="5">
+                <MudPaper Class="license-panel" Elevation="0">
+                    <MudText Typo="Typo.h6">1. Solicitud de instalación</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Envía estos datos a GE360 para generar una licencia ligada a este servidor.
+                    </MudText>
+
+                    <MudTextField T="string" Label="ID de instalación" Value="@_request.InstallationId.ToString()" ReadOnly="true" Variant="Variant.Outlined" />
+                    <MudTextField T="string" Label="Huella de instalación" Value="@_request.InstallationFingerprint" ReadOnly="true" Variant="Variant.Outlined" Class="mt-3" />
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.ContentCopy"
+                               OnClick="CopyInstallationRequestAsync"
+                               Class="mt-3">
+                        Copiar solicitud
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" lg="7">
+                <MudPaper Class="license-panel" Elevation="0">
+                    <MudText Typo="Typo.h6">2. Importar licencia firmada</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Selecciona el archivo .lic entregado por GE360. Los archivos modificados o de otro servidor serán rechazados.
+                    </MudText>
+
+                    <label class="license-file-picker @(!_canUpdate || _busy ? "disabled" : string.Empty)">
+                        <MudIcon Icon="@Icons.Material.Filled.UploadFile" />
+                        <span>@(_selectedFileName ?? "Seleccionar archivo .lic")</span>
+                        <InputFile OnChange="ImportLicenseAsync" accept=".lic,.txt" disabled="@(!_canUpdate || _busy)" />
+                    </label>
+
+                    @if (!_canUpdate)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Warning" Class="mt-2">
+                            Tu usuario puede consultar, pero no importar licencias ni cambiar módulos.
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <section class="module-heading">
+            <div>
+                <MudText Typo="Typo.h5">Módulos de la instalación</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Un interruptor sólo funciona cuando el contrato firmado incluye el módulo y su vigencia está activa.
+                </MudText>
+            </div>
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" Disabled="@_busy" OnClick="LoadAsync">
+                Actualizar
+            </MudButton>
+        </section>
+
+        <div class="module-grid">
+            @foreach (var module in _snapshot.Modules.OrderBy(item => item.Group).ThenBy(item => item.Name))
+            {
+                <MudPaper Class="module-card" Elevation="0">
+                    <div class="module-card-header">
+                        <div>
+                            <MudText Typo="Typo.subtitle1">@module.Name</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@module.Code</MudText>
+                        </div>
+                        <MudSwitch T="bool"
+                                   Value="@module.ActiveLocally"
+                                   ValueChanged="@(value => ChangeModuleAsync(module, value))"
+                                   Color="Color.Success"
+                                   Disabled="@(!CanChange(module))" />
+                    </div>
+
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@ModuleColor(module)">
+                        @ModuleState(module)
+                    </MudChip>
+
+                    <MudText Typo="Typo.body2" Class="module-message">@module.Message</MudText>
+                    <div class="module-dates">
+                        <span>Inicio: @FormatDate(module.StartsAtUtc)</span>
+                        <span>Fin: @FormatDate(module.EndsAtUtc)</span>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private const long MaximumLicenseSize = 64 * 1024;
+    private LicenseSnapshotResponse _snapshot = new();
+    private LicenseInstallationRequestResponse _request = new();
+    private bool _loading = true;
+    private bool _busy;
+    private bool _hasAccess;
+    private bool _canUpdate;
+    private string? _selectedFileName;
+
+    private Severity StatusSeverity => _snapshot.StateCode switch
+    {
+        "LIC_VALID" => Severity.Success,
+        "LIC_CLOCK_SUSPICIOUS" => Severity.Error,
+        _ => Severity.Warning
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthProvider.GetAuthenticationStateAsync();
+        _hasAccess = AuthProvider.HasPermission("Sistema", "Configurar_Accesos", "view");
+        _canUpdate = AuthProvider.HasPermission("Sistema", "Configurar_Accesos", "update");
+
+        if (_hasAccess)
+            await LoadAsync();
+        else
+            _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            _loading = true;
+            var snapshotResponse = await Licensing.GetSnapshotAsync();
+            var requestResponse = await Licensing.GetInstallationRequestAsync();
+
+            if (snapshotResponse.Success && snapshotResponse.Data is not null)
+                _snapshot = snapshotResponse.Data;
+            else
+                Snackbar.Add(snapshotResponse.Message, Severity.Error);
+
+            if (requestResponse.Success && requestResponse.Data is not null)
+                _request = requestResponse.Data;
+            else
+                Snackbar.Add(requestResponse.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CopyInstallationRequestAsync()
+    {
+        var json = JsonSerializer.Serialize(_request, new JsonSerializerOptions { WriteIndented = true });
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", json);
+        Snackbar.Add("Solicitud copiada. Envíala a GE360 para emitir la licencia.", Severity.Success);
+    }
+
+    private async Task ImportLicenseAsync(InputFileChangeEventArgs args)
+    {
+        if (!_canUpdate || _busy)
+            return;
+
+        var file = args.File;
+        _selectedFileName = file.Name;
+        if (file.Size > MaximumLicenseSize)
+        {
+            Snackbar.Add("El archivo excede 64 KB.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            _busy = true;
+            await using var stream = file.OpenReadStream(MaximumLicenseSize);
+            using var reader = new StreamReader(stream);
+            var signedLicense = await reader.ReadToEndAsync();
+            var response = await Licensing.ImportAsync(signedLicense);
+
+            if (!response.Success || response.Data is null)
+            {
+                Snackbar.Add(response.Message, Severity.Error);
+                return;
+            }
+
+            _snapshot = response.Data;
+            MenuState.Clear();
+            Snackbar.Add("Licencia importada y módulos actualizados.", Severity.Success);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ChangeModuleAsync(LicenseModuleStatusResponse module, bool active)
+    {
+        if (!CanChange(module) || _busy)
+            return;
+
+        try
+        {
+            _busy = true;
+            var response = await Licensing.SetModuleStateAsync(
+                module.Code,
+                active,
+                active ? "Activado desde configuración" : "Desactivado desde configuración");
+
+            if (!response.Success || response.Data is null)
+            {
+                Snackbar.Add(response.Message, Severity.Error);
+                return;
+            }
+
+            _snapshot = response.Data;
+            MenuState.Clear();
+            Snackbar.Add(active ? $"{module.Name} activado." : $"{module.Name} desactivado.", Severity.Success);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private bool CanChange(LicenseModuleStatusResponse module) =>
+        _canUpdate && !_busy && module.Contracted &&
+        module.StateCode is "LIC_ALLOWED" or "LIC_MODULE_DISABLED";
+
+    private static Color ModuleColor(LicenseModuleStatusResponse module) => module.StateCode switch
+    {
+        "LIC_ALLOWED" => Color.Success,
+        "LIC_MODULE_DISABLED" => Color.Warning,
+        "LIC_MODULE_EXPIRED" => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string ModuleState(LicenseModuleStatusResponse module) => module.StateCode switch
+    {
+        "LIC_ALLOWED" => "Activo",
+        "LIC_MODULE_DISABLED" => "Apagado localmente",
+        "LIC_MODULE_EXPIRED" => "Vencido",
+        "LIC_MODULE_NOT_STARTED" => "Pendiente de inicio",
+        "LIC_CLOCK_SUSPICIOUS" => "Reloj por revisar",
+        _ => "No contratado"
+    };
+
+    private static string FormatDate(DateTimeOffset? value) =>
+        value.HasValue ? value.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm") : "Sin fecha";
+}

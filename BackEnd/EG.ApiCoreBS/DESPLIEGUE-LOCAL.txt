@@ -1,0 +1,9 @@
+BACKEND LOCAL - http://localhost:5555/
+
+Requiere ASP.NET Core Runtime 10. Ejecutar Iniciar-Backend-Local.cmd desde la carpeta extraida. Mantener el proceso activo, o registrar este comando mediante el administrador de servicios usado en el servidor.
+
+La configuracion Production limita Kestrel a localhost:5555 (loopback IPv4/IPv6) y desactiva la redireccion a HTTPS. No cambiar los valores de emisor/audiencia JWT por el cambio de puerto.
+
+El frontend usa https://74.208.88.178/ y llama /api/... por HTTPS 443. El web.config del Front incluye la regla de proxy /api/... hacia http://localhost:5555/api/.... IIS requiere URL Rewrite y ARR con Enable Proxy activado a nivel servidor. No se usa el puerto publico 8440. No apuntar el navegador de usuarios remotos a localhost.
+
+IIS: el web.config generado usa alojamiento inprocess; en ese modo los bindings de IIS controlan el puerto y la configuracion Kestrel no aplica. Para este despliegue local ejecutar el CMD; si se decide alojar el backend dentro de IIS, configurar explicitamente el binding HTTP 127.0.0.1:5555 y retirar los bindings publicos de ese sitio backend. El proxy publico es el sitio HTTPS del frontend.

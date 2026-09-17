@@ -217,7 +217,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                         FechaCreacion = now,
                         UsuarioCreacion = usuarioActual,
                         PermitirModificar = preview.Header.PermitirModificar,
-                        Autorizado = preview.Header.Autorizado
+                        Autorizado = false
                     };
 
                     _context.Polizas.Add(poliza);
@@ -336,7 +336,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                 NombrePoliza = nombre,
                 FechaPoliza = fecha,
                 PermitirModificar = fallback.PermitirModificar,
-                Autorizado = fallback.Autorizado
+                Autorizado = false
             };
         }
 

@@ -1,0 +1,59 @@
+GE360Almacen - Publicacion IIS Windows x64
+
+Front: https://74.208.88.178:8480/
+Back: http://localhost:5580/ (solo servidor)
+Base de datos: GE360Almacen en 2A95576, con la cadena proporcionada.
+
+INSTALACION CON EXE
+1. Copiar GE360Almacen.zip, GE360Almacen_Back.zip y Configurar-GE360Almacen.exe a una misma carpeta EN EL SERVIDOR.
+2. Tener IIS con Contenido estatico, Consola de administracion, herramientas de scripting IIS y, preferiblemente, Inicializacion de aplicaciones.
+3. Instalar .NET 10 Hosting Bundle despues de IIS. Si ya estaba instalado antes, ejecutar Reparar. El backend incluye runtime x64, pero IIS requiere ASP.NET Core Module V2 del Hosting Bundle.
+4. Instalar IIS URL Rewrite 2.1 y Application Request Routing 3.0 si faltan. El EXE verifica estos requisitos y se detiene si alguno falta; no descarga ni instala componentes.
+5. Importar un certificado HTTPS valido para 74.208.88.178 en Certificados del equipo local > Personal, con clave privada.
+6. Ejecutar Configurar-GE360Almacen.exe como administrador. Mostrara certificados: pegar la huella del certificado elegido.
+7. El EXE respalda la configuracion de IIS y los archivos existentes, extrae ambos ZIP, crea los sitios y permisos, activa ARR Proxy y configura arranque automatico. Al arrancar, la aplicacion verifica o crea SIS.EnvioWorkflow e inicializa PRES.DestinoGasto si esta vacio; son rutinas existentes de la aplicacion. Tener respaldo de la base antes de instalar.
+8. Abrir https://74.208.88.178:8480/, iniciar sesion y comprobar una consulta de almacen. Las comprobaciones de ping del EXE verifican HTTP/proxy; no verifican autenticacion ni acceso a SQL Server.
+
+El EXE crea:
+Sitio y pool GE360Almacen -> C:\inetpub\wwwroot\GE360Almacen\Front
+  HTTPS, puerto 8480, certificado elegido.
+Sitio y pool GE360Almacen_Back -> C:\inetpub\wwwroot\GE360Almacen\Back
+  HTTP, IP 127.0.0.1, puerto 5580, sin nombre de host.
+El frontend reenvia /api a http://127.0.0.1:5580/ conservando ruta y parametros.
+Los pools tienen Sin codigo administrado, 64 bits, AlwaysRunning e inactividad 0.
+Los sitios tienen inicio automatico, y WAS/W3SVC se configuran como Automatico.
+Si existe Inicializacion de aplicaciones, se habilita precarga. En caso contrario, IIS inicia la aplicacion al recibir la primera peticion, sin intervencion manual.
+El EXE abre TCP 8480 en el firewall de Windows. Si el proveedor tiene otro firewall, habilitar tambien ese puerto alli. No abrir 5580 al exterior.
+Rechaza sitios del mismo nombre con otra ruta y puertos asignados a otros sitios para evitar modificarlos por accidente.
+
+INSTALACION MANUAL EN EL ADMINISTRADOR DE IIS
+1. Completar requisitos 2 a 5 anteriores.
+2. Extraer GE360Almacen.zip en C:\inetpub\wwwroot\GE360Almacen\Front.
+3. Extraer GE360Almacen_Back.zip en C:\inetpub\wwwroot\GE360Almacen\Back. Los web.config deben quedar directamente dentro de Front y Back.
+4. IIS > Grupos de aplicaciones > Agregar: GE360Almacen y GE360Almacen_Back. Ambos: Sin codigo administrado, canalizacion Integrada.
+5. Configuracion avanzada de ambos pools: Habilitar aplicaciones de 32 bits=False; Inicio automatico=True; Modo de inicio=AlwaysRunning; Tiempo de espera de inactividad=0.
+6. Sitios > Agregar sitio web: GE360Almacen_Back, pool del mismo nombre, ruta Back, enlace http, IP 127.0.0.1, puerto 5580, host vacio. Marcar iniciar sitio inmediatamente.
+7. Agregar sitio GE360Almacen, pool del mismo nombre, ruta Front, enlace https, puerto 8480, host vacio, certificado para la IP indicada.
+8. Configuracion avanzada de ambos sitios: Iniciar automaticamente=True. Si Inicializacion de aplicaciones esta instalada, Precarga habilitada=True.
+9. Nodo del servidor > Application Request Routing Cache > Server Proxy Settings > Enable proxy > Apply. Las reglas ya estan en el web.config del frontend.
+10. Permisos NTFS: IIS AppPool\GE360Almacen necesita Lectura y ejecucion en Front. IIS AppPool\GE360Almacen_Back necesita Lectura y ejecucion en Back y Modificar en Back\logs, Back\Documentos y Back\RagTemp (crear estas tres carpetas).
+11. Servicios de Windows: Windows Process Activation Service (WAS) y World Wide Web Publishing Service (W3SVC), inicio Automatico e iniciados.
+12. Firewall de Windows y proveedor: permitir TCP 8480. Mantener 5580 local.
+13. Abrir http://localhost:5580/api/Navigate/ping en el servidor y https://74.208.88.178:8480/api/Navigate/ping. Ambos deben devolver success=true.
+14. Probar login y consulta real. Reiniciar el servidor en una ventana de mantenimiento y repetir ambas comprobaciones; no ejecutar ningun proceso manualmente.
+
+DIAGNOSTICO
+500.19: revisar URL Rewrite, ARR, XML y permisos de IIS.
+500.30/500.31: revisar Hosting Bundle, arquitectura x64 y Visor de eventos > Aplicacion.
+502: verificar sitio y pool del backend, enlace 127.0.0.1:5580 y ARR Proxy.
+SQL: comprobar que 2A95576 resuelve desde el servidor, SQL Server es accesible y la base GE360Almacen existe con permisos para el usuario configurado.
+Logs de aplicacion: C:\inetpub\wwwroot\GE360Almacen\Back\logs.
+OCR de imagenes/PDF escaneados requiere Tesseract con spa+eng en la ruta configurada; no esta incluido. La base debe existir con el esquema de esta version; solo se ejecutan las inicializaciones de arranque descritas en el paso 7.
+Conservar los ZIP del backend y los archivos de configuracion en almacenamiento privado: contienen credenciales.
+
+Fuentes oficiales de requisitos:
+https://learn.microsoft.com/aspnet/core/host-and-deploy/iis/
+https://www.iis.net/downloads/microsoft/url-rewrite
+https://www.iis.net/downloads/microsoft/application-request-routing
+
+Validacion de entrega: compilacion Release y lectura completa de ZIP. La instalacion en IIS y las pruebas de SQL deben realizarse en el servidor destino; no se han ejecutado desde el equipo de desarrollo.
