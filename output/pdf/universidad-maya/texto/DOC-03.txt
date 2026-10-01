@@ -1,0 +1,217 @@
+=== DOC-03 | Página 1 ===
+PROPUESTA INTEGRAL ERP CORPORATIVO SINERGIA 
+Control Interno + Fiscal + Operativo + Financiero + Trazabilidad Total 
+I. VISIÓN DEL ERP CORPORATIVO SINERGIA 
+Objetivo General 
+ 
+Construir un ERP Corporativo propio que permita: 
+ 
+• Sistematizar completamente los procesos administrativos y financieros. 
+• Centralizar el control institucional. 
+• Automatizar autorizaciones. 
+• Validar cumplimiento fiscal y documental. 
+• Generar trazabilidad completa. 
+• Controlar presupuestos en tiempo real. 
+• Integrar campus y oficinas centrales. 
+• Reducir riesgos de fraude, duplicidad y errores humanos. 
+• Generar información estratégica para Dirección General. 
+ 
+II. PROBLEMAS ACTUALES DETECTADOS 
+• Operación fragmentada mediante correos, Excel y firmas físicas. 
+• Falta de trazabilidad total entre requisición, compra, pago y contabilidad. 
+• Riesgo fiscal por validaciones manuales. 
+• Riesgo de pagos duplicados. 
+• Ausencia de control presupuestal en tiempo real. 
+• Dependencia excesiva de procesos manuales. 
+ 
+III. MÓDULOS PRINCIPALES DEL ERP 
+1. Catálogo Corporativo 
+2. Requisiciones 
+3. Compras 
+4. Proveedores 
+5. Presupuestos 
+6. Tesorería 
+7. Cuentas por pagar 
+8. Bancos 
+9. Caja chica 
+10. Viáticos 
+11. Inventarios 
+12. Activos fijos 
+13. Contabilidad 
+
+=== DOC-03 | Página 2 ===
+14. Fiscal 
+15. Dashboard DG 
+16. Auditoría 
+17. Workflow 
+18. Gestión documental 
+ 
+IV. FLUJO ERP PROPUESTO 
+REQUERIMIENTO → AUTORIZACIOƵN → CUADRO COMPARATIVO → ORDEN DE COMPRA → 
+RECEPCIÓN → FACTURA → VALIDACIOƵN SAT → PROGRAMACIOƵN DE PAGO → DISPERSIOƵN 
+→ CONTABILIZACIOƵN → INVENTARIO/ACTIVO FIJO 
+ 
+V. CONTROL DE REQUERIMIENTOS 
+El ERP debe permitir: 
+• Captura digital de requisiciones. 
+• Validaciones automáticas de presupuesto. 
+• Control de SLA. 
+• Priorización. 
+• Control de urgencias. 
+• Folio único corporativo. 
+• Adjuntar evidencia y fichas técnicas. 
+ 
+VI. AUTORIZACIONES AUTOMATIZADAS 
+Workflow multinivel basado en: 
+• Monto. 
+• Tipo de gasto. 
+• Campus. 
+• Empresa. 
+• Nivel jerárquico. 
+• Tipo de operación. 
+ 
+VII. CUADROS COMPARATIVOS INTELIGENTES 
+El ERP debe generar cuadros comparativos automáticos considerando: 
+• Precio. 
+• Tiempo de entrega. 
+• Crédito. 
+• Historial del proveedor. 
+• Cumplimiento SAT. 
+• Score de riesgo. 
+ 
+
+=== DOC-03 | Página 3 ===
+VIII. MÓDULO FISCAL SAT 
+Validaciones automáticas: 
+• RFC. 
+• Opinión de cumplimiento. 
+• Lista 69-B. 
+• CFDI duplicados. 
+• Régimen fiscal. 
+• XML válido. 
+• UUID. 
+ 
+IX. CONTROL PRESUPUESTAL 
+Control en tiempo real de: 
+• Presupuesto autorizado. 
+• Presupuesto comprometido. 
+• Devengado. 
+• Pagado. 
+• Disponible. 
+ 
+X. TESORERÍA Y FLUJO DE CAJA 
+Debe permitir: 
+• Proyección diaria. 
+• Flujo semanal. 
+• Flujo mensual. 
+• Flujo anual. 
+• Integración bancaria. 
+• Programación automática de pagos. 
+ 
+XI. CUENTAS POR PAGAR 
+Conciliación automática: 
+REQUERIMIENTO → OC → RECEPCIOƵN → FACTURA → PAGO 
+ 
+Si existen diferencias: 
+• El ERP no libera el pago. 
+ 
+XII. BANCA ELECTRÓNICA 
+Integraciones: 
+• BBVA. 
+• Banorte. 
+• Santander. 
+
+=== DOC-03 | Página 4 ===
+• HSBC. 
+ 
+Funciones: 
+• SPEI. 
+• Conciliación automática. 
+• Validación CLABE. 
+• Dispersión masiva. 
+ 
+XIII. CAJA CHICA DIGITAL 
+Funciones: 
+• Vale digital. 
+• OCR tickets. 
+• CFDI automático. 
+• Alertas de comprobación. 
+• Arqueos automáticos. 
+ 
+XIV. VIÁTICOS Y COMISIONES 
+Flujo: 
+Solicitud → Autorizacio ́ n → Anticipo → Comisio ́ n → Comprobacio ́ n → Validacio ́ n Fiscal → 
+Cierre 
+ 
+XV. INVENTARIOS Y ACTIVOS 
+• Código QR. 
+• RFID. 
+• Resguardos digitales. 
+• Fotografías. 
+• Depreciación automática. 
+• Inventario móvil. 
+ 
+XVI. DASHBOARD CORPORATIVO 
+Indicadores: 
+• Gastos semanales. 
+• Pagos pendientes. 
+• Presupuesto consumido. 
+• Proveedores críticos. 
+• SLA. 
+• Incidencias. 
+• Riesgos. 
+ 
+
+=== DOC-03 | Página 5 ===
+XVII. CONTROL INTERNO 
+Principios: 
+• Segregación de funciones. 
+• Bitácora de auditoría. 
+• Evidencia digital. 
+• Trazabilidad total. 
+• Control preventivo antifraude. 
+ 
+XVIII. PROPUESTA TECNOLÓGICA 
+Backend: 
+• PostgreSQL / SQL Server. 
+ 
+Frontend: 
+• Web responsive. 
+• App móvil. 
+ 
+Dashboards: 
+• Power BI. 
+ 
+OCR + IA: 
+• Lectura de facturas. 
+• Validación documental. 
+ 
+XIX. FASES DE IMPLEMENTACIÓN 
+1. Levantamiento. 
+2. Diseño funcional. 
+3. Desarrollo núcleo. 
+4. Compras y pagos. 
+5. Fiscal-contable. 
+6. Inventarios. 
+7. Dashboard. 
+8. Pruebas. 
+9. Implementación. 
+ 
+XX. CONCLUSIÓN 
+El ERP debe convertirse en el control interno vivo del corporativo, integrando todas las 
+operaciones financieras, administrativas, fiscales y de control interno en una sola 
+plataforma centralizada, automatizada y auditable. 
+ 
+
+=== DOC-03 | Página 6 ===
+DOCUMENTOS ANALIZADOS 
+ Procedimiento de requisición de bienes y servicios 
+ Procedimiento de adquisición de bienes y servicios 
+ Procedimiento de proyección y autorización de gastos semanales 
+ Procedimiento de pagos a proveedores 
+ Procedimiento de caja chica 
+ Procedimiento de expedición de cheques 
+ Procedimiento de proyección anual y mensual de gastos 
+ Procedimiento de viáticos y comprobaciones 
+ Procedimiento de inventarios 
+ Manual de cuadros comparativos 

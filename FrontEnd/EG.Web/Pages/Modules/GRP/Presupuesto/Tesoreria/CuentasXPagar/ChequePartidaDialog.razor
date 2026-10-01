@@ -10,13 +10,26 @@
 <BaseCrudDialog TItem="ChequePartidaResponse" Title="@Title" MaxWidth="MaxWidth.Small" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="ChequePartidaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid GutterSize="2">
-            <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ChequeNombre</MudText></MudItem>
-            <MudItem xs="12" md="6"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField T="int" @bind-Value="item.FkidClcdetallePres" Label="Detalle CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField T="decimal" @bind-Value="item.MontoPagado" Label="Monto pagado" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12">
+                <CrudFormSection Title="Origen presupuestal">
+                    <MudGrid Spacing="2">
+<MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ChequeNombre</MudText></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidClcdetallePres" Label="Detalle CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Aplicación del pago">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.MontoPagado" Label="Monto pagado" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

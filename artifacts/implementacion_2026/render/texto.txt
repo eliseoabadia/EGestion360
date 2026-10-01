@@ -1,0 +1,776 @@
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  1 
+Calendario de implementación de Presupuesto y Contabilidad  
+Gobierno de Tabasco  
+EGestion360  |  Del 20 de septiembre al 31 de diciembre de 2026  
+Objetivo y propuesta de ejecución 
+Implantar el alcance aprobado de Presupuesto y Contabilidad mediante configuración institucional, migración conciliada de datos, pruebas de integración, aceptación 
+de usuarios y operación asistida. Se propone la salida a producción del ente piloto y las unidades expresamente aprobadas el 30 de noviembre, condicionada a la 
+autorización del comité y a la conciliación del corte. 
+El plan contiene 90 actividades distribuidas en 15 semanas operativas, seis liberaciones base y una liberación condicionada de correcciones. El 20 de septiembre es el 
+inicio formal; el kickoff operativo se realizará el lunes 21. Diciembre se reserva para estabilización, transferencia y preparación del cierre del ejercicio. 
+Decisión Fecha objetivo Resultado esperado 
+Inicio institucional 20 y 21 septiembre Inicio formal y kickoff con responsables, alcance y reglas de aprobación. 
+Diseño y datos 9 octubre Procesos, catálogos, reglas de migración y estrategia de conciliación firmados. 
+Autorización productiva 27 y 30 noviembre Go No Go y apertura de usuarios después del corte conciliado. 
+Entrega de implantación 31 diciembre Operación transferida y pendientes de enero bajo responsabilidad institucional. 
+Versión 1.0 • Emisión 8 de septiembre de 2026 • Destinatarios: patrocinio institucional, áreas de Presupuesto y Contabilidad, TI y equipo de implementación. Fechas 
+propuestas para aprobación en kickoff; no constituyen aceptación ya otorgada ni garantía de despliegue estatal completo. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  2 
+Alcance y condiciones de la línea base 
+La cobertura por entes, unidades, fuentes de datos e históricos se fijará en G0 para evitar que una ampliación silenciosa comprometa las fechas de salida. 
+Incluido en la implantación Límite y condición 
+Presupuesto de egresos Estructura y catálogos; anteproyecto, autorizado, adecuaciones, disponibilidad, suficiencia y compromisos; validación de 
+momentos posteriores. 
+Presupuesto de ingresos Estimado o autorizado, modificaciones y conexión a registros de ingreso; confirmar fuentes y operaciones aplicables en G0. 
+Contabilidad Plan de cuentas, matrices, pólizas, saldos, auxiliares, balanza, reportes priorizados y controles de cierre. 
+Datos y adopción ETL institucional, conciliación, capacitación, UAT, despliegue, recuperación y transferencia operativa. 
+Integraciones necesarias Adquisiciones, Tesorería, Almacén, Patrimonio y Nómina solo por eventos que afecten estos módulos; no se da por implantado 
+su alcance completo. 
+Fuera del compromiso base Expansión a todos los entes, nuevas fuentes, desarrollos mayores no estimados y certificaciones normativas se someten a 
+cambio de alcance. 
+Condiciones de capacidad y calendario 
+Se requiere acceso a fuentes durante la primera semana, usuarios clave disponibles, dos especialistas de datos para cargas y conciliación simultáneas, y ambientes 
+separados. La volumetría y el esfuerzo se ajustarán al concluir el perfilado; la duración de una actividad no equivale a horas de desarrollo. 
+La jornada propuesta es de lunes a viernes en horario de Tabasco. Se reserva el 16 de noviembre sin talleres y el 25 de diciembre sin cambios planeados; 24 y 31 de 
+diciembre tendrán guardia. Las suspensiones institucionales y ventanas de operación se confirmarán en G0. Si una condición crítica se incumple, el comité reprograma 
+la salida y conserva el sistema vigente. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  3 
+Alcance funcional sustentado en el código 
+La reindexación al 8 de septiembre identificó 2,291 archivos, 11,280 símbolos y rutas, 467 páginas Razor y 14 proyectos. La existencia de código no representa 
+aprobación de usuarios ni funcionamiento certificado. 
+Área observada Trabajo requerido para implantar Evidencia 
+Anteproyecto y mensualización Validar doce meses y carga previa a autorizado. El importador asigna a enero un total sin meses: corregir o bloquear para 
+la migración. E01 
+Autorizado y adecuaciones Validar origen, autorizaciones, reversas, disponible y efectos contables; probar con movimientos posteriores. E02 E03 
+Suficiencia y compromiso Depurar usuario y persona autorizadora; comprobar reservas, concurrencia y cancelaciones. E04 
+Ingresos e integración de pagos Definir interfaces por documento y momento; conciliar con Tesorería y Contabilidad. E05 
+Cuentas y matrices Aprobar equivalencias institucionales y cada combinación que genere asiento. E06 
+Pólizas e importación Validar cuadre, estados, períodos, evidencia documental, permisos y reejecución del lote. E07 
+Cierre y cambio de ejercicio Resolver alcance por ente y mes 13; ensayar interrupción, restauración, reejecución y transición 2027. E08 
+Reportes institucionales DIOT e indicadores APP figuran sin plantilla; decidir aplicabilidad. Verificar plantilla de cambios en situación financiera. E09 
+Despliegue y operación Probar mismo origen HTTPS, proxy a localhost 5555, arranque automático y recuperación después de reinicio. E10 
+El inventario de evidencias al final del documento permite localizar los componentes. Las correcciones de cierre, segregación y datos son condiciones de salida; no se 
+trasladan a producción como pendientes menores. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  4 
+Gobierno del proyecto y responsabilidades 
+Los nombres y suplentes se asignarán en el kickoff. Cada entregable tendrá ejecutor y aprobador institucional; las firmas técnicas no sustituyen la aceptación de los 
+responsables de información. 
+Rol Responsabilidad Decisión o evidencia 
+COM Comité y patrocinio Institución y dirección del proyecto; sesión semanal y decisiones de liberación. Aprueba alcance, recursos, cambios y Go 
+No Go. 
+PM Dirección del proyecto Plan, dependencias, riesgos, minutas y control de entregables. Integra expediente y eleva desviaciones. 
+FP Responsable de 
+Presupuesto Diseño, catálogos, cifras y flujos presupuestarios. Acepta Presupuesto y conciliación de sus 
+fuentes. 
+FC Responsable de 
+Contabilidad Cuentas, matrices, saldos, estados y reglas de cierre. Acepta cifras, reportes y procedimiento 
+de cierre. 
+DAT Equipo de datos Dos especialistas para extracción, transformación, cargas y manifiestos. Entrega conciliación y evidencia 
+reproducible. 
+DEV Equipo técnico Ajustes de aplicación y SQL, versionado y correcciones con pruebas. Entrega versión y plan de reversión. 
+QA Calidad Casos, pruebas integradas, regresión, rendimiento y evidencia independiente. Recomienda aprobación técnica o 
+bloqueo. 
+OPS TI y operación Ambientes, seguridad, copias, despliegue, monitoreo y recuperación. Ejecuta dentro de la ventana autorizada. 
+UK Usuarios clave Ejecutan casos del trabajo real y revisan resultados por rol. Firman UAT con FP y FC. 
+CAP Capacitación Manuales, sesiones, evaluación y transferencia a mesa de ayuda. Demuestra autonomía de operadores. 
+Cadencia: reunión diaria de 15 minutos en pruebas y corte; seguimiento de dependencias martes y jueves; comité viernes. Una decisión vencida más de dos días 
+hábiles o una desviación de la ruta crítica se eleva al COM con opciones de corrección, alcance o fecha. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  5 
+Kickoff institucional del 21 de septiembre 
+Reunión propuesta de 09:00 a 13:00 horas de Tabasco. Participan COM, PM, FP, FC, TI, DAT, QA y las unidades piloto. El 20 de septiembre queda registrado como 
+inicio formal del proyecto. 
+Horario Actividad Salida requerida 
+09:00 a 09:20 Objetivo y expectativas Definición compartida del alcance y resultado de diciembre. 
+09:20 a 10:00 Procesos y entidades de la primera ola Ente piloto, unidades, ejercicios y fuentes; interfaces y exclusiones. 
+10:00 a 10:35 Gobierno y responsables Titulares, suplentes, aprobadores, contacto y tiempos de decisión. 
+10:35 a 11:10 Datos y ETL Extracciones, volumetría inicial, protección y responsables de conciliación. 
+11:10 a 11:45 Calendario y liberaciones Fechas objetivo, ventanas, criterios de aceptación y ruta crítica. 
+11:45 a 12:20 Riesgos y decisiones técnicas Ambientes, brechas, seguridad, recuperación y cierre de año. 
+12:20 a 13:00 Acuerdos y próximos pasos Minuta y pendientes con dueño y fecha; G0 previsto el 25 de septiembre. 
+Preparación y compromisos posteriores 
+PM distribuirá agenda y formatos el 21 antes de la sesión. Cada área aportará procesos, reportes indispensables, fuentes y usuarios propuestos. Durante las siguientes 
+48 horas se abrirá el registro de decisiones, se asignarán dueños de datos y se solicitarán extracciones de lectura. La ausencia de un insumo se convertirá en actividad 
+con responsable y vencimiento. 
+G0 contendrá acta constitutiva, alcance por unidad, matriz de responsabilidades, fuentes, comunicaciones, calendario laboral validado y riesgos. Los participantes 
+aprobarán expresamente qué reportes y cierres son obligatorios para la primera salida. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  6 
+Calendario maestro y liberaciones 
+R identifica una versión liberada a un ambiente; G identifica una decisión con evidencia. Las fechas son objetivos condicionados. Ninguna fecha autoriza por sí sola una 
+carga o un cierre contable. 
+Hito Fecha Ambiente y contenido Condición de salida 
+G0 25 sep Alcance y gobierno Acta, fuentes y responsables confirmados. 
+R0 2 oct Pruebas y seguridad inicial Acceso y recuperación de copia demostrados. 
+G1 9 oct Diseño funcional y de datos Mapeos, reglas, pruebas y brechas priorizadas. 
+R1 16 oct Pruebas con maestros Catálogos, permisos y ETL uno aceptados. 
+G2 y R2 30 oct Integración con ETL dos Saldos y movimientos conciliados. 
+G3 y R3 13 nov Integración estabilizada SIT aprobado y ETL tres reproducible. 
+G4 y R4 27 nov Candidato de producción UAT firmado, soporte y reversión probados. 
+R5 30 nov Producción del alcance aprobado Conciliación del delta y Go operativo. 
+G5 y R6 10 y 11 dic Correcciones si aplican y estabilidad Regresión aprobada y transferencia operativa. 
+G6 31 dic Entrega de implantación Expediente y continuidad de enero. 
+Ruta crítica: G0 → perfilado y diseño G1 → maestros R1 → ETL dos G2 → pruebas y ensayo G3 → UAT y G4 → corte R5 → estabilidad G5 → entrega G6. Cada puerta 
+pendiente bloquea a su sucesora. La preparación puede solaparse; la aceptación formal requiere resultados completos. 
+Las páginas siguientes forman el calendario operativo. Cada actividad tiene identificador, ventana, responsable, dependencia y resultado verificable. El control 
+semanal registrará avance real, fecha de terminación, enlace de evidencia y desviación; no se asignan porcentajes iniciales de avance. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  7 
+Semana 01 Inicio y definición del alcance 
+21 al 25 de septiembre de 2026. Resultado de la semana: G0 Acta y alcance inicial. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A001 21 sep Kickoff institucional PM Inicio Alinear objetivos, entes participantes, gobierno y criterios de 
+éxito; aprobar minuta y calendario de decisiones. 
+A002 21–22 sep Inventario de procesos y 
+responsables FP FC Kickoff Levantar gasto e ingreso, pólizas, reportes y cierre; cada 
+proceso tendrá dueño y usuario aprobador. 
+A003 22–23 sep Inventario de fuentes y 
+extracciones DAT Kickoff Registrar sistemas, tablas, archivos, responsables, cortes y 
+volumen estimado; obtener acceso de lectura autorizado. 
+A004 22–24 sep Inventario técnico y ambientes DEV OPS Kickoff Revisar índice del código, dependencias SQL, despliegue local 
+y permisos; separar desarrollo, pruebas y producción. 
+A005 23–24 sep Definir ente piloto y alcance de 
+la ola PM FP FC Inventario Seleccionar un ente y unidades representativas; acordar 
+exclusiones y reglas para incorporar dependencias adicionales. 
+A006 25 sep Aprobar acta y matriz de 
+alcance COM Trabajos S01 G0 firmado con roles, disponibilidad, fuentes, riesgos y 
+entregables; cualquier ampliación seguirá control de cambios. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  8 
+Semana 02 Diagnóstico y primera extracción 
+28 de septiembre al 2 de octubre de 2026. Resultado de la semana: R0 Ambiente de pruebas. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A007 28–29 sep Taller de estructura 
+presupuestaria FP G0 Mapear ejercicio, unidad, programa, fuente y clasificadores; 
+catálogo de equivalencias con responsables. 
+A008 28–29 sep Taller contable y reglas de 
+registro FC G0 Revisar cuentas, niveles, naturaleza, eventos y períodos contra 
+manual aplicable; matriz de decisión funcional. 
+A009 29–30 sep Extracción de perfilado ETL 
+cero DAT Inventario fuentes Obtener copia controlada con fecha de corte y huella; perfilar 
+duplicados, nulos, importes y claves inválidas. 
+A010 29 sep–1 oct Diagnóstico de brechas de 
+cierre y reportes DEV FC Índice técnico Reproducir período 13, ámbito por ente y plantillas 
+pendientes; documentar evidencia y plan de solución. 
+A011 30 sep–1 oct Habilitar ambiente y seguridad 
+inicial OPS QA Inventario técnico Restaurar copia protegida; comprobar HTTPS, API local, 
+arranque automático, perfiles y bitácora. 
+A012 2 oct Liberar ambiente de trabajo R0 PM OPS Tareas S02 Prueba de acceso y recuperación aprobada; usuarios clave 
+pueden ejecutar talleres sin tocar producción. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  9 
+Semana 03 Diseño funcional y de datos 
+5 al 9 de octubre de 2026. Resultado de la semana: G1 Diseño y contratos de datos. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A013 5–6 oct Diseñar flujo de egresos FP G0 R0 
+Documentar anteproyecto, autorizado, adecuaciones, 
+suficiencia y compromiso; definir estados, reversas y 
+autorizadores. 
+A014 5–6 oct Diseñar pólizas e integración FC DEV Taller contable Relacionar evento presupuestario con asiento y documento 
+origen; controles de cuadre, reversa y no duplicación. 
+A015 6–7 oct Firmar mapeo ETL y reglas de 
+limpieza DAT FP FC Perfilado ETL cero Diccionario fuente destino por campo, tipo, longitud, 
+obligatoriedad, transformación y tratamiento de rechazos. 
+A016 6–8 oct Acordar alcance de reportes y 
+cierres FC Brechas S02 Clasificar reportes obligatorios y opcionales; decidir DIOT e 
+indicadores APP; aprobar diseño de cierre por ente. 
+A017 7–8 oct Diseñar UAT y segregación de 
+funciones QA UK Diseño funcional Casos con resultado esperado por rol; incluir cruces de ente, 
+ejercicio, permisos y trazabilidad. 
+A018 9 oct Aprobar diseño y estrategia de 
+migración COM Tareas S03 G1 firmado; fijar fecha base, delta, responsables de 
+conciliación y backlog priorizado con estimación. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  10 
+Semana 04 Configuración base y ETL uno 
+12 al 16 de octubre de 2026. Resultado de la semana: R1 Catálogos y configuración. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A019 12–13 oct Configurar estructura 
+institucional FP OPS G1 Cargar entes piloto, áreas, ejercicios, usuarios y permisos; 
+matriz de accesos verificada por usuario clave. 
+A020 12–14 oct Configurar clasificadores y 
+calendario FP DAT G1 Cargar catálogos, relaciones y doce meses; suma mensual 
+debe coincidir con total anual por clave. 
+A021 12–14 oct Configurar plan de cuentas y 
+eventos FC DEV G1 Validar jerarquías, cuentas activas, naturaleza, eventos y 
+cuentas permitidas; resolver claves sin correspondencia. 
+A022 13–15 oct Construir ETL uno de maestros DAT Mapeo aprobado Ejecutar extracción, depuración, carga de staging y rechazo 
+por fila; repetir lote sin crear duplicados. 
+A023 14–15 oct Corregir controles prioritarios DEV QA Backlog G1 Atender mensualización incompleta, aislamiento por ente y 
+diseño del cierre; pruebas automatizadas de riesgo. 
+A024 16 oct Demostrar y liberar R1 en 
+pruebas PM FP FC Tareas S04 Catálogos y perfiles aceptados; evidencias de ETL uno y 
+diferencias resueltas antes de movimientos. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  11 
+Semana 05 Presupuesto y saldos iniciales 
+19 al 23 de octubre de 2026. Resultado de la semana: Preparación de R2. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A025 19–20 oct Cargar presupuesto base y 
+autorizado FP DAT R1 Validar claves y meses; probar secuencia anteproyecto a 
+autorizado sin duplicar registro ni efecto contable. 
+A026 19–21 oct Validar adecuaciones y 
+disponibilidad FP QA R1 Ejecutar ampliación, reducción, transferencia y calendario; 
+demostrar autorización y disponibilidad por clave. 
+A027 19–21 oct Preparar saldos y auxiliares FC DAT R1 Conciliar corte con balanza fuente por cuenta, ente y período; 
+documentar partidas de enlace y diferencias. 
+A028 20–22 oct Construir carga de 
+movimientos históricos DAT DEV G1 R1 Definir documentos, detalles y vínculos; incluir control de 
+folios, estados, fechas y reversas. 
+A029 21–22 oct Probar pólizas manuales e 
+importación FC QA R1 Cuadre cargos abonos, edición autorizada, rechazo de cuenta 
+inválida y trazabilidad del documento. 
+A030 23 oct Cerrar conciliación de 
+maestros FP FC DAT Tareas S05 Acta de maestros y base presupuestaria; cero diferencias 
+monetarias no explicadas para avanzar a ETL dos. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  12 
+Semana 06 ETL dos e integración funcional 
+26 al 30 de octubre de 2026. Resultado de la semana: G2 y R2 Migración conciliada. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A031 26–27 oct Ejecutar ETL dos completo en 
+pruebas DAT Conciliación S05 
+Cargar maestros, saldos, presupuesto y movimientos; 
+controlar lote y no duplicar pólizas. Conteos fuente iguales a 
+aceptados más rechazados. 
+A032 26–28 oct Validar suficiencias y 
+compromisos FP QA R1 base cargada Probar importe excedido, cancelación y reenvío; disponible y 
+reservado deben reconciliar sin doble afectación. 
+A033 27–28 oct Validar devengado ejercido y 
+pagado FP FC QA ETL dos Recorrer documentos de cuentas por pagar y tesorería dentro 
+del alcance; verificar momento y asiento. 
+A034 27–29 oct Validar ingresos y recaudación FP FC QA ETL dos Probar estimado, modificación y etapas de ingreso aplicables; 
+comprobar integración contable y reversas. 
+A035 28–29 oct Conciliar presupuesto y 
+contabilidad FC DAT ETL dos Cruzar totales por clave, cuenta y momento; separar ajustes 
+legítimos de errores y obtener firmas. 
+A036 30 oct Aprobar G2 y liberar R2 COM Tareas S06 Carga reproducible, sin rechazos críticos ni diferencias 
+inexplicadas; conjunto integrado listo para pruebas. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  13 
+Semana 07 Pruebas integrales y cierre 
+2 al 6 de noviembre de 2026. Resultado de la semana: SIT ciclo uno. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A037 2–3 nov Ejecutar casos de egreso de 
+extremo a extremo QA FP G2 R2 Desde presupuesto a documento y póliza; cubrir rechazo, 
+devolución, cancelación y reintento. 
+A038 2–4 nov Probar cierre mensual y 
+separación por ente 
+QA FC 
+DEV 
+Correcciones 
+prioritarias 
+Cerrar y repetir en copia; verificar que un ente no altere otro y 
+que los saldos anteriores se conserven. 
+A039 3–4 nov Probar período trece y cambio 
+de ejercicio 
+FC DEV 
+QA Diseño G1 Verificar ajustes y traspaso a 2027 con respaldo; impedir 
+fechas inválidas y cierres duplicados. 
+A040 3–5 nov Validar reportes prioritarios FC QA G2 Conciliar balanza, auxiliares, estados y ejecución 
+presupuestaria con casos trazables; revisar formato y filtros. 
+A041 4–5 nov Probar concurrencia y 
+seguridad QA OPS R2 Medir cargas acordadas; ensayar sesión, rol, ente, folio 
+concurrente, bitácora y error recuperable. 
+A042 6 nov Triage de defectos y plan de 
+cierre 
+PM DEV 
+QA SIT uno Clasificar severidad, asignar dueño y fecha; bloquear 
+liberación con errores de saldo, permiso o duplicación. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  14 
+Semana 08 Regresión y ensayo ETL tres 
+9 al 13 de noviembre de 2026. Resultado de la semana: G3 y R3 Integración aprobada. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A043 9–10 nov Corregir y reprobar defectos 
+críticos DEV QA SIT uno Adjuntar reproducción, corrección y evidencia independiente; 
+completar pruebas de no regresión. 
+A044 9–11 nov Ejecutar ensayo ETL tres con 
+delta DAT G2 y defectos 
+resueltos 
+Simular corte más novedades, cancelaciones y actualizaciones; 
+demostrar idempotencia y conciliación final. 
+A045 12 nov Medir ventana de corte y 
+restauración OPS DAT ETL tres terminado Registrar tiempos de respaldo, carga, validación y reversión; 
+confirmar que caben en ventana de producción. 
+A046 10–12 nov Completar paquete de pruebas 
+de integración QA FP FC Correcciones y ETL 
+tres 
+Todos los casos críticos pasan; evidencia de controles de 
+saldo, ente y período completa. 
+A047 11–12 nov Preparar capacitación y 
+manuales por rol CAP UK Flujos estabilizados Guías de captura, revisión, autorización, cierre y atención; 
+material probado por usuarios representativos. 
+A048 13 nov Aprobar G3 y liberar R3 COM Tareas S08 Entrada a UAT autorizada; cero defectos críticos o altos que 
+afecten operación, datos o seguridad. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  15 
+Semana 09 Aceptación de usuarios 
+16 al 20 de noviembre de 2026. Resultado de la semana: UAT funcional. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A049 17 nov Capacitar responsables y 
+habilitar UAT CAP QA G3 R3 Sesión práctica con datos del piloto; asistencia y evaluación 
+individual registradas. 
+A050 17–18 nov Ejecutar UAT Presupuesto UK FP Capacitación Usuarios validan autorizado, modificaciones, suficiencia y 
+compromiso; evidencias con firma funcional. 
+A051 17–19 nov Ejecutar UAT Contabilidad UK FC Capacitación Usuarios validan pólizas, balanza, auxiliares y cierre en copia; 
+concilian contra resultados esperados. 
+A052 18–19 nov Validar reportes institucionales 
+y permisos UK QA G3 Revisar formatos acordados, segregación de tareas y consultas 
+entre entes; registrar desviaciones. 
+A053 18–20 nov Corregir observaciones y 
+repetir casos DEV QA Resultados UAT Atender defectos sin ampliar alcance; ejecutar regresión y 
+documentar aceptación del usuario. 
+A054 20 nov Emitir preaceptación funcional FP FC PM Tareas S09 Lista cerrada de pendientes, severidad y responsables; ningún 
+pendiente crítico pasa a preparación de corte. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+El 16 de noviembre se reserva sin talleres. UAT y firmas se concentran del 17 al 20; confirmar disponibilidad de usuarios y suplentes antes de G3. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  16 
+Semana 10 Preparación y autorización productiva 
+23 al 27 de noviembre de 2026. Resultado de la semana: G4 y R4 Candidato de producción. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A055 23–24 nov Realizar UAT final y firma por 
+módulo UK FP FC Preaceptación 100 por ciento de casos críticos aprobados; observaciones 
+menores con tratamiento y vencimiento. 
+A056 23–24 nov Ensayar despliegue y 
+restauración final OPS QA G3 y ETL tres Repetir instalador en ambiente equivalente; probar backend 
+automático, proxy, respaldos y retorno. 
+A057 24–25 nov Preparar corte de fuentes y 
+delta final DAT FP FC UAT final Fijar hora y zona del corte, responsables fuente, folios y cifras 
+de control; comunicar suspensión autorizada. 
+A058 24–26 nov Verificar soporte y usuarios 
+productivos CAP OPS Manuales y R3 Confirmar cuentas nominales, perfiles, mesa de ayuda, 
+guardias y canal de incidentes. 
+A059 26 nov Preparar versión R4 y 
+expediente de salida DEV QA Ensayo final Versionar Front, Back, instalador y SQL; comprobar huellas, 
+configuración, evidencia y cambios incluidos. 
+A060 27 nov Comité Go No Go G4 COM Tareas S10 
+Autorizar o rechazar corte; sin firma, con diferencias de saldo 
+no aprobadas o sin restauración probada, la decisión será NO 
+GO. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  17 
+Semana 11 Salida a producción y operación asistida 
+30 de noviembre al 4 de diciembre de 2026. Resultado de la semana: R5 Producción del alcance aprobado. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A061 30 nov Ejecutar ventana de corte 
+autorizada OPS DAT G4 Respaldar, cerrar fuente, cargar delta y publicar; aplicar 
+secuencia y puntos de reversión del runbook. 
+A062 30 nov Conciliar y habilitar usuarios FP FC QA Corte técnico Firmar cifras finales, probar operación y reportes; abrir 
+captura solo tras autorización funcional. 
+A063 1–2 dic Acompañar primeras 
+operaciones UK FP FC R5 Supervisar lotes y pólizas iniciales; contrastar contra fuente y 
+registrar incidencias con prioridad. 
+A064 1–3 dic Monitorear estabilidad y 
+automatismos OPS QA R5 Comprobar reinicio, logs, acceso HTTPS, respaldos, consumo y 
+tiempos; API por mismo origen sin 8440. 
+A065 2–3 dic Ejecutar primera revisión de 
+saldos FC DAT Operación inicial Conciliar movimientos, balanza y ejecución; resolver 
+diferencias antes de nuevos cierres. 
+A066 4 dic Comité de estabilización PM FP FC Tareas S11 Aprobar continuidad de operación asistida y plan de 
+incidencias; sin ampliación automática a otros entes. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+El 30 de noviembre coincide con fin de mes. El comité decidirá qué sistema realiza el cierre de noviembre y la fecha contable de inicio en EGestion360. Queda 
+prohibida la doble captura sin conciliación formal. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  18 
+Semana 12 Estabilización y entrega operativa 
+7 al 11 de diciembre de 2026. Resultado de la semana: G5 y R6 Correcciones controladas. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A067 7–8 dic Cerrar incidencias de salida DEV QA Comité S11 Probar correcciones con caso reproducible; no cambiar reglas 
+contables sin aprobación funcional. 
+A068 7–9 dic Validar primer ciclo operativo 
+completo UK FP FC R5 Revisar presupuesto, integración, auxiliares y cierre del 
+período permitido; evidencia de usuario. 
+A069 8–9 dic Revisar reportes y conciliación 
+acumulada FC DAT Operación estable Comparar saldos por ente y mes; obtener aceptación de 
+responsables de información. 
+A070 9–10 dic Transferir administración y 
+soporte OPS CAP Manuales finales Entregar accesos bajo custodia, monitoreo, arranque, parada, 
+respaldo y recuperación; ejercicio supervisado. 
+A071 10 dic Liberar R6 si hay cambios 
+autorizados DEV OPS Defectos probados Aplicar solo correcciones aceptadas, con regresión y respaldo; 
+si no hay cambios, conservar R5. 
+A072 11 dic Aprobar estabilidad G5 COM Tareas S12 Aceptar operación del alcance implantado, pendientes 
+menores y responsables; autorizar congelamiento funcional. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  19 
+Semana 13 Preparación del cierre anual 
+14 al 18 de diciembre de 2026. Resultado de la semana: Congelamiento y ensayo de cierre. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A073 14 dic Iniciar congelamiento de 
+funcionalidad PM OPS G5 Permitir únicamente correcciones urgentes aprobadas; 
+mantener evidencia de versiones y autorizaciones. 
+A074 14–15 dic Ejecutar ensayo de cierre 
+anual en copia FC QA Cierre corregido y G5 Ensayar ajustes, período trece y saldos 2027; demostrar que la 
+repetición no duplica ni altera otros entes. 
+A075 15–16 dic Conciliar pendientes 
+presupuestarios FP FC Operación 
+acumulada 
+Identificar compromisos, devengados, pagos y adecuaciones 
+pendientes con documento, dueño y tratamiento. 
+A076 15–17 dic Validar formatos de 
+información anual FC UK Catálogo reportes 
+firmado 
+Comparar estados y conciliaciones aprobadas; programar 
+aclaraciones que dependan del cierre efectivo. 
+A077 16–17 dic Ensayar recuperación y 
+continuidad de guardia OPS QA G5 Restaurar respaldo en ambiente separado; registrar tiempo y 
+pérdida recuperable contra objetivos aprobados. 
+A078 18 dic Autorizar procedimiento de fin 
+de año COM Tareas S13 Firmar checklist, responsables y guardias; fijar recepción de 
+ajustes y actividades posteriores a diciembre. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  20 
+Semana 14 Operación vigilada y preparación final 
+21 al 25 de diciembre de 2026. Resultado de la semana: Guardias sin liberaciones mayores. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A079 21 dic Revisar pendientes críticos y 
+saldos FP FC Procedimiento 
+aprobado 
+Confirmar tratamiento de excepciones y folios abiertos; 
+escalar diferencias con impacto al cierre. 
+A080 21–22 dic Preparar paquete de 
+evidencias PM QA G5 Consolidar actas, UAT, ETL, conciliaciones, versiones, 
+incidencias y manuales; índice por entregable. 
+A081 22 dic Validar usuarios de guardia y 
+escalamiento OPS CAP Plan continuidad Probar contacto, permisos y acceso seguro de guardias; 
+confirmar respaldo titular y suplente. 
+A082 22–23 dic Verificar respaldos y espacio 
+disponible OPS R5 R6 Validar ejecución, retención y copia recuperable; sin tareas 
+pendientes que requieran consola manual. 
+A083 23 dic Conciliar avance antes de 
+guardia DAT FP FC Pendientes S14 Emitir corte de control y lista de diferencias explicadas; no 
+aplicar cargas masivas fuera de autorización. 
+A084 24–25 dic Mantener guardia de 
+continuidad OPS Responsables 
+confirmados 
+Atender solo incidentes; 25 sin talleres ni cambios planeados. 
+Registrar cualquier intervención y su aprobación. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+Si una dependencia se retrasa, conservar la fecha objetivo solo cuando exista capacidad y evidencia de recuperación. El comité debe aprobar la reprogramación de 
+cualquier liberación afectada. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  21 
+Semana 15 Corte de seguimiento y cierre de implantación 
+28 al 31 de diciembre de 2026. Resultado de la semana: G6 Entrega del proyecto. 
+ID Ventana Actividad Rol Dependencia Entregable y criterio de terminación 
+A085 28 dic Revisar conciliación y 
+pendientes finales FP FC DAT Corte S14 Contrastar presupuesto y contabilidad al corte acordado; 
+clasificar ajustes que continúan en enero. 
+A086 28–29 dic Validar administración 
+autónoma OPS UK Transferencia S12 Operadores ejecutan checklist de operación y recuperación 
+sin asistencia del equipo de desarrollo. 
+A087 29 dic Entregar expediente y backlog 
+residual PM QA Evidencias S14 Entregar originales controlados, incidentes menores y fechas; 
+asegurar custodio y acceso institucional. 
+A088 30 dic Sesión de aceptación de 
+implantación 
+COM FP 
+FC Tareas de entrega Aprobar alcance operando y restricciones; no sustituye el 
+cierre contable definitivo ni la cuenta pública. 
+A089 30–31 dic Ejecutar corte y resguardo 
+autorizado FC OPS Procedimiento fin de 
+año 
+Guardar evidencias y respaldos del corte; no cerrar 
+automáticamente períodos ni adelantar cifras definitivas. 
+A090 31 dic Emitir G6 y continuidad de 
+enero PM COM Aceptación y corte 
+Acta de entrega con pendientes, responsables y soporte; 
+tratamiento de ajustes y cierre anual continúa según 
+calendario oficial. 
+Control de la semana 
+PM consolida evidencias y fechas reales; FP y FC revisan los resultados de su dominio. QA registra desviaciones y bloqueos. Una actividad termina cuando su 
+entregable está revisado y tiene aceptación del responsable, no cuando concluye la ventana de tiempo. 
+G6 cierra la implantación del alcance acordado. Los ajustes posteriores, el cierre contable definitivo y la cuenta pública seguirán el calendario y las autorizaciones 
+institucionales. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  22 
+ETL y objetos de migración 
+ETL significa extracción, transformación y carga. La estrategia propuesta es una base de saldos a un corte aprobado más movimientos y novedades posteriores; el 
+histórico completo requiere perfilado y capacidad suficientes. Se evitará contabilizar dos veces saldos, presupuesto y pólizas históricas. 
+Objeto Secuencia y transformación Control de aceptación Dueño 
+Entes y unidades Primero; claves externas a identificadores 
+destino. Sin duplicados, relaciones válidas y ámbito autorizado. FP OPS 
+Usuarios y autorizadores Después de estructura; asociar persona y perfil. Usuario nominal, permisos y suplencia comprobados. OPS FP 
+Clasificadores y 
+programas Homologar claves, ejercicio y combinaciones. Todas las claves utilizadas con equivalencia. FP 
+Plan de cuentas Jerarquía, naturaleza, detalle y vigencia. Sin huérfanas ni equivalencias ambiguas. FC 
+Matrices y eventos Vincular presupuesto con cuentas y momentos. Asiento esperado aprobado por combinación. FP FC 
+Presupuesto mensual Doce meses explícitos, anual y vigencia. Suma mensual igual al anual; no enviar total a enero. FP 
+Adecuaciones y 
+compromisos Estado, documento, folio y monto pendiente. No exceder disponible; conservar documento origen. FP 
+Saldos y auxiliares Corte, ente, cuenta, período y detalle. Balanza firmada y diferencias explicadas. FC 
+Pólizas y documentos 
+abiertos Cabecera y detalle con claves de vínculo. Cargos igual a abonos; estados y trazabilidad completos. FC 
+Delta y reversas Nuevos, modificados y cancelados desde corte. Marca de agua, idempotencia y sin doble efecto. DAT FC 
+Cada lote conservará origen, corte, responsable, huella, versión de mapeo, conteos e importes antes y después. Conteo fuente = aceptados + rechazados + exclusiones 
+formalizadas. Los importes se conciliarán por ente, ejercicio, mes, clave, cuenta y momento; no se compensarán diferencias entre partidas sin justificación. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  23 
+Ensayos ETL y control de calidad de datos 
+Las importaciones existentes son componentes de apoyo. El proyecto debe construir el proceso completo con staging, bitácora, validación, rechazo, reejecución y 
+recuperación. Los datos reales se usarán con autorización y protección apropiadas al ambiente. 
+Ciclo Fechas Propósito y evidencia Salida 
+ETL cero 29 a 30 sep Perfilado, volumetría, muestras y defectos. Reglas y esfuerzo ajustados en G1. 
+ETL uno 13 a 15 oct Maestros, equivalencias y reejecución de lote. R1 con catálogos aprobados. 
+ETL dos 26 a 29 oct Migración representativa de extremo a extremo. G2 con saldos conciliados. 
+ETL tres 9 a 12 nov Base más delta, tiempo total y restauración. G3 con ventana demostrada. 
+Productivo 30 nov Corte autorizado y delta final sin doble captura. Go operativo con firma de FP y FC. 
+Secuencia obligatoria de cada ejecución 
+1 Preparar copia y manifiesto. 2 Extraer al corte. 3 Calcular conteos e importes fuente. 4 Transformar con diccionario versionado. 5 Cargar staging y validar. 6 Resolver 
+o rechazar filas con causa. 7 Cargar por dependencias con identificadores externos. 8 Reconciliar destino contra fuente. 9 Ejecutar casos de negocio. 10 Obtener firma 
+del dueño. 11 Resguardar evidencias. 12 Probar reejecución o reversión. 
+Criterios de bloqueo 
+No se autoriza producción con claves sin equivalencia, documentos huérfanos, pérdida de trazabilidad, pólizas descuadradas, datos de otro ente o diferencias 
+monetarias no explicadas. El objetivo es cero diferencia a centavos; cualquier tolerancia de redondeo debe definirse por escrito, por objeto y causa, antes del ensayo. 
+DAT no aprueba por sí mismo la validez de las cifras. 
+Los rechazos se corrigen en origen o con transformación aprobada; no se borran de la conciliación. Cada cambio genera nueva versión de lote. Los tiempos se miden 
+con la volumetría del corte; si el ensayo no cabe en la ventana, se reduce alcance o se cambia fecha antes de G4. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  24 
+Pruebas y criterios de liberación 
+SIT corresponde a pruebas de integración y UAT a aceptación de usuarios. QA coordina evidencia; los usuarios institucionales validan resultados. Una prueba técnica 
+no sustituye la conciliación financiera. 
+Caso obligatorio Resultado esperado Evidencia 
+Presupuesto y doce meses Anual conciliado y claves válidas; incluir archivo sin meses. Plantilla y resultado antes después. 
+Autorizado y adecuaciones Estados, reversas y pólizas correctos; rechazo de saldo excedido. Flujo firmado por FP. 
+Reservas y concurrencia Dos solicitudes no consumen el mismo disponible; reintentos sin duplicación. Casos paralelos y saldos. 
+Cadena a pago y reversa Momento, documento y asiento coinciden en las etapas acordadas. Matriz evento a póliza. 
+Pólizas y permisos Cargos igual a abonos; roles segregados; documentos protegidos. Casos positivos y negativos. 
+Ente y ejercicio No consultar, modificar ni cerrar datos de un ente ajeno. Pruebas con dos entes y perfiles. 
+Cierre y período trece Pendientes bloqueados; recierre y cambio 2027 sin duplicación ni fecha inválida. Copia y balanza posterior. 
+Reportes Totales, filtros, signos y formato coinciden con control aprobado. Muestra hasta documento origen. 
+Operación y recuperación Reinicio, API HTTPS, respaldo restaurable y tiempos medidos. Bitácora y ensayo cronometrado. 
+Puerta de producción: 100 por ciento de casos críticos aprobados; cero defectos críticos y altos que comprometan operación, seguridad o cifras; conciliación firmada; 
+respaldo restaurado; responsables capacitados. Los defectos menores requieren solución temporal aceptada, dueño y fecha. COM registra la decisión y las 
+excepciones no financieras admisibles. 
+Rendimiento propuesto para acordar en G1: percentil 95 de consultas habituales menor a 3 segundos, captura menor a 5 segundos y cero errores de integridad bajo 
+concurrencia validada. Son objetivos, no mediciones obtenidas. Reportes masivos y ETL tendrán umbrales específicos de volumen. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  25 
+Plan de corte y reversión del 30 de noviembre 
+Ventana propuesta de 06:00 a 10:00 horas de Tabasco, sujeta al ensayo del 12 de noviembre y a G4. La autorización del 27 permite ejecutar la ventana; abrir usuarios 
+exige una segunda decisión después de conciliar. 
+Hora propuesta Paso Rol Control para continuar 
+06:00 Confirmar Go técnico y congelar fuente PM OPS Responsables presentes, respaldo y comunicación activa. 
+06:00 a 06:20 Respaldo y cifras de control OPS FP FC Corte único, folios, conteos e importes resguardados. 
+06:20 a 07:00 Extraer y validar delta final DAT Cambios completos y sin rechazos críticos. 
+07:00 a 07:40 Cargar y desplegar versión DAT OPS Paquetes y SQL aprobados; automatismos y configuración correctos. 
+07:40 a 08:30 Conciliar y probar operación FP FC QA Saldos, momentos, pólizas y casos críticos aceptados. 
+08:30 Go operativo o reversión COM FP FC Sin firmas, con diferencias no aprobadas o prueba fallida: revertir. 
+08:30 a 09:30 Restaurar si hubo No Go OPS DAT Volver a versión y datos respaldados; validar integridad. 
+09:30 a 10:00 Abrir sistema autorizado PM UK Comunicación única; fuente anterior queda en consulta si hay Go. 
+Desde 10:00 Monitorear y asistir OPS FP FC Mesa de ayuda, primeros lotes e incidentes registrados. 
+El ensayo debe demostrar reversión en un máximo propuesto de 60 minutos. Si no lo demuestra, COM cambia ventana o fecha. La hora límite para decidir reversión 
+es 08:30. PM comunica la reapertura del origen con FP y FC, una vez verificada la consistencia. 
+Después de abrir usuarios, restaurar puede perder operaciones nuevas: se suspende captura, se inventarían movimientos y se acuerda recuperación o compensación. 
+No se restaura automáticamente ni se reabre origen sin conciliación. G4 decidirá quién cierra noviembre y la fecha contable de inicio, por coincidir con fin de mes. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  26 
+Capacitación soporte y capacidad 
+La operación debe continuar sin una consola abierta y sin dependencia diaria de desarrollo. Habrá acompañamiento desde la salida hasta la entrega, con atención 
+especial al cierre del ejercicio. 
+Frente Fechas y cobertura Evidencia 
+Usuarios clave 11 a 20 nov; procesos, datos y UAT. Asistencia y casos resueltos por rol. 
+Operadores y autorizadores 23 a 26 nov; captura, revisión y autorización. Evaluación de al menos 80 por ciento y casos críticos 
+completos. 
+TI y mesa de ayuda 9 a 10 dic; arranque, parada, logs, copias y recuperación. Operación supervisada y manual con suplente. 
+Cierre y guardias 14 a 23 dic; pendientes, reversión y escalamiento. Ensayo de cierre, contactos y permisos. 
+Soporte de salida 30 nov a 11 dic; revisión diaria con FP y FC. Incidentes y aceptación G5. 
+Continuidad 14 a 31 dic; urgencias bajo control de cambios. Bitácora, guardias y entrega a enero. 
+Capacidad mínima propuesta 
+Equipo: 1 PM, 2 consultores funcionales, 2 especialistas DAT, 2 desarrolladores, 2 personas QA, 0.5 equivalente de OPS y 0.5 de CAP. Total estimado: 10 equivalentes 
+de tiempo completo, más titulares y suplentes institucionales con al menos 25 por ciento de disponibilidad en diseño y hasta 50 por ciento en UAT y corte. Confirmar 
+en G0; no representa una plantilla contratada. 
+Atención y medición 
+Prioridad 1: operación detenida, datos o seguridad comprometidos; acuse propuesto en 15 minutos y decisión de contención en 60 durante cobertura acordada. 
+Prioridad 2: función crítica degradada; acuse en 1 hora y plan en el día. Otros casos se programan en comité. Estos objetivos se formalizan en G4, con guardias para 
+ventanas fuera de jornada. 
+Indicadores: actividades aceptadas frente a plan, decisiones vencidas, casos críticos aprobados, defectos, diferencias de conciliación, usuarios capacitados e incidentes 
+reabiertos. La aceptación financiera exige cifras conciliadas aunque el avance de actividades sea favorable. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  27 
+Riesgos y gestión de cambios 
+El registro se revisará cada viernes. Cada riesgo tendrá dueño, señal y respuesta; si compromete la ruta crítica, se presenta al COM con impacto en fecha y alcance. 
+Riesgo Señal y respuesta prevista Dueño 
+Datos tardíos o inconsistentes Fuentes sin corte o equivalencias; escalar en S02, repetir perfilado y bloquear ETL productivo. DAT FP FC 
+Alcance no dimensionado Nuevos entes o históricos después de G0; estimar ola adicional con recursos y calendario propios. PM COM 
+Meses implícitos Total cargado a enero; exigir doce meses, regla aprobada y caso de prueba antes de R2. FP DEV 
+Cierre global o mes trece Alteración de otro ente o fecha inválida; corregir y probar en copia antes de producción. FC DEV 
+Doble afectación contable Saldos e históricos duplican efecto; conciliar por documento, cuenta y momento. DAT FC 
+Reportes no aceptados Plantilla ausente o mapeo ambiguo; decidir obligatoriedad en G1 y construir o excluir formalmente. FC COM 
+Corte insuficiente Ensayo supera tiempo; ajustar volumen, técnica o fecha antes de G4. OPS DAT 
+Disponibilidad institucional UAT sin usuarios o firmas; activar suplentes y mantener origen si no hay aprobación. PM UK 
+Cambios en cierre anual Urgencias sin prueba; congelar desde 14 dic y autorizar solo lo indispensable. OPS COM 
+Solicitud de cambio: necesidad, procesos, fuentes, pruebas, seguridad, esfuerzo y fecha afectada. FP y FC evalúan impacto; DEV y DAT estiman; PM recalcula 
+dependencias. Solo COM modifica la línea base. Ningún cambio se introduce como corrección de datos sin trazabilidad. 
+Si G4 se rechaza, se continúa en origen y se replanifica la salida conservando entregables aceptados. No se compensan defectos de integridad con capacitación o 
+aceptación tácita. Diciembre conserva actividades de preparación y entrega solo si COM aprueba el alcance revisado. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  28 
+Aceptación y continuidad del ejercicio siguiente 
+La entrega del 31 de diciembre documenta la implantación. El cierre contable definitivo de 2026, los ajustes y la cuenta pública dependen de información y 
+autorizaciones; no concluyen por emitir el acta del proyecto. 
+Paquete Entrega Aprobación y evidencia 
+Gobierno y alcance PM COM firma G0, decisiones, cambios y límites por ente. 
+Diseño y catálogos FP FC DAT Firmas institucionales de procesos, mapeos y catálogos. 
+Migración DAT FP y FC aceptan conteos, saldos, rechazos y conciliación final. 
+Pruebas y versión QA DEV UAT, regresión, versión y contenido de liberación. 
+Operación OPS TI acepta acceso, monitoreo, copias y restauración. 
+Capacitación CAP Usuarios acreditan ejecución autónoma. 
+Cierre de implantación PM COM firma G6 y pendientes con dueño y vencimiento. 
+Continuidad para enero de 2027 
+Ajustes posteriores al corte, cierre anual definitivo, período trece y saldos de apertura en el momento autorizado, información definitiva de reportes e incidencias 
+menores. La preparación y el ensayo deben concluir antes del 18 de diciembre; la ejecución real seguirá el calendario oficial. 
+Registro de aceptación 
+Patrocinio institucional: ____________________  Fecha: __________ 
+Responsable de Presupuesto: _________________  Fecha: __________ 
+Responsable de Contabilidad: _________________  Fecha: __________ 
+Responsable de TI y operación: ________________  Fecha: __________ 
+Dirección del proyecto: ______________________  Fecha: __________ 
+La firma confirma los entregables y restricciones documentados. Un pendiente sin responsable, criterio y fecha no se considera transferido. 
+  
+
+GOBIERNO DE TABASCO  |  EGESTION360  |  IMPLEMENTACIÓN 2026 
+Plan propuesto v1.0  •  20 sep a 31 dic 2026  |  29 
+Evidencias del código y referencias de trabajo 
+Corte técnico al 8 de septiembre de 2026. Índice actualizado a partir del commit 211aecb674e73fe750cf8f78a390ab8ba9a247f8 e incluyendo cambios locales. La 
+revisión estática no ejecutó operaciones de producción. 
+ID Referencia Archivos localizables en el índice 
+E01 Mensualización EgresoProyectadoAppService.cs y EgresoProyectadoAiImportParser.cs, líneas 121 a 125 del parser.  
+E02 Autorizado EgresoAutorizadoAppService.cs, creación desde anteproyecto y controles de reversa. 
+E03 Adecuaciones PresupuestoModificadoServices.cs y 20260729_PresupuestoModificado_Egresos_Contexto_Flujo.sql.  
+E04 Suficiencia PresupuestoComprometidoServices.cs, validaciones de ejercicio, reserva y autorizador.  
+E05 Momentos y pagos CuentasXPagarServices.cs e IngresoAutorizadoAppService.cs. 
+E06 Cuentas y matrices CuentaContableService.cs, MatrizConversionService.cs y MatrizIngresoService.cs.  
+E07 Pólizas PolizaService.cs, PolizaAiImportParser.cs y PolizaController.cs. 
+E08 Cierre CierreMensualService.cs y Scripts/01_GestionEmpresarial_Script_Final_BD.sql, CONTA.SP_SaldoMensual.  
+E09 Reportes FrontEnd/EG.Web/Pages/Modules/GRP/Contabilidad/ContabilidadReportes.razor, opciones y plantillas.  
+E10 Despliegue FrontEnd/EG.Web/wwwroot/index.html, FrontEnd/EG.Web/web.config y Tools/DeployLocalInstaller/Instalar.ps1. 
+Índice de referencia: artifacts/implementacion_2026/indice_codigo/PROJECT_MAP.md, files.txt y symbols.tsv. Contiene 1,645 declaraciones de rutas y páginas; no 
+equivalen a endpoints únicos. La extracción usa expresiones regulares y XML; no mide avance, cobertura ni aprobación funcional. 
+Referencias institucionales para G1: CEAC Tabasco, Manual de Contabilidad Gubernamental, publicación identificada del 29 de julio de 2026: 
+https://ceac.tabasco.gob.mx/content/manual-de-contabilidad-gubernamental. CONAC, normatividad vigente: 
+https://www.conac.gob.mx/es/CONAC/Normatividad_Vigente. Portal de Finanzas: https://tabasco.gob.mx/finanzas. Consulta 8 de septiembre de 2026. FP y FC 
+confirmarán instrumentos aplicables y actualizaciones; esta planeación no certifica cumplimiento normativo. 

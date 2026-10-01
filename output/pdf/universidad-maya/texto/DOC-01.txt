@@ -1,0 +1,1043 @@
+=== DOC-01 | Página 1 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 1 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+Fecha de Solicitud: 01 de agosto de 2025 
+ 
+ 
+ 
+I. ÁREA SOLICITANTE 
+DATOS GENERALES DEL DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE 
+Nombre del desarrollo o 
+modificación: 
+Sistema Integral de Capital Humano 
+Propietario del proceso: 1. COORDINACION DE RECLUTAMIENTO Y SELECCIÓN DE 
+PERSONAL  
+2. COORDINACION DE NOMINA 
+3. COORDINACION DE TALENTO HUMANO 
+Área solicitante: DIRECCION GENERAL DE ADMINISTRACION Y 
+FINANZAS 
+Experto del proceso: 1. COORDINACION DE RECLUTAMIENTO Y SELECCIÓN DE 
+PERSONAL  
+2. COORDINACION DE NOMINA 
+3. COORDINACION DE TALENTO HUMANO 
+Contacto del experto: 4. COORDINACION DE RECLUTAMIENTO Y SELECCIÓN DE 
+PERSONAL  
+5. COORDINACION DE NOMINA 
+COORDINACION DE TALENTO HUMANO 
+Responsable del 
+seguimiento: 
+DIRECCION GENERAL DE ADMINISTRACION Y 
+FINANZAS 
+Puesto que envía la 
+solicitud: 
+DIRECCION GENERAL DE ADMINISTRACION Y 
+FINANZAS 
+ 
+DESCRIPCIÓN DE LA NECESIDAD 
+Antecedentes 
+Tipo de solicitud 
+Desarrollo x Modificación x Consulta  
+
+=== DOC-01 | Página 2 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 2 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+Actualmente se tienen muchos procedimientos que se realizan de manera manual y 
+que conllevan a ciertas incidencias y situaciones.  
+La ausencia de un Sistema Integral de Capital Humano la insitutcion genera una serie 
+de problemas que afectan tanto a la eficiencia operativa como a la satisfacción y 
+productividad de los empleados. Esto puede resultar en cometer errores humanos con 
+mas frecuencia, una pérdida de talento, aumento de costos, ineficiencias en los 
+procesos y, en última instancia, afectar negativamente el rendimiento general del 
+negocio.  
+Consecuencias de no tener un Sistema Integral de Capital Humano: 
+• Dificultades en la gestión del talento 
+• Inadecuada gestión de la fuerza laboral 
+• Problemas de cumplimiento normativo 
+• Desmotivación y baja productividad 
+• Aumento de costo 
+• Dificultades en la toma de decisiones estratégicas 
+• Pérdida de competitividad 
+• Impacto negativo en la cultura organizacional: 
+Justificación 
+Se tiene la necesidad de gestionar de manera eficiente todo el ciclo de vida del 
+empleado, desde su ingreso hasta su desarrollo profesional, para contribuir al 
+éxito de la organización. El poder llegar e elaborar este SISTEMA INTEGRAL 
+podremos obtener implementar una estrategia de KPIs en RR.HH., las empresas 
+pueden obtener información valiosa sobre el rendimiento de su gestión de 
+personas y tomar medidas para mejorar la eficiencia, productividad y 
+satisfacción de sus empleados. Los KPIs de RRHH, o Indicadores Clave de 
+Rendimiento en Recursos Humanos, son métricas que miden la efectividad de 
+las estrategias y procesos de gestión de personas de una empresa. Estos 
+indicadores ayudan a evaluar el impacto de RR.HH. en los objetivos generales 
+del negocio, permitiendo identificar áreas de mejora y tomar decisiones más 
+informadas. 
+Costo – Beneficio 
+Costos de un Sistema Integral de Capital Humano 
+ Costos de implementación: Incluyen Los costos horas de trabajo del personal para 
+desenrollarlo a las necesidades de la empresa, la capacitación del personal y la migración de 
+datos. Este debe de ser determinado por el área de DESARROLLO 
+ Costos operativos: Costos de mantenimiento del sistema, actualizaciones, soporte técnico y 
+costos de infraestructura. Este debe de ser determinado por el área de DESARROLLO 
+  
+ 
+ Costos de adaptación: Incluyen el tiempo y los recursos invertidos en capacitar al personal 
+para usar el nuevo sistema y en la adaptación a los nuevos procesos.  Este debe de ser 
+determinado por el área de DESARROLLO 
+
+=== DOC-01 | Página 3 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 3 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ Costos de gestión: Se refieren a los costos asociados con la gestión continua del sistema, 
+como la administración de usuarios, la gestión de datos y la generación de informes. Este 
+debe de ser determinado por el área de DESARROLLO 
+ 
+ 
+Análisis Costo-Beneficio EN NUMEROS 
+ 
+Para determinar si un sistema es beneficioso, es crucial realizar un análisis costo-beneficio. Esto 
+implica: 
+1. Identificar los costos: Calcula todos los costos asociados con la implementación, 
+operación y adaptación del sistema.  
+2. Identificar los beneficios: Estima los beneficios en términos de eficiencia, 
+productividad, reducción de costos, satisfacción del empleado, etc.  
+3. Calcular el Retorno de la Inversión (ROI): Divide los beneficios totales por los 
+costos totales y multiplica por 100 para obtener el porcentaje de ROI.  
+4. Evaluar la viabilidad: Si el ROI es positivo y los beneficios superan los costos, el 
+sistema puede considerarse una inversión rentable.  En resumen, un Sistema Integral 
+de Capital Humano ofrece numerosos beneficios, pero también implica costos. Un 
+análisis costo-beneficio detallado es crucial para determinar si la inversión es viable y 
+rentable para cada empresa en particular.  
+ 
+ 
+Beneficios 
+Beneficios de un Sistema Integral de Capital Humano 
+ Mejora de la productividad y eficiencia: Automatiza procesos, reduce errores y optimiza la 
+gestión del tiempo, lo que se traduce en una mayor eficiencia en las operaciones diarias.  
+ Reducción de costos: La automatización de tareas, la minimización de errores en nómina y 
+la gestión eficiente de la información ayudan a reducir costos operativos.  
+ Aumento de la satisfacción y el compromiso de los empleados: Facilita la comunicación, 
+el acceso a la información y la gestión de beneficios, contribuye a un ambiente laboral más 
+positivo y a una mayor satisfacción del empleado.  
+ Reducción de la rotación de personal: La inversión en el desarrollo y bienestar de los 
+empleados, facilitada por el sistema, aumenta su lealtad y reduce la rotación, lo que ahorra 
+costos de reclutamiento y capacitación.  
+ Mejora de la toma de decisiones: Proporciona datos precisos y análisis en tiempo real, lo 
+que permite a los líderes tomar decisiones más informadas.  
+ Fortalecimiento de la reputación de la empresa: Una gestión eficiente del capital humano 
+mejora la imagen de la empresa como empleador, atrayendo y reteniendo talento.  
+ Cumplimiento normativo: Asegura el cumplimiento de leyes laborales y normativas, evitando 
+sanciones y riesgos legales.  
+ Mejora de la cultura organizacional: Facilita la implementación de políticas y prácticas que 
+promueven una cultura organizacional positiva y orientada al empleado.  
+ Mayor agilidad en la gestión del talento: Permite una gestión más eficiente del ciclo de vida 
+del empleado, desde la contratación hasta la salida.  
+ 
+Objetivo 
+
+=== DOC-01 | Página 4 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 4 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ 
+Un Sistema Integral de Capital Humano ofrece numerosos beneficios para las empresas, pero también 
+implica costos. La clave está en evaluar si la inversión en el sistema justifica los beneficios obtenidos en 
+términos de eficiencia, productividad, satisfacción del empleado, y reducción de costos a largo plazo.  
+ 
+El objetivo principal de un Sistema Integral de Capital Humano (SICH) en una empresa es optimizar el 
+rendimiento y el potencial de sus empleados, para que puedan contribuir de manera efectiva al logro de 
+los objetivos organizacionales. Esto implica gestionar de manera eficiente todos los procesos 
+relacionados con el personal, desde la atracción y selección hasta el desarrollo y la retención del talento.  
+Asegurar que la empresa cumpla con todas las leyes y regulaciones laborales.  
+Al implementar un SICH, las empresas pueden mejorar la productividad, reducir la rotación de personal, 
+aumentar la satisfacción de los empleados y fortalecer su reputación como empleador. Además, un 
+SICH bien gestionado permite a la empresa adaptarse a los cambios del entorno y mantener una ventaja 
+competitiva.  
+ 
+ 
+ 
+DESCRIPCIÓN DEL NEGOCIO 
+a) Descripción del proceso 
+Colocar una descripción general de cómo se realiza actualmente el proceso, se 
+puede colocar el uso de un sistema anterior o las herramientas o programas que 
+son utilizados para realizar el proceso. 
+ 
+Procesos manuales de las diferentes áreas.  
+ 
+COORDINACION DE RECLUTAMIENTO Y SELECCIÓN DE PERSONAL 
+A. Reclutamiento  
+B. Selección  
+C. Ingreso e inducción  
+ 
+COORDINACION DE NOMINA Se utiliza Excel, Word para todos los procedimientos que 
+se mencionan, asi como el correo electrónico de la institución para envíos de einformacion, 
+archivos según cada procedimiento. 
+ CONTRATACIÓN DE PERSONAL ADMINISTRATIVO EN CAMPUS  
+ CONTRATACIÓN DE PERSONAL ADMINISTRATIVO OC 
+ BAJA POR RENUNCIA DE PERSONAL ADMINISTRATIVO EN OC 
+ BAJA POR NO RENOVACIÓN DE CONTRATO CAMPUS 
+ BAJA POR RENUNCIA DE PERSONAL ADMINISTRATIVO EN CAMPUS 
+ RENOVACIÓN DE CONTRATOS DE PERSONAL ADMVO EN CAMPUS 
+ BAJA DE PERSONAL POR RECISIÓN DE CONTRATO CAMPUS 
+
+=== DOC-01 | Página 5 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 5 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ BAJA POR NO RENOVACIÓN DE CONTRATO OC 
+ PAGO DE FINIQUITO 
+ RENOVACIÓN DE CONTRATOS DE PERSONAL ADMINISTRATIVO EN OC 
+ BAJA DE PERSONAL POR RESCISIÓN DE CONTRATO OC 
+ ADENDUM DE CONTRATOS EN CAMPUS  
+ CONTRATACIÓN DE DOCENTES  
+ ADENDUM DE CONTRATOS EN OC 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE PERSONAL ADMVO CAMPUS 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE DOCENTES 
+ CONTRATACIÓN DOCENTE DE CAMPOS CLÍNICOS 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE PERSONAL ADMVO OC 
+ 
+COORDINACION DE TALENTO HUMANO 
+Se utiliza Excel, Word para todos los procedimientos que se mencionan, así como el correo 
+electrónico de la institución para envíos de información, archivos según cada procedimiento. 
+ 
+ ACTUALIZACIÓN DE BASE DE DATOS PERSONAL ADMVO 
+ ACTUALIZACIÓN DE CUMPLEAÑOS Y ANIVERSARIOS 
+ ACTUALIZACIÓN DE PERSONAL DE NUEVO INGRESO 
+ ACTUALIZACIÓN DE BAJAS DE PERSONAL ADMVO 
+ MÉTRICAS DE BAJAS ANUALES 
+ MÉTRICAS DE ROTACIÓN 
+ HEADCOUNT DE PERSONAL ADMVO 
+ PROMOCIONES / CAMBIO DE PUESTO 
+ ACTUALIZACIÓN DE ORGANIGRAMA DIGITAL 
+ FOTOS INSTITUCIONALES DE PERSONAL ADMVO 
+ RAZONES DE BAJAS PERSONAL ADMVO 
+ CONTROL ENTREVISTAS DE SALIDA 
+ ACTUALIZACIÓN DE MATRIZ DE DESARROLLO DE TALENTO HUMANO 
+ INDUCCIÓN AL PERSONAL DE NUEVO INGRESO 
+ EVALUACIONES DE PERÍODO DE PRUEBA 
+ EVALUACIONES DE DESEMPEÑO 
+ NORMAS OFICIALES MEXICANAS 
+ DETECCIÓN DE NECESIDADES DE CAPACITACIÓN  
+ ENCUESTAS DE CLIMA LABORAL 
+ CAPACITACIÓN DE TALENTO HUMANO 
+ ENCUESTA DE CAPACITACIONES 
+ 
+ 
+ 
+
+=== DOC-01 | Página 6 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 6 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+b) Flujo del proceso 
+Colocar en orden lo pasos de cómo se lleva a cabo el proceso colocado en el paso 15, 
+debe ser el flujo básico o normal de manera específica. 
+ 
+COORDINACION DE RECLUTAMIENTO Y SELECCIÓN DE PERSONAL 
+ 
+COORDINACION DE NOMINA 
+Cuando se realiza el ingreso de personal nuevo (catedráticos, administrativos, campus 
+clínicos), NOMINA REALIZA: 
+a) Llenado manual de Excel de la base de datos para elaborar contrato 
+b) Llenado manual de Word del contrato , emisión del contrato firma del contrato 
+físico 
+c) BAJA POR renuncia, recision de contrato, baja a solicitud de área;  se llenan 
+manualmente, es decir toda la documentación de salida del personal por baja o 
+renuncia. 
+d) El control de RENOVACIÓN DE CONTRATOS DE PERSONAL se lleva en un 
+Excel con recordatorio manuales, para la solicitud de renovación a las áreas y 
+aceptación de renovaciones por las áreas, y emisión del contrato nuevo según 
+el punto a y b , anteriormente mencionado 
+e) Cuando se necesitan adendum por algun cambio legal o financiero en los 
+contratos se debe de realizar tambien bajo el supuesto a y b anteriormente 
+mencionado 
+f) ELABORACIÓN Y ENVÍO DE NÓMINA DE PERSONAL ADMVO (campus y oc), 
+de este punto ya se tiene la emisión de ATEMPO para la parte de concentración 
+de dias trabajados ya solo se llena el Excel correspondiente para la división de 
+la parte fiscal, esto podría sistematizarse también para que lo emita el ATEMPO 
+o quizás el nuevo sistema. 
+g) ELABORACIÓN Y ENVÍO DE NÓMINA DE DOCENTES y CAMPUS CLINICOS, 
+de este punto ya se tiene la emisión de ATEMPO para la parte de concentración 
+de dias trabajados ya solo se llena el Excel correspondiente para la división de 
+la parte fiscal, esto podría sistematizarse también para que lo emita el ATEMPO 
+o quizás el nuevo sistema. Tambien se puede sistematizar lo del control de 
+CAMPUS CLINICOS con proyecciones y liberaciones de pago par ano hacerlo 
+manualmente.  
+h) Se tiene un control manual de la documentación de cada expediente físico, y se 
+debe de estar actualizando el check list constantemente cuando hay cambios.  
+ 
+ 
+
+=== DOC-01 | Página 7 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 7 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ 
+COORDINACION DE TALENTO HUMANO 
+ 
+1. ACTUALIZACIÓN DE BASE DE DATOS PERSONAL ADMVO 
+a) Se solicita la información al Área de Nómina. 
+b) Registro y mantenimiento continuo de la información del personal administrativo 
+en la base de datos. 
+2. ACTUALIZACIÓN DE PERSONAL DE NUEVO INGRESO 
+a) Envío y recepción de información por Área de Reclutamiento 
+b) Se solicita la información complementaria al Área de Nómina 
+c) Incorporación de nuevos empleados en la base de datos con su información 
+personal y laboral.  
+3. INDUCCIÓN AL PERSONAL DE NUEVO INGRESO 
+a) Proceso de integración de los nuevos empleados a la organización con 
+formación básica y procedimientos. Curso de Inducción, Curso de Modelo 
+Educativo, Entrega de Kits de Bienvenida.  
+4. ACTUALIZACIÓN DE CUMPLEAÑOS Y ANIVERSARIOS 
+a) Se solicita la información al Área de Nómina 
+b) Registro y seguimiento de las fechas de cumpleaños y aniversarios laborales 
+del personal. 
+5. FOTOS INSTITUCIONALES DE PERSONAL ADMVO 
+a) Captura y mantenimiento de fotografías institucionales de personal 
+administrativo 
+6. ACTUALIZACIÓN DE BAJAS DE PERSONAL ADMVO 
+a) Actualización de la base de datos al registrar las bajas del personal 
+administrativo. 
+7. RAZONES DE BAJAS PERSONAL ADMVO 
+a) Documentación y análisis de las causas de la salida del personal administrativo. 
+8. CONTROL ENTREVISTAS DE SALIDA 
+a) Registro y seguimiento de entrevistas de salida para los empleados que dejan 
+la organización. 
+9. MÉTRICAS DE BAJAS ANUALES 
+a) Seguimiento y análisis de la cantidad y razones de las bajas del personal 
+administrativo durante el año. 
+10. MÉTRICAS DE ROTACIÓN 
+a) Análisis de la rotación de personal administrativo durante un período 
+determinado. 
+11. HEADCOUNT DE PERSONAL ADMVO 
+a) Conteo y seguimiento del personal administrativo activo en la organización. 
+12. ACTUALIZACIÓN DE ORGANIGRAMA DIGITAL 
+a) Modificación del organigrama institucional digital para reflejar cambios de 
+personal, posiciones y estructuras. 
+13. ACTUALIZACIÓN DE MATRIZ DE DESARROLLO DE TALENTO 
+HUMANO 
+
+=== DOC-01 | Página 8 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 8 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+a) Revisión y actualización de la matriz de talento humano, incluyendo planes de 
+desarrollo de empleados, actividades, capacitaciones, coaching, todas las 
+actividades de talento humano. 
+14. EVALUACIONES DE PERÍODO DE PRUEBA 
+a) Evaluación del desempeño de nuevos empleados durante su período de prueba 
+de 3 meses. 
+15. EVALUACIONES DE DESEMPEÑO 
+a) Evaluación periódica del rendimiento y desempeño de los empleados 
+administrativos. 
+16. DETECCIÓN DE NECESIDADES DE CAPACITACIÓN 
+a) Identificación de áreas y habilidades que requieren capacitación dentro del 
+personal administrativo. 
+17. CAPACITACIÓN DE TALENTO HUMANO 
+a) Ejecución de programas de capacitación para el personal administrativo en base 
+a las necesidades detectadas. 
+18. ACTUALIZACIÓN DE MATRIZ DE DESARROLLO DE TALENTO 
+HUMANO 
+a) Revisión y actualización de la matriz de talento humano, incluyendo planes de 
+desarrollo de empleados, actividades, capacitaciones, coaching, todas las 
+actividades de talento humano. 
+ 
+c) Flujos alternos 
+Colocar los casos especiales o excepciones que pueden presentarse en el flujo y que 
+tienen un impacto en su aplicación. 
+ 
+ 
+COORDINACION DE RECLUTAMIENTO 
+ 
+COORDINACION DE NOMINA 
+Es necesario considerar todas las politicas de los procedimientos y en especial los 
+formatos o reportes que se necesitan  
+1. Base de datos de todo el personal administrativo por area 
+2. Formato de contrato administrativos prueba 3 meses 
+3. Formato de contrato administrativos determinado por 1 año  
+4. Formato de contrato administrativos indeterminado 
+5. Check list  
+6. Formato de contrato determinado para ciclo escolar cuatrimestral 
+7. Formato de contrato determinado para ciclo escolar semestral 
+8. Documentación de finiquito: terminación de contrato, recibo de pago, carta de renuncia 
+9. Adendum establecido para cada cambio legal, fiscal o financiero. 
+10. Archivo de nomina individual por cada campus  y oc (5archivos ): Excel, archivo para pago en 
+banca en línea 
+11. Archivo concentrado (campus +oc) (1 archivos) : Excel, archivo para pago en banca en línea 
+12. Archivo de nomina catedrático por campus (4 archivos) : Excel, archivo para pago en banca en 
+línea 
+
+=== DOC-01 | Página 9 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 9 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+13. Archivo de nomina concentrado catedrático por campus (1 archivo  : Excel, archivo para pago 
+en banca en línea 
+  
+ 
+ 
+COORDINACION DE TALENTO HUMANO 
+ 
+PROMOCIONES / CAMBIO DE PUESTO 
+a) Proceso de promoción o cambio de puesto de empleados dentro de la 
+organización. 
+NORMAS OFICIALES MEXICANAS 
+Aseguramiento de cumplimiento de las Normas Oficiales Mexicanas  
+a) relacionadas con el trabajo y la gestión del personal. 
+ENCUESTA DE CAPACITACIONES 
+a) Encuesta para evaluar la efectividad y satisfacción con los programas de 
+capacitación realizados. 
+ENCUESTAS DE CLIMA LABORAL 
+a) Realización de encuestas periódicas para medir el ambiente laboral y detectar 
+áreas de mejora. 
+ 
+ 
+d) Reglas del negocio 
+Colocar las políticas o consideraciones que se deben aplicar o reflejarse en el software 
+solicitado. 
+ 
+COORDINACION DE RECLUTAMIENTO 
+ 
+COORDINACION DE NOMINA 
+1. PROCEDIMIENTOS DE LA COORDINACION 
+ CONTRATACIÓN DE PERSONAL ADMINISTRATIVO EN CAMPUS  
+ CONTRATACIÓN DE PERSONAL ADMINISTRATIVO OC 
+ BAJA POR RENUNCIA DE PERSONAL ADMINISTRATIVO EN OC 
+ BAJA POR NO RENOVACIÓN DE CONTRATO CAMPUS 
+ BAJA POR RENUNCIA DE PERSONAL ADMINISTRATIVO EN CAMPUS 
+ RENOVACIÓN DE CONTRATOS DE PERSONAL ADMVO EN CAMPUS 
+ BAJA DE PERSONAL POR RECISIÓN DE CONTRATO CAMPUS 
+ BAJA POR NO RENOVACIÓN DE CONTRATO OC 
+ PAGO DE FINIQUITO 
+ RENOVACIÓN DE CONTRATOS DE PERSONAL ADMINISTRATIVO EN OC 
+ BAJA DE PERSONAL POR RESCISIÓN DE CONTRATO OC 
+ ADENDUM DE CONTRATOS EN CAMPUS  
+
+=== DOC-01 | Página 10 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 10 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ CONTRATACIÓN DE DOCENTES  
+ ADENDUM DE CONTRATOS EN OC 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE PERSONAL ADMVO CAMPUS 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE DOCENTES 
+ CONTRATACIÓN DOCENTE DE CAMPOS CLÍNICOS 
+ ELABORACIÓN Y ENVÍO DE NÓMINA DE PERSONAL ADMVO OC 
+ 
+1. LEYES  
+ Ley Federal del Trabajo (LFT): 
+Es la ley principal que regula las relaciones laborales entre empleadores y empleados en 
+México. Establece derechos y obligaciones para ambas partes, incluyendo aspectos como contratos, 
+salarios, jornadas laborales, vacaciones, prestaciones, seguridad social, entre otros. 
+ Ley del Seguro Social: 
+Regula la seguridad social de los trabajadores, incluyendo el acceso a servicios médicos, pensiones, 
+guarderías, etc. 
+ Ley del INFONAVIT: 
+Regula el acceso a créditos hipotecarios para trabajadores. 
+ Ley Federal de Protección de Datos Personales en Posesión de los Particulares: 
+Establece cómo se deben proteger los datos personales de los trabajadores. 
+ Código Fiscal de la Federación y Ley del Impuesto sobre la Renta: 
+Regulan la relación con las obligaciones fiscales de las empresas y los trabajadores.  
+ 
+ 
+COORDINACION DE TALENTO HUMANO 
+ 
+ ACTUALIZACIÓN DE BASE DE DATOS PERSONAL ADMVO 
+ ACTUALIZACIÓN DE CUMPLEAÑOS Y ANIVERSARIOS 
+ ACTUALIZACIÓN DE PERSONAL DE NUEVO INGRESO 
+ ACTUALIZACIÓN DE BAJAS DE PERSONAL ADMVO 
+ MÉTRICAS DE BAJAS ANUALES 
+ MÉTRICAS DE ROTACIÓN 
+ HEADCOUNT DE PERSONAL ADMVO 
+ PROMOCIONES / CAMBIO DE PUESTO 
+ ACTUALIZACIÓN DE ORGANIGRAMA DIGITAL 
+ FOTOS INSTITUCIONALES DE PERSONAL ADMVO 
+ RAZONES DE BAJAS PERSONAL ADMVO 
+
+=== DOC-01 | Página 11 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 11 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ CONTROL ENTREVISTAS DE SALIDA 
+ ACTUALIZACIÓN DE MATRIZ DE DESARROLLO DE TALENTO HUMANO 
+ INDUCCIÓN AL PERSONAL DE NUEVO INGRESO 
+ EVALUACIONES DE PERÍODO DE PRUEBA 
+ EVALUACIONES DE DESEMPEÑO 
+ NORMAS OFICIALES MEXICANAS 
+ DETECCIÓN DE NECESIDADES DE CAPACITACIÓN  
+ ENCUESTAS DE CLIMA LABORAL 
+ CAPACITACIÓN DE TALENTO HUMANO 
+ ENCUESTA DE CAPACITACIONES 
+ 
+Normas Oficiales Mexicanas de Seguridad y Salud en el Trabajo (NOM-STPS): 
+ NOM 001-Edificios, instalaciones y áreasNOM 002-Condiciones de Seguridad-Contra incendios 
+ NOM 009 -Condiciones de seguridad para trabajos en altura 
+ NOM 017-Equipo de Protección Personal 
+ NOM 019-Comisiones de seguridad e higiene 
+ NOM 025-Condiciones de iluminación 
+ NOM 026-Colores y señales de seguridad 
+ NOM 029-Mantenimiento de instalaciones eléctricas 
+ NOM 030-Servicios preventivos de seguridad y salud en el trabajo 
+ NOM 035-Factores de riesgo psicosocial 
+ NOM 036-Factores de riesgo ergonómico en el trabajo 
+ 
+ 
+e) Áreas de impacto 
+Colocar las áreas que intervienen o que al realizar el desarrollo o modificación del 
+software tendrán un impacto en sus actividades. 
+ 
+ COORDINACION DE RECLUTAMIENTO 
+ COORDINACION DE NOMINA 
+ COORDINACION DE TALENTO HUMANO 
+ 
+ 
+
+=== DOC-01 | Página 12 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 12 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+f) Nivel de seguridad 
+Colocar las restricciones que se deben considerar o formas en las cuales se debe 
+obtener la autorización de algunos puntos de la solicitud. 
+ 
+COORDINACION DE RECLUTAMIENTO 
+ 
+COORDINACION DE NOMINA 
+ 
+ Uso de USUARIOS y contraseña para cada una de los puestos y la 
+determinación de ingreso de informacion de acuerdo a nivel de confidencialidad 
+ Sistematizacion de los tiempos para cada proceso de reclutamiento y selección, 
+con el fin de que se den las notificaciones para cada caso  
+ La necesidad de obtener autorizaciones específicas 
+ Medidas de seguridad para proteger la información confidencial gestionada por 
+el sistema 
+ Integración con sistemas existentes 
+ 
+ 
+COORDINACION DE TALENTO HUMANO 
+ 
+ Control de Accesos Personalizados con Usuario y Contraseña 
+Cada puesto dentro del sistema tendrá acceso único mediante un nombre de 
+usuario y contraseña, asegurando que cada persona solo pueda ingresar y ver 
+la información que le corresponde, según su nivel de confidencialidad. 
+ Autorizaciones Claras y Específicas 
+Habrá un control estricto sobre los procesos que requieren autorización, de 
+forma que solo las personas con el nivel adecuado de responsabilidad puedan 
+aprobar o modificar decisiones importantes dentro del sistema. 
+ Protección de Datos Confidenciales con Seguridad Avanzada 
+Toda la información sensible y confidencial, será protegida mediante sistemas de 
+seguridad robustos, como encriptación, para garantizar que sólo las personas 
+autorizadas puedan acceder a ella. 
+ Conexión Sin Problemas con Sistemas Existentes 
+El nuevo sistema se integrará perfectamente con las plataformas ya utilizadas en la 
+universidad, asegurando que todos los datos se sincronicen correctamente y sin 
+interrupciones, optimizando los procesos sin perder información valiosa. 
+ 
+ 
+ 
+
+=== DOC-01 | Página 13 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 13 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+INDICADORES CLAVES 
+a) Indicadores esperados 
+Colocar las métricas que son esperadas del software solicitado. 
+ 
+Métricas de RECLUTAMIENTO 
+Las métricas clave de rendimiento (KPI) para el área de reclutamiento ayudan a medir la 
+eficiencia y efectividad del proceso de contratación. Algunas de las métricas más importantes 
+incluyen el tiempo de contratación, el costo por contratación, la calidad de la contratación y la 
+satisfacción del candidato. Estas métricas permiten identificar áreas de mejora y optimizar el 
+proceso de reclutamiento para atraer y contratar talento de manera más efectiva.  
+Métricas Clave de Rendimiento (KPIs) para Reclutamiento: 
+ 
+Tiempo de Contratación: 
+Mide el tiempo promedio que toma cubrir una vacante, desde la publicación hasta la aceptación 
+de la oferta por parte del candidato. Un tiempo de contratación más corto indica un proceso 
+más eficiente. Mide la duración del proceso de contratación, desde la publicación de la oferta 
+hasta la incorporación del nuevo empleado.  
+ 
+Costo por Contratación: 
+Calcula el costo total de una contratación, incluyendo publicidad, entrevistas, pruebas, etc. 
+Esta métrica ayuda a evaluar la rentabilidad del proceso de reclutamiento y a identificar 
+oportunidades para reducir costos.  Calcula el gasto total asociado a la contratación de un 
+nuevo empleado, incluyendo publicidad, selección y capacitación inicial.  
+ 
+Calidad de la Contratación: 
+Evalúa el desempeño y la permanencia de los nuevos empleados en la empresa. Métricas 
+como la rotación temprana (empleados que renuncian poco después de ser contratados) y la 
+satisfacción laboral del empleado son indicadores clave de la calidad de la contratación. Evalúa 
+el rendimiento de los nuevos empleados contratados y su adaptación a la empresa.  
+  
+Tasa de Aceptación de Ofertas: 
+Indica el porcentaje de ofertas de empleo que son aceptadas por los candidatos. Una tasa alta 
+sugiere que las ofertas son atractivas y competitivas.  
+Fuentes de Contratación: 
+Identifica los canales de reclutamiento más efectivos (por ejemplo, bolsas de trabajo, redes 
+sociales, referencias) para dirigir los esfuerzos de contratación y optimizar la inversión.  
+Satisfacción del Candidato: 
+Mide la experiencia del candidato durante el proceso de selección. Un buen NPS (Net Promoter 
+Score) indica una experiencia positiva y puede ayudar a mejorar la reputación de la empresa 
+como empleadora.  
+Relación Entrevista-Oferta: 
+Evalúa la eficiencia del proceso de selección al medir cuántas entrevistas se necesitan para 
+generar una oferta de empleo. Una relación alta (muchas entrevistas para pocas ofertas) puede 
+indicar problemas en la selección o en la calidad de los candidatos.  
+Tasa de Conversión: 
+Mide el porcentaje de candidatos que avanzan de una etapa a otra del proceso de selección 
+(por ejemplo, de la solicitud a la entrevista, de la entrevista a la oferta). Esta métrica ayuda a 
+identificar cuellos de botella en el proceso y áreas que necesitan ser optimizadas.  
+Diversidad en la Contratación: 
+
+=== DOC-01 | Página 14 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 14 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+Mide la diversidad del equipo contratado en términos de género, raza, origen étnico, etc. Esta 
+métrica es importante para promover la inclusión y la igualdad de oportunidades.  
+Al monitorear estas métricas, las empresas pueden obtener información valiosa sobre el 
+rendimiento de su área de reclutamiento y tomar decisiones informadas para mejorar la 
+eficiencia y la calidad de la contratación. 
+ 
+Métricas de NOMINA 
+Los KPI de nómina son métricas que miden el rendimiento de la gestión de la nómina de una 
+empresa, incluyendo la precisión, los costos, la eficiencia y el cumplimiento. Estos indicadores 
+permiten a las empresas evaluar el desempeño de su sistema de nómina y tomar medidas 
+para mejorarlo.  
+Algunos KPI importantes de nómina son: 
+ Precisión de la nómina: 
+Mide la exactitud de los cálculos de nómina, como salarios, deducciones y retenciones.  
+ Tiempo de procesamiento de la nómina: 
+Evalúa la eficiencia con la que se procesa la nómina, desde la recopilación de datos hasta la 
+distribución de los pagos.  
+ Costo por empleado: 
+Calcula el costo total de la gestión de la nómina por empleado, incluyendo salarios, beneficios 
+y otros gastos.  
+ Cumplimiento normativo: 
+Monitorea el cumplimiento de las leyes y regulaciones laborales y fiscales relacionadas con la 
+nómina.  
+ Tasa de errores en la nómina: 
+Indica la frecuencia con la que ocurren errores en la nómina, lo que puede afectar la 
+satisfacción del empleado y generar costos adicionales.  
+ Tiempo de respuesta a consultas de nómina: 
+Mide la rapidez con la que se resuelven las preguntas y problemas de los empleados 
+relacionados con la nómina.  
+ Rotación de personal: 
+Analiza la tasa de rotación de empleados, ya que la alta rotación puede indicar problemas en 
+la gestión de la nómina o en otros aspectos de la empresa.  
+ Costo total de la nómina: 
+Calcula el gasto total de la nómina de la empresa, incluyendo salarios, beneficios, impuestos 
+y otros costos relacionados.  
+ 
+Metricas de TALENTO HUMANO 
+Las métricas o KPIs de talento humano son indicadores clave de rendimiento que miden la 
+efectividad de las estrategias y procesos de gestión del talento en una organización. Estas 
+métricas ayudan a evaluar el desempeño del departamento de recursos humanos y a identificar 
+áreas de mejora en la gestión del personal.  
+ 
+Algunas de las métricas más importantes para el área de talento humano incluyen: 
+ 
+ Porcentaje de empleados con fechas registradas. 
+ 
+ Número total de bajas por año. 
+ 
+ Número total de empleados activos. 
+ 
+ Número de promociones/cambios realizados. 
+
+=== DOC-01 | Página 15 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 15 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ 
+ Porcentaje de organigramas actualizados con cambios de personal. 
+ 
+ Número de razones de baja registradas. 
+ 
+ Número de entrevistas de salida realizadas. 
+ 
+ Porcentaje de empleados con plan de desarrollo registrado. 
+ 
+ Tiempo promedio para completar la inducción. 
+ 
+ Porcentaje de empleados evaluados al finalizar su período de prueba y resultados. 
+ 
+ Número de evaluaciones realizadas. 
+ 
+ Porcentaje de cumplimiento con las normas laborales. 
+ 
+Número total de actividades y horas de capacitación por empleado. 
+Tasa de rotación de personal: 
+Mide la frecuencia con la que los empleados dejan la empresa, ya sea voluntariamente o por 
+despido.  
+ 
+Tasa de retención de talento: 
+Indica la capacidad de la empresa para mantener a sus empleados a lo largo del tiempo.  
+ 
+Satisfacción del empleado: 
+Evalúa el nivel de satisfacción de los empleados con su trabajo, la empresa y su entorno 
+laboral.  
+ 
+Absentismo laboral: 
+Mide la frecuencia de ausencias de los empleados, incluyendo bajas médicas y otras razones.  
+ 
+Accidentalidad laboral: 
+Evalúa el número de accidentes laborales que ocurren en la empresa.  
+ 
+Tiempo de capacitación: 
+Mide la duración de los programas de capacitación y desarrollo para los empleados.  
+ 
+Índice de desarrollo interno: 
+Mide la promoción de empleados dentro de la empresa y su progresión profesional.  
+ 
+Cumplimiento seguridad y salud en el trabajo 
+Determinación de métricas que garanticen el cumplimiento con las autoridades laborales;  
+emisión de reglamentos e instructivos para fijar las medidas necesarias que garanticen la 
+seguridad y salud en el trabajo. Estas disposiciones deben prevenir los riesgos laborales y 
+asegurar que el trabajo se realice en condiciones adecuadas (Normas Oficiales Mexicanas de 
+Seguridad y Salud en el Trabajo (NOM-STPS) 
+ 
+b) Salidas esperadas  
+
+=== DOC-01 | Página 16 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 16 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+Colocar los reportes, visuales, formatos que deben ser descargados, información del 
+software, y todos los tipos de archivo que se necesita que sea generado por el software 
+para los reportes. 
+ 
+Reportes RECLUTAMIENTO 
+ 
+ Emisión del requerimiento llenado 
+ Reporte de control de requerimiento 
+ Repor de  Tiempo de Contratación 
+ Reporte de Costo por Contratación 
+ Reporte de Calidad de la Contratación 
+ Reporte de  Tasa de Aceptación de Ofertas 
+ Reporte de  Fuentes de Contratación 
+ Reporte de Satisfacción del Candidat 
+ Reporte de  Relación Entrevista-Oferta 
+ Reporte de Tasa de Conversión 
+ Reporte de  Diversidad en la Contratación 
+ Emisión del archivo de formato alta de nuevo ingreso 
+ … 
+ 
+Reportes de NOMINA 
+ Reporte de la Precisión de la nómina 
+ Reporte de Tiempo de procesamiento de la nómina 
+ Reporte de Costo por empleado 
+ Reporte de Cumplimiento normativo 
+ Reporte de Tasa de errores en la nómina 
+ Reporte de Tiempo de respuesta a consultas de nómina 
+ Reporte de Rotación de personal 
+ Reporte de Costo total de la nómina 
+ Emisión del pago de nomina catedráticos. Archivo excel 
+ Emisión del pago de nomina administrativos. Archivo Excel 
+ Emisión del archivo para dispersión de nomina Santander catedráticos 
+ Emisión del archivo para dispersión de nomina Santander administrativos. 
+ … 
+ 
+Reportes de TALENTO HUMANO 
+ Reporte de Tasa de rotación de personal 
+ Reporte de evaluaciones de desempeño 
+ Reporte de Tasa de retención de talento 
+ Reporte de desarrollo de talento humano 
+ Reporte de inducción de nuevos empleados. 
+ Reporte de evaluaciones de período de prueba 
+ Reporte de Satisfacción del empleado 
+ Reporte de evaluaciones de desempeño. 
+ Reporte de Absentismo labora 
+ Reporte de Accidentalidad laboral 
+ Reporte de Tiempo de capacitación 
+
+=== DOC-01 | Página 17 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 17 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+Reporte de Índice de desarrollo internREPORTES que se necesitan para el cumplimento de 
+Normas Oficiales Mexicanas de Seguridad y Salud en el Trabajo (NOM-STPSReporte de 
+headcount de personal administrativoReporte de promociones y cambios de puesto. 
+ 
+ 
+INFORMACIÓN ADICIONAL 
+Colocar información extra que no ha sido colocada en los puntos anteriores y que es 
+necesario considerar para el desarrollo o modificación del software. 
+ 
+Se anexa la propuesta inicial donde tal vez se tengan mejor 
+panorama  
+ 
+ 
+1. Seguimiento de RECLUTAMIENTO Y SELECCIÓN (ADMINISTRATIVOS Y CATEDRATICOS), 
+donde se lleve el control de los requerimiento hechos por las áreas, asi como el seguimietno 
+de entrevistas de dicho requerimiento y resutlados del proceso de selección, reportes, 
+estadísticas, elaboracion de exámenes en línea,  estatus etc. 
+ 
+ Control de requerimientos digitales, desde el llenado hasta el envio y las 
+autorizaciones de las diferentes áreas.  
+ Publicación y recepción automática de vacantes 
+ Todas las fuentes de reclutamiento en un solo software: portales premium y 
+gratuitos, agregadores, escuelas de negocio y tu página de empleo 
+ Publicaciones programadas 
+ Permisos para reabrir o cerrar ofertas 
+ Cálculo de ROI por canal de reclutamiento 
+ Exámenes en la nube para que se calculen los resultados automáticos.  
+ Centraliza todos tus asuntos jurídicos, gana visibilidad y demuestra tu valor con datos 
+ 
+2. Seguimiento de BASE DE DATOS Y EXPEDIENTES DE COLABODORES (ADMINISTRATIVOS Y 
+CATEDRATICOS) que se maneje digitalmente el vinculo ATEMPO y BASE DE DATOS CON UN 
+EXPEDIENTE DIGIAL DE CADA COLABORADOR en dicha plataforma, donde nos ayudara a 
+llevar mejor los contratos, las renovaciones de los mismos, actualización de expedientes, 
+etc. 
+ 
+ 
+ Organigrama de la empresa por direcciones generales por direcciones de campus, 
+áreas, actividades etc.  
+ Elaboracion de contratos y formatos de ingresos 
+ Llevar el check list en línea y acutailizado en tiempo real  
+
+=== DOC-01 | Página 18 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 18 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ Ener en un solo lugar todos los expedientes del colaborador de manera digital y de 
+manera organizada 
+ Digitaliza los documentos laborales de tu empresa, y facilita su firma desde cualquier 
+lugar. 
+ Controla y asigna los activos tangibles e intangibles de tu empresa, a tus 
+colaboradores. ¡Gestiona de la mejor manera tu inventario interno! 
+ Documentos administrativos. 
+ Documentos de planificación del personal. 
+ Documentos de gestión de los empleados. 
+ Gestión de vacaciones 
+ Gestión de permisos  
+ Gestión de retardos y faltas 
+ Estadísticas administrativas 
+ Pagos de nominas catedráticos, administrativos, campus clínicos, conforme a los 
+archivos y la necesidad fiscal y legal. 
+  
+3. SEGUIMIENTO de cumplimiento NORMAS NOM-STP, tambien se puede agregar un modulo 
+para poder llevar este control y que no quede de manera manual en varios archivos de 
+Excel, pdf, imágenes, etc. 
+ 
+ Gestiona incidentes, hallazgos y riesgos 
+ Digitaliza listas de verificación, inspecciones y auditorías 
+ Centraliza tus inspecciones en una base segura y colaborativa. 
+ Crea y edita plantillas con lógica y ponderaciones configurables. 
+ Agenda tareas únicas o recurrentes fácilmente. 
+ Registra, clasifica y da seguimiento a áreas de mejora y riesgos. 
+ Identifica fallas y calificaciones para mejorar procesos. 
+ inspecciona, reporta y reconoce buenas prácticas de los empleados cuando creas 
+un recorrido en tu sitio de trabajo 
+ Base de datos de documentación soporte de TODAS LAS NORMAS  
+ 
+4. Seguimiento al proceso de CAPACITACION que es la primer propuesta que hice en el 
+seguimiento de este correo: 
+ 
+1. Calendario de capacitaciones 
+2. Puestos y personal capacitado para tener retroalimentaciones  
+3. Alertas de capacitación cuando personal nuevo ingres de acuerdo a la estructura de la 
+planeación 
+4. Contenido de las capacitaciones ya sea presenciales o en línea. 
+5. USO DE USUARIOS Y CONTRASEÑAS para el manejo del modulo 
+6. Arquitectura de puestos 
+7. Catálogos de competencias 
+8. Guías de evaluación 
+9. Perfiles competenciales 
+
+=== DOC-01 | Página 19 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 19 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+10. Velocidad de crecimiento y desarrollo 
+11. Arquitectura de puestos 
+12. Catálogos de competencias 
+13. Guías de evaluación 
+14. Perfiles competenciales 
+15. Velocidad de crecimiento y desarrollo 
+16. Integra a tus nuevos colaboradores, automatizando los procesos necesarios para su 
+ingreso, así como asignando tareas que los ayuden a conocer la cultura de la empresa 
+y a tener claridad sobre su rol y objetivos. 
+ 
+ 
+ 
+ 
+II. DIRECCIÓN DE SISTEMAS 
+ 
+TIPO DE DESARROLLO O MODIFICACIÓN DE SOFTWARE: 
+Suite  Web App  Desktop App  Mobile App  
+ 
+EPICAS DEL PROYECTO 
+a) Requerimientos 
+ 
+b) Supuestos 
+ 
+c) Restricciones 
+
+=== DOC-01 | Página 20 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 20 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ 
+d) Implicaciones 
+ 
+ 
+e) Dependencias 
+ 
+ 
+III. FACTIBILIDAD DEL DESARROLLO 
+ 
+Factibilidad Técnica  Factibilidad Económica  
+ 
+Procede solicitud: Sí  No  
+ 
+Motivo por el que no procede la solicitud 
+ 
+ 
+
+=== DOC-01 | Página 21 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 21 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+ 
+Firma del Director de Sistemas 
+ 
+Presupuesto aproximado 
+ 
+ 
+Tiempo aproximado 
+ 
+ 
+IV. AUTORIZACIÓN 
+ 
+Solicitud aprobada: Sí  No   
+ 
+Motivo por el que no procede la solicitud 
+ 
+ 
+
+=== DOC-01 | Página 22 ===
+ 
+SOLICITUD DE DESARROLLO O MODIFICACIÓN 
+DE SOFTWARE  
+Página 22 de 22 
+ 
+ 
+F02-DS-SDSW 
+ 
+   
+Nombre y firma del solicitante  Nombre y firma del Director 
+de Sistemas 
+ 
+ 
+Consejo Universitario 
+ 

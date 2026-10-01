@@ -16,18 +16,31 @@
 <BaseCrudDialog TItem="InstrumentoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
     <BaseEntityForm TEntity="InstrumentoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando instrumento..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
-            <MudItem xs="12"><MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" /></MudItem>
-            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoInversion" ValueChanged="value => _tipoInversion = value" Label="Tipo inversion" Required="true" LoadPage="LoadTiposInversionPageAsync" /></MudItem>
-            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_intermediario" ValueChanged="value => _intermediario = value" Label="Intermediario financiero" Required="true" LoadPage="LoadIntermediariosPageAsync" /></MudItem>
-            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_tipoPlazo" ValueChanged="value => _tipoPlazo = value" Label="Tipo plazo (opcional)" Clearable="true" LoadPage="LoadTiposPlazoPageAsync" /></MudItem>
-            <MudItem xs="12" md="6"><PagedAutocomplete Value="@_moneda" ValueChanged="value => _moneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.TasaInteres" Label="Tasa interes (%)" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int?" @bind-Value="item.PlazoOriginal" Label="Plazo original (dias)" Variant="Variant.Outlined" Min="0" FullWidth="true" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaEmision" DateChanged="OnFechaEmisionChanged" Label="Fecha emision" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12">
+                <CrudFormSection Title="Datos del instrumento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Margin="Margin.Dense" Value="@_tipoInversion" ValueChanged="value => _tipoInversion = value" Label="Tipo inversion" Required="true" LoadPage="LoadTiposInversionPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Margin="Margin.Dense" Value="@_intermediario" ValueChanged="value => _intermediario = value" Label="Intermediario financiero" Required="true" LoadPage="LoadIntermediariosPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Margin="Margin.Dense" Value="@_tipoPlazo" ValueChanged="value => _tipoPlazo = value" Label="Tipo plazo (opcional)" Clearable="true" LoadPage="LoadTiposPlazoPageAsync" /></MudItem>
+            <MudItem xs="12" md="6"><PagedAutocomplete Margin="Margin.Dense" Value="@_moneda" ValueChanged="value => _moneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Condiciones y vigencia">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.TasaInteres" Label="Tasa interes (%)" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int?" @bind-Value="item.PlazoOriginal" Label="Plazo original (dias)" Variant="Variant.Outlined" Min="0" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.MontoMinimo" Label="Monto minimo" Variant="Variant.Outlined" Min="0m" Format="0.0000" Culture="@NumberCulture" FullWidth="true" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" Date="@_fechaEmision" DateChanged="OnFechaEmisionChanged" Label="Fecha emision" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

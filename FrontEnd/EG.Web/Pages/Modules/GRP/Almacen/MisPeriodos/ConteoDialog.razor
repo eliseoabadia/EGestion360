@@ -24,10 +24,12 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-
-            <!-- Descripción -->
             <MudItem xs="12">
-                <MudTextField @bind-Value="conteo.Descripcion"
+                <CrudFormSection Title="Datos del conteo">
+                    <MudGrid Spacing="2">
+<!-- Descripción -->
+            <MudItem xs="12">
+                <MudTextField Margin="Margin.Dense" @bind-Value="conteo.Descripcion"
                               Label="Descripción del Conteo"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -38,7 +40,7 @@
 
             <!-- Tipo de Bien -->
             <MudItem xs="12" md="6">
-                <MudSelect T="int?" @bind-Value="conteo.IdTipoBien"
+                <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="conteo.IdTipoBien"
                            Label="Tipo de Bien"
                            Variant="Variant.Outlined"
                            Required="true">
@@ -53,7 +55,7 @@
 
             <!-- Período de Conteo -->
             <MudItem xs="12" md="6">
-                <MudSelect T="int?" @bind-Value="conteo.IdPeriodoConteo"
+                <MudSelect Margin="Margin.Dense" T="int?" @bind-Value="conteo.IdPeriodoConteo"
                            Label="Período de Conteo"
                            Variant="Variant.Outlined"
                            Required="true"
@@ -68,8 +70,15 @@
             </MudItem>
 
             <!-- Cantidad Inventario -->
-            <MudItem xs="12" md="6">
-                <MudNumericField @bind-Value="conteo.CantidadInventario"
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Cantidad y periodo">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" @bind-Value="conteo.CantidadInventario"
                                  Label="Cantidad de Inventario"
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
@@ -82,7 +91,7 @@
 
             <!-- Fecha Inicio -->
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="fechaInicio"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="fechaInicio"
                                Label="Fecha de Inicio"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -91,14 +100,15 @@
 
             <!-- Fecha Fin -->
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="fechaFin"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="fechaFin"
                                Label="Fecha de Fin (opcional)"
                                Variant="Variant.Outlined"
                                DateFormat="dd/MM/yyyy" />
             </MudItem>
-
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

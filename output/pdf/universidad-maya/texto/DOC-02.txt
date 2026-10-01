@@ -1,0 +1,85 @@
+=== DOC-02 | Página 1 ===
+PROPUESTA DE IMPLEMENTACIÓN DE SISTEMA ERP 
+CORPORATIVO 
+Corporativo SINERGIA – Universidad Maya 
+Problemática actual 
+Actualmente gran parte de la operación depende de procesos manuales mediante Excel, 
+correos electrónicos, autorizaciones físicas y seguimiento humano, generando retrasos, 
+duplicidad, saturación operativa y riesgos de control interno. 
+ 
+Principales problemas detectados 
+• Alta dependencia de procesos manuales. 
+• Excesivas validaciones manuales. 
+• Falta de trazabilidad institucional. 
+• Riesgos de compras fuera de política. 
+• Dependencia excesiva de personas clave. 
+• Saturación operativa en áreas estratégicas. 
+• Riesgos fiscales, PLD y administrativos. 
+ 
+¿Qué es lo que se propone? 
+Se propone implementar un Sistema ERP Corporativo Integral que permita automatizar, 
+centralizar y controlar toda la operación administrativa y financiera del Corporativo y de los 
+cuatro campus de Universidad Maya. 
+¿Qué es un ERP? 
+Un ERP (Enterprise Resource Planning) es un sistema centralizado que integra todas las 
+áreas operativas y financieras de una institución en una sola plataforma para controlar 
+compras, pagos, gastos, inventarios, proveedores, presupuestos, auditoría y control interno. 
+¿Qué automatizará el ERP? 
+• Requerimientos y compras. 
+• Proyección y autorización de gastos. 
+• Pagos a proveedores. 
+• Caja chica. 
+
+=== DOC-02 | Página 2 ===
+• Inventarios y activos. 
+• Compliance y control interno. 
+• Dashboards ejecutivos. 
+• Auditoría y trazabilidad. 
+Módulos principales 
+1. Compras y requerimientos. 
+2. Gastos y presupuestos. 
+3. Cuentas por pagar. 
+4. Caja chica. 
+5. Inventarios y activos. 
+6. Compliance y control interno. 
+7. Dashboard ejecutivo. 
+8. Business Intelligence. 
+Beneficios operativos 
+• Reducción de trabajo manual. 
+• Menos uso de Excel y correos. 
+• Menos duplicidad de información. 
+• Mayor eficiencia operativa. 
+• Reducción de tiempos administrativos. 
+• Mayor trazabilidad institucional. 
+Beneficios financieros 
+• Mejor control presupuestal. 
+• Control de pagos duplicados. 
+• Mejor planeación financiera. 
+• Integración multiempresa. 
+• Mayor control de gastos. 
+Beneficios de control interno y compliance 
+• Bitácora completa de autorizaciones. 
+• Validación SAT y proveedores. 
+• Trazabilidad financiera. 
+• Seguimiento de auditorías. 
+• Control PLD. 
+• Evidencia digital institucional. 
+
+=== DOC-02 | Página 3 ===
+Tecnología recomendada 
+• Power Apps. 
+• Power Automate. 
+• SharePoint. 
+• SQL Server. 
+• Power BI. 
+• Microsoft Azure. 
+Fases de implementación 
+FASE 1 – Compras y requerimientos. 
+FASE 2 – Gastos y pagos. 
+FASE 3 – Caja chica e inventarios. 
+FASE 4 – Compliance y dashboards. 
+FASE 5 – Integración corporativa total. 
+Conclusión 
+El ERP representa una evolución estructural necesaria para el crecimiento del Corporativo, 
+permitiendo pasar de una operación manual y dependiente de personas hacia un modelo 
+automatizado, controlado, trazable y supervisado. 

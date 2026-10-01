@@ -27,8 +27,11 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="7">
-                <PagedAutocomplete Value="@_selectedRequisicion"
+            <MudItem xs="12">
+                <CrudFormSection Title="Solicitud y proveedor">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="7">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedRequisicion"
                                    ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
@@ -38,7 +41,7 @@
             </MudItem>
 
             <MudItem xs="12" md="5">
-                <PagedAutocomplete Value="@_selectedProveedor"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProveedor"
                                    ValueChanged="value => _selectedProveedor = value"
                                    Label="Proveedor"
                                    Required="true"
@@ -64,9 +67,15 @@
                                Color="Color.Primary" />
                 </MudItem>
             }
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaSolicitud"
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas de cotización">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSolicitud"
                                Label="Fecha solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -74,33 +83,39 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="item.FechaProveedorCotiza"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaProveedorCotiza"
                                Label="Fecha cotizacion proveedor"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="item.FechaProveedorCompromiso"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaProveedorCompromiso"
                                Label="Fecha compromiso proveedor"
                                Variant="Variant.Outlined" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Entrega"
+            <MudItem xs="12">
+                <CrudFormSection Title="Condiciones de entrega">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Entrega"
                               Label="Entrega"
                               Variant="Variant.Outlined"
                               MaxLength="100" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Vigencia"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Vigencia"
                               Label="Vigencia"
                               Variant="Variant.Outlined"
                               MaxLength="100" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Condiciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Condiciones"
                               Label="Condiciones"
                               Variant="Variant.Outlined"
                               Lines="2"
@@ -108,14 +123,16 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Comentarios"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Comentarios"
                               Label="Comentarios"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

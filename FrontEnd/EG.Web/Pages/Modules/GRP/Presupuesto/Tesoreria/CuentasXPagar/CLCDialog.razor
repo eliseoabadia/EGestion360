@@ -17,15 +17,25 @@
 <BaseCrudDialog TItem="CLCResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="CLCResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><PagedAutocomplete Value="@contrato" ValueChanged="value => contrato = value" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
+            <MudItem xs="12">
+                <CrudFormSection Title="Datos de la CLC">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Margin="Margin.Dense" Value="@contrato" ValueChanged="value => contrato = value" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><MudAlert Severity="Severity.Info" Dense="true">Póliza de ejercido automática</MudAlert></MudItem>
-            <MudItem xs="12" md="3"><MudTextField @bind-Value="item.NumClc" Label="Numero CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaSolicitud" Label="Fecha solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><MudTextField Margin="Margin.Dense" @bind-Value="item.NumClc" Label="Numero CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas e importe">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaSolicitud" Label="Fecha solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
                     <MudSelectItem Value="1">Borrador</MudSelectItem>
                     <MudSelectItem Value="2">Solicitada</MudSelectItem>
                     <MudSelectItem Value="3">Autorizada</MudSelectItem>
@@ -33,8 +43,11 @@
                     <MudSelectItem Value="5">Cancelada</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12" md="8"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
 
         @if (!Id.HasValue && detalleItems.Count > 0)
         {

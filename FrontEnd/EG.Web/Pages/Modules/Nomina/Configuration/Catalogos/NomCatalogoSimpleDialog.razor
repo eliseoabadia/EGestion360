@@ -17,21 +17,25 @@
                 LoadingMessage="Cargando catalogo..."
                 OnConfirm="GuardarCambiosAsync">
     <MudForm @ref="form">
-        <MudGrid GutterSize="2">
-            @foreach (var field in Fields)
+        <div class="crud-form-layout">
+        @foreach (var fieldGroup in CrudFieldLayout.Group(Fields, field => field))
+        {
+            <CrudFormSection Title="@fieldGroup.Title" Enabled="@fieldGroup.ShowHeading">
+                <MudGrid GutterSize="2">
+            @foreach (var field in fieldGroup.Fields)
             {
                 <MudItem xs="12" sm="@GetFieldSize(field)">
                     @switch (field)
                     {
                         case nameof(NomCatalogoSimpleResponse.Clave):
-                            <MudTextField @bind-Value="item.Clave"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Immediate="false"
                                           MaxLength="50" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.Descripcion):
-                            <MudTextField @bind-Value="item.Descripcion"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Required="true"
@@ -40,59 +44,59 @@
                                           MaxLength="250" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.DescripcionCorta):
-                            <MudTextField @bind-Value="item.DescripcionCorta"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.DescripcionCorta"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Immediate="false"
                                           MaxLength="120" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.FkidCatalogoPadreNom):
-                            <PagedAutocomplete Value="@selectedParent"
+                            <PagedAutocomplete Margin="Margin.Dense" Value="@selectedParent"
                                                ValueChanged="OnParentChanged"
                                                Label="@ParentLabel"
                                                Clearable="true"
                                                LoadPage="LoadParentPageAsync" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.ValorDecimal1):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.ValorDecimal1"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.ValorDecimal2):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.ValorDecimal2"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.ValorEntero1):
-                            <MudNumericField T="int?"
+                            <MudNumericField Margin="Margin.Dense" T="int?"
                                              @bind-Value="item.ValorEntero1"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.ValorEntero2):
-                            <MudNumericField T="int?"
+                            <MudNumericField Margin="Margin.Dense" T="int?"
                                              @bind-Value="item.ValorEntero2"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.FechaInicio):
-                            <MudDatePicker Date="@item.FechaInicio"
+                            <MudDatePicker Margin="Margin.Dense" Date="@item.FechaInicio"
                                            DateChanged="value => item.FechaInicio = value"
                                            Label="@GetFieldLabel(field)"
                                            Variant="Variant.Outlined" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.FechaFin):
-                            <MudDatePicker Date="@item.FechaFin"
+                            <MudDatePicker Margin="Margin.Dense" Date="@item.FechaFin"
                                            DateChanged="value => item.FechaFin = value"
                                            Label="@GetFieldLabel(field)"
                                            Variant="Variant.Outlined" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.DatoExtra1):
-                            <MudTextField @bind-Value="item.DatoExtra1"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.DatoExtra1"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Lines="2"
@@ -100,7 +104,7 @@
                                           MaxLength="500" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.DatoExtra2):
-                            <MudTextField @bind-Value="item.DatoExtra2"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.DatoExtra2"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Lines="2"
@@ -108,7 +112,7 @@
                                           MaxLength="500" />
                             break;
                         case nameof(NomCatalogoSimpleResponse.Orden):
-                            <MudNumericField T="int?"
+                            <MudNumericField Margin="Margin.Dense" T="int?"
                                              @bind-Value="item.Orden"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined" />
@@ -118,6 +122,9 @@
             }
 
         </MudGrid>
+            </CrudFormSection>
+        }
+        </div>
     </MudForm>
 </BaseCrudDialog>
 

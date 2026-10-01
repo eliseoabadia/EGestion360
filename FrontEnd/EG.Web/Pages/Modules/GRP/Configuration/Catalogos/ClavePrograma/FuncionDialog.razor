@@ -25,7 +25,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <PagedAutocomplete Value="@selectedGrupoFuncional"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@selectedGrupoFuncional"
                                    ValueChanged="OnGrupoFuncionalChanged"
                                    Label="Grupo Funcional"
                                    Required="true"
@@ -34,7 +34,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudNumericField @bind-Value="item.Clave"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.Clave"
                                  Label="Clave"
                                  Variant="Variant.Outlined"
                                  Required="true"
@@ -42,7 +42,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
                               Required="true"

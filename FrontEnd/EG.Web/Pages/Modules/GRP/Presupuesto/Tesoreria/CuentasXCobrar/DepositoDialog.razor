@@ -26,6 +26,9 @@
     <BaseEntityForm TEntity="DepositoResponse" @ref="form" ShowHeader="false">
         <MudGrid GutterSize="1" Class="deposito-dialog">
             <MudItem xs="12">
+                <CrudFormSection Title="Referencia del depósito">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <div class="deposit-ribbon">
                     <div>
                         <span>Total @CurrencyName</span>
@@ -62,7 +65,7 @@
             }
 
             <MudItem xs="12" md="7">
-                <PagedAutocomplete Value="@_ingreso"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_ingreso"
                                    ValueChanged="OnIngresoChanged"
                                    Label="Ingreso autorizado"
                                    Required="true"
@@ -71,7 +74,7 @@
                                    LoadPage="LoadIngresosAsync" />
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <PagedAutocomplete Value="@_tipoDocto"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_tipoDocto"
                                    ValueChanged="value => _tipoDocto = value"
                                    Label="Tipo de documento"
                                    Required="true"
@@ -80,7 +83,7 @@
                                    LoadPage="LoadTiposDoctoAsync" />
             </MudItem>
             <MudItem xs="12" sm="6" md="2">
-                <MudDatePicker Date="@_fechaEmision"
+                <MudDatePicker Margin="Margin.Dense" Date="@_fechaEmision"
                                DateChanged="value => _fechaEmision = value"
                                Label="Fecha emision"
                                Variant="Variant.Outlined"
@@ -92,7 +95,7 @@
             </MudItem>
 
             <MudItem xs="12" sm="6" md="3">
-                <MudTextField @bind-Value="item.NumeroReferencia"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroReferencia"
                               Label="Referencia"
                               Variant="Variant.Outlined"
                               MaxLength="50"
@@ -101,7 +104,7 @@
                               Disabled="@FieldsLocked" />
             </MudItem>
             <MudItem xs="12" sm="6" md="4">
-                <MudTextField @bind-Value="item.NombreAportante"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NombreAportante"
                               Label="Aportante"
                               Variant="Variant.Outlined"
                               MaxLength="250"
@@ -110,16 +113,22 @@
                               Disabled="@FieldsLocked" />
             </MudItem>
             <MudItem xs="12" md="5">
-                <PagedAutocomplete Value="@_clcFactura"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_clcFactura"
                                    ValueChanged="value => _clcFactura = value"
                                    Label="CLC factura"
                                    Clearable="true"
                                    Disabled="@FieldsLocked"
                                    LoadPage="LoadCLCFacturasAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_cuentaCargo"
+            <MudItem xs="12">
+                <CrudFormSection Title="Registro contable">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_cuentaCargo"
                                    ValueChanged="value => _cuentaCargo = value"
                                    Label="Cuenta cargo"
                                    Required="true"
@@ -128,7 +137,7 @@
                                    LoadPage="LoadCuentasAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_cuentaAbono"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_cuentaAbono"
                                    ValueChanged="value => _cuentaAbono = value"
                                    Label="Cuenta abono"
                                    Required="true"
@@ -138,7 +147,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.ConceptoCheque"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.ConceptoCheque"
                               Label="Concepto"
                               Variant="Variant.Outlined"
                               Lines="2"
@@ -148,8 +157,14 @@
                               RequiredError="El concepto es requerido"
                               Disabled="@FieldsLocked" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
             <MudItem xs="12">
+                <CrudFormSection Title="Distribución mensual">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <section class="months-panel">
                     <div class="months-header">
                         <div>
@@ -159,24 +174,24 @@
                         <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled">@Money(TotalMeses)</MudChip>
                     </div>
                     <MudGrid GutterSize="1">
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
-                        <MudItem xs="12" sm="6" md="2"><MudNumericField @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Enero" Label="Enero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Febrero" Label="Febrero" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Marzo" Label="Marzo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Abril" Label="Abril" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Mayo" Label="Mayo" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Junio" Label="Junio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Julio" Label="Julio" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Agosto" Label="Agosto" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Septiembre" Label="Septiembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Octubre" Label="Octubre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Noviembre" Label="Noviembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
+                        <MudItem xs="12" sm="6" md="2"><MudNumericField Margin="Margin.Dense" @bind-Value="item.Diciembre" Label="Diciembre" Variant="Variant.Outlined" Format="0.00" Culture="@NumberCulture" Min="0m" Disabled="@FieldsLocked" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" /></MudItem>
                     </MudGrid>
                 </section>
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="2"
@@ -195,7 +210,10 @@
                     </div>
                 </MudItem>
             }
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -19,7 +19,7 @@
         @ref="form"
         ShowHeader="true"
         HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
             Label="Clave"
             Variant="Variant.Outlined"
             FullWidth="true"
@@ -27,14 +27,14 @@
             Required="true"
             For="@(() => item.Clave)" />
 
-        <MudTextField @bind-Value="item.Descripcion"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
             Label="Descripción"
             Variant="Variant.Outlined"
             FullWidth="true"
             Class="mb-3"
             For="@(() => item.Descripcion)" />
 
-        <MudTextField @bind-Value="item.Descripmovto"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripmovto"
             Label="Descripción Movto"
             Variant="Variant.Outlined"
             FullWidth="true"

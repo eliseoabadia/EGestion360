@@ -35,6 +35,9 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Origen y bien solicitado">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
                     @if (EsRequisicionPrincipal)
                     {
@@ -42,7 +45,7 @@
                     }
                     <span>Requisicion</span>
                 </MudText>
-                <PagedAutocomplete Value="@_selectedRequisicion"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedRequisicion"
                                    ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
@@ -60,7 +63,7 @@
             else
             {
                 <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedPartida"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPartida"
                                        ValueChanged="OnPartidaChanged"
                                        Label="Partida"
                                        Required="true"
@@ -71,7 +74,7 @@
             }
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedTipoBien"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoBien"
                                    ValueChanged="OnTipoBienChanged"
                                    Label="Bien o servicio"
                                    Required="true"
@@ -79,9 +82,15 @@
                                    Disabled="@(EffectivePartidaContaId <= 0)"
                                    LoadPage="LoadTiposBienPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudNumericField @bind-Value="item.Cantidad"
+            <MudItem xs="12">
+                <CrudFormSection Title="Cantidad y observaciones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.Cantidad"
                                  Label="Cantidad"
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
@@ -92,7 +101,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedUnidad"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedUnidad"
                                    ValueChanged="value => _selectedUnidad = value"
                                    Label="Unidad"
                                    Clearable="true"
@@ -100,13 +109,15 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="3" />
             </MudItem>
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

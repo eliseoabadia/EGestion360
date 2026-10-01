@@ -1,0 +1,16 @@
+{
+  "requirements": 101,
+  "status_counts": {
+    "P": 48,
+    "F": 10,
+    "G": 34,
+    "D": 5,
+    "V": 4
+  },
+  "groups": 13,
+  "files": [
+    "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\output\\documentos\\universidad-maya\\01_Requerimientos_ERP_Universidad_Maya_Sin_RH.docx",
+    "C:\\Desarrollo\\Desarrollo\\FullStack\\EGestion360\\output\\documentos\\universidad-maya\\02_FIT_GAP_EGestion360_Universidad_Maya_Sin_RH.docx"
+  ],
+  "source_hashes_verified": true
+}

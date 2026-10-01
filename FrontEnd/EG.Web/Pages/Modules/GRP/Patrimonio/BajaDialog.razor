@@ -24,6 +24,9 @@
     <BaseEntityForm TEntity="BajaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <MudGrid Spacing="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Bien y solicitud de baja">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
                     @DialogContextText
                 </MudAlert>
@@ -32,17 +35,17 @@
             @if (Id.HasValue)
             {
                 <MudItem xs="12" md="6">
-                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
 
             @if (BienId <= 0)
             {
                 <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedBien"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedBien"
                                        ValueChanged="value => _selectedBien = value"
                                        Label="Bien a dar de baja"
                                        Required="true"
@@ -53,7 +56,7 @@
             else
             {
                 <MudItem xs="12">
-                    <MudTextField Value="@BienDescripcion"
+                    <MudTextField Margin="Margin.Dense" Value="@BienDescripcion"
                                   Label="Bien a dar de baja"
                                   Variant="Variant.Outlined"
                                   ReadOnly="true" />
@@ -61,7 +64,7 @@
             }
 
             <MudItem xs="12" md="7">
-                <PagedAutocomplete Value="@_selectedTipoBaja"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoBaja"
                                    ValueChanged="value => _selectedTipoBaja = value"
                                    Label="Tipo de baja"
                                    Required="true"
@@ -70,7 +73,7 @@
             </MudItem>
 
             <MudItem xs="12" md="5">
-                <MudDatePicker @bind-Date="_fechaSolicitud"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSolicitud"
                                Label="Fecha solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -78,7 +81,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudNumericField @bind-Value="item.Cantidad"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.Cantidad"
                                  Label="Cantidad"
                                  Variant="Variant.Outlined"
                                  Format="0.####"
@@ -87,36 +90,48 @@
                                  Max="1m"
                                  ReadOnly="true" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Referencia"
+            <MudItem xs="12">
+                <CrudFormSection Title="Referencias y destinatario">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Referencia"
                               Label="Referencia"
                               Variant="Variant.Outlined"
                               MaxLength="200" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaReferencia"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaReferencia"
                                Label="Fecha referencia"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Destinatario"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Destinatario"
                               Label="Destinatario"
                               Variant="Variant.Outlined"
                               MaxLength="250" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Recibo"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Recibo"
                               Label="Recibo"
                               Variant="Variant.Outlined"
                               MaxLength="100" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Motivo"
+                <CrudFormSection Title="Motivo y sustento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Motivo"
                               Label="Motivo"
                               Variant="Variant.Outlined"
                               Lines="3"
@@ -126,7 +141,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Dictamen"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Dictamen"
                               Label="Dictamen / sustento"
                               Variant="Variant.Outlined"
                               Lines="2"
@@ -134,13 +149,16 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="2"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

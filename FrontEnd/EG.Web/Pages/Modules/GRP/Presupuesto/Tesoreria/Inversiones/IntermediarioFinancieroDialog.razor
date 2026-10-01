@@ -8,10 +8,10 @@
 
 <BaseCrudDialog TItem="IntermediarioFinancieroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="IntermediarioFinancieroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando intermediario..." LoadingSkeletonRows="5">
-        <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
-        <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
-        <MudTextField @bind-Value="item.RazonSocial" Label="Razon social" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
-        <MudTextField @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.RazonSocial" Label="Razon social" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

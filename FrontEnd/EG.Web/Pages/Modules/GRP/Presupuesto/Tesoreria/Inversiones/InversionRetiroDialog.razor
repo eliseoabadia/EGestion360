@@ -12,9 +12,9 @@
 
 <BaseCrudDialog TItem="RetiroResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="RetiroResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando retiro..." LoadingSkeletonRows="4">
-        <PagedAutocomplete Value="@_tipoRetiro" ValueChanged="value => _tipoRetiro = value" Label="Tipo de retiro" Clearable="true" LoadPage="LoadTiposRetiroPageAsync" />
-        <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" Class="mt-2" />
-        <MudDatePicker Date="@_fechaRetiro" DateChanged="OnFechaChanged" Label="Fecha de retiro" Variant="Variant.Outlined" Class="mt-2" />
+        <PagedAutocomplete Margin="Margin.Dense" Value="@_tipoRetiro" ValueChanged="value => _tipoRetiro = value" Label="Tipo de retiro" Clearable="true" LoadPage="LoadTiposRetiroPageAsync" />
+        <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" Class="mt-2" />
+        <MudDatePicker Margin="Margin.Dense" Date="@_fechaRetiro" DateChanged="OnFechaChanged" Label="Fecha de retiro" Variant="Variant.Outlined" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

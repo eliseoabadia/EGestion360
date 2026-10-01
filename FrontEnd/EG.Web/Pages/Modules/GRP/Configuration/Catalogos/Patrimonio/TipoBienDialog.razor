@@ -30,12 +30,10 @@
         <MudContainer Class="py-2">
             <MudGrid GutterSize="2" Spacing="2">
 
-                <MudItem xs="12" class="mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Información General</MudText>
-                </MudItem>
+                <MudItem xs="12"><CrudFormSection Title="Información General"><MudGrid Spacing="2">
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedGrupo"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedGrupo"
                                        ValueChanged="value => _selectedGrupo = value"
                                        Label="Clave CUCOP (SICOP)"
                                        Required="true"
@@ -43,14 +41,14 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedNivel"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedNivel"
                                        ValueChanged="value => _selectedNivel = value"
                                        Label="Nivel"
                                        LoadPage="LoadNivelesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="item.CodigoClave"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.CodigoClave"
                                   Label="Código o Clave"
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
@@ -59,14 +57,14 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="item.Identificador"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Identificador"
                                   Label="Identificador de Almacén"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="item.TipoBienDescripcion"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.TipoBienDescripcion"
                                   Label="Descripción"
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
@@ -75,99 +73,99 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedPartida"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPartida"
                                        ValueChanged="value => _selectedPartida = value"
                                        Label="Partida"
                                        LoadPage="LoadPartidasPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedCuenta"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCuenta"
                                        ValueChanged="value => _selectedCuenta = value"
                                        Label="Cuenta Contable"
                                        LoadPage="LoadCuentasPageAsync" />
                 </MudItem>
 
-                <MudItem xs="12" class="mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Unidades y Medidas</MudText>
-                </MudItem>
+
+</MudGrid></CrudFormSection></MudItem>
+<MudItem xs="12"><CrudFormSection Title="Unidades y Medidas"><MudGrid Spacing="2">
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedUnidad"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedUnidad"
                                        ValueChanged="value => _selectedUnidad = value"
                                        Label="Unidades"
                                        LoadPage="LoadUnidadesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <PagedAutocomplete Value="@_selectedUnidadEq"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedUnidadEq"
                                        ValueChanged="value => _selectedUnidadEq = value"
                                        Label="Unidades Equivalente"
                                        LoadPage="LoadUnidadesPageAsync" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="item.CantidadEquivalente"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.CantidadEquivalente"
                                   Label="Cantidad Equivalente"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="item.Consecutivo"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Consecutivo"
                                   Label="Consecutivo"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
-                <MudItem xs="12" class="mt-2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Financiero y Control</MudText>
-                </MudItem>
+
+</MudGrid></CrudFormSection></MudItem>
+<MudItem xs="12"><CrudFormSection Title="Financiero y Control"><MudGrid Spacing="2">
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.DepreciacionAnual"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.DepreciacionAnual"
                                   Label="Depreciación Anual"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.TiempoVida"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.TiempoVida"
                                   Label="Tiempo de Vida (Días)"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.Cuota"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Cuota"
                                   Label="Cuota"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.ExistenciaMinima"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.ExistenciaMinima"
                                   Label="Existencia Mínima"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.ExistenciaMaxima"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.ExistenciaMaxima"
                                   Label="Existencia Máxima"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.Cabms"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Cabms"
                                   Label="CABMS"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="item.CucopPlus"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.CucopPlus"
                                   Label="Cucop Plus"
                                   Variant="Variant.Outlined"
                                   FullWidth="true" />
@@ -182,7 +180,8 @@
                 </MudItem>
 
 
-            </MudGrid>
+            </MudGrid></CrudFormSection></MudItem>
+</MudGrid>
         </MudContainer>
     }
 </BaseCrudDialog>

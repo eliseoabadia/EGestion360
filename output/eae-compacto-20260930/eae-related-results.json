@@ -1,0 +1,449 @@
+{
+  "results": [
+    {
+      "name": "Usuario",
+      "width": 1440,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 1440,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 1440,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 1440,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 1440,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 1440,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 1440,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 1440,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 1440,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 1440,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 1440,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 1440,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 1440,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 1440,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 1440,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 1440,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 768,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 768,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 768,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 768,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 768,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 768,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 768,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 768,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 768,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 768,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 768,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 768,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 768,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 768,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 768,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 768,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 390,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 390,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 390,
+      "dark": false,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 390,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 390,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 390,
+      "dark": false,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 390,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 390,
+      "dark": false,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 390,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 4,
+      "personVisible": false
+    },
+    {
+      "name": "Entidad",
+      "width": 390,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 390,
+      "dark": true,
+      "edit": false,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    },
+    {
+      "name": "Usuario",
+      "width": 390,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 15,
+      "personVisible": true
+    },
+    {
+      "name": "Usuario pestaña DATOS",
+      "width": 390,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Usuario pestaña EMPRESAS LOGIN",
+      "width": 390,
+      "dark": true,
+      "edit": true,
+      "overflow": 0
+    },
+    {
+      "name": "Entidad",
+      "width": 390,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 19,
+      "personVisible": false
+    },
+    {
+      "name": "Proveedor",
+      "width": 390,
+      "dark": true,
+      "edit": true,
+      "overflow": 0,
+      "footerVisible": true,
+      "fields": 18,
+      "personVisible": false
+    }
+  ],
+  "errors": []
+}

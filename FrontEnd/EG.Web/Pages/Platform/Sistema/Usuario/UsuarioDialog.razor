@@ -1,6 +1,7 @@
-﻿@using EG.Domain.DTOs.Responses.General
-@using EG.Domain.DTOs.Requests.General
 @using EG.Domain.DTOs.Responses.Patrimonio
+@using EG.Domain.DTOs.Responses.General
+@using EG.Domain.DTOs.Requests.General
+
 @using EG.Dommain.DTOs.Responses
 @using EG.Common.GenericModel
 @using MudBlazor
@@ -19,6 +20,7 @@
 
 <BaseCrudDialog TItem="UsuarioResponse"
                 Title="@dialogTitle"
+                Subtitle="Administra los datos de acceso y las asignaciones del usuario."
                 MaxWidth="MaxWidth.ExtraLarge"
                 DialogId="usuario-dialog"
                 DialogClass="usuario-dialog crud-dialog-wide"
@@ -29,18 +31,26 @@
 
     <BaseEntityForm TEntity="UsuarioResponse"
                     @ref="form"
-                    ShowHeader="true"
+                    ShowHeader="false"
                     HeaderTitle="@dialogTitle">
 
-        <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+        <MudTabs Elevation="0" Rounded="true" PanelClass="usuario-tab-content" Class="usuario-dialog-tabs" Style="min-width: 0;">
             <MudTabPanel Text="Datos" Icon="@Icons.Material.Filled.Person">
-        <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
+        <div class="usuario-editor-grid">
+            <div class="usuario-identity-column">
+                <section class="usuario-access-card">
+                    <div class="usuario-card-heading">
+                        <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Size="Size.Small" />
+                        <MudText Typo="Typo.subtitle2">Datos de acceso</MudText>
+                    </div>
+                    <MudGrid Spacing="2">
+            <MudItem xs="12" md="12" Class="usuario-access-field usuario-entity-field">
                 <MudSelect Label="Entidad predeterminada"
                            Value="@usuario.IdEmpresa"
                            ValueChanged="OnEmpresaChanged"
                            T="int"
                            Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
                            Required="true"
                            RequiredError="Debe seleccionar una entidad predeterminada"
                            For="@(() => usuario.IdEmpresa)">
@@ -53,58 +63,57 @@
             </MudItem>
 
             <!-- Payroll ID -->
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="12" Class="usuario-access-field usuario-payroll-field">
                 <MudTextField @bind-Value="usuario.PayrollId"
                               Label="Payroll ID"
+                              Margin="Margin.Dense"
                               Variant="Variant.Outlined" />
             </MudItem>
 
             <!-- Persona (opcional) -->
-            <MudItem xs="12">
-                <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
-                    <span>Persona vinculada</span>
-                </MudText>
-                <PagedAutocomplete Value="@_selectedPersona"
+            <MudItem xs="12" Class="usuario-access-field usuario-person-field">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPersona"
                                    ValueChanged="OnPersonaChanged"
-                                   Label="Seleccione una persona"
+                                   Label="Persona vinculada (opcional)"
                                    LoadPage="LoadPersonasPageAsync" />
             </MudItem>
 
-            @if (_selectedPersona != null)
-            {
-                <MudItem xs="12">
-                    <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
-                        <MudText Typo="Typo.subtitle2" Class="mb-2">Datos de la persona vinculada</MudText>
-                        <MudDivider Class="mb-2" />
-                        <MudGrid Spacing="1">
-                            <MudItem xs="12" md="6">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Nombre completo</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaNombreCompleto</MudText>
-                            </MudItem>
-                            <MudItem xs="12" md="6">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Email</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaEmail</MudText>
-                            </MudItem>
-                            <MudItem xs="12" md="4">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Telefono</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaTelefono</MudText>
-                            </MudItem>
-                            <MudItem xs="12" md="4">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">Clave</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaClave</MudText>
-                            </MudItem>
-                            <MudItem xs="12" md="4">
-                                <MudText Typo="Typo.caption" Color="Color.Tertiary">RFC</MudText>
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">@_personaRfc</MudText>
-                            </MudItem>
-                        </MudGrid>
-                    </MudPaper>
-                </MudItem>
 
-                <MudItem xs="12">
+                    </MudGrid>
+                </section>
+                @if (_selectedPersona != null)
+                {
+                <section class="usuario-persona-card">
+                    <MudPaper Class="pa-4" Elevation="1">
+                        <div class="usuario-card-heading">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2">Datos de la persona</MudText>
+                        </div>
+                        <MudDivider Class="mb-2" />
+                        <dl class="usuario-persona-details">
+                            <div class="usuario-detail-wide"><dt>Nombre completo</dt><dd>@(string.IsNullOrWhiteSpace(_personaNombreCompleto) ? "—" : _personaNombreCompleto)</dd></div>
+                            <div class="usuario-detail-wide"><dt>Correo electrónico</dt><dd>@(string.IsNullOrWhiteSpace(_personaEmail) ? "—" : _personaEmail)</dd></div>
+                            <div><dt>Teléfono</dt><dd>@(string.IsNullOrWhiteSpace(_personaTelefono) ? "—" : _personaTelefono)</dd></div>
+                            <div><dt>Clave</dt><dd>@(string.IsNullOrWhiteSpace(_personaClave) ? "—" : _personaClave)</dd></div>
+                            <div><dt>RFC</dt><dd>@(string.IsNullOrWhiteSpace(_personaRfc) ? "—" : _personaRfc)</dd></div>
+                        </dl>
+                        <MudDivider Class="my-4" />
+                        <div class="usuario-summary-grid">
+                            <div><span>Áreas</span><strong>@_areasPersona.Count</strong></div>
+                            <div><span>Departamentos</span><strong>@_departamentosUsuario.Count</strong></div>
+                        </div>
+                    </MudPaper>
+                </section>
+                }
+
+            </div>
+            <div class="usuario-assignments-column">
+                @if (_selectedPersona != null)
+                {
+                <section class="usuario-areas-card">
                     <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
                         <div class="d-flex align-center justify-space-between mb-2">
-                            <MudText Typo="Typo.subtitle2">Areas asignadas</MudText>
+                            <MudText Typo="Typo.subtitle2">Áreas asignadas</MudText>
                             <MudChip T="string"
                                      Color="@(_areasPersona.Count > 0 ? Color.Success : Color.Default)"
                                      Variant="Variant.Outlined"
@@ -114,14 +123,14 @@
                         </div>
                         <MudDivider Class="mb-3" />
 
-                        <MudGrid Spacing="2" Class="mb-3">
-                            <MudItem xs="12" md="6">
-                                <PagedAutocomplete Value="@_selectedArea"
+                        <MudGrid Spacing="2" Class="mb-3 usuario-assignment-form">
+                            <MudItem xs="12" Class="usuario-assignment-picker">
+                                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArea"
                                                    ValueChanged="@((LookupItem? item) => _selectedArea = item)"
-                                                   Label="Seleccione un area"
+                                                   Label="Seleccione un área"
                                                    LoadPage="LoadAreasPageAsync" />
                             </MudItem>
-                            <MudItem xs="12" md="3" Class="d-flex align-center flex-wrap gap-2">
+                            <MudItem xs="12" Class="usuario-assignment-options">
                                 <MudCheckBox T="bool"
                                              @bind-Value="_newAreaIsAdscrito"
                                              Color="Color.Info"
@@ -135,18 +144,18 @@
                                              Color="Color.Warning"
                                              Label="Autorizador" />
                             </MudItem>
-                            <MudItem xs="12" md="3" Class="d-flex align-end">
-                                <MudButton Variant="Variant.Filled"
+                            <MudItem xs="12" Class="usuario-assignment-action">
+                                <MudButton Variant="Variant.Outlined"
                                            Color="Color.Primary"
                                            FullWidth="true"
                                            StartIcon="@Icons.Material.Filled.AddLocationAlt"
                                            Disabled="@(_selectedArea == null || _savingArea)"
                                            OnClick="AsignarAreaPersonaAsync">
-                                    Asignar area
+                                    Asignar área
                                 </MudButton>
                             </MudItem>
                             <MudItem xs="12">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudText Typo="Typo.caption" Color="Color.Default">
                                     Activa <strong>Solicitante</strong> para permitir que esta persona cree requisiciones con el área seleccionada.
                                 </MudText>
                             </MudItem>
@@ -159,13 +168,14 @@
                         else if (!_areasPersona.Any())
                         {
                             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                                Esta persona no tiene areas asignadas.
+                                Esta persona no tiene áreas asignadas.
                             </MudAlert>
                         }
                         else
                         {
                             <GenericDataGrid TItem="UsuarioAreaResponse" @key="_areasPersona"
                                  Items="@_areasPersona"
+                                 FillAvailableHeight="false"
                                  ShowToolbar="false"
                                  EnableColumnOptions="false"
                                  FixedHeader="false"
@@ -225,10 +235,17 @@
                 </GenericDataGrid>
                         }
                     </MudPaper>
-                </MudItem>
-            }
-
-            <MudItem xs="12">
+                </section>
+                }
+                else
+                {
+                    <div class="usuario-persona-empty">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonOutline" />
+                        <div><MudText Typo="Typo.subtitle2">Vincula una persona</MudText>
+                        <MudText Typo="Typo.body2">Selecciona una persona para consultar sus datos y administrar sus áreas.</MudText></div>
+                    </div>
+                }
+                <section class="usuario-departments-card">
                 <MudPaper Class="pa-3" Elevation="1" Style="border-radius: 8px;">
                     <div class="d-flex align-center justify-space-between mb-2">
                         <MudText Typo="Typo.subtitle2">Departamentos asignados</MudText>
@@ -263,21 +280,21 @@
                         }
                         else
                         {
-                            <MudGrid Spacing="2" Class="mb-3">
-                                <MudItem xs="12" md="7">
-                                    <PagedAutocomplete @key="_departmentPickerVersion"
+                            <MudGrid Spacing="2" Class="mb-3 usuario-assignment-form">
+                                <MudItem xs="12" Class="usuario-assignment-picker">
+                                    <PagedAutocomplete Margin="Margin.Dense" @key="_departmentPickerVersion"
                                                        Value="@_selectedDepartamento"
                                                        ValueChanged="OnDepartamentoChanged"
                                                        Label="Agregar un departamento disponible"
                                                        LoadPage="LoadDepartamentosPageAsync" />
                                 </MudItem>
-                                <MudItem xs="12" md="2" Class="d-flex align-center">
+                                <MudItem xs="12" Class="usuario-assignment-options">
                                     <MudCheckBox @bind-Value="_departamentoEsJefe"
                                                  Color="Color.Primary"
                                                  Label="Es jefe" />
                                 </MudItem>
-                                <MudItem xs="12" md="3" Class="d-flex align-end">
-                                    <MudButton Variant="Variant.Filled"
+                                <MudItem xs="12" Class="usuario-assignment-action">
+                                    <MudButton Variant="Variant.Outlined"
                                                Color="Color.Primary"
                                                FullWidth="true"
                                                StartIcon="@Icons.Material.Filled.AccountTree"
@@ -303,6 +320,7 @@
                         {
                             <GenericDataGrid TItem="UsuarioDepartamentoResponse" @key="_departamentosUsuario"
                                  Items="@_departamentosUsuario"
+                                 FillAvailableHeight="false"
                                  ShowToolbar="false"
                                  EnableColumnOptions="false"
                                  FixedHeader="false"
@@ -355,12 +373,10 @@
                         }
                     }
                 </MudPaper>
-            </MudItem>
-
-            <!-- Estado del Usuario -->
-            <MudItem xs="12">
+            </section>
+                <section class="usuario-status-card">
                 <MudPaper Class="pa-4" Elevation="1" Style="border-radius: 8px;">
-                    <MudText Class="mb-2" Typo="Typo.subtitle2">Estado del Usuario</MudText>
+                    <MudText Class="mb-2" Typo="Typo.subtitle2">Estado del usuario</MudText>
                     <MudDivider Class="mb-3" />
 
                     @if (Id.HasValue && usuario.UsuarioActivo == true)
@@ -408,8 +424,9 @@
                         <input type="hidden" @bind="usuario.UsuarioActivo" />
                     }
                 </MudPaper>
-            </MudItem>
-        </MudGrid>
+            </section>
+            </div>
+        </div>
             </MudTabPanel>
 
             <MudTabPanel Text="Empresas login" Icon="@Icons.Material.Filled.Business">
@@ -427,6 +444,7 @@
                 {
                     <GenericDataGrid TItem="EmpresaUsuarioAsignacion" @key="_empresasUsuario"
                                  Items="@_empresasUsuario"
+                                 FillAvailableHeight="false"
                                  ShowToolbar="false"
                                  EnableColumnOptions="false"
                                  FixedHeader="false"

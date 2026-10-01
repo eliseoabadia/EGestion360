@@ -1,6 +1,8 @@
 @using MudBlazor
 
-<section class="crud-form-section">
+@if (Enabled)
+{
+<section class="crud-form-section eae-form-section" aria-label="@Title">
     <div class="crud-form-section-heading">
         <span class="crud-form-section-icon" aria-hidden="true">
             <MudIcon Icon="@Icon" Size="Size.Small" />
@@ -16,9 +18,15 @@
 
     @ChildContent
 </section>
+}
+else
+{
+    @ChildContent
+}
 
 @code {
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool Enabled { get; set; } = true;
     [Parameter] public string? Subtitle { get; set; }
     [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Description;
     [Parameter] public RenderFragment? ChildContent { get; set; }

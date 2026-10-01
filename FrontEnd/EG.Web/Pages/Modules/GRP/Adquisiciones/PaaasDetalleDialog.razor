@@ -21,11 +21,14 @@
     <MudContainer Class="py-4">
         <MudGrid Spacing="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Bien y programación">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudText Typo="Typo.subtitle2" Color="Color.Primary">@PartidaNombre</MudText>
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedTipoBien"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoBien"
                                    ValueChanged="OnTipoBienChanged"
                                    Label="Tipo de Bien"
                                    Required="true"
@@ -34,7 +37,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField @bind-Value="_cantidad"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="_cantidad"
                                  Label="Cantidad"
                                  Variant="Variant.Outlined"
                                  Min="0.01m"
@@ -45,16 +48,22 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedMes"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedMes"
                                    ValueChanged="value => _selectedMes = value"
                                    Label="Mes programado"
                                    Required="true"
                                    RequiredError="Debe seleccionar el mes"
                                    LoadPage="LoadMesesPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedUnidad"
+            <MudItem xs="12">
+                <CrudFormSection Title="Entrega">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedUnidad"
                                    ValueChanged="value => _selectedUnidad = value"
                                    Label="Unidad de Medida"
                                    Required="true"
@@ -63,20 +72,23 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="_lugarEntrega"
+                <MudTextField Margin="Margin.Dense" @bind-Value="_lugarEntrega"
                               Label="Lugar de entrega"
                               Variant="Variant.Outlined"
                               MaxLength="200" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="_observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="_observaciones"
                               Label="Observacion"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </MudContainer>
 </BaseCrudDialog>
 

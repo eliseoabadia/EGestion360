@@ -28,16 +28,19 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            @if (Id.HasValue)
+            <MudItem xs="12">
+                <CrudFormSection Title="Orden y referencias">
+                    <MudGrid Spacing="2">
+@if (Id.HasValue)
             {
                 <MudItem xs="12" md="4">
-                    <MudTextField Value="@item.NumeroOrdenCompra"
+                    <MudTextField Margin="Margin.Dense" Value="@item.NumeroOrdenCompra"
                                   Label="Numero"
                                   Variant="Variant.Outlined"
                                   ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Value="@item.EstatusDescripcion"
+                    <MudTextField Margin="Margin.Dense" Value="@item.EstatusDescripcion"
                                   Label="Estatus"
                                   Variant="Variant.Outlined"
                                   ReadOnly="true" />
@@ -45,7 +48,7 @@
             }
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -54,7 +57,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedRequisicion"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedRequisicion"
                                    ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
@@ -63,7 +66,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedCotizacion"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCotizacion"
                                    ValueChanged="OnCotizacionChanged"
                                    Label="Cotizacion adjudicada"
                                    Required="@(!item.CompraDirecta)"
@@ -74,7 +77,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedProveedor"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProveedor"
                                    ValueChanged="value => _selectedProveedor = value"
                                    Label="Proveedor"
                                    Required="true"
@@ -82,9 +85,15 @@
                                    Disabled="@(!item.CompraDirecta)"
                                    LoadPage="LoadProveedoresPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaOrdenCompra"
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas de entrega">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaOrdenCompra"
                                Label="Fecha OC"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -92,25 +101,31 @@
             </MudItem>
 
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="item.FechaRequerida"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaRequerida"
                                Label="Fecha requerida"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="item.FechaEntrega"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaEntrega"
                                Label="Fecha entrega"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="item.FechaVigencia"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaVigencia"
                                Label="Fecha vigencia"
                                Variant="Variant.Outlined" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudNumericField @bind-Value="item.TipoCambio"
+            <MudItem xs="12">
+                <CrudFormSection Title="Moneda y condiciones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.TipoCambio"
                                  Label="Tipo de cambio"
                                  Variant="Variant.Outlined"
                                  Format="0.000000"
@@ -119,7 +134,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField Value="@CurrencyDisplay"
+                <MudTextField Margin="Margin.Dense" Value="@CurrencyDisplay"
                               Label="Moneda"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
@@ -130,13 +145,16 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

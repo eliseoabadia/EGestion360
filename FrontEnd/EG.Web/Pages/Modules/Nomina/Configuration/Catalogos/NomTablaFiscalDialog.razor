@@ -18,21 +18,25 @@
                 LoadingMessage="Cargando tabla fiscal..."
                 OnConfirm="GuardarCambiosAsync">
     <MudForm @ref="form">
-        <MudGrid GutterSize="2">
-            @foreach (var field in Fields)
+        <div class="crud-form-layout">
+        @foreach (var fieldGroup in CrudFieldLayout.Group(Fields, field => field))
+        {
+            <CrudFormSection Title="@fieldGroup.Title" Enabled="@fieldGroup.ShowHeading">
+                <MudGrid GutterSize="2">
+            @foreach (var field in fieldGroup.Fields)
             {
                 <MudItem xs="12" sm="@GetFieldSize(field)">
                     @switch (field)
                     {
                         case nameof(NomTablaFiscalResponse.Clave):
-                            <MudTextField @bind-Value="item.Clave"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Immediate="false"
                                           MaxLength="50" />
                             break;
                         case nameof(NomTablaFiscalResponse.Descripcion):
-                            <MudTextField @bind-Value="item.Descripcion"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                                           Label="@GetFieldLabel(field)"
                                           Variant="Variant.Outlined"
                                           Required="true"
@@ -41,47 +45,47 @@
                                           MaxLength="250" />
                             break;
                         case nameof(NomTablaFiscalResponse.Valor1):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.Valor1"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomTablaFiscalResponse.Valor2):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.Valor2"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomTablaFiscalResponse.Valor3):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.Valor3"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomTablaFiscalResponse.Valor4):
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="item.Valor4"
                                              Label="@GetFieldLabel(field)"
                                              Variant="Variant.Outlined"
                                              Culture="@System.Globalization.CultureInfo.InvariantCulture" />
                             break;
                         case nameof(NomTablaFiscalResponse.FechaInicio):
-                            <MudDatePicker Date="@item.FechaInicio"
+                            <MudDatePicker Margin="Margin.Dense" Date="@item.FechaInicio"
                                            DateChanged="value => item.FechaInicio = value"
                                            Label="@GetFieldLabel(field)"
                                            Variant="Variant.Outlined" />
                             break;
                         case nameof(NomTablaFiscalResponse.FechaFin):
-                            <MudDatePicker Date="@item.FechaFin"
+                            <MudDatePicker Margin="Margin.Dense" Date="@item.FechaFin"
                                            DateChanged="value => item.FechaFin = value"
                                            Label="@GetFieldLabel(field)"
                                            Variant="Variant.Outlined" />
                             break;
                         case nameof(NomTablaFiscalResponse.FkidCatalogoPadreNom):
-                            <PagedAutocomplete Value="@selectedParent"
+                            <PagedAutocomplete Margin="Margin.Dense" Value="@selectedParent"
                                                ValueChanged="OnParentChanged"
                                                Label="@ParentLabel"
                                                Clearable="true"
@@ -92,6 +96,9 @@
             }
 
         </MudGrid>
+            </CrudFormSection>
+        }
+        </div>
     </MudForm>
 </BaseCrudDialog>
 

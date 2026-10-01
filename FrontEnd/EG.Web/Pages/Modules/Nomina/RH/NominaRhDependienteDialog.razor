@@ -19,7 +19,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Nombre" Label="Nombre completo" Variant="Variant.Outlined" MaxLength="300" Required="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre completo" Variant="Variant.Outlined" MaxLength="300" Required="true" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <NominaRhLookupSelect Value="@item.FkidParentescoSis"
@@ -31,10 +31,10 @@
                                       Required="true" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="FechaNacimiento" Label="Fecha de nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="FechaNacimiento" Label="Fecha de nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Parentesco" Label="Parentesco historico" Variant="Variant.Outlined" MaxLength="120" ReadOnly="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Parentesco" Label="Parentesco historico" Variant="Variant.Outlined" MaxLength="120" ReadOnly="true" />
             </MudItem>
             <MudItem xs="12">
                 <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"

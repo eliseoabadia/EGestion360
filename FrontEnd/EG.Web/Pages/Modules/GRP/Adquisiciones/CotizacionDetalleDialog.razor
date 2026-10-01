@@ -33,7 +33,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedDetalle"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedDetalle"
                                    ValueChanged="OnDetalleChanged"
                                    Label="Bien requisitado"
                                    Required="true"
@@ -57,7 +57,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="decimal?"
+                <MudNumericField Margin="Margin.Dense" T="decimal?"
                                  Value="@item.PrecioUnitario"
                                  ValueChanged="OnPrecioChanged"
                                  Label="Precio unitario"

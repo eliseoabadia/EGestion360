@@ -6,7 +6,6 @@
     <TitleContent>
         <div class="crud-dialog-title">
             <div class="crud-dialog-operation" aria-label="Tipo de operación">
-                <span class="crud-dialog-operation-pulse" aria-hidden="true"></span>
                 <span>@OperationState</span>
             </div>
             @if (!string.IsNullOrWhiteSpace(EffectiveTitleIcon))
@@ -22,8 +21,9 @@
                     <MudText Typo="Typo.caption" Class="crud-dialog-subtitle">@EffectiveSubtitle</MudText>
                 }
             </div>
-            <MudIconButton Icon="@Icons.Material.Filled.Close" 
-                         OnClick="Cancelar" 
+            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                         aria-label="Cerrar formulario"
+                         OnClick="Cancelar"
                          Disabled="@isProcessing"
                          Size="Size.Small"
                          Class="crud-dialog-close" />
@@ -44,37 +44,42 @@
                 <MudPaper Class="@DialogShellCssClass" Elevation="2">
                     @ChildContent
 
-                    <div class="crud-dialog-actions">
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Secondary"
-                                   OnClick="Cancelar"
-                                   Disabled="@isProcessing">
-                            @CancelText
-                        </MudButton>
-
-                        @if (ShowConfirmButton)
-                        {
-                            <MudButton Variant="Variant.Filled"
-                                       Color="@ActionColor"
-                                       StartIcon="@ActionIcon"
-                                       OnClick="OnConfirmar"
-                                       Disabled="@(isProcessing || !CanConfirm)">
-                                @if (isProcessing)
-                                {
-                                    <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
-                                    <span class="ml-2">@ProcessingText</span>
-                                }
-                                else
-                                {
-                                    @ActionText
-                                }
-                            </MudButton>
-                        }
-                    </div>
                 </MudPaper>
             </CascadingValue>
         }
     </DialogContent>
+    <DialogActions>
+        @if (!loading)
+        {
+            <div class="crud-dialog-actions">
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Secondary"
+                           OnClick="Cancelar"
+                           Disabled="@isProcessing">
+                    @CancelText
+                </MudButton>
+
+                @if (ShowConfirmButton)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="@ActionColor"
+                               StartIcon="@ActionIcon"
+                               OnClick="OnConfirmar"
+                               Disabled="@(isProcessing || !CanConfirm)">
+                        @if (isProcessing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
+                            <span class="ml-2">@ProcessingText</span>
+                        }
+                        else
+                        {
+                            @ActionText
+                        }
+                    </MudButton>
+                }
+            </div>
+        }
+    </DialogActions>
 </MudDialog>
 
 @code {
@@ -105,8 +110,8 @@
     private bool _closed = false;
     private Dictionary<string, object> _registeredComponents = new();
     private string DialogCssClass => string.IsNullOrWhiteSpace(DialogClass)
-        ? $"crud-dialog mission-form-dialog mission-form-{OperationKey}"
-        : $"crud-dialog mission-form-dialog mission-form-{OperationKey} {DialogClass}";
+        ? $"crud-dialog eae-form-dialog eae-dialog-{MaxWidth.ToString().ToLowerInvariant()}"
+        : $"crud-dialog eae-form-dialog eae-dialog-{MaxWidth.ToString().ToLowerInvariant()} {DialogClass}";
     private bool IsCatalogContext => CatalogMode ?? IsCatalogRoute();
     private string DialogShellCssClass => IsCatalogContext
         ? "crud-dialog-shell crud-dialog-shell-catalog"
@@ -142,29 +147,34 @@
             return Icons.Material.Filled.DeleteOutline;
         if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
             return Icons.Material.Filled.Verified;
-        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
-            return Icons.Material.Filled.Visibility;
         if (ContainsAny(value, "editar", "actualizar", "modificar"))
             return Icons.Material.Filled.EditNote;
         if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar"))
             return Icons.Material.Filled.AddCircleOutline;
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return Icons.Material.Filled.Visibility;
 
         return Icons.Material.Filled.Description;
     }
 
     private static string ResolveOperationKey(string title, string actionText)
     {
-        var value = $"{title} {actionText}";
+        var value = title;
 
         if (ContainsAny(value, "eliminar", "borrar", "cancelar", "eliminando"))
             return "baja";
         if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
             return "autorizacion";
-        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
-            return "consulta";
         if (ContainsAny(value, "editar", "actualizar", "modificar"))
             return "cambio";
-        if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar", "guardar"))
+        if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar"))
+            return "alta";
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return "consulta";
+
+        if (ContainsAny(actionText, "actualizar", "modificar"))
+            return "cambio";
+        if (ContainsAny(actionText, "crear", "guardar", "agregar"))
             return "alta";
 
         return "gestion";
@@ -178,12 +188,12 @@
             return "Confirma la operación antes de continuar.";
         if (ContainsAny(value, "autorizar", "aprobar", "firmar", "validar"))
             return "Revisa la información y confirma la operación.";
-        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
-            return "Consulta la información registrada y su detalle.";
         if (ContainsAny(value, "editar", "actualizar", "modificar"))
             return "Actualiza únicamente la información necesaria.";
         if (ContainsAny(value, "nuevo", "nueva", "crear", "agregar", "registrar"))
             return "Captura la información solicitada para continuar.";
+        if (ContainsAny(value, "ver ", "detalle", "consultar", "consulta"))
+            return "Consulta la información registrada y su detalle.";
 
         return "Revisa y completa la información de esta operación.";
     }

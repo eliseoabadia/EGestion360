@@ -17,28 +17,55 @@
 <BaseCrudDialog TItem="FacturaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="FacturaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><PagedAutocomplete Value="@contrato" ValueChanged="OnContratoChangedAsync" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
+            <MudItem xs="12">
+                <CrudFormSection Title="Factura y contrato">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><PagedAutocomplete Margin="Margin.Dense" Value="@contrato" ValueChanged="OnContratoChangedAsync" Label="Contrato" Required="true" RequiredError="El contrato es requerido" LoadPage="LoadContratosPageAsync" /></MudItem>
             <MudItem xs="12" md="4"><MudAlert Severity="Severity.Info" Dense="true">Póliza de devengado automática</MudAlert></MudItem>
-            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.NumFactura" Immediate="true" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.SerieFactura" Immediate="true" Label="Serie" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaRecepcion" Label="Fecha recepcion" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Subtotal" Immediate="true" Label="Subtotal" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Iva" Immediate="true" Label="IVA" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal?" @bind-Value="item.Retencion" Immediate="true" Label="Retencion" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.Total" Immediate="true" Label="Total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.Uuid" Label="UUID" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8"><MudTextField Margin="Margin.Dense" @bind-Value="item.NumFactura" Immediate="true" Label="Numero de factura" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" @bind-Value="item.SerieFactura" Immediate="true" Label="Serie" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaRecepcion" Label="Fecha recepcion" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Importes">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.Subtotal" Immediate="true" Label="Subtotal" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.Iva" Immediate="true" Label="IVA" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.Retencion" Immediate="true" Label="Retencion" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.Total" Immediate="true" Label="Total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Identificación fiscal y estado">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" @bind-Value="item.Uuid" Label="UUID" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
                     <MudSelectItem Value="1">Registrada</MudSelectItem>
                     <MudSelectItem Value="2">Validada</MudSelectItem>
                     <MudSelectItem Value="3">Devengada</MudSelectItem>
                     <MudSelectItem Value="4">Rechazada</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
 
         @if (!Id.HasValue && detalleItems.Count > 0)
         {
@@ -59,7 +86,7 @@
                         </TemplateColumn>
                         <TemplateColumn T="FacturaDetalleResponse" Title="Monto aplicado" Identifier="__local_1" Sortable="false" Filterable="false">
                             <CellTemplate Context="cell">
-                                <MudNumericField T="decimal" @bind-Value="cell.Item.MontoAplicado" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="cell.Item.MontoAplicado" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" />
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn T="FacturaDetalleResponse" Title="Observaciones" Identifier="__local_2" Sortable="false" Filterable="false">

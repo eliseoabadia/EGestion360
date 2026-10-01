@@ -54,7 +54,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
-                        <MudTextField @bind-Value="item.Clave"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
                                       Label="Clave"
                                       Variant="Variant.Outlined"
                                       Required="true"
@@ -63,7 +63,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="8">
-                        <MudTextField @bind-Value="item.Descripcion"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                                       Label="Descripcion"
                                       Variant="Variant.Outlined"
                                       Required="true"
@@ -72,7 +72,7 @@
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="item.Objetivo"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Objetivo"
                                       Label="Objetivo"
                                       Variant="Variant.Outlined"
                                       Lines="3"
@@ -94,7 +94,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedUr"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedUr"
                                            ValueChanged="value => _selectedUr = value"
                                            Label="Unidad responsable"
                                            Required="true"
@@ -104,7 +104,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedActividadInstitucional"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedActividadInstitucional"
                                            ValueChanged="value => _selectedActividadInstitucional = value"
                                            Label="Actividad institucional"
                                            Required="true"
@@ -114,7 +114,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedGf"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedGf"
                                            ValueChanged="value => _selectedGf = value"
                                            Label="Grupo funcional"
                                            Required="true"
@@ -124,7 +124,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedFn"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedFn"
                                            ValueChanged="value => _selectedFn = value"
                                            Label="Funcion"
                                            Required="true"
@@ -134,7 +134,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedSf"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedSf"
                                            ValueChanged="value => _selectedSf = value"
                                            Label="Subfuncion"
                                            Required="true"
@@ -158,7 +158,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedSector"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedSector"
                                            ValueChanged="value => _selectedSector = value"
                                            Label="Sector"
                                            Clearable="true"
@@ -167,7 +167,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedTipoRecurso"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoRecurso"
                                            ValueChanged="value => _selectedTipoRecurso = value"
                                            Label="Tipo recurso"
                                            Clearable="true"
@@ -176,7 +176,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <PagedAutocomplete Value="@_selectedFuenteFinanciamiento"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedFuenteFinanciamiento"
                                            ValueChanged="value => _selectedFuenteFinanciamiento = value"
                                            Label="Fuente financiamiento"
                                            Clearable="true"
@@ -185,7 +185,7 @@
                     </MudItem>
 
                     <MudItem xs="12">
-                        <PagedAutocomplete Value="@_selectedPp"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPp"
                                            ValueChanged="value => _selectedPp = value"
                                            Label="Programa presupuestal"
                                            Clearable="true"

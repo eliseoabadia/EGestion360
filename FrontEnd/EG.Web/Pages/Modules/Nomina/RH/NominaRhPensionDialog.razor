@@ -19,8 +19,11 @@
         </MudAlert>
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.NombreBeneficiario" Label="Nombre del beneficiario" Variant="Variant.Outlined" MaxLength="150" Required="true" />
+            <MudItem xs="12">
+                <CrudFormSection Title="Beneficiario y pensión">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NombreBeneficiario" Label="Nombre del beneficiario" Variant="Variant.Outlined" MaxLength="150" Required="true" />
             </MudItem>
             <MudItem xs="12" md="3">
                 <NominaRhLookupSelect Value="@item.FkidTipoPensionNom"
@@ -31,7 +34,7 @@
                                       Required="true" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudNumericField T="decimal?" @bind-Value="item.Porcentaje"
+                <MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.Porcentaje"
                                  Label="Porcentaje"
                                  Variant="Variant.Outlined"
                                  Culture="@CultureInfo.InvariantCulture"
@@ -42,12 +45,18 @@
                                  Adornment="Adornment.End"
                                  AdornmentText="%" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Documento" Label="Documento" Variant="Variant.Outlined" MaxLength="50" />
+            <MudItem xs="12">
+                <CrudFormSection Title="Sustento y vigencia">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Documento" Label="Documento" Variant="Variant.Outlined" MaxLength="50" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="FechaDocumento" Label="Fecha del documento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="FechaDocumento" Label="Fecha del documento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <NominaRhLookupSelect Value="@item.FkidCuentaContableSis"
@@ -58,30 +67,40 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="item.FechaInicio" Label="Inicio" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaInicio" Label="Inicio" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
             </MudItem>
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.FormaPago" Label="Forma de pago" Variant="Variant.Outlined" MaxLength="100" />
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Datos bancarios">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.FormaPago" Label="Forma de pago" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.CuentaBancaria" Label="Cuenta bancaria" Variant="Variant.Outlined" MaxLength="100" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.CuentaBancaria" Label="Cuenta bancaria" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="100" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
 
             <MudItem xs="12">
                 <NominaRhAuditInfo UsuarioCreacion="@item.UsuarioCreacion" FechaCreacion="@item.FechaCreacion"
                                    UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

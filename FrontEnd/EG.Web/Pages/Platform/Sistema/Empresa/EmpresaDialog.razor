@@ -26,9 +26,12 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <!-- Fila 1: Nombre y RFC -->
+            <MudItem xs="12">
+                <CrudFormSection Title="Identidad de la entidad">
+                    <MudGrid Spacing="2">
+<!-- Fila 1: Nombre y RFC -->
             <MudItem xs="12" md="5">
-                <MudTextField @bind-Value="empresa.EmpresaNombre"
+                <MudTextField Margin="Margin.Dense" @bind-Value="empresa.EmpresaNombre"
                               Label="Nombre de la Entidad"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -37,7 +40,7 @@
                               For="@(() => empresa.EmpresaNombre)" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudTextField @bind-Value="empresa.NombreCorto"
+                <MudTextField Margin="Margin.Dense" @bind-Value="empresa.NombreCorto"
                               Label="Nombre corto"
                               Variant="Variant.Outlined"
                               Counter="64"
@@ -46,7 +49,7 @@
                               For="@(() => empresa.NombreCorto)" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="empresa.Rfc"
+                <MudTextField Margin="Margin.Dense" @bind-Value="empresa.Rfc"
                               Label="RFC"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -57,7 +60,7 @@
 
             <!-- Fila 2: Razón Social y Giro -->
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="empresa.RazonSocial"
+                <MudTextField Margin="Margin.Dense" @bind-Value="empresa.RazonSocial"
                               Label="Razón Social"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -65,7 +68,7 @@
                               Validation="@(new Func<string?, IEnumerable<string>>(ValidarRazonSocial))" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="empresa.Giro"
+                <MudTextField Margin="Margin.Dense" @bind-Value="empresa.Giro"
                               Label="Giro"
                               Variant="Variant.Outlined" />
             </MudItem>
@@ -124,7 +127,7 @@
                     </div>
                     <MudGrid GutterSize="2">
                         <MudItem xs="12" md="3">
-                            <MudTextField @bind-Value="empresa.RegImss"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.RegImss"
                                           Label="Registro IMSS"
                                           Variant="Variant.Outlined"
                                           MaxLength="25"
@@ -132,7 +135,7 @@
                                           Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Registro IMSS")))" />
                         </MudItem>
                         <MudItem xs="12" md="3">
-                            <MudTextField @bind-Value="empresa.RegInfonavit"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.RegInfonavit"
                                           Label="Registro Infonavit"
                                           Variant="Variant.Outlined"
                                           MaxLength="25"
@@ -140,7 +143,7 @@
                                           Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Registro Infonavit")))" />
                         </MudItem>
                         <MudItem xs="12" md="3">
-                            <MudTextField @bind-Value="empresa.CedEmpadronam"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.CedEmpadronam"
                                           Label="Cédula empadronamiento"
                                           Variant="Variant.Outlined"
                                           MaxLength="25"
@@ -148,7 +151,7 @@
                                           Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "Cédula empadronamiento")))" />
                         </MudItem>
                         <MudItem xs="12" md="3">
-                            <MudTextField @bind-Value="empresa.NoFonacot"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.NoFonacot"
                                           Label="No. Fonacot"
                                           Variant="Variant.Outlined"
                                           MaxLength="25"
@@ -156,7 +159,7 @@
                                           Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 25, "No. Fonacot")))" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="empresa.UsAdmin"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.UsAdmin"
                                           Label="Usuario administrador"
                                           Variant="Variant.Outlined"
                                           MaxLength="100"
@@ -164,7 +167,7 @@
                                           Validation="@(new Func<string?, IEnumerable<string>>(value => ValidarLongitud(value, 100, "Usuario administrador")))" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="empresa.EmailAdmin"
+                            <MudTextField Margin="Margin.Dense" @bind-Value="empresa.EmailAdmin"
                                           Label="Correo administrador"
                                           Variant="Variant.Outlined"
                                           InputType="InputType.Email"
@@ -184,7 +187,7 @@
                     </div>
                     <MudGrid GutterSize="2">
                         <MudItem xs="12" md="3">
-                            <MudSelect T="int?"
+                            <MudSelect Margin="Margin.Dense" T="int?"
                                        Label="Periodo de pago"
                                        @bind-Value="empresa.FkidPeriodoPagoSis"
                                        Variant="Variant.Outlined"
@@ -197,7 +200,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" md="3">
-                            <MudSelect T="int?"
+                            <MudSelect Margin="Margin.Dense" T="int?"
                                        Label="Tipo de pago"
                                        @bind-Value="empresa.FkidTipoPagoNom"
                                        Variant="Variant.Outlined"
@@ -210,7 +213,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" md="3">
-                            <MudNumericField T="decimal?"
+                            <MudNumericField Margin="Margin.Dense" T="decimal?"
                                              @bind-Value="empresa.PrimaRiesgoImss"
                                              Label="Prima riesgo IMSS"
                                              Variant="Variant.Outlined"
@@ -227,8 +230,15 @@
             </MudItem>
 
             <!-- Fila 3: Estado, Moneda e Idioma -->
-            <MudItem xs="12" md="4">
-                <MudSelect Label="Estado (Entidad Federativa)"
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Ubicación y apertura">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudSelect Margin="Margin.Dense" Label="Estado (Entidad Federativa)"
                            @bind-Value="estadoSeleccionado"
                            T="int?"
                            Variant="Variant.Outlined"
@@ -247,7 +257,7 @@
 
             <!-- Fila 4: Fecha de Apertura y Oficina Principal -->
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="fechaApertura"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="fechaApertura"
                                Label="Fecha de Apertura"
                                Variant="Variant.Outlined"
                                For="@(() => fechaApertura)" />
@@ -275,7 +285,10 @@
                     </div>
                 </MudPaper>
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

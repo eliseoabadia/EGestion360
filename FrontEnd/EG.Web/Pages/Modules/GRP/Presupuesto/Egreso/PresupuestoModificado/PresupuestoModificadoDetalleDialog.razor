@@ -15,28 +15,36 @@
     <BaseEntityForm TEntity="EgreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando movimiento..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_egreso" ValueChanged="OnEgresoChanged" Label="Egreso autorizado disponible" Required="true" LoadPage="LoadEgresosPageAsync" />
+                <CrudFormSection Title="Origen y movimiento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_egreso" ValueChanged="OnEgresoChanged" Label="Egreso autorizado disponible" Required="true" LoadPage="LoadEgresosPageAsync" />
             </MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudTextField T="string" Value="@TipoTexto" Label="Tipo de movimiento" Variant="Variant.Outlined" ReadOnly="true" /></MudItem>
+            <MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Margin="Margin.Dense" T="string" Value="@TipoTexto" Label="Tipo de movimiento" Variant="Variant.Outlined" ReadOnly="true" /></MudItem>
             <MudItem xs="12">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               @bind-Value="item.Justificacion"
                               Label="Justificacion"
                               Variant="Variant.Outlined"
                               Lines="4"
                               HelperText="Acepta texto largo y saltos de linea." />
             </MudItem>
-            @foreach (var month in MonthFields)
+            <MudItem xs="12"><CrudFormSection Title="Distribución mensual"><MudGrid Spacing="2">
+@foreach (var month in MonthFields)
             {
                 <MudItem xs="6" sm="4" md="2">
-                    <MudNumericField T="decimal?" Value="@GetMonth(month.Index)" ValueChanged="value => SetMonth(month.Index, value)" Label="@month.Label" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" />
+                    <MudNumericField Margin="Margin.Dense" T="decimal?" Value="@GetMonth(month.Index)" ValueChanged="value => SetMonth(month.Index, value)" Label="@month.Label" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" />
                 </MudItem>
             }
+</MudGrid></CrudFormSection></MudItem>
             <MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Dense="true">Total capturado: <strong>@Money(CapturedTotal)</strong> Disponible seleccionado: <strong>@Money(_selectedDisponible?.Total ?? 0m)</strong></MudAlert>
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

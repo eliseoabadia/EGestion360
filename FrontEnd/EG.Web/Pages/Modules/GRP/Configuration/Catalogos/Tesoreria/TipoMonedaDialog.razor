@@ -13,12 +13,31 @@
 <BaseCrudDialog TItem="TipoMonedaResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoMonedaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <PagedAutocomplete Value="@_selectedPais" ValueChanged="value => _selectedPais = value" Label="Pais" Required="true" LoadItems="LoadPaisesAsync" />
-        <MudTextField @bind-Value="item.CodigoIso4217" Label="Código ISO 4217" Variant="Variant.Outlined" FullWidth="true" Class="mt-3 mb-3" Required="true" MaxLength="3" Counter="3" Immediate="true" HelperText="Ejemplo: MXN, USD, EUR" For="@(() => item.CodigoIso4217)" />
-        <MudTextField @bind-Value="item.Simbolo" Label="Símbolo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" MaxLength="10" Counter="10" For="@(() => item.Simbolo)" />
-        <MudTextField @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" MaxLength="100" Counter="100" For="@(() => item.Descripcion)" />
-        <MudNumericField @bind-Value="item.Decimales" Label="Decimales" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.Decimales)" />
-    </BaseEntityForm>
+        <CrudFormSection Title="Identificación de la moneda">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPais" ValueChanged="value => _selectedPais = value" Label="Pais" Required="true" LoadItems="LoadPaisesAsync" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.CodigoIso4217" Label="Código ISO 4217" Variant="Variant.Outlined" FullWidth="true" Required="true" MaxLength="3" Counter="3" Immediate="true" HelperText="Ejemplo: MXN, USD, EUR" For="@(() => item.CodigoIso4217)" />
+                </MudItem>
+            </MudGrid>
+        </CrudFormSection>
+
+        <CrudFormSection Title="Representación">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Simbolo" Label="Símbolo" Variant="Variant.Outlined" FullWidth="true" MaxLength="10" Counter="10" For="@(() => item.Simbolo)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion" Label="Descripción" Variant="Variant.Outlined" FullWidth="true" Required="true" MaxLength="100" Counter="100" For="@(() => item.Descripcion)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField Margin="Margin.Dense" @bind-Value="item.Decimales" Label="Decimales" Variant="Variant.Outlined" FullWidth="true" For="@(() => item.Decimales)" />
+                </MudItem>
+            </MudGrid>
+        </CrudFormSection>
+</BaseEntityForm>
 </BaseCrudDialog>
 
 @code {

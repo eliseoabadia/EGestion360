@@ -37,7 +37,7 @@
                 </div>
                 <div class="matriz-reference-grid matriz-reference-grid-income">
                     <div class="matriz-reference-field matriz-reference-field-code">
-                    <PagedAutocomplete Value="@_selectedPrograma"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPrograma"
                                        ValueChanged="value => _selectedPrograma = value"
                                        Label="Programa"
                                        Required="true"
@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="matriz-reference-field matriz-reference-field-wide">
-                    <PagedAutocomplete Value="@_selectedOrigen"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedOrigen"
                                        ValueChanged="value => _selectedOrigen = value"
                                        Label="Origen de Recursos"
                                        Required="true"
@@ -62,27 +62,27 @@
                 <div class="matriz-mapping-list">
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Autorizado</span><small>Presupuesto aprobado</small></div>
-                        <PagedAutocomplete Value="@_selectedAutorizado" ValueChanged="value => _selectedAutorizado = value" Label="Cuenta de presupuesto autorizado" Required="true" LoadPage="LoadCuentasPresupuestalesPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedAutorizado" ValueChanged="value => _selectedAutorizado = value" Label="Cuenta de presupuesto autorizado" Required="true" LoadPage="LoadCuentasPresupuestalesPageAsync" />
                     </div>
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Por ejecutar</span><small>Presupuesto disponible</small></div>
-                        <PagedAutocomplete Value="@_selectedPorEjercer" ValueChanged="value => _selectedPorEjercer = value" Label="Cuenta de presupuesto por ejecutar" LoadPage="LoadCuentasPresupuestalesPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPorEjercer" ValueChanged="value => _selectedPorEjercer = value" Label="Cuenta de presupuesto por ejecutar" LoadPage="LoadCuentasPresupuestalesPageAsync" />
                     </div>
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Modificado</span><small>Adecuaciones del ingreso</small></div>
-                        <PagedAutocomplete Value="@_selectedModificado" ValueChanged="value => _selectedModificado = value" Label="Cuenta de presupuesto modificado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedModificado" ValueChanged="value => _selectedModificado = value" Label="Cuenta de presupuesto modificado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
                     </div>
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Devengado</span><small>Derecho de cobro reconocido</small></div>
-                        <PagedAutocomplete Value="@_selectedDevengado" ValueChanged="value => _selectedDevengado = value" Label="Cuenta de presupuesto devengado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedDevengado" ValueChanged="value => _selectedDevengado = value" Label="Cuenta de presupuesto devengado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
                     </div>
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Recaudado</span><small>Ingreso efectivamente recibido</small></div>
-                        <PagedAutocomplete Value="@_selectedRecaudado" ValueChanged="value => _selectedRecaudado = value" Label="Cuenta de presupuesto recaudado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedRecaudado" ValueChanged="value => _selectedRecaudado = value" Label="Cuenta de presupuesto recaudado" LoadPage="LoadCuentasPresupuestalesPageAsync" />
                     </div>
                     <div class="matriz-map-row">
                         <div class="matriz-map-label"><span>Depósito</span><small>Cuenta bancaria de destino</small></div>
-                        <PagedAutocomplete Value="@_selectedDeposito" ValueChanged="value => _selectedDeposito = value" Label="Cuenta de depósito" LoadPage="LoadCuentasDepositoPageAsync" />
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedDeposito" ValueChanged="value => _selectedDeposito = value" Label="Cuenta de depósito" LoadPage="LoadCuentasDepositoPageAsync" />
                     </div>
                 </div>
             </section>

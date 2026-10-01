@@ -30,7 +30,7 @@
             @if (BienId <= 0)
             {
                 <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedBien"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedBien"
                                        ValueChanged="value => _selectedBien = value"
                                        Label="Bien disponible"
                                        Required="true"
@@ -42,7 +42,7 @@
             @if (ResguardoId <= 0)
             {
                 <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedResguardo"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedResguardo"
                                        ValueChanged="value => _selectedResguardo = value"
                                        Label="Resguardo destino"
                                        Required="true"
@@ -52,7 +52,7 @@
             }
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="3"

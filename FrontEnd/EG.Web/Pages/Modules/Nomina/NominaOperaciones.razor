@@ -82,7 +82,6 @@
                     Icon="@CurrentItem.Icon"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
-
         @if (!string.IsNullOrWhiteSpace(CurrentItem.Note))
         {
             <MudAlert Severity="@CurrentItem.Severity" Variant="Variant.Outlined" Dense="true" Class="mb-3">

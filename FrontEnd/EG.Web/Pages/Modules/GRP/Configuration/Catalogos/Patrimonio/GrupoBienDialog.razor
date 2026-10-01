@@ -23,7 +23,10 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudSelect T="int" Label="Familia"
+                <CrudFormSection Title="Identificación del grupo">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
+                <MudSelect Margin="Margin.Dense" T="int" Label="Familia"
                            @bind-Value="item.FkidFamiliaAlma"
                            Required="true"
                            RequiredError="La familia es requerida"
@@ -35,44 +38,54 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.GrupoBienClave"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.GrupoBienClave"
                               Label="Clave"
                               Variant="Variant.Outlined"
                               FullWidth="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.GrupoBienDescripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.GrupoBienDescripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
                               FullWidth="true"
                               Required="true"
                               RequiredError="La descripción es requerida" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.ClaveAn"
+                <CrudFormSection Title="Clasificación y medida">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.ClaveAn"
                               Label="Clave AN"
                               Variant="Variant.Outlined"
                               FullWidth="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.CabmAct"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.CabmAct"
                               Label="CABM ACT"
                               Variant="Variant.Outlined"
                               FullWidth="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.ClaveCucop"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.ClaveCucop"
                               Label="Clave CUCOP"
                               Variant="Variant.Outlined"
                               FullWidth="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Medida"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Medida"
                               Label="Medida"
                               Variant="Variant.Outlined"
                               FullWidth="true" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

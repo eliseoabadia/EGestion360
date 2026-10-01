@@ -23,15 +23,18 @@
                 OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="ResguardoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <MudGrid Spacing="2">
-            @if (Id.HasValue)
+            <MudItem xs="12">
+                <CrudFormSection Title="Asignación del resguardo">
+                    <MudGrid Spacing="2">
+@if (Id.HasValue)
             {
                 <MudItem xs="12" md="6">
-                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedPersona"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPersona"
                                    ValueChanged="value => _selectedPersona = value"
                                    Label="Responsable"
                                    Required="true"
@@ -40,15 +43,21 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <PagedAutocomplete Value="@_selectedArea"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArea"
                                    ValueChanged="value => _selectedArea = value"
                                    Label="Area responsable"
                                    Clearable="true"
                                    LoadPage="LoadAreasPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="5">
-                <MudDatePicker @bind-Date="_fechaResguardo"
+            <MudItem xs="12">
+                <CrudFormSection Title="Fecha y observaciones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="5">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaResguardo"
                                Label="Fecha resguardo"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -56,13 +65,16 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

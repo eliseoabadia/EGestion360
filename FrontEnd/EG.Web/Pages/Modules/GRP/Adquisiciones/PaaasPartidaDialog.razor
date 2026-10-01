@@ -22,7 +22,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedPartida"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPartida"
                                    ValueChanged="value => _selectedPartida = value"
                                    Label="Partida"
                                    Required="true"
@@ -31,7 +31,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="_observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="_observaciones"
                               Label="Observacion"
                               Variant="Variant.Outlined"
                               Lines="3"

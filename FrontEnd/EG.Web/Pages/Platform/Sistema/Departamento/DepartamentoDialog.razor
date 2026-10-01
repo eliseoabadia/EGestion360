@@ -22,7 +22,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudSelect Label="Entidad"
+                <MudSelect Margin="Margin.Dense" Label="Entidad"
                            @bind-Value="departamento.PkidEmpresa"
                            T="int"
                            Variant="Variant.Outlined"
@@ -37,7 +37,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="departamento.DepartamentoNombre"
+                <MudTextField Margin="Margin.Dense" @bind-Value="departamento.DepartamentoNombre"
                               Label="Nombre del Departamento"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -46,14 +46,14 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="departamento.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="departamento.Descripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
                               Lines="2" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudNumericField @bind-Value="departamento.NivelJerarquico"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="departamento.NivelJerarquico"
                                 Label="Nivel Jerárquico"
                                 Variant="Variant.Outlined"
                                 Min="0"

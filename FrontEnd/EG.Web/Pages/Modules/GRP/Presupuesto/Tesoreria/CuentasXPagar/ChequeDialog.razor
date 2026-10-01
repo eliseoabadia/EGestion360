@@ -18,24 +18,37 @@
 <BaseCrudDialog TItem="ChequeResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="ChequeResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="3"><PagedAutocomplete Value="@clc" ValueChanged="value => clc = value" Label="CLC" Required="true" RequiredError="La CLC es requerida" LoadPage="LoadClcsPageAsync" /></MudItem>
-            <MudItem xs="12" md="3"><PagedAutocomplete Value="@cuentaBancaria" ValueChanged="value => cuentaBancaria = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasBancariasPageAsync" /></MudItem>
+            <MudItem xs="12">
+                <CrudFormSection Title="Origen y cuenta bancaria">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Margin="Margin.Dense" Value="@clc" ValueChanged="value => clc = value" Label="CLC" Required="true" RequiredError="La CLC es requerida" LoadPage="LoadClcsPageAsync" /></MudItem>
+            <MudItem xs="12" md="3"><PagedAutocomplete Margin="Margin.Dense" Value="@cuentaBancaria" ValueChanged="value => cuentaBancaria = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasBancariasPageAsync" /></MudItem>
             <MudItem xs="12" md="3"><MudAlert Severity="Severity.Info" Dense="true">Póliza de pagado automática</MudAlert></MudItem>
-            <MudItem xs="12" md="6"><MudDatePicker @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudTextField @bind-Value="item.NumeroCheque" Label="Cheque / transferencia" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Concepto" Label="Concepto" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Emisión y pago">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaEmision" Label="Fecha emision" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroCheque" Label="Cheque / transferencia" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Concepto" Label="Concepto" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.ImporteTotal" Label="Importe total" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="6">
-                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
                     <MudSelectItem Value="1">Registrado</MudSelectItem>
                     <MudSelectItem Value="2">Entregado</MudSelectItem>
                     <MudSelectItem Value="3">Cobrado</MudSelectItem>
                     <MudSelectItem Value="4">Cancelado</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
 
         @if (!Id.HasValue && partidaItems.Count > 0)
         {

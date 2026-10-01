@@ -12,21 +12,34 @@
 <BaseCrudDialog TItem="AutorizacionSuficienciaResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="AutorizacionSuficienciaResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando autorización..." LoadingSkeletonRows="8">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12">
+                <CrudFormSection Title="Origen y autorización">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
                     <MudSelectItem Value="1">Borrador</MudSelectItem>
                     <MudSelectItem Value="2">Autorizada</MudSelectItem>
                     <MudSelectItem Value="3">Cancelada</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.GastoNoProgramable" Label="Gasto no programable" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Required="true" Immediate="true" Lines="3" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Clasificación y observaciones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" @bind-Value="item.GastoNoProgramable" Label="Gasto no programable" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Justificacion" Label="Justificacion" Required="true" Immediate="true" Lines="3" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
 
         @if (!Id.HasValue && detalleItems.Count > 0)
         {

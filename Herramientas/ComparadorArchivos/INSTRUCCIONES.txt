@@ -1,0 +1,20 @@
+COMPARADOR DE NOMBRES DE ARCHIVO
+
+1. Conecta los cuatro discos y espera a que Windows los reconozca.
+2. Haz doble clic en "Ejecutar comparador.cmd".
+3. Escribe las letras de las unidades, por ejemplo: E,F,G,H
+4. Pulsa Enter para usar el criterio solicitado: mas del 80%.
+5. Espera a que termine. Se abrira automaticamente la carpeta de resultados.
+
+El archivo CSV queda ordenado por Nombre, Unidad y Ruta completa. Puedes abrirlo
+con Excel. Sus columnas son:
+
+- Grupo: identifica archivos que coinciden entre si.
+- Porcentaje: similitud del nombre completo.
+- Nombre: nombre del archivo encontrado.
+- Coincide_con: el otro nombre con el que coincide.
+- Unidad: disco donde esta el archivo.
+- Ruta_completa: ubicacion exacta.
+
+La herramienta solo lee nombres y rutas. No mueve, modifica ni elimina archivos.
+

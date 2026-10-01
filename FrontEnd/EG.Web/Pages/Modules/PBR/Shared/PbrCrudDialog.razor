@@ -18,8 +18,12 @@
                 LoadingMessage="Cargando registro..."
                 OnConfirm="GuardarAsync">
     <MudForm @ref="form">
-        <MudGrid GutterSize="2">
-            @foreach (var property in EditableProperties)
+        <div class="crud-form-layout">
+        @foreach (var fieldGroup in CrudFieldLayout.Group(EditableProperties, property => property.Name))
+        {
+            <CrudFormSection Title="@fieldGroup.Title" Enabled="@fieldGroup.ShowHeading">
+                <MudGrid GutterSize="2">
+            @foreach (var property in fieldGroup.Fields)
             {
                 <MudItem xs="12" sm="@GetColumnSpan(property)">
                     @if (IsBoolean(property))
@@ -35,7 +39,7 @@
                     }
                     else
                     {
-                        <MudTextField T="string"
+                        <MudTextField Margin="Margin.Dense" T="string"
                                       Value="@GetTextValue(property)"
                                       ValueChanged="@((string value) => SetTextValue(property, value))"
                                       Label="@GetLabel(property)"
@@ -49,6 +53,9 @@
                 </MudItem>
             }
         </MudGrid>
+            </CrudFormSection>
+        }
+        </div>
     </MudForm>
 </BaseCrudDialog>
 

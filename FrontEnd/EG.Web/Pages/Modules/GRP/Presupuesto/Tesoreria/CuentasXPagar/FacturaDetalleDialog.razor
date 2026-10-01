@@ -11,25 +11,38 @@
     <BaseEntityForm TEntity="FacturaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title">
         <MudGrid GutterSize="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Origen presupuestal">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Factura</MudText>
                 <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight:700">@FacturaNombre</MudText>
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" />
+                <MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudNumericField T="int" @bind-Value="item.FkidContratoDetallePres" Label="Detalle contrato" Required="true" Variant="Variant.Outlined" />
+                <MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidContratoDetallePres" Label="Detalle contrato" Required="true" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" />
+                <MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudNumericField T="decimal" @bind-Value="item.MontoAplicado" Label="Monto aplicado" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" />
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Aplicación">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.MontoAplicado" Label="Monto aplicado" Required="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

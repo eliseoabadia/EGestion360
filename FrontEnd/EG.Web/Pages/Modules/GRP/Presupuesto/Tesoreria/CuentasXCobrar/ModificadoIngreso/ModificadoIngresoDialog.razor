@@ -14,21 +14,21 @@
     <BaseEntityForm TEntity="IngreAdecuacionResponse" @ref="form" ShowHeader="true" HeaderTitle="@DialogTitle">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
-                <MudDatePicker Date="@_fecha"
+                <MudDatePicker Margin="Margin.Dense" Date="@_fecha"
                                DateChanged="value => _fecha = value"
                                Label="Fecha de la adecuacion"
                                Variant="Variant.Outlined"
                                Required="true" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               Value="@TipoTexto"
                               Label="Tipo de adecuacion"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               @bind-Value="item.Justificacion"
                               Label="Justificacion"
                               Variant="Variant.Outlined"

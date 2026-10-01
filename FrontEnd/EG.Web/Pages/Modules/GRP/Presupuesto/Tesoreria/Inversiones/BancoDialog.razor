@@ -8,9 +8,9 @@
 
 <BaseCrudDialog TItem="BancoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="BancoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando banco..." LoadingSkeletonRows="4">
-        <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
-        <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
-        <MudTextField @bind-Value="item.NombreCorto" Label="Nombre corto" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Required="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.NombreCorto" Label="Nombre corto" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

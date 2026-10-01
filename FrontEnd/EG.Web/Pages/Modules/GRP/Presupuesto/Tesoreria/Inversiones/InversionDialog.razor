@@ -14,22 +14,35 @@
 <BaseCrudDialog TItem="InversionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="InversionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando inversión..." LoadingSkeletonRows="6">
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasPageAsync" />
+            <MudItem xs="12">
+                <CrudFormSection Title="Cuenta e instrumento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta bancaria" Required="true" LoadPage="LoadCuentasPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_instrumento" ValueChanged="value => _instrumento = value" Label="Instrumento" Required="true" LoadPage="LoadInstrumentosPageAsync" />
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_instrumento" ValueChanged="value => _instrumento = value" Label="Instrumento" Required="true" LoadPage="LoadInstrumentosPageAsync" />
+            </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Importe y vigencia">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudNumericField T="decimal" @bind-Value="item.Monto" Label="Monto" Variant="Variant.Outlined" Min="0.01m" Format="0.00" Culture="@NumberCulture" FullWidth="true" Required="true" />
+                <MudDatePicker Margin="Margin.Dense" Date="@_fechaInversion" DateChanged="OnFechaInversionChanged" Label="Fecha inversion" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudDatePicker Date="@_fechaInversion" DateChanged="OnFechaInversionChanged" Label="Fecha inversion" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudDatePicker Date="@_fechaVencimiento" DateChanged="OnFechaVencimientoChanged" Label="Fecha vencimiento" Variant="Variant.Outlined" />
+                    </MudGrid>
+                </CrudFormSection>
             </MudItem>
-        </MudGrid>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -34,7 +34,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
-                        <MudSelect T="int"
+                        <MudSelect Margin="Margin.Dense" T="int"
                                    @bind-Value="item.FkidMesSis"
                                    Label="Mes"
                                    Variant="Variant.Outlined"
@@ -48,7 +48,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="8">
-                        <PagedAutocomplete Value="@_selectedTipoPoliza"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoPoliza"
                                            ValueChanged="value => _selectedTipoPoliza = value"
                                            Label="Tipo de poliza"
                                            Required="true"
@@ -64,7 +64,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="4">
-                        <MudTextField @bind-Value="item.ClavePoliza"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.ClavePoliza"
                                       Label="Clave"
                                       Variant="Variant.Outlined"
                                       MaxLength="10"
@@ -73,7 +73,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="8">
-                        <MudDatePicker @bind-Date="_fechaPoliza"
+                        <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaPoliza"
                                        Label="Fecha"
                                        Variant="Variant.Outlined"
                                        Required="true"
@@ -81,7 +81,7 @@
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="item.NombrePoliza"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.NombrePoliza"
                                       Label="Nombre"
                                       Variant="Variant.Outlined"
                                       Lines="2"

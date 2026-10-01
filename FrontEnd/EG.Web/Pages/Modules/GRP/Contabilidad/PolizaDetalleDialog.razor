@@ -26,6 +26,9 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Cuenta y concepto">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudText Typo="Typo.caption" Color="Color.Tertiary">Póliza</MudText>
                 <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 700;">
                     @PolizaClave - @PolizaNombre
@@ -33,7 +36,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedCuenta"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCuenta"
                                    ValueChanged="value => _selectedCuenta = value"
                                    Label="Cuenta contable"
                                    Required="true"
@@ -42,7 +45,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedTipoDetalle"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoDetalle"
                                    ValueChanged="value => _selectedTipoDetalle = value"
                                    Label="Tipo de movimiento"
                                    Clearable="true"
@@ -50,15 +53,21 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Concepto"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="600" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudNumericField T="decimal?"
+            <MudItem xs="12">
+                <CrudFormSection Title="Importes">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" T="decimal?"
                                  Value="@item.ImporteDebe"
                                  ValueChanged="OnDebeChanged"
                                  Label="Debe"
@@ -71,7 +80,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudNumericField T="decimal?"
+                <MudNumericField Margin="Margin.Dense" T="decimal?"
                                  Value="@item.ImporteHaber"
                                  ValueChanged="OnHaberChanged"
                                  Label="Haber"
@@ -82,8 +91,10 @@
                                  Adornment="Adornment.Start"
                                  AdornmentText="@CurrencySymbol" />
             </MudItem>
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -1,0 +1,14 @@
+EXUX - Universidad Maya - Diagramas por capas
+
+1. Abra Arquitectura_EXUX.html en Edge, Chrome o Firefox. Funciona sin internet.
+2. Recorra Contexto > Capas > Modulos > Entidades > Tabla.
+3. Pulse cualquier modulo o tabla para profundizar; use Volver, zoom o pantalla completa.
+4. En pantallas pequenas, desplace horizontalmente el diagrama para conservar la legibilidad.
+5. El PDF contiene 23 paginas A3 horizontal con enlaces internos y marcadores.
+6. Arquitectura_EXUX.drawio contiene 22 paginas editables en diagrams.net. Los SVG conservan vectores.
+7. Conserve esta carpeta dentro de Output para que los enlaces a SQL_EXUX_ERP_Modular sigan funcionando.
+
+Contenido: 15 modulos, 267 tablas involucradas del modelo, 917 relaciones propuestas.
+El panorama de software es una arquitectura objetivo. Los diagramas de datos se derivan del SQL generado.
+Los ejemplos multi almacen son ilustrativos, no datos reales.
+No se aplicaron scripts ni se modificaron bases de datos. No se implemento el modulo RH.

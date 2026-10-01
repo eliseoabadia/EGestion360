@@ -10,16 +10,24 @@
 <BaseCrudDialog TItem="AutorizacionSuficienciaDetalleResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="AutorizacionSuficienciaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando detalle..." LoadingSkeletonRows="7">
         <MudGrid GutterSize="2">
-            <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@AutorizacionNombre</MudText></MudItem>
-            <MudItem xs="12" md="4"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidSolicitudSuficienciaDetallePres" Label="Detalle solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
-            @foreach (var month in MonthFields)
+            <MudItem xs="12">
+                <CrudFormSection Title="Origen presupuestal">
+                    <MudGrid Spacing="2">
+<MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@AutorizacionNombre</MudText></MudItem>
+            <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidSolicitudSuficienciaDetallePres" Label="Detalle solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12"><CrudFormSection Title="Distribución mensual"><MudGrid Spacing="2">
+@foreach (var month in MonthFields)
             {
-                <MudItem xs="6" md="3"><MudNumericField T="decimal?" Value="GetMonth(month.Key)" ValueChanged="v => SetMonth(month.Key, v)" Label="@month.Value" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="6" md="3"><MudNumericField Margin="Margin.Dense" T="decimal?" Value="GetMonth(month.Key)" ValueChanged="v => SetMonth(month.Key, v)" Label="@month.Value" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
             }
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+</MudGrid></CrudFormSection></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

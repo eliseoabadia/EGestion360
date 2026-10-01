@@ -15,7 +15,7 @@
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="MotivoEsResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Descripcion"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                       Label="Descripción"
                       Variant="Variant.Outlined"
                       FullWidth="true"

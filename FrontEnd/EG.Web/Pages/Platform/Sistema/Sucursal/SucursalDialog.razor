@@ -24,8 +24,11 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <MudSelect Label="Entidad"
+            <MudItem xs="12">
+                <CrudFormSection Title="Entidad e identificación">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudSelect Margin="Margin.Dense" Label="Entidad"
                            @bind-Value="item.FkidEmpresaSis"
                            T="int"
                            Variant="Variant.Outlined"
@@ -40,7 +43,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudSelect Label="Estado"
+                <MudSelect Margin="Margin.Dense" Label="Estado"
                            @bind-Value="item.FkidEstadoSis"
                            T="int"
                            Variant="Variant.Outlined"
@@ -55,7 +58,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.CodigoSucursal"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.CodigoSucursal"
                               Label="Codigo"
                               Variant="Variant.Outlined"
                               MaxLength="20"
@@ -66,7 +69,7 @@
             </MudItem>
 
             <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.Nombre"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre"
                               Label="Nombre"
                               Variant="Variant.Outlined"
                               MaxLength="100"
@@ -77,15 +80,21 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Alias"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Alias"
                               Label="Alias"
                               Variant="Variant.Outlined"
                               MaxLength="100"
                               Counter="100" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Email"
+            <MudItem xs="12">
+                <CrudFormSection Title="Contacto y domicilio">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Email"
                               Label="Correo"
                               Variant="Variant.Outlined"
                               InputType="InputType.Email"
@@ -94,7 +103,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Direccion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Direccion"
                               Label="Direccion"
                               Variant="Variant.Outlined"
                               MaxLength="250"
@@ -102,41 +111,47 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Colonia"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Colonia"
                               Label="Colonia"
                               Variant="Variant.Outlined"
                               MaxLength="80" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Ciudad"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Ciudad"
                               Label="Ciudad"
                               Variant="Variant.Outlined"
                               MaxLength="80" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.CodigoPostal"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.CodigoPostal"
                               Label="Codigo postal"
                               Variant="Variant.Outlined"
                               MaxLength="12" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.TelefonoPrincipal"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.TelefonoPrincipal"
                               Label="Telefono principal"
                               Variant="Variant.Outlined"
                               MaxLength="30" />
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.TelefonoSecundario"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.TelefonoSecundario"
                               Label="Telefono secundario"
                               Variant="Variant.Outlined"
                               MaxLength="30" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
+            <MudItem xs="12">
+                <CrudFormSection Title="Estado de la sucursal">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
                 <MudSwitch @bind-Value="item.EsMatriz"
                            Color="Color.Info"
                            Label="Sucursal matriz" />
@@ -147,7 +162,10 @@
                            Color="Color.Success"
                            Label="Sucursal activa" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

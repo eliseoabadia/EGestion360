@@ -1,0 +1,10 @@
+﻿RESULTADO DEL COMPARADOR DE NOMBRES
+Fecha: 2026-08-25 14:59:58
+Unidades: D:\, F:\, G:\, H:\
+Archivos revisados: 3,616
+Nombres diferentes: 3,546
+Grupos encontrados: 977
+Filas en el listado: 2,018
+Carpetas sin acceso: 8
+Criterio: similitud estrictamente mayor que 95%.
+El porcentaje usa distancia de edicion sobre el nombre completo, sin distinguir mayusculas, acentos ni separadores comunes.

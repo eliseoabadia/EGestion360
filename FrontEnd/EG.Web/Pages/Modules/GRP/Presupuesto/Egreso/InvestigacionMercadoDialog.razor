@@ -31,8 +31,11 @@
                     LoadingSkeletonRows="7">
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="_fechaSolicitud"
+            <MudItem xs="12">
+                <CrudFormSection Title="Datos del estudio">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSolicitud"
                                Label="Fecha de solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -40,7 +43,7 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Nombre"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre"
                               Label="Nombre del estudio"
                               Variant="Variant.Outlined"
                               MaxLength="200"
@@ -49,15 +52,21 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="7">
-                <PagedAutocomplete Value="@_selectedResponsable"
+            <MudItem xs="12">
+                <CrudFormSection Title="Responsable y seguimiento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="7">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedResponsable"
                                    ValueChanged="value => _selectedResponsable = value"
                                    Label="Responsable"
                                    Required="true"
@@ -66,7 +75,7 @@
             </MudItem>
 
             <MudItem xs="12" md="5">
-                <MudSelect T="int"
+                <MudSelect Margin="Margin.Dense" T="int"
                            @bind-Value="item.Estatus"
                            Label="Estatus"
                            Variant="Variant.Outlined"
@@ -80,13 +89,15 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="_fechaCierre"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaCierre"
                                Label="Fecha de cierre"
                                Variant="Variant.Outlined"
                                Clearable="true" />
             </MudItem>
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

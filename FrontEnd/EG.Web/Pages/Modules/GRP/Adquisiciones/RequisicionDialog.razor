@@ -53,7 +53,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="item.Descripcion"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                                       Label="Folio"
                                       Variant="Variant.Outlined"
                                       MaxLength="100"
@@ -62,7 +62,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedArea"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArea"
                                            ValueChanged="OnAreaChanged"
                                            Label="Area"
                                            Required="true"
@@ -71,7 +71,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedPersona"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPersona"
                                            ValueChanged="OnPersonaChanged"
                                            Label="Solicitante"
                                            Required="true"
@@ -110,7 +110,7 @@
                     }
 
                     <MudItem xs="12" md="4">
-                        <MudDatePicker @bind-Date="_fechaRequisicion"
+                        <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaRequisicion"
                                        Label="Fecha requisicion"
                                        Variant="Variant.Outlined"
                                        Required="true"
@@ -118,7 +118,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudDatePicker @bind-Date="_fechaRequiereInicio"
+                        <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaRequiereInicio"
                                        Label="Inicio de suministro"
                                        Variant="Variant.Outlined"
                                        Required="true"
@@ -126,7 +126,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudDatePicker @bind-Date="_fechaRequiereFin"
+                        <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaRequiereFin"
                                        Label="Fin de suministro"
                                        Variant="Variant.Outlined"
                                        Required="true"
@@ -134,7 +134,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="4">
-                        <MudNumericField @bind-Value="item.Importe"
+                        <MudNumericField Margin="Margin.Dense" @bind-Value="item.Importe"
                                          Label="Importe"
                                          Variant="Variant.Outlined"
                                          Format="0.00"
@@ -186,7 +186,7 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12">
-                        <PagedAutocomplete Value="@_selectedPosicion"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPosicion"
                                            ValueChanged="OnPosicionChanged"
                                            Label="Posicion presupuestal disponible"
                                            Required="true"
@@ -204,7 +204,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedProyecto"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProyecto"
                                            ValueChanged="value => _selectedProyecto = value"
                                            Label="Proyecto"
                                            Disabled="true"
@@ -212,7 +212,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedPrograma"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPrograma"
                                            ValueChanged="value => _selectedPrograma = value"
                                            Label="Programa"
                                            Disabled="true"
@@ -220,7 +220,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedFuente"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedFuente"
                                            ValueChanged="value => _selectedFuente = value"
                                            Label="Fuente de financiamiento"
                                            Disabled="true"
@@ -228,7 +228,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedTipoGasto"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoGasto"
                                            ValueChanged="value => _selectedTipoGasto = value"
                                            Label="Tipo de gasto (TG)"
                                            Disabled="true"
@@ -236,7 +236,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedDigito"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedDigito"
                                            ValueChanged="value => _selectedDigito = value"
                                            Label="Digito identificador (DI)"
                                            Disabled="true"
@@ -244,7 +244,7 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <PagedAutocomplete Value="@_selectedDestino"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedDestino"
                                            ValueChanged="value => _selectedDestino = value"
                                            Label="Destino del gasto (DG)"
                                            Disabled="true"
@@ -275,20 +275,20 @@
 
                 <MudGrid GutterSize="2">
                     <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="item.Oficio"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Oficio"
                                       Label="Oficio"
                                       Variant="Variant.Outlined"
                                       MaxLength="120" />
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <MudDatePicker @bind-Date="item.FechaOficio"
+                        <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaOficio"
                                        Label="Fecha oficio"
                                        Variant="Variant.Outlined" />
                     </MudItem>
 
                     <MudItem xs="12">
-                        <MudTextField @bind-Value="item.Observaciones"
+                        <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                                       Label="Observaciones"
                                       Variant="Variant.Outlined"
                                       Lines="3"

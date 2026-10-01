@@ -15,34 +15,47 @@
 <BaseCrudDialog TItem="CuentaBancariaResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
     <BaseEntityForm TEntity="CuentaBancariaResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando cuenta bancaria..." LoadingSkeletonRows="10">
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedBanco" ValueChanged="value => _selectedBanco = value" Label="Banco" Required="true" LoadPage="LoadBancosPageAsync" />
+            <MudItem xs="12">
+                <CrudFormSection Title="Banco y cuenta">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedBanco" ValueChanged="value => _selectedBanco = value" Label="Banco" Required="true" LoadPage="LoadBancosPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedMoneda" ValueChanged="value => _selectedMoneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" />
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedMoneda" ValueChanged="value => _selectedMoneda = value" Label="Moneda" Required="true" LoadPage="LoadMonedasPageAsync" />
             </MudItem>
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedCuentaContable" ValueChanged="value => _selectedCuentaContable = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasContablesPageAsync" />
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCuentaContable" ValueChanged="value => _selectedCuentaContable = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasContablesPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.NumeroCuenta" Label="Numero de cuenta" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroCuenta" Label="Numero de cuenta" Variant="Variant.Outlined" FullWidth="true" Required="true" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" FullWidth="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" FullWidth="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Titular" Label="Titular" Variant="Variant.Outlined" FullWidth="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Titular" Label="Titular" Variant="Variant.Outlined" FullWidth="true" />
+            </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Saldos y apertura">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.SaldoInicial" Label="Saldo inicial" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudNumericField T="decimal" @bind-Value="item.SaldoInicial" Label="Saldo inicial" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
+                <MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.SaldoActual" Label="Saldo actual" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudNumericField T="decimal" @bind-Value="item.SaldoActual" Label="Saldo actual" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" FullWidth="true" />
+                <MudDatePicker Margin="Margin.Dense" Date="@_fechaAperturaDate" DateChanged="OnFechaAperturaChanged" Label="Fecha de apertura" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="4">
-                <MudDatePicker Date="@_fechaAperturaDate" DateChanged="OnFechaAperturaChanged" Label="Fecha de apertura" Variant="Variant.Outlined" />
+                    </MudGrid>
+                </CrudFormSection>
             </MudItem>
-        </MudGrid>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

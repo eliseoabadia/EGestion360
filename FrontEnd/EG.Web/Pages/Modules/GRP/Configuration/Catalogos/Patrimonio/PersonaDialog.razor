@@ -18,57 +18,73 @@
         @ref="form"
         ShowHeader="true"
         HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave"
+        <CrudFormSection Title="Datos personales">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
             Label="Clave"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Clave)" />
 
-        <MudTextField @bind-Value="item.Nombre"
+            For="@(() => item.Clave)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre"
             Label="Nombre"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
+
             Required="true"
             For="@(() => item.Nombre)" />
-
-        <MudTextField @bind-Value="item.Paterno"
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Paterno"
             Label="Apellido Paterno"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Paterno)" />
 
-        <MudTextField @bind-Value="item.Materno"
+            For="@(() => item.Paterno)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Materno"
             Label="Apellido Materno"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Materno)" />
 
-        <MudTextField @bind-Value="item.Rfc"
+            For="@(() => item.Materno)" />
+                </MudItem>
+            </MudGrid>
+        </CrudFormSection>
+
+        <CrudFormSection Title="Identificadores y contacto">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Rfc"
             Label="RFC"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Rfc)" />
 
-        <MudTextField @bind-Value="item.Curp"
+            For="@(() => item.Rfc)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Curp"
             Label="CURP"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.Curp)" />
 
-        <MudTextField @bind-Value="item.TelefonoMovil"
+            For="@(() => item.Curp)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.TelefonoMovil"
             Label="Teléfono Móvil"
             Variant="Variant.Outlined"
             FullWidth="true"
-            Class="mb-3"
-            For="@(() => item.TelefonoMovil)" />
 
-    </BaseEntityForm>
+            For="@(() => item.TelefonoMovil)" />
+                </MudItem>
+            </MudGrid>
+        </CrudFormSection>
+</BaseEntityForm>
 </BaseCrudDialog>
 
 @code {

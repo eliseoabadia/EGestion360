@@ -1,0 +1,666 @@
+=== DOC-05 | Página 1 ===
+EDT - Proyecto 
+Institucional de 
+Automatización, 
+Compliance y 
+Control Interno
+Capital humano
+Requerimientos funcionales
+Gestionar proceso de Reclutamiento y 
+selección
+Gestionar proceso de reclutamiento
+Gestionar candidatos
+Registrar candidato
+Generar expediente digital
+Aviso de privacidad
+Actualizar datos del 
+candidato
+Actualizar expediente digital
+Consultar expediente
+Dar de baja a candidato
+Consultar historial laboral
+Gestionar vacantes
+Registrar plantilla de difusión
+Registrar vacantes
+Publicar vacantes
+Vincular vacantes con candidatos
+Gestionar proceso de selección
+Filtrar candidatos
+Evaluar curriculums
+Gestionar entrevistas
+Programar entrevista
+Estructuradas
+No estructuradas
+Por competencia
+Otros
+Notificar entrevistas
+Visualizar calendario de entrevistas
+Gestionar pruebas
+Técnicas
+Psicométricas
+Personalida
+d
+Aptitud
+Gestionar referencias laborales
+Registrar referencias
+Actualizar referencias
+Consultar historial de referencias
+Evaluar candidato Herramientas
+Comparativo de candidatos
+entrevistas
+Estructuradas
+No estructuradas
+Por competencia
+Otros
+Test
+Personalida
+d
+Aptitud
+Gestionar Lista no admitidos
+Gestionar proceso de Ingreso
+Gestionar expedente digital
+Dictamen de selección
+Carátula
+Cartas
+Compromiso
+Informativo
+Autorizació
+n
+Código vestimenta
+Aviso de privacidad
+Notificación
+Gestionar autorizaciones
+Accesos
+Correo electrónico institucional
+Alta de huellas
+Credencial
+Gestionar proceso de inducción
+Gestionar programas de inducción
+Registrar programa de inducción
+Generar archivo digital de inducción
+Registrar métricas de evaluación
+Actualizar programa de inducciónActualizar expediente digital
+Consultar programas de inducción
+Dar de baja a programa de inducción
+Generar calendario de inducción
+Inscribir al personal de nuevo ingreso
+Gestionar seguimiento del programa de 
+inducción
+Registrar estatus de programas de inducción
+Registrar evaluaciones del proceso de inducción
+Registrar métricas de 
+inducción
+Gestionar procesos de Talento humano
+Gestionar actualizaciones
+Expedientes Fotos
+Cumpleaños
+Aniversarios
+Bajas
+Motivos de baja
+Entrevistas Salida
+Promociones
+Actas administrativas
+Gestionar Organización y puestos
+Registrar departamentos
+Registrar puestos
+Asignar responsables
+Visualizar organigrama
+Métricas
+Bajas anuales
+Rotación
+Headcount
+Gestionar evaluación de desempeño
+Período de prueba
+Desempeño Faltas/Retardos *
+Encuestas
+Matriz de desarrollo
+Cumplimiento de Normas oficiales mexicanas
+Capacitaciones
+Gestionar programas de capacitación
+Registrar programa de capacitación
+Generar archivo digital de capacitación
+Registrar métricas de evaluación
+Actualizar programa de capacitaciónActualizar expediente digital
+Consultar programas de capacitación
+Dar de baja a programa de capacitación
+Generar calendario de capacitación
+Inscribir al personal
+Gestionar seguimiento del programa de 
+capacitación
+Registrar estatus de programas de capacitación
+Registrar evaluaciones del proceso 
+de capacitación
+Registrar métricas de 
+capacitación
+Indicadores
+Reclutamiento
+Tiempos de contratación
+Costo por contratación
+Calidad de contratación
+Tasa de aceptación de ofertas
+Fuentes de contratación
+Satisfacción del candidato
+Entrevista - oferta
+Tasa de conversión
+Diversidad de contratación
+Talento humano
+Porcentaje de empleados
+Total de bajas por año
+Total de activos
+Total de promociones / cambios
+Porcentaje de organigramas actualizados
+Número de razones de baja
+Número de entrevistas
+Tiempo promedio de inducción
+Porcentaje de empleados evaluados y 
+resultados
+Total de evaluaciones
+Porcentaje de cumplimiento de normas
+Número total de actividades y horas 
+Tasa de retención
+Satisfacción del empleado
+Ausentismo laboral
+Accidentalidad laboral
+Tiempo de capacitación
+Indice de desarrollo interno
+Cumplimiento de seguridad y salud en el 
+trabajo
+Reportes
+Reclutamiento
+Emisión del requerimiento llenado
+Reporte de control de requerimiento
+Repor de  Tiempo de Contratación
+Reporte de Costo por Contratación
+Reporte de Calidad de la Contratación
+Reporte de  Tasa de Aceptación de Ofertas
+Reporte de  Fuentes de Contratación
+Reporte de Satisfacción del Candidat
+Reporte de  Relación Entrevista-Oferta
+Reporte de Tasa de Conversión
+Reporte de  Diversidad en la Contratación
+Emisión del archivo de formato alta de nuevo 
+ingreso
+Talento humano
+Reporte de Tasa de rotación de personal
+Reporte de evaluaciones de desempeño
+Reporte de Tasa de retención de talento
+Reporte de desarrollo de talento humano
+Reporte de inducción de nuevos empleados.
+Reporte de evaluaciones de período de prueba
+Reporte de Satisfacción del empleado
+Reporte de evaluaciones de desempeño.
+Reporte de Absentismo labora
+Reporte de Accidentalidad laboral
+Reporte de Tiempo de capacitación
+Req no funcionales
+Seguridad
+Controles de acceso Usuarios y contraseñas
+Gestionar bitácora de eventos
+Protección de la información
+Autorizaciones
+Gestionar Auditoría de movimientos
+Portabiliad Navegadores web Google crome, Microsoft 
+Edge, Mozila Firefox
+Rendimiento Capacidad de soportar usuarios de los 5 
+campus (al menos 50 usuarios concurrentes)
+Disponibilidad
+Disponibilidad de uso sin fallos en el 97% de los 
+casos de uso
+Capacidad de gestionar errores y recuperarse 
+sin pérdida de datos
+Compatibilidad Permitir el intercambio de información con 
+otros aplicativos Faltas, retardos, asistencia
+Control de requerimientosReq funcionales
+Gestionar adquisición de activos y servicios
+Gestionar solicitudes de compra
+Crear nuevas solicitudes de compra 
+y requerimientos
+Gestionar autorizaciones de compras
+Gestionar cuadro comparativo
+Registrar cotizaciones
+Gstionar prioridades de atención
+Seleccionar proveedor
+Consultar solicitudes
+por estatus (pendientes, rechazadas, 
+concluidas)
+Por fecha
+Enviar solicitudes para aprobación
+Gestionar aprobación de solicitudes
+Generar ordenes de compraAsociar orden de compra con proveedor
+Gestionar trazabilidad del requerimiento
+Consultar estado de solicitudes
+Consultar historial del requerimiento
+Recepción de bienes y serviciosRegistrar recepción de bienes y servicios
+Generar historial de adquisiciones de activos y 
+servicios
+Gestionar inventario
+Registro de activos
+Generar aplicacion móvil para registro 
+de inventario
+Generar código QR
+Generar resguardos digitales
+Registrar fotografías
+Aplicar depreciación
+Actualizar registro de activos
+Aplicar baja de activos
+Solicitar baja de activo
+Gestionar autorizaciones de baja
+Autorizar bajas de activos
+Consultar activos
+Activos en resguardo
+Activos sin resguardo
+Activos dados de baja
+Gestionar resguardos
+Asignar bienes inmuebles
+Traspasar activos
+Gestionar cuentas por pagar
+Gestionar facturación
+Registrar facturasAsociar factura a orden de compra
+Validar facturasEmitir alertamiento de inconsistencias 
+Gestionar notas de crédito
+Registrar notas de crédito
+Aplicar notas de crédito a facturas
+Actualizar saldos
+Gestionar cancelaciones de facturas
+Gestionar aprobación de 
+facturas
+Aprobar facturas
+Rechazar facturas
+Solicitar correcciones de facturas
+Gestionar la programación de pagos
+Programar pagos
+Agrupar pagos en una sola 
+factura
+Reprogramar pagos
+Gestionar la ejecución de pagos
+Registra pagos realizados
+Registrar pagos parcales
+Registrar 
+anticipos
+Generar comprobantes de pago
+Controlar saldos
+Gestionar saldos pendientes
+Consultar saldo por proveedor
+Consultar saldos por fecha
+Gestionar 
+vencimientos
+Consultar facturas 
+vencidas
+Consultar facturas próximas a vencer
+Emitir alertas de vencimientos
+Priorizar pagos por fechas de vencimiento
+Gestionar notificaciones y alertamientos
+Enviar notificaciones
+Solicitudes nuevas
+Solicitudes pendientes
+Aprobaciones y rechazos
+Ordenes de compra generadas
+Generar recordatorios
+Solicitudes pendientes
+Aprobaciones pendientes
+Gestionar alertamientos
+Presupuesto agotado
+Desviaciones presupuestales
+Gestionar viáticos
+Gestionar solicitudes
+Crear nuevas solicitudes de viáticos
+Gestionar autorizaciones de viáticos
+Gstionar prioridades de atención
+Consultar solicitudes de viáticos
+por estatus (pendientes, rechazadas, 
+concluidas)
+Por fecha
+Enviar solicitudes para aprobación
+Gestionar aprobación de solicitudes
+Gestionar aprobación de 
+viáticos
+Aprobar viáticos
+Rechazar solicitudes de viáticos
+Solicitar correcciones a solicitudes de viáticos
+Gestionar la programación de pagos
+Programar pagos
+Reprogramar pagos
+Cancelar pagos
+Gestionar la ejecución de pagos
+Registra pagos realizados
+Registrar 
+anticipos
+Generar comprobantes de pago
+Controlar saldos
+Gestionar saldos pendientes
+Consultar saldo por solicitante
+Consultar saldos por fecha
+Gestionar 
+vencimientos
+Consultar solicitudes vencidas
+Consultar solicitudes próximas a vencer
+Emitir alertas de vencimientos
+Priorizar pagos por fechas de vencimiento
+Gestionar comprobaciones
+Registrar 
+comprobantes
+Validar comprobantes
+Gestionar saldo comprobado
+Consultar comprobaciones realizadas
+Consultar comprobaciones pendientes
+Emitir alertas de vencimiento
+Gestionar caja chica
+Configurar cajas chicas
+Gestionar solicitudes de gastos
+Registrar solicitudes
+Gestionar autorizaciones
+Consultar estatus de solicitudes de gasto
+Generar comprobantes
+Gestionar cancelaciones
+Registrar gastos
+Gestionar comprobaciones de gastos
+Generar comprobantes
+Gestionar cancelaciones
+Aplicar validaciones de presupuesto
+Reposición de caja chica
+Gestionar solicitudes de reposición de fondos
+Gestionar autorizaciones
+Gestionar emisión de cheques
+Gestionar solicitudes de cheques
+Crear nuevas solicitudes
+Gestionar autorizaciones
+Gstionar prioridades de atención
+Consultar solicitudes
+por estatus (pendientes, rechazadas, 
+concluidas)
+Por fecha
+Enviar solicitudes para aprobación
+Gestionar aprobación de solicitudes
+Gestionar aprobación de solicitudes de cheques
+Aprobar solicitudes de cheques
+Rechazar solicitudes de cheques
+Solicitar correcciones a solicitudes de cheques
+Gestionar la programación de emisión de 
+cheques
+Programar emisión de cheques
+Reprogramar emisión de cheques
+Cancelar emisión de 
+cheques
+Gestionar la entrega de cheques
+Registra entrega de cheques
+Generar comprobantes de entrega
+Controlar saldos
+Gestionar saldos pendientes
+Consultar saldo por solicitante
+Consultar saldos por fecha
+Gestionar 
+vencimientos
+Consultar solicitudes vencidas
+Consultar solicitudes próximas a vencer
+Emitir alertas de vencimientos
+Priorizar emisión de cheques por fechas de 
+vencimiento
+Gestionar comprobaciones
+Registrar 
+comprobantes
+Validar comprobantes
+Gestionar saldo comprobado
+Consultar comprobaciones realizadas
+Consultar comprobaciones pendientes
+Emitir alertas de vencimiento
+Gestionar Control presupuestal
+Gestionar presupuesto
+Registrar presupuesto por período fiscal
+Crear partidas presupuestales
+Asignar montos a partidas presupuestales
+Modificar presupuesto antes de 
+aprobación
+Reservar presupuesto
+Bloquear operaciones cuando no exista 
+disponibilidad
+Solicitar ampliaciones de presupuesto
+Solicitar reducciones de presupuesto
+Validar presupuesto
+Solicitar aprobación de presupuesto
+Aprobar o rechazar presupuesto
+Solicitar aprobaciones de ampliaciones
+Aprobar o rechazar ampliaciones
+Solicitar aprobaciones de reducciones de 
+presupuesto
+Aprobar o rechazar reducciones de 
+presupuesto
+Consultar 
+presupuesto
+Presupuesto vigente
+Consultar presupuesto disponible
+Presupuesto por departamento
+Movimiento presupuestales
+Historial de modificaciones
+Ejecutar 
+presupuesto
+Registrar compromisos
+Registrar devengos
+Registrar pagos realizados
+Actualización de saldos
+Consultar porcentaje de ejecución
+Realizar integraciones
+Solciitudes de compra
+Contabilidad
+Generar reportes
+Adquisiciones
+Solicitudes por período
+Compras por proveedor
+Compras por área
+Tiempos de aprobación
+Tiempo promedio de compra
+Slicitudes rechazadas
+Caja chica
+Gastos por período
+Gastos por categoría
+Gestos por departamento
+Gastos por responsable
+Reposiciones realizadas
+Saldos actuales
+Gastos pendientes de 
+comprobación
+Gestos pendientes de autorización
+Historial de movimientos
+Cuentas por pagar
+Estado de cuentas por pagar
+Facturas pendientes
+Facturas vencidas
+Pagos realizados
+Pagos por proveedor
+Control presupuestal
+Presupuesto 
+autorizado
+Presupuesto comprometido
+Presupuesto ejercido
+Presupuesto disponible
+Generar dashboards 
+Control FiscalRequerimientos funcionales
+Gestionar contabilidad
+Gestionar información fiscal
+Gestionar obligaciones fiscales
+Gestionar obligaciones fiscales por 
+contribuyente
+Configurar periodicidad de obligaciones
+Calendarizar fechas de vencimiento
+Gestionar cumplimiento de obligaciones fiscales
+Consultar obligaciones pendientes
+Declaraciones fiscales
+Registrar declaraciones provisionalesControlar versiones de declaraciones
+Registrar declaraciones anualesControlar versiones de declaraciones
+Registrar declaraciones complementariasControlar versiones de declaraciones
+ValidaciónValidar infomración antes del envío
+Consultar historial de declaraciones
+Registrar acuses de recepción
+Gestionar cálculo de impuestos
+Calcular ISR
+Calcular IVA
+Calcular IEPS
+Calcular retenciones
+Aplicar deducciones autorizadas
+Calcular actualizaciones y recargos
+Generar determinación de impuestos
+Gestionar pago de impuestos
+Registrar pagos realizados
+Conciliar pagos contra 
+obligaciones
+Registrar pagos parciales
+Registrar pagos extemporaneos
+Consultar historial de pagos
+Emitir comprobantes de pago
+Gestionar facturas
+Obtener facturas
+Registrar facturas recibidas
+Validar CFDIs
+Cancelar CFDIs
+Consultar historial de facturas
+Relacionar CFDIs con declaraciones
+Gestionar cumplimiento fiscal
+Gestionar auditoria 
+fiscal
+Registrar auditoria fiscal
+Registrar observaciones
+Registrar requerimientos de información
+Dar seguimiento a observaciones
+Registrar observaciones atendidas
+Generar expediente de auditoría
+Multas y sanciones
+Registrar multas
+Calcular recargos
+Registrar sanciones
+Registrar pago de multas
+Consultar hisotrial de multas y sanciones
+Generar Semáforo de cumplimiento
+Gestionar Nómina
+Gestionar contrataciones
+Adendum de contratos
+Docentes
+Gestionar renovaciones
+Gestionar terminos
+Gestionar 
+bajas
+Renuncia
+No renovación
+Recisión
+Envío de nómina
+Gestionar solicitudes de Incapacidades
+Registrar solicitud
+Paternidad
+Lactancia
+Vacaciones
+Actualizar solicitud
+Consultar solicitudes
+Eliminar solicitudes
+Visualizar solicitudes
+Gestionar autorizaciones de solicitudes
+Gestionar saldo
+Gestionar Constancias
+Registrar solicitud
+Laboral
+Prestación de servicios
+Guarderías
+Actualizar solicitud
+Consultar solicitudes
+Eliminar solicitudes
+Visualizar solicitudes
+Gestionar autorizaciones de solicitudes
+Calcular nómina
+Configurar percepciones y deducciones
+Aguinaldo
+Prima vacacional
+Finiquitos
+Calcular impuestos
+Calcular impuestos
+Calcular prestaciones
+Registrar pagos
+Generar recibos de nómina
+Consultar historial de pagos
+Reportes
+Reportes directivos
+Empresas cumplidas
+Empresas con vencimientos
+Obligaciones vencidas
+Obligaciones no aplicables
+Riesgo fiscal por empresa
+Riesgo por responsable
+Cumplimiento mensual, bimestral, anual
+reporte fiscal
+Declaraciones
+Impuestos pagados
+Obligaciones pendientes
+Reporte de auditoria
+Dashboards directivoKPIs
+Nómina
+Personal por área
+ContratosAdendums
+Checklist
+Finiquitos
+Archivo concentrado
+Archivo de nómina
+Reporte de la Precisión de la nómina
+Reporte de Tiempo de procesamiento de la 
+nómina
+Reporte de Costo por empleado
+Reporte de Cumplimiento normativo
+Reporte de Tasa de errores en la nómina
+Reporte de Tiempo de respuesta a consultas de 
+nómina
+Reporte de Rotación de personal
+Reporte de Costo total de la nómina
+Emisión del pago de nomina catedráticos. 
+Archivo excel
+Emisión del pago de nomina administrativos. 
+Archivo Excel
+Emisión del archivo para dispersión de nomina 
+Santander catedráticos
+Emisión del archivo para dispersión de nomina 
+Santander administrativos.
+Configuración y administración
+Gestionar catálogos
+Administrar usuarios
+Crear usuarios
+Editar usuarios
+Eliminar usuarios
+Asignar 
+rol
+Asignar permisos
+Adminitrar roles y permisos
+Crear perfiles
+Ediar perfiles
+Eliminar perfiles
+Gestionar empresas
+Registrar empresaInformación fiscal, bancaria y de contacto
+Editar datos de la empresa
+Eliminar empresa
+Consultar empresa
+Obtener Lista 69-B.
+Gestionar Catálogo corporativo
+Registrar institución
+Editar institución
+Eliminar institución
+Consultar institución
+Gestionar proveedores
+Registrar proveedoresInformación fiscal, bancaria y de contacto
+Editar datos de los 
+proveedores
+Eliminar proveedores
+Consultar proveedores
+Gestionar el Catálogo de activos y servicios
+Registrar bienes y servicios
+Editar bienes y servicios
+Eliminar bienes y servicios
+Consultar bienes y servicios
+Gestionar Auditoría de movimientos
+Eventos de sistema
+Eventos de usuario
+Req no funcionales
+SeguridadGestionar accesos
+PortabiliadNavegadores web Google crome, Microsoft 
+Edge, Mozila Firefox
+RendimientoCapacidad de soportar usuarios de los 5 
+campus (al menos 50 usuarios concurrentes)
+Disponibilidad
+Disponibilidad de uso sin fallos en el 97% de los 
+casos de uso
+Capacidad de gestionar errores y recuperarse 
+sin pérdida de datos
+Atempo
+SAT

@@ -106,7 +106,7 @@ window.egDialogDrag = (function () {
     }
 
     function applyCrudDialogSizing(dialog) {
-        if (!dialog.matches(crudDialogSelector)) {
+        if (!dialog.matches(crudDialogSelector) || dialog.matches('.eae-form-dialog') || dialog.querySelector('.eae-form-dialog')) {
             return;
         }
 

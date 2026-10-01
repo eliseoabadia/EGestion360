@@ -20,7 +20,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -28,7 +28,7 @@
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="item.Color"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Color"
                               Label="Color"
                               Variant="Variant.Outlined"
                               InputType="InputType.Color"
@@ -44,7 +44,7 @@
                 </MudChip>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudNumericField @bind-Value="item.Orden"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.Orden"
                                  Label="Orden"
                                  Variant="Variant.Outlined"
                                  Required="true"
@@ -52,7 +52,7 @@
                                  Max="999" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="item.Icono"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Icono"
                               Label="Icono"
                               Variant="Variant.Outlined"
                               MaxLength="50" />

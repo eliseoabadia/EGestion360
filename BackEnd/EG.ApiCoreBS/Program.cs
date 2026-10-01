@@ -216,7 +216,7 @@ try
         app.UseSwaggerUI();
     }
 
-    if (!app.Environment.IsDevelopment())
+    if (!app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Hosting:UseHttpsRedirection", true))
     {
         app.UseHsts();
         app.UseHttpsRedirection();

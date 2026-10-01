@@ -9,9 +9,9 @@
 <BaseCrudDialog TItem="TipoDoctoClcResponse" Title="@dialogTitle" MaxWidth="MaxWidth.Medium" ActionText="@actionText"
     ProcessingText="@processingText" LoadingMessage="Cargando..." OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoDoctoClcResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Clave)" />
-        <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Nombre)" />
-        <MudTextField @bind-Value="item.TipoRecurso" Label="Tipo Recurso" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.TipoRecurso)" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave" Label="Clave" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Clave)" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" Required="true" For="@(() => item.Nombre)" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.TipoRecurso" Label="Tipo Recurso" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" For="@(() => item.TipoRecurso)" />
     </BaseEntityForm>
 </BaseCrudDialog>
 @code {

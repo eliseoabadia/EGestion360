@@ -15,17 +15,30 @@
 <BaseCrudDialog TItem="PolizaDetalleResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync" MaxWidth="MaxWidth.Medium">
     <BaseEntityForm TEntity="PolizaDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando movimiento contable..." LoadingSkeletonRows="7">
         <MudGrid GutterSize="2">
-            <MudItem xs="12"><PagedAutocomplete Value="@_poliza" ValueChanged="value => _poliza = value" Label="Poliza" Required="true" LoadPage="LoadPolizasPageAsync" /></MudItem>
-            <MudItem xs="12"><PagedAutocomplete Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasPageAsync" /></MudItem>
-            <MudItem xs="12"><PagedAutocomplete Value="@_tipoDetalle" ValueChanged="value => _tipoDetalle = value" Label="Tipo detalle (opcional)" Clearable="true" LoadPage="LoadTiposDetallePageAsync" /></MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Descripcion" Label="Concepto" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
-            <MudItem xs="12" md="6">
-                <MudNumericField T="decimal?" Value="@item.ImporteDebe" ValueChanged="OnDebeChanged" Label="Debe" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
+            <MudItem xs="12">
+                <CrudFormSection Title="Registro contable">
+                    <MudGrid Spacing="2">
+<MudItem xs="12"><PagedAutocomplete Margin="Margin.Dense" Value="@_poliza" ValueChanged="value => _poliza = value" Label="Poliza" Required="true" LoadPage="LoadPolizasPageAsync" /></MudItem>
+            <MudItem xs="12"><PagedAutocomplete Margin="Margin.Dense" Value="@_cuenta" ValueChanged="value => _cuenta = value" Label="Cuenta contable" Required="true" LoadPage="LoadCuentasPageAsync" /></MudItem>
+            <MudItem xs="12"><PagedAutocomplete Margin="Margin.Dense" Value="@_tipoDetalle" ValueChanged="value => _tipoDetalle = value" Label="Tipo detalle (opcional)" Clearable="true" LoadPage="LoadTiposDetallePageAsync" /></MudItem>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion" Label="Concepto" Variant="Variant.Outlined" Lines="2" FullWidth="true" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Importes">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudNumericField Margin="Margin.Dense" T="decimal?" Value="@item.ImporteDebe" ValueChanged="OnDebeChanged" Label="Debe" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudNumericField T="decimal?" Value="@item.ImporteHaber" ValueChanged="OnHaberChanged" Label="Haber" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
+                <MudNumericField Margin="Margin.Dense" T="decimal?" Value="@item.ImporteHaber" ValueChanged="OnHaberChanged" Label="Haber" Variant="Variant.Outlined" Min="0m" Format="0.00" Culture="@NumberCulture" Adornment="Adornment.Start" AdornmentText="@CurrencySymbol" FullWidth="true" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

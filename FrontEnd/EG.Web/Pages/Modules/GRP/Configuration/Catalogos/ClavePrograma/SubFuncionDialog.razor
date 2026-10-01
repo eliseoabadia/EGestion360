@@ -22,7 +22,7 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudSelect T="int" Label="Función"
+                <MudSelect Margin="Margin.Dense" T="int" Label="Función"
                            @bind-Value="item.FkidFnPres"
                            Required="true"
                            RequiredError="La función es requerida"
@@ -34,14 +34,14 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.SubFuncionClave"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.SubFuncionClave"
                               Label="Clave"
                               Variant="Variant.Outlined"
                               Required="true"
                               RequiredError="La clave es requerida" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.SubFuncionDescripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.SubFuncionDescripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
                               Required="true"

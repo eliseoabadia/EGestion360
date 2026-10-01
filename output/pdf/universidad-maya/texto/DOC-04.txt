@@ -1,0 +1,48 @@
+=== DOC-04 | Página 1 ===
+RESUMEN EJECUTIVO 
+ERP DE CUMPLIMIENTO FISCAL Y CONTROL DE 
+OBLIGACIONES 
+Corporativo SINERGIA – Universidad Maya 
+Objetivo General 
+Implementar un Sistema ERP de Cumplimiento Fiscal y Control de Obligaciones que permita 
+automatizar, centralizar y supervisar todas las obligaciones regulatorias, fiscales y 
+administrativas del Corporativo y sus campus. 
+Obligaciones que controlará el ERP 
+• Obligaciones fiscales federales (SAT, IVA, ISR, CFDI, declaraciones). 
+• Obligaciones estatales (impuesto sobre nómina, derechos y refrendos). 
+• Obligaciones municipales (licencias, uso de suelo, predial, permisos). 
+• Protección Civil (dictámenes, programas internos, simulacros, extintores). 
+• Obligaciones laborales y de seguridad social (IMSS, INFONAVIT, REPSE). 
+• Control documental corporativo (actas, poderes, contratos y permisos). 
+Funcionalidades principales 
+• Calendario automático de obligaciones. 
+• Alertas y vencimientos automáticos. 
+• Dashboard ejecutivo. 
+• Trazabilidad institucional. 
+• Resguardo documental digital. 
+• Seguimiento de responsables y evidencias. 
+Beneficios principales 
+• Reducción de riesgos fiscales y regulatorios. 
+• Menor dependencia de Excel y controles manuales. 
+• Mayor supervisión corporativa. 
+• Mejor control interno. 
+• Información en tiempo real. 
+• Reducción de multas y omisiones. 
+• Centralización institucional del cumplimiento. 
+
+=== DOC-04 | Página 2 ===
+Tecnología propuesta 
+• Power Apps. 
+• Power BI. 
+• SQL Server. 
+• SharePoint. 
+• Power Automate. 
+• Microsoft Azure. 
+Resultado esperado 
+El ERP permitirá evolucionar de un modelo manual y reactivo hacia un modelo 
+automatizado, preventivo y supervisado para el control integral de todas las obligaciones 
+fiscales, regulatorias y de cumplimiento institucional. 
+Conclusión 
+La implementación del ERP de Cumplimiento Fiscal y Control de Obligaciones representa 
+una necesidad estructural para fortalecer el control corporativo, reducir riesgos y 
+profesionalizar la supervisión institucional multiempresa y multicampus. 

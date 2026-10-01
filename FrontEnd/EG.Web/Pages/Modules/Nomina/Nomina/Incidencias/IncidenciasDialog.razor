@@ -35,7 +35,7 @@
 						}
 						else
 						{
-							<PagedAutocomplete Value="@selectedEmpleado"
+							<PagedAutocomplete Margin="Margin.Dense" Value="@selectedEmpleado"
 											   ValueChanged="OnEmpleadoChanged"
 											   Label="Buscar empleado"
 											   Required="true"
@@ -78,7 +78,7 @@
 										  Disabled="@IsReadOnly" />
 				</MudItem>
 				<MudItem xs="12" md="4">
-					<MudDatePicker Date="@Fecha"
+					<MudDatePicker Margin="Margin.Dense" Date="@Fecha"
 								   DateChanged="value => Fecha = value"
 								   Label="Fecha"
 								   Variant="Variant.Outlined"
@@ -99,7 +99,7 @@
 				</MudItem>
 
 				<MudItem xs="12">
-					<MudTextField @bind-Value="item.Comentario"
+					<MudTextField Margin="Margin.Dense" @bind-Value="item.Comentario"
 								  Label="Comentario"
 								  Variant="Variant.Outlined"
 								  MaxLength="1000"
@@ -133,7 +133,7 @@
 				</MudItem>
 
 				<MudItem xs="12">
-					<MudTextField @bind-Value="item.ComentarioJustificacion"
+					<MudTextField Margin="Margin.Dense" @bind-Value="item.ComentarioJustificacion"
 								  Label="Comentario de justificación"
 								  Variant="Variant.Outlined"
 								  MaxLength="1000"

@@ -21,13 +21,16 @@
                 OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="InventarioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
         <MudGrid Spacing="2">
-            @if (Id.HasValue)
+            <MudItem xs="12">
+                <CrudFormSection Title="Inventario y calendario">
+                    <MudGrid Spacing="2">
+@if (Id.HasValue)
             {
                 <MudItem xs="12" md="4">
-                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus actual" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.EstatusDescripcion" Label="Estatus actual" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="4" Class="d-flex align-center">
                     <MudSwitch T="bool" Value="@item.Autorizado" Label="Autorizado" Disabled="true" Color="Color.Success" />
@@ -37,13 +40,13 @@
             @if (CalendarId > 0)
             {
                 <MudItem xs="12">
-                    <MudTextField Value="@CalendarDescription" Label="Calendario" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@CalendarDescription" Label="Calendario" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
             else
             {
                 <MudItem xs="12">
-                    <PagedAutocomplete Value="@_selectedCalendario"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCalendario"
                                        ValueChanged="OnCalendarioChanged"
                                        Label="Calendario"
                                        Required="true"
@@ -53,15 +56,21 @@
             }
 
             <MudItem xs="12" md="6">
-                <MudTextField Value="@CurrentStatusLabel"
+                <MudTextField Margin="Margin.Dense" Value="@CurrentStatusLabel"
                               Label="Estatus"
                               Variant="Variant.Outlined"
                               ReadOnly="true"
                               HelperText="El estatus final se asigna únicamente mediante la autorización." />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="_fechaInventario"
+            <MudItem xs="12">
+                <CrudFormSection Title="Responsable y observaciones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaInventario"
                                Label="Fecha inventario"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -69,20 +78,23 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Responsable"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Responsable"
                               Label="Responsable"
                               Variant="Variant.Outlined"
                               MaxLength="250" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="3"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

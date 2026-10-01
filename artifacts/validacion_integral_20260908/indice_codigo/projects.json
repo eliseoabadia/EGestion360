@@ -1,0 +1,100 @@
+[
+  {
+    "Path": "BackEnd/EG.ApiCoreBS/EG.ApiCoreBS.csproj",
+    "Sdk": "Microsoft.NET.Sdk.Web",
+    "Framework": "net10.0",
+    "References": "..\\EG.Application\\EG.Application.csproj; ..\\EG.Common\\EG.Common.csproj; ..\\EG.Logger\\EG.Logger.csproj",
+    "Packages": "FluentValidation.DependencyInjectionExtensions; DevExpress.AspNetCore.Reporting; log4net; Microsoft.ApplicationInsights.AspNetCore; Microsoft.AspNetCore.Authentication.JwtBearer; Microsoft.AspNetCore.OpenApi; OpenTelemetry.Api; Swashbuckle.AspNetCore; Microsoft.EntityFrameworkCore; Microsoft.IdentityModel.Tokens"
+  },
+  {
+    "Path": "BackEnd/EG.Application/EG.Application.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\EG.Business\\EG.Business.csproj; ..\\EG.Common\\EG.Common.csproj; ..\\EG.Domain\\EG.Domain.csproj; ..\\EG.Infraestructure\\EG.Infraestructure.csproj; ..\\EG.Logger\\EG.Logger.csproj",
+    "Packages": "Microsoft.Data.SqlClient; Microsoft.Extensions.Configuration; Microsoft.Extensions.Options"
+  },
+  {
+    "Path": "BackEnd/EG.Business/EG.Business.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\EG.Common\\EG.Common.csproj; ..\\EG.Domain\\EG.Domain.csproj; ..\\EG.Infraestructure\\EG.Infraestructure.csproj",
+    "Packages": "Mapster; Microsoft.Data.SqlClient"
+  },
+  {
+    "Path": "BackEnd/EG.Common/EG.Common.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "",
+    "Packages": "Microsoft.AspNetCore.Http"
+  },
+  {
+    "Path": "BackEnd/EG.Domain/EG.Domain.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\..\\Shared\\EG.Contracts\\EG.Contracts.csproj",
+    "Packages": "Microsoft.Data.SqlClient"
+  },
+  {
+    "Path": "BackEnd/EG.Infraestructure/EG.Infraestructure.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\EG.Common\\EG.Common.csproj; ..\\EG.Domain\\EG.Domain.csproj",
+    "Packages": "Dapper; Microsoft.EntityFrameworkCore.SqlServer; Microsoft.Data.SqlClient"
+  },
+  {
+    "Path": "BackEnd/EG.Logger/EG.Logger.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\EG.Common\\EG.Common.csproj",
+    "Packages": "log4net; Log4NetCore.SqlServer; Microsoft.Extensions.Logging.Log4Net.AspNetCore; Newtonsoft.Json; System.Data.SqlClient"
+  },
+  {
+    "Path": "EG.Builder/EG.Builder.csproj",
+    "Sdk": "Microsoft.NET.Sdk.Web",
+    "Framework": "net10.0",
+    "References": "..\\BackEnd\\EG.Infraestructure\\EG.Infraestructure.csproj",
+    "Packages": ""
+  },
+  {
+    "Path": "FrontEnd/EG.Web/EG.Web.csproj",
+    "Sdk": "Microsoft.NET.Sdk.BlazorWebAssembly",
+    "Framework": "net10.0",
+    "References": "..\\..\\BackEnd\\EG.Common\\EG.Common.csproj; ..\\..\\Shared\\EG.Contracts\\EG.Contracts.csproj",
+    "Packages": "Microsoft.AspNetCore.Components.Authorization; Microsoft.AspNetCore.Components.WebAssembly; Microsoft.AspNetCore.Components.WebAssembly.DevServer; Microsoft.Extensions.Http; MiniExcel; MudBlazor"
+  },
+  {
+    "Path": "Shared/EG.Contracts/EG.Contracts.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "",
+    "Packages": ""
+  },
+  {
+    "Path": "Tests/EG.UnidTest/EG.UnidTest.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\..\\BackEnd\\EG.ApiCoreBS\\EG.ApiCoreBS.csproj; ..\\..\\BackEnd\\EG.Business\\EG.Business.csproj; ..\\..\\BackEnd\\EG.Common\\EG.Common.csproj; ..\\..\\BackEnd\\EG.Domain\\EG.Domain.csproj",
+    "Packages": "coverlet.collector; Microsoft.NET.Test.Sdk; xunit; xunit.runner.visualstudio"
+  },
+  {
+    "Path": "Tools/CertificadoDeploy/EGestion360.CertificateRepair/EGestion360.CertificateRepair.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net8.0-windows",
+    "References": "",
+    "Packages": ""
+  },
+  {
+    "Path": "Tools/DeployLocalInstaller/Installer.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "",
+    "Packages": ""
+  },
+  {
+    "Path": "Tools/StressTest/EgestionStressRunner/EgestionStressRunner.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "",
+    "Packages": ""
+  }
+]

@@ -19,7 +19,7 @@
                     @ref="form"
                     ShowHeader="true"
                     HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Cuenta"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Cuenta"
                       Label="Cuenta"
                       Variant="Variant.Outlined"
                       Adornment="Adornment.Start"
@@ -29,7 +29,7 @@
                       Required="true"
                       For="@(() => item.Cuenta)" />
 
-        <MudTextField @bind-Value="item.Descripcion"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                       Label="Descripción"
                       Variant="Variant.Outlined"
                       Adornment="Adornment.Start"

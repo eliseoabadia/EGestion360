@@ -40,46 +40,46 @@
 
             <MudGrid GutterSize="2">
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.Clave"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Clave"
                               Label="Clave"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               Required="true"
                               RequiredError="La clave es requerida"
                               MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="2">
-                <MudTextField @bind-Value="item.Rfc"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Rfc"
                               Label="RFC"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               Required="true"
                               RequiredError="El RFC es requerido"
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="7">
-                <MudTextField @bind-Value="item.Nombre"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre"
                               Label="Nombre"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               Required="true"
                               RequiredError="El nombre es requerido"
                               MaxLength="500" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <PagedAutocomplete Value="@_selectedTipo"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipo"
                                    ValueChanged="value => _selectedTipo = value"
                                    Label="Tipo de proveedor"
-                                   Margin="Margin.Dense"
+
                                    Required="true"
                                    RequiredError="El tipo de proveedor es requerido"
                                    LoadPage="LoadTiposPageAsync" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <PagedAutocomplete Value="@_selectedEstatus"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedEstatus"
                                    ValueChanged="value => _selectedEstatus = value"
                                    Label="Estatus"
-                                   Margin="Margin.Dense"
+
                                    Required="true"
                                    RequiredError="El estatus es requerido"
                                    LoadPage="LoadEstatusPageAsync" />
@@ -100,10 +100,10 @@
 
             <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedCuentaAuxiliar"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedCuentaAuxiliar"
                                    ValueChanged="value => _selectedCuentaAuxiliar = value"
                                    Label="Auxiliar contable de proveedores por pagar (2.1.1.2)"
-                                   Margin="Margin.Dense"
+
                                    Clearable="true"
                                    LoadPage="LoadCuentasAuxiliaresPageAsync" />
                 <MudText Typo="Typo.caption" Class="proveedor-field-help">
@@ -126,68 +126,68 @@
 
             <MudGrid GutterSize="2">
             <MudItem xs="12" sm="8">
-                <MudTextField @bind-Value="item.Calle"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Calle"
                               Label="Calle"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="2">
-                <MudTextField @bind-Value="item.Numero"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Numero"
                               Label="Número"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="2">
-                <MudTextField @bind-Value="item.NumeroInt"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroInt"
                               Label="Núm. interior"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="5">
-                <MudTextField @bind-Value="item.Colonia"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Colonia"
                               Label="Colonia"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="2">
-                <MudTextField @bind-Value="item.Cp"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Cp"
                               Label="Código postal"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="5">
-                <MudTextField @bind-Value="item.Ciudad"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Ciudad"
                               Label="Ciudad"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <PagedAutocomplete Value="@_selectedPais"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPais"
                                    ValueChanged="OnPaisChanged"
                                    Label="País"
-                                   Margin="Margin.Dense"
+
                                    Required="true"
                                    LoadPage="LoadPaisesPageAsync" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <PagedAutocomplete Value="@_selectedEstado"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedEstado"
                                    ValueChanged="OnEstadoChanged"
                                    Label="Estado"
-                                   Margin="Margin.Dense"
+
                                    Required="true"
                                    LoadPage="LoadEstadosPageAsync" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <PagedAutocomplete Value="@_selectedMunicipio"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedMunicipio"
                                    ValueChanged="value => _selectedMunicipio = value"
                                    Label="Municipio"
-                                   Margin="Margin.Dense"
+
                                    Required="true"
                                    LoadPage="LoadMunicipiosPageAsync" />
             </MudItem>
@@ -207,33 +207,33 @@
 
             <MudGrid GutterSize="2">
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Email"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Email"
                               Label="Email"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               Required="true"
                               RequiredError="El email es requerido"
                               MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.TelefonoInstitucional"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.TelefonoInstitucional"
                               Label="Teléfono"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="20" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.PaginaWeb"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.PaginaWeb"
                               Label="Página web"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="100" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Notas"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Notas"
                               Label="Notas"
                               Variant="Variant.Outlined"
-                              Margin="Margin.Dense"
+
                               MaxLength="500"
                               Lines="2" />
             </MudItem>

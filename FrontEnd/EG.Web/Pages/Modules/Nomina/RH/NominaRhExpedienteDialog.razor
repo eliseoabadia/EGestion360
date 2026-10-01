@@ -20,7 +20,10 @@
         </MudAlert>
 
         <MudGrid GutterSize="2">
-            <MudItem xs="12" md="4">
+            <MudItem xs="12">
+                <CrudFormSection Title="Documento del expediente">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
                 <NominaRhLookupSelect Value="@item.FkidTipoExpedienteNom"
                                       ValueChanged="value => item.FkidTipoExpedienteNom = value"
                                       Catalogo="TipoExpediente"
@@ -29,7 +32,7 @@
                                       Required="true" />
             </MudItem>
             <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.NombreDocumento"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NombreDocumento"
                               Label="Nombre del documento"
                               Variant="Variant.Outlined"
                               MaxLength="255"
@@ -65,14 +68,21 @@
                     </MudAlert>
                 }
             </MudItem>
-            <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="FechaExpedicion"
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas y descripción">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="FechaExpedicion"
                                Label="Fecha de expedicion"
                                Variant="Variant.Outlined"
                                DateFormat="dd/MM/yyyy" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripcion"
                               Variant="Variant.Outlined"
                               MaxLength="1000"
@@ -96,7 +106,7 @@
                 </MudSwitch>
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="FechaRenovacion"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="FechaRenovacion"
                                Label="Fecha de renovacion"
                                Variant="Variant.Outlined"
                                DateFormat="dd/MM/yyyy"
@@ -109,7 +119,10 @@
                                    UsuarioModificacion="@item.UsuarioModificacion"
                                    FechaModificacion="@item.FechaModificacion" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

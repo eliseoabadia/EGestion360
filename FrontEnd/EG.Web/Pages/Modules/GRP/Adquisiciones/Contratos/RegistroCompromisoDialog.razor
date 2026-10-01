@@ -34,13 +34,16 @@
                     HeaderTitle="@Title">
         <MudGrid Spacing="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Origen del compromiso">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
                     Selecciona la orden de compra y el formulario completa proveedor, empresa, descripcion base y monto para registrar el compromiso.
                 </MudAlert>
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedOrdenCompra"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedOrdenCompra"
                                    ValueChanged="OnOrdenCompraChanged"
                                    Label="Orden de compra*"
                                    Required="true"
@@ -48,31 +51,31 @@
                                    LoadPage="LoadOrdenesCompraPageAsync" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudTextField Value="@EmpresaText" Label="Empresa" Variant="Variant.Outlined" ReadOnly="true" />
+                <MudTextField Margin="Margin.Dense" Value="@EmpresaText" Label="Empresa" Variant="Variant.Outlined" ReadOnly="true" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudTextField Value="@ProveedorText" Label="Proveedor" Variant="Variant.Outlined" ReadOnly="true" />
+                <MudTextField Margin="Margin.Dense" Value="@ProveedorText" Label="Proveedor" Variant="Variant.Outlined" ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="3">
-                <MudTextField @bind-Value="item.Numero" Label="Numero" Variant="Variant.Outlined" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Numero" Label="Numero" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaContrato"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaContrato"
                                Label="Fecha contrato*"
                                Variant="Variant.Outlined"
                                Required="true"
                                RequiredError="La fecha del contrato es requerida" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaRecepcion" Label="Recepcion" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaRecepcion" Label="Recepcion" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaFirma" Label="Firma" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaFirma" Label="Firma" Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripcion*"
                               Variant="Variant.Outlined"
                               Required="true"
@@ -80,9 +83,15 @@
                               MaxLength="500"
                               RequiredError="La descripcion es requerida" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedTipoContrato"
+            <MudItem xs="12">
+                <CrudFormSection Title="Clasificación del contrato">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoContrato"
                                    ValueChanged="value => _selectedTipoContrato = value"
                                    Label="Tipo de contrato*"
                                    Required="true"
@@ -90,7 +99,7 @@
                                    LoadPage="LoadTiposContratoPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedTipoDocumento"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedTipoDocumento"
                                    ValueChanged="value => _selectedTipoDocumento = value"
                                    Label="Tipo de documento*"
                                    Required="true"
@@ -98,7 +107,7 @@
                                    LoadPage="LoadTiposDocumentoPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedArea"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArea"
                                    ValueChanged="value => _selectedArea = value"
                                    Label="Area*"
                                    Required="true"
@@ -107,7 +116,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedModalidad"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedModalidad"
                                    ValueChanged="value => _selectedModalidad = value"
                                    Label="Modalidad*"
                                    Required="true"
@@ -115,7 +124,7 @@
                                    LoadPage="LoadModalidadesPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedProcedimiento"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProcedimiento"
                                    ValueChanged="OnProcedimientoChanged"
                                    Label="Procedimiento*"
                                    Required="true"
@@ -123,7 +132,7 @@
                                    LoadPage="LoadProcedimientosPageAsync" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedGarantia"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedGarantia"
                                    ValueChanged="value => _selectedGarantia = value"
                                    Label="Tipo garantia*"
                                    Required="true"
@@ -132,22 +141,28 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedArticulo"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArticulo"
                                    ValueChanged="OnArticuloChanged"
                                    Label="Articulo"
                                    Clearable="true"
                                    LoadPage="LoadArticulosPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedFraccion"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedFraccion"
                                    ValueChanged="value => _selectedFraccion = value"
                                    Label="Fraccion"
                                    Clearable="true"
                                    LoadPage="LoadFraccionesPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="3">
-                <MudNumericField T="decimal"
+            <MudItem xs="12">
+                <CrudFormSection Title="Importes y vigencia">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3">
+                <MudNumericField Margin="Margin.Dense" T="decimal"
                                  @bind-Value="item.MontoMinimo"
                                  Label="Monto minimo*"
                                  Variant="Variant.Outlined"
@@ -157,7 +172,7 @@
                                  Required="true" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudNumericField T="decimal"
+                <MudNumericField Margin="Margin.Dense" T="decimal"
                                  @bind-Value="item.MontoMaximo"
                                  Label="Monto maximo*"
                                  Variant="Variant.Outlined"
@@ -167,43 +182,52 @@
                                  Required="true" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               @bind-Value="item.Penalizacion"
                               Label="Penalización / cláusula"
                               Variant="Variant.Outlined"
                               MaxLength="100" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <MudTextField Value="@Money(item.MontoMaximo)" Label="Total compromiso" Variant="Variant.Outlined" ReadOnly="true" />
+                <MudTextField Margin="Margin.Dense" Value="@Money(item.MontoMaximo)" Label="Total compromiso" Variant="Variant.Outlined" ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaVigenciaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaVigenciaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaVigenciaFin" Label="Fin vigencia" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaVigenciaFin" Label="Fin vigencia" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" />
+            </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
             </MudItem>
 
+            <MudItem xs="12">
+                <CrudFormSection Title="Fundamento y sesiones">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="6">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.FundamentoJuridico" Label="Fundamento juridico" Variant="Variant.Outlined" Lines="2" />
+            </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.FundamentoJuridico" Label="Fundamento juridico" Variant="Variant.Outlined" Lines="2" />
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Justificacion" Label="Justificacion" Variant="Variant.Outlined" Lines="2" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Justificacion" Label="Justificacion" Variant="Variant.Outlined" Lines="2" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.SesionSubcomite" Label="Sesion subcomite" Variant="Variant.Outlined" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.SesionSubcomite" Label="Sesion subcomite" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudSwitch T="bool" @bind-Value="item.IsSesionExtraordinaria" Label="Sesion extraordinaria" Color="Color.Primary" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaSesionSubcomite" Label="Fecha subcomite" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSesionSubcomite" Label="Fecha subcomite" Variant="Variant.Outlined" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

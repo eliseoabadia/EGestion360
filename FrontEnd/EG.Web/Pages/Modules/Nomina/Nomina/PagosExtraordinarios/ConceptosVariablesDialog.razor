@@ -29,7 +29,7 @@
                     </MudAvatar>
                     <div class="crud-form-context-entity">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Empleado</MudText>
-                        <PagedAutocomplete Value="@selectedEmpleado"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@selectedEmpleado"
                                            ValueChanged="OnEmpleadoChanged"
                                            Label="Buscar empleado"
                                            Required="true"
@@ -49,9 +49,9 @@
                 </div>
             </div>
 
-            <MudGrid GutterSize="2">
+            <CrudFormSection Title="Concepto e importe"><MudGrid GutterSize="2">
                 <MudItem xs="12" md="4">
-                    <PagedAutocomplete Value="@selectedConcepto"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@selectedConcepto"
                                        ValueChanged="OnConceptoChanged"
                                        Label="Concepto"
                                        Required="true"
@@ -61,7 +61,7 @@
                                        PageSize="25" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <PagedAutocomplete Value="@selectedPeriodo"
+                    <PagedAutocomplete Margin="Margin.Dense" Value="@selectedPeriodo"
                                        ValueChanged="OnPeriodoChanged"
                                        Label="Periodo"
                                        Required="true"
@@ -71,7 +71,7 @@
                                        PageSize="25" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudNumericField T="decimal"
+                    <MudNumericField Margin="Margin.Dense" T="decimal"
                                      @bind-Value="item.Importe"
                                      Label="Importe"
                                      Variant="Variant.Outlined"
@@ -84,7 +84,7 @@
                 </MudItem>
 
                 <MudItem xs="12" md="12">
-                    <MudTextField @bind-Value="item.Referencia"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="item.Referencia"
                                   Label="Referencia"
                                   Variant="Variant.Outlined"
                                   MaxLength="250"
@@ -100,7 +100,7 @@
                                            FechaModificacion="@item.FechaModificacion" />
                     </MudItem>
                 }
-            </MudGrid>
+            </MudGrid></CrudFormSection>
         </section>
     </BaseEntityForm>
 </BaseCrudDialog>

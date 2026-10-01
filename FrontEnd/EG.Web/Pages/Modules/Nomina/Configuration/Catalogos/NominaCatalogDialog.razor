@@ -45,14 +45,18 @@
                     HeaderTitle="@dialogTitle"
                     CatalogMode="true">
 
-        <MudGrid GutterSize="2">
-            @foreach (var property in EditableProperties)
+        <div class="crud-form-layout">
+        @foreach (var fieldGroup in CrudFieldLayout.Group(EditableProperties, property => property.Name))
+        {
+            <CrudFormSection Title="@fieldGroup.Title" Enabled="@fieldGroup.ShowHeading">
+                <MudGrid GutterSize="2">
+            @foreach (var property in fieldGroup.Fields)
             {
                 var lookup = GetLookupConfig(property);
                 <MudItem xs="12" sm="6">
                     @if (lookup is not null)
                     {
-                        <PagedAutocomplete Value="@GetLookupValue(property)"
+                        <PagedAutocomplete Margin="Margin.Dense" Value="@GetLookupValue(property)"
                                            ValueChanged="@((LookupItem? value) => SetLookupValue(property, value))"
                                            Label="@GetLabel(property)"
                                            Required="@IsRequired(property)"
@@ -73,7 +77,7 @@
                     }
                     else
                     {
-                        <MudTextField T="string"
+                        <MudTextField Margin="Margin.Dense" T="string"
                                       Value="@GetTextValue(property)"
                                       ValueChanged="@((string value) => SetTextValue(property, value))"
                                       Label="@GetLabel(property)"
@@ -85,6 +89,9 @@
                 </MudItem>
             }
         </MudGrid>
+            </CrudFormSection>
+        }
+        </div>
     </BaseEntityForm>
 </BaseCrudDialog>
 

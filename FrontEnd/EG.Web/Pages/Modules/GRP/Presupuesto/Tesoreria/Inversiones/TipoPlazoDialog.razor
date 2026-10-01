@@ -8,8 +8,8 @@
 
 <BaseCrudDialog TItem="TipoPlazoResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="TipoPlazoResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando tipo de plazo..." LoadingSkeletonRows="3">
-        <MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Required="true" />
-        <MudNumericField T="int" @bind-Value="item.Dias" Label="Dias" Min="1" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion" Label="Descripcion" Variant="Variant.Outlined" FullWidth="true" Required="true" />
+        <MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.Dias" Label="Dias" Min="1" Variant="Variant.Outlined" FullWidth="true" Class="mt-2" />
     </BaseEntityForm>
 </BaseCrudDialog>
 

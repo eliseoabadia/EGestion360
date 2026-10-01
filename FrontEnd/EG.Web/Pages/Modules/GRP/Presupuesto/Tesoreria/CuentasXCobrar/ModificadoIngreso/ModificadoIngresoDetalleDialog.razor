@@ -18,27 +18,30 @@
     <BaseEntityForm TEntity="IngreAdecuacionDetalleResponse" @ref="form" ShowHeader="true" HeaderTitle="@DialogTitle">
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_ingreso"
+                <CrudFormSection Title="Origen y movimiento">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_ingreso"
                                    ValueChanged="OnIngresoChanged"
                                    Label="Ingreso autorizado disponible"
                                    Required="true"
                                    LoadPage="LoadIngresosPageAsync" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudDatePicker Date="@_fecha"
+                <MudDatePicker Margin="Margin.Dense" Date="@_fecha"
                                DateChanged="value => _fecha = value"
                                Label="Fecha"
                                Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               Value="@TipoTexto"
                               Label="Tipo de movimiento"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField T="string"
+                <MudTextField Margin="Margin.Dense" T="string"
                               @bind-Value="item.Justificacion"
                               Label="Justificacion del movimiento"
                               Variant="Variant.Outlined"
@@ -46,10 +49,11 @@
                               MaxLength="1000" />
             </MudItem>
 
-            @foreach (var month in MonthFields)
+            <MudItem xs="12"><CrudFormSection Title="Distribución mensual"><MudGrid Spacing="2">
+@foreach (var month in MonthFields)
             {
                 <MudItem xs="6" sm="4" md="2">
-                    <MudNumericField T="decimal"
+                    <MudNumericField Margin="Margin.Dense" T="decimal"
                                      Value="@GetMonth(month.Index)"
                                      ValueChanged="value => SetMonth(month.Index, value)"
                                      Label="@month.Label"
@@ -59,6 +63,7 @@
                                      Culture="@NumberCulture" />
                 </MudItem>
             }
+</MudGrid></CrudFormSection></MudItem>
 
             <MudItem xs="12">
                 <MudPaper Elevation="0" Class="pa-3" Style="border:1px solid var(--mud-palette-lines-default);border-radius:8px;">
@@ -78,7 +83,10 @@
                     </MudGrid>
                 </MudPaper>
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

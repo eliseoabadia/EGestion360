@@ -40,8 +40,11 @@ ShowHeader="true"
 HeaderTitle="@dialogTitle">
 
 <MudGrid GutterSize="2">
+            <MudItem xs="12">
+                <CrudFormSection Title="Datos del programa">
+                    <MudGrid Spacing="2">
 <MudItem xs="12">
-<MudTextField @bind-Value="item.Descripcion"
+<MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
 Label="Descripción"
 Variant="Variant.Outlined"
 Required="true"
@@ -49,7 +52,7 @@ RequiredError="La descripción es requerida" />
 </MudItem>
 
 <MudItem xs="12" md="6">
-<PagedAutocomplete Value="@_selectedArea"
+<PagedAutocomplete Margin="Margin.Dense" Value="@_selectedArea"
 ValueChanged="value => _selectedArea = value"
 Label="Área"
 Required="true"
@@ -58,7 +61,7 @@ LoadPage="LoadAreasPageAsync" />
 </MudItem>
 
 <MudItem xs="12" md="6">
-<PagedAutocomplete Value="@_selectedPersona"
+<PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPersona"
 ValueChanged="value => _selectedPersona = value"
 Label="Responsable"
 Required="true"
@@ -66,15 +69,21 @@ LoadPage="LoadPersonasPageAsync" />
 </MudItem>
 
 <MudItem xs="12" md="6">
-<MudDatePicker @bind-Date="_fecha"
+<MudDatePicker Margin="Margin.Dense" @bind-Date="_fecha"
 Label="Fecha"
 Variant="Variant.Outlined"
 Required="true"
 RequiredError="La fecha es requerida" />
 </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
+            <MudItem xs="12">
+                <CrudFormSection Title="Asignación presupuestal">
+                    <MudGrid Spacing="2">
 <MudItem xs="12" md="6">
-<PagedAutocomplete Value="@_selectedProyecto"
+<PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProyecto"
 ValueChanged="value => _selectedProyecto = value"
 Label="Proyecto"
 Clearable="true"
@@ -82,7 +91,7 @@ LoadPage="LoadProyectosPageAsync" />
 </MudItem>
 
 <MudItem xs="12" md="6">
-<PagedAutocomplete Value="@_selectedPrograma"
+<PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPrograma"
 ValueChanged="value => _selectedPrograma = value"
 Label="Programa"
 Clearable="true"
@@ -90,7 +99,7 @@ LoadPage="LoadProgramasPageAsync" />
 </MudItem>
 
 <MudItem xs="12">
-<PagedAutocomplete Value="@_selectedFuente"
+<PagedAutocomplete Margin="Margin.Dense" Value="@_selectedFuente"
 ValueChanged="value => _selectedFuente = value"
 Label="Fuente de Financiamiento"
 Clearable="true"
@@ -98,12 +107,14 @@ LoadPage="LoadFuentesPageAsync" />
 </MudItem>
 
 <MudItem xs="12">
-<MudTextField @bind-Value="item.Observaciones"
+<MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
 Label="Observaciones"
 Variant="Variant.Outlined"
 Lines="3" />
 </MudItem>
-
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 </MudGrid>
 </BaseEntityForm>
 }

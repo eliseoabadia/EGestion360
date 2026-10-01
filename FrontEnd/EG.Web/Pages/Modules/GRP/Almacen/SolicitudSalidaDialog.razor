@@ -23,18 +23,21 @@
                 OnConfirm="GuardarCambiosAsync">
     <BaseEntityForm TEntity="SolicitudSalidaResponse" @ref="form" ShowHeader="false">
         <MudGrid Spacing="2">
-            @if (Id.HasValue)
+            <MudItem xs="12">
+                <CrudFormSection Title="Solicitud y responsables">
+                    <MudGrid Spacing="2">
+@if (Id.HasValue)
             {
                 <MudItem xs="12" md="6">
-                    <MudTextField Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.Folio" Label="Folio" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedAreaSolicita"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedAreaSolicita"
                                    ValueChanged="value => _selectedAreaSolicita = value"
                                    Label="Area solicitante"
                                    Required="true"
@@ -43,7 +46,7 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <PagedAutocomplete Value="@_selectedAreaEntrega"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedAreaEntrega"
                                    ValueChanged="value => _selectedAreaEntrega = value"
                                    Label="Area que entrega"
                                    Required="true"
@@ -52,16 +55,22 @@
             </MudItem>
 
             <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="item.Solicitante"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Solicitante"
                               Label="Solicitante"
                               Variant="Variant.Outlined"
                               Required="true"
                               RequiredError="El solicitante es requerido"
                               MaxLength="250" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaSolicitud"
+            <MudItem xs="12">
+                <CrudFormSection Title="Fechas y justificación">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSolicitud"
                                Label="Solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -69,13 +78,13 @@
             </MudItem>
 
             <MudItem xs="12" md="3">
-                <MudDatePicker @bind-Date="_fechaRequerida"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaRequerida"
                                Label="Requerida"
                                Variant="Variant.Outlined" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Justificacion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Justificacion"
                               Label="Justificacion"
                               Variant="Variant.Outlined"
                               Lines="3"
@@ -85,13 +94,16 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Observaciones"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones"
                               Label="Observaciones"
                               Variant="Variant.Outlined"
                               Lines="2"
                               MaxLength="1000" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

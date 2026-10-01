@@ -1,0 +1,426 @@
+{
+  "E01": {
+    "title": "Organización",
+    "short": "Catálogos de empresas y sucursales; contexto por empresa.",
+    "detail": "Los servicios permiten administrar empresas y sucursales. Su equivalencia con campus y la consolidación corporativa requieren configuración y pruebas.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/General/EmpresaAppService.cs",
+        "line": 215,
+        "sha": "8dd65458366e"
+      },
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/General/SucursalAppService.cs",
+        "line": 98,
+        "sha": "0f1f49cdb5e9"
+      }
+    ]
+  },
+  "E02": {
+    "title": "Proveedores y artículos",
+    "short": "Servicios de proveedores y artículos.",
+    "detail": "Existe base de catálogos de adquisiciones. Esto no acredita validación SAT, evaluación de riesgo ni expediente bancario corporativo completo.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Adquisicion/ProveedorAppService.cs",
+        "line": 13,
+        "sha": "b8f6e4bdb102"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Adquisicion/ArticuloAppService.cs",
+        "line": 11,
+        "sha": "bfccc74b4aa8"
+      }
+    ]
+  },
+  "E03": {
+    "title": "Usuarios y autorización",
+    "short": "Administración de acceso y permisos por política.",
+    "detail": "Hay administración de acceso y autorización por permisos. La segregación por transacción necesita reglas de incompatibilidad; el tratamiento de SuperAdmin debe acordarse.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/AccessConfiguration/AccessConfigurationAppService.cs",
+        "line": 13,
+        "sha": "b5f66f669276"
+      },
+      {
+        "path": "BackEnd/EG.ApiCoreBS/Auth/PermissionAuthorizationHandler.cs",
+        "line": 25,
+        "sha": "833797f8f05e"
+      }
+    ]
+  },
+  "E04": {
+    "title": "Requisiciones y flujo",
+    "short": "Requisición con contexto, estados y controles SQL.",
+    "detail": "Creación y edición de requisiciones, protección del flujo y scripts con folio y validaciones entre documentos. Se debe verificar que los objetos SQL estén desplegados.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Adquisicion/RequisicionAppService.cs",
+        "line": 39,
+        "sha": "9e99197723d4"
+      },
+      {
+        "path": "Scripts/20260728_FlujoRequisicionHastaCheque.sql",
+        "line": 228,
+        "sha": "10ba4fc8a60a"
+      }
+    ]
+  },
+  "E05": {
+    "title": "Cotizaciones y órdenes",
+    "short": "Cotizaciones, investigación de mercado y órdenes.",
+    "detail": "Las cotizaciones registran condiciones y la interfaz de investigación de mercado compara ofertas. La orden usa procedimientos de mantenimiento; faltan criterios corporativos de riesgo fiscal.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Adquisicion/CotizacionAppService.cs",
+        "line": 72,
+        "sha": "16ef56d6bbdf"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Adquisicion/OrdenCompraAppService.cs",
+        "line": 69,
+        "sha": "ece28c30b470"
+      },
+      {
+        "path": "FrontEnd/EG.Web/Pages/Modules/GRP/Presupuesto/Egreso/Investigacion_Mercado.razor",
+        "line": 287,
+        "sha": "8a30718e5016"
+      }
+    ]
+  },
+  "E06": {
+    "title": "Presupuesto",
+    "short": "Anteproyecto, suficiencia y adecuaciones presupuestales.",
+    "detail": "Existen validación de disponibilidad y movimientos presupuestales con workflow. Los clasificadores y momentos gubernamentales deben traducirse al modelo de la institución.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Configuracion/Catalogo/Presupuestales/EgresoProyectadoAppService.cs",
+        "line": 41,
+        "sha": "59c15c8c28a4"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/PresupuestoComprometido/PresupuestoComprometidoServices.cs",
+        "line": 50,
+        "sha": "c97f69292719"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/PresupuestoModificado/PresupuestoModificadoServices.cs",
+        "line": 173,
+        "sha": "c36a599a0ef8"
+      }
+    ]
+  },
+  "E07": {
+    "title": "Recepción de almacén",
+    "short": "Recepción vinculada al detalle de orden de compra.",
+    "detail": "El movimiento ajusta la recepción de la orden dentro de una transacción. Se requiere validar recepción parcial, reversas y aceptación de servicios.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Almacen/AlmacenAppService.cs",
+        "line": 90,
+        "sha": "75f6f0148545"
+      },
+      {
+        "path": "FrontEnd/EG.Web/Pages/Modules/GRP/Almacen/Recepcion_Pedidos.razor",
+        "line": 1,
+        "sha": "86e1f881a266"
+      }
+    ]
+  },
+  "E08": {
+    "title": "Facturas y pagos",
+    "short": "Factura, CLC y cheque con validaciones locales.",
+    "detail": "Valida contrato, importes, contexto y UUID informado. El cheque exige el importe de la CLC y controla duplicidad por CLC. CLC significa cuenta por liquidar certificada y requiere adaptación al lenguaje corporativo.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/CuentasXPagar/CuentasXPagarServices.cs",
+        "line": 143,
+        "sha": "e9185c2eae4c"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/CuentasXPagar/CuentasXPagarServices.cs",
+        "line": 911,
+        "sha": "e9185c2eae4c"
+      },
+      {
+        "path": "BackEnd/EG.ApiCoreBS/Controllers/Modules/GRP/CuentasXPagar/CuentasXPagarControllers.cs",
+        "line": 116,
+        "sha": "184d2fb90a71"
+      }
+    ]
+  },
+  "E09": {
+    "title": "Catálogos de tesorería",
+    "short": "Cuentas bancarias, CLABE y provisión de importes.",
+    "detail": "El almacenamiento de CLABE y la consulta de provisiones no acreditan conectividad bancaria, validación de titularidad o calendario automático de pagos.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Configuracion/Catalogo/Tesoreria/InversionesServices.cs",
+        "line": 79,
+        "sha": "fa8023ab3da3"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Configuracion/Catalogo/Tesoreria/ProvisionPagoImporteAppService.cs",
+        "line": 9,
+        "sha": "235d334e40e2"
+      }
+    ]
+  },
+  "E10": {
+    "title": "Bienes e inventarios",
+    "short": "Bienes, recepción patrimonial, inventarios y diferencias.",
+    "detail": "El servicio de bienes permite generar activos desde detalle de orden y registrar recepción. Hay calendario, inventario y cédula de diferencias como base del control físico.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/BienAppService.cs",
+        "line": 221,
+        "sha": "8fe4c911b3e1"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/InventarioAppService.cs",
+        "line": 15,
+        "sha": "a3db04264c80"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/CedulaDiferenciasAppService.cs",
+        "line": 10,
+        "sha": "be546e7f8565"
+      }
+    ]
+  },
+  "E11": {
+    "title": "Custodia de bienes",
+    "short": "Resguardos y movimientos de asignación y liberación.",
+    "detail": "Existen encabezado, detalle y movimientos de custodia. No se acredita un flujo completo de traspaso autorizado ni un expediente especializado de inmuebles.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/ResguardoAppService.cs",
+        "line": 67,
+        "sha": "dbdf73ae9af6"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/ResguardoDetalleAppService.cs",
+        "line": 146,
+        "sha": "34dd613b0955"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/ResguardoDetalleAppService.cs",
+        "line": 251,
+        "sha": "34dd613b0955"
+      }
+    ]
+  },
+  "E12": {
+    "title": "Bajas patrimoniales",
+    "short": "Bajas con validaciones y aplicación controlada.",
+    "detail": "El servicio controla motivos, estado y aplicación. Se debe adaptar la autorización y desacoplar referencias laborales cuando el responsable del resguardo dependa de ellas.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/BajaAppService.cs",
+        "line": 73,
+        "sha": "0c0845086e09"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Patrimonio/BajaAppService.cs",
+        "line": 438,
+        "sha": "0c0845086e09"
+      }
+    ]
+  },
+  "E13": {
+    "title": "Soporte documental",
+    "short": "Carga, consulta y descarga de documentos asociados.",
+    "detail": "Servicio documental reutilizable con asociaciones a registros. No representa por sí solo un calendario regulatorio ni control de vigencias del expediente corporativo.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/SoporteDocumental/SoporteDocumentalAppService.cs",
+        "line": 123,
+        "sha": "631951c8e1b6"
+      }
+    ]
+  },
+  "E14": {
+    "title": "Conteos y escáner",
+    "short": "Conteo cíclico y lectura desde interfaz de inventario.",
+    "detail": "Existe escáner en interfaz y operaciones de conteo. No se confirmó generador de etiquetas QR, conector RFID o aplicación móvil nativa.",
+    "files": [
+      {
+        "path": "FrontEnd/EG.Web/Pages/Modules/GRP/Almacen/MisPeriodos/AgregarBienScannerDialog.razor",
+        "line": 12,
+        "sha": "b7416532af3c"
+      },
+      {
+        "path": "BackEnd/EG.ApiCoreBS/Controllers/Modules/GRP/ConteoCiclico/PeriodoConteoController.cs",
+        "line": 190,
+        "sha": "b760882b2a0d"
+      }
+    ]
+  },
+  "E15": {
+    "title": "Depreciación heredada",
+    "short": "Vista SQL con cálculo de depreciación SICOP.",
+    "detail": "El script incluye versiones ALTER VIEW con cálculo por meses y tasa. No se asume corrección para el proyecto: revisar vida útil, residual, tratamiento de 120 meses y dependencias SICOP.",
+    "files": [
+      {
+        "path": "Scripts/01_GestionEmpresarial_Script_Final_BD.sql",
+        "line": 34095,
+        "sha": "890e139ef9eb"
+      }
+    ]
+  },
+  "E16": {
+    "title": "Contabilidad",
+    "short": "Servicio de pólizas y asientos relacionados al flujo.",
+    "detail": "Hay infraestructura contable y validación de pólizas. El modelo gubernamental exige adecuación de cuentas y reglas privadas; el archivo de pólizas presenta cambios locales.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/Contabilidad/PolizaService.cs",
+        "line": 16,
+        "sha": "30851d37460d"
+      },
+      {
+        "path": "BackEnd/EG.Application/Modules/GRP/Services/CuentasXPagar/CuentasXPagarServices.cs",
+        "line": 1796,
+        "sha": "e9185c2eae4c"
+      }
+    ]
+  },
+  "E17": {
+    "title": "Notificaciones",
+    "short": "Servicio de notificaciones y eventos de requisición.",
+    "detail": "Existe infraestructura de avisos. No se localizó un motor completo de recurrencia, vencimientos y escalamiento para todas las obligaciones solicitadas.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/General/NotificacionAppService.cs",
+        "line": 10,
+        "sha": "87312cc5bd39"
+      },
+      {
+        "path": "Scripts/20260728_FlujoRequisicionHastaCheque.sql",
+        "line": 335,
+        "sha": "10ba4fc8a60a"
+      }
+    ]
+  },
+  "E18": {
+    "title": "Tablero disponible",
+    "short": "Resumen de conteos de catálogos.",
+    "detail": "El tablero revisado cuenta proveedores, áreas y otros catálogos. No calcula los indicadores ejecutivos de gastos, SLA, riesgo o cumplimiento requeridos.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/General/DashboardAppService.cs",
+        "line": 21,
+        "sha": "8789f053beee"
+      }
+    ]
+  },
+  "E19": {
+    "title": "Reportes",
+    "short": "Registro de reportes y pantalla de contabilidad.",
+    "detail": "Se identifican reportes operativos y contables. Su existencia no acredita reportes de módulos nuevos ni conciliación de todos los indicadores corporativos.",
+    "files": [
+      {
+        "path": "BackEnd/EG.ApiCoreBS/Reporting/StoredProcedureReportRegistry.cs",
+        "line": 5,
+        "sha": "ed749c8c3cf1"
+      },
+      {
+        "path": "FrontEnd/EG.Web/Pages/Modules/GRP/Contabilidad/ContabilidadReportes.razor",
+        "line": 12,
+        "sha": "2b90229c1f28"
+      }
+    ]
+  },
+  "E20": {
+    "title": "Extracción documental",
+    "short": "Extracción de texto PDF e imagen con OCR.",
+    "detail": "DocumentTextExtractor extrae texto. Falta convertir esa base en captura estructurada, validación fiscal y manejo de excepciones de tickets o facturas.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/DocumentRag/DocumentTextExtractor.cs",
+        "line": 31,
+        "sha": "4f8dbec2d92e"
+      },
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/DocumentRag/DocumentTextExtractor.cs",
+        "line": 44,
+        "sha": "4f8dbec2d92e"
+      }
+    ]
+  },
+  "E21": {
+    "title": "Firma con certificado",
+    "short": "Firma técnica mediante PFX.",
+    "detail": "SatPfxFirmaProvider firma un hash con certificado. Su nombre no demuestra consulta SAT, validación CFDI, opinión de cumplimiento, lista 69 B ni servicio PAC.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Application/Platform/Services/FirmaDocumental/Providers/SatPfxFirmaProvider.cs",
+        "line": 18,
+        "sha": "2074d553ae7c"
+      }
+    ]
+  },
+  "E22": {
+    "title": "Plataforma",
+    "short": "Aplicación Blazor y .NET con SQL Server.",
+    "detail": "La arquitectura observada es propia, con acceso SQL Server. Power Platform, PostgreSQL, despliegue Azure y modalidad móvil necesitan decisión o integración.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Infraestructure/DbContextExtensions.cs",
+        "line": 20,
+        "sha": "666d00879711"
+      },
+      {
+        "path": "FrontEnd/EG.Web/Program.cs",
+        "line": 19,
+        "sha": "f211284b23ad"
+      },
+      {
+        "path": "BackEnd/EG.ApiCoreBS/EG.ApiCoreBS.csproj",
+        "line": 4,
+        "sha": "cac8d7627335"
+      }
+    ]
+  },
+  "E23": {
+    "title": "Pruebas existentes",
+    "short": "Pruebas de autorización y herramientas de carga.",
+    "detail": "Se identifican pruebas y utilidades, sin ejecutarlas en este análisis. No acreditan 50 concurrentes, restauración sin pérdida o aceptación corporativa.",
+    "files": [
+      {
+        "path": "Tests/EG.UnidTest/ApiCoreBS/SecurityAuthorizationTests.cs",
+        "line": 10,
+        "sha": "e3ab9d9f7883"
+      },
+      {
+        "path": "Tools/StressTest/EgestionStressRunner/Program.cs",
+        "line": 1,
+        "sha": "5b1c04a87b57"
+      },
+      {
+        "path": "Tests/Sql/RegresoChequeASolicitudSuficiencia.integration.sql",
+        "line": 60,
+        "sha": "f6568628b62b"
+      }
+    ]
+  },
+  "E24": {
+    "title": "Consulta de bitácora",
+    "short": "Servicio de consulta y filtros de bitácora.",
+    "detail": "La consulta de bitácora es evidencia parcial. Deben comprobarse generación de eventos, alcance, conservación y protección de la evidencia.",
+    "files": [
+      {
+        "path": "BackEnd/EG.Business/Services/BitacoraService.cs",
+        "line": 15,
+        "sha": "e8c745f99364"
+      }
+    ]
+  },
+  "N01": {
+    "title": "Búsqueda sin flujo completo localizado",
+    "short": "No se localizó implementación completa del proceso.",
+    "detail": "Se revisaron servicios de aplicación, controladores, páginas y contratos compartidos, excluyendo nómina. Las búsquedas incluyeron viáticos, caja chica, fondo fijo, notas de crédito, declaraciones y obligaciones fiscales, conciliación bancaria, SPEI, RFID, Power BI y 69 B. La ausencia en ese alcance es un indicio de brecha; componentes externos o procedimientos de la base desplegada requieren confirmación.",
+    "files": []
+  }
+}

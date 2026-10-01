@@ -19,7 +19,7 @@
 
     <BaseEntityForm TEntity="TipoCambioResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
 
-        <PagedAutocomplete Value="@selectedMoneda"
+        <PagedAutocomplete Margin="Margin.Dense" Value="@selectedMoneda"
                            ValueChanged="value => selectedMoneda = value"
                            Label="Moneda"
                            Required="true"
@@ -27,7 +27,7 @@
                            PageSize="50"
                            LoadPage="LoadMonedasPageAsync" />
 
-        <MudNumericField @bind-Value="item.Cantidad"
+        <MudNumericField Margin="Margin.Dense" @bind-Value="item.Cantidad"
                           Label="Cantidad (Tipo de Cambio)"
                           Variant="Variant.Outlined"
                           FullWidth="true"
@@ -36,7 +36,7 @@
                           Required="true"
                           For="@(() => item.Cantidad)" />
 
-        <MudDatePicker @bind-Date="selectedDate"
+        <MudDatePicker Margin="Margin.Dense" @bind-Date="selectedDate"
                         Label="Fecha"
                         Variant="Variant.Outlined"
                         FullWidth="true"

@@ -20,14 +20,14 @@
 
         <MudGrid GutterSize="2">
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.Descripcion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                               Label="Descripción"
                               Variant="Variant.Outlined"
                               Required="true"
                               RequiredError="La descripción es requerida" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="item.FundamentoJuridico"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.FundamentoJuridico"
                               Label="Fundamento Jurídico"
                               Variant="Variant.Outlined"
                               Lines="3" />

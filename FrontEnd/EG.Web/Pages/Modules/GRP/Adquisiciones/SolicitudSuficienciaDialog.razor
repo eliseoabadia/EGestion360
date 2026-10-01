@@ -32,8 +32,11 @@
                     HeaderTitle="@dialogTitle">
 
         <MudGrid GutterSize="2" Class="solicitud-dialog">
-            <MudItem xs="12" md="8">
-                <PagedAutocomplete Value="@_selectedRequisicion"
+            <MudItem xs="12">
+                <CrudFormSection Title="Solicitud y estado">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="8">
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedRequisicion"
                                    ValueChanged="OnRequisicionChanged"
                                    Label="Requisicion"
                                    Required="true"
@@ -43,7 +46,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaSolicitud"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSolicitud"
                                Label="Fecha solicitud"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -54,7 +57,7 @@
             @if (!Id.HasValue)
             {
                 <MudItem xs="12" md="4">
-                    <MudNumericField T="decimal"
+                    <MudNumericField Margin="Margin.Dense" T="decimal"
                                      Value="@_porcentajeAjuste"
                                      ValueChanged="OnPorcentajeChanged"
                                      Label="Porcentaje ajuste"
@@ -69,12 +72,18 @@
             else
             {
                 <MudItem xs="12" md="4">
-                    <MudTextField Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField Margin="Margin.Dense" Value="@item.EstatusDescripcion" Label="Estatus" Variant="Variant.Outlined" ReadOnly="true" />
                 </MudItem>
             }
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.GastoNoProgramable"
+            <MudItem xs="12">
+                <CrudFormSection Title="Clasificación y justificación">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.GastoNoProgramable"
                               Label="Gasto no programable"
                               Variant="Variant.Outlined"
                               MaxLength="3"
@@ -82,7 +91,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudNumericField T="int?"
+                <MudNumericField Margin="Margin.Dense" T="int?"
                                  @bind-Value="item.IdGastoNoProgramable"
                                  Label="Id gasto no programable"
                                  Variant="Variant.Outlined"
@@ -91,7 +100,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudNumericField T="int?"
+                <MudNumericField Margin="Margin.Dense" T="int?"
                                  @bind-Value="item.IdCompromisoNomina"
                                  Label="Id compromiso nomina"
                                  Variant="Variant.Outlined"
@@ -100,7 +109,7 @@
             </MudItem>
 
             <MudItem xs="12" md="8">
-                <MudTextField @bind-Value="item.Justificacion"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Justificacion"
                               Label="Justificacion"
                               Variant="Variant.Outlined"
                               Lines="3"
@@ -204,8 +213,10 @@
                     </div>
                 </MudItem>
             }
-
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

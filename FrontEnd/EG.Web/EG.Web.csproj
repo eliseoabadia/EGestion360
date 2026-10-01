@@ -67,4 +67,10 @@
     <Folder Include="Services\ConteoCiclico\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="web.config" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  <Target Name="PublishLocalApiProxyConfig" AfterTargets="Publish">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\web.config" DestinationFiles="$(PublishDir)web.config" />
+  </Target>
 </Project>

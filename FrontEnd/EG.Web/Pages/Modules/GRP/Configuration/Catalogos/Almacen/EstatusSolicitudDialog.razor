@@ -15,7 +15,7 @@
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="EstatusSolicitudResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle">
-        <MudTextField @bind-Value="item.Descripcion"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
                       Label="Descripción"
                       Variant="Variant.Outlined"
                       FullWidth="true"
@@ -23,7 +23,7 @@
                       Required="true"
                       For="@(() => item.Descripcion)" />
 
-        <MudTextField @bind-Value="item.Color"
+        <MudTextField Margin="Margin.Dense" @bind-Value="item.Color"
                       Label="Color (código CSS)"
                       Variant="Variant.Outlined"
                       FullWidth="true"

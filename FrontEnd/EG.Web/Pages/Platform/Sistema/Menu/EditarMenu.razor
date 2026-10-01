@@ -7,7 +7,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudDialog>
+<MudDialog Class="eae-form-dialog eae-dialog-medium">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Class="mr-2" />
@@ -23,8 +23,9 @@
         else
         {
             <MudGrid Spacing="3" Class="mt-2">
+<MudItem xs="12"><CrudFormSection Title="Nombre y navegación"><MudGrid Spacing="2">
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="menu.Nombre"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="menu.Nombre"
                                   Label="Nombre del Menú *"
                                   Variant="Variant.Outlined"
                                   For="@(() => menu.Nombre)"
@@ -35,7 +36,7 @@
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="menu.Ruta"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="menu.Ruta"
                                   Label="Ruta / Route *"
                                   Variant="Variant.Outlined"
                                   For="@(() => menu.Ruta)"
@@ -45,8 +46,10 @@
                                   Immediate="true" />
                 </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudNumericField @bind-Value="menu.Orden"
+                </MudGrid></CrudFormSection></MudItem>
+
+<MudItem xs="12"><CrudFormSection Title="Presentación y validación"><MudGrid Spacing="2"><MudItem xs="12" sm="6">
+                    <MudNumericField Margin="Margin.Dense" @bind-Value="menu.Orden"
                                      Label="Orden *"
                                      Variant="Variant.Outlined"
                                      Min="0"
@@ -59,7 +62,7 @@
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle2" Class="mb-1">Icono</MudText>
 
-                    <MudAutocomplete T="IconosDisponibles.IconoItem"
+                    <MudAutocomplete Margin="Margin.Dense" T="IconosDisponibles.IconoItem"
                                      @bind-Value="iconoSeleccionado"
                                      Label="Buscar o seleccionar icono..."
                                      Variant="Variant.Outlined"
@@ -98,13 +101,14 @@
 
 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="menu.ValidacionEstructura"
+                    <MudTextField Margin="Margin.Dense" @bind-Value="menu.ValidacionEstructura"
                                   Label="Validación"
                                   Variant="Variant.Outlined"
                                   MaxLength="500"
                                   HelperText="Reglas de validación (opcional)" />
                 </MudItem>
-            </MudGrid>
+            </MudGrid></CrudFormSection></MudItem>
+</MudGrid>
         }
     </DialogContent>
 

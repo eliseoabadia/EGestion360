@@ -23,13 +23,16 @@
     <BaseEntityForm TEntity="AlmacenResponse" @ref="form" ShowHeader="false">
         <MudGrid Spacing="2">
             <MudItem xs="12">
+                <CrudFormSection Title="Salida y motivo">
+                    <MudGrid Spacing="2">
+<MudItem xs="12">
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
                     Selecciona una existencia disponible. La salida descontara la existencia y dejara un movimiento historico de ajuste.
                 </MudAlert>
             </MudItem>
 
             <MudItem xs="12">
-                <PagedAutocomplete Value="@_selectedAlmacen"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedAlmacen"
                                    ValueChanged="OnAlmacenChanged"
                                    Label="Existencia origen"
                                    Required="true"
@@ -38,7 +41,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudNumericField @bind-Value="item.Cantidad"
+                <MudNumericField Margin="Margin.Dense" @bind-Value="item.Cantidad"
                                  Label="Cantidad de salida"
                                  Variant="Variant.Outlined"
                                  Format="0.####"
@@ -49,7 +52,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudDatePicker @bind-Date="_fechaSalida"
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="_fechaSalida"
                                Label="Fecha de salida"
                                Variant="Variant.Outlined"
                                Required="true"
@@ -57,56 +60,71 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <PagedAutocomplete Value="@_selectedMotivo"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedMotivo"
                                    ValueChanged="value => _selectedMotivo = value"
                                    Label="Motivo"
                                    Required="true"
                                    RequiredError="El motivo es requerido"
                                    LoadPage="LoadMotivoPageAsync" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField Value="@DisponibleText"
+            <MudItem xs="12">
+                <CrudFormSection Title="Existencia e importe">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" Value="@DisponibleText"
                               Label="Disponible"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField Value="@CostoUnitarioText"
+                <MudTextField Margin="Margin.Dense" Value="@CostoUnitarioText"
                               Label="Costo unitario"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField Value="@ImporteText"
+                <MudTextField Margin="Margin.Dense" Value="@ImporteText"
                               Label="Importe estimado"
                               Variant="Variant.Outlined"
                               ReadOnly="true" />
             </MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Factura"
+            <MudItem xs="12">
+                <CrudFormSection Title="Referencias">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Factura"
                               Label="Documento"
                               Variant="Variant.Outlined"
                               MaxLength="50" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Remision"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Remision"
                               Label="Referencia"
                               Variant="Variant.Outlined"
                               MaxLength="50" />
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudTextField @bind-Value="item.Lote"
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Lote"
                               Label="Lote"
                               Variant="Variant.Outlined"
                               MaxLength="50" />
             </MudItem>
-        </MudGrid>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

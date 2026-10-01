@@ -21,45 +21,43 @@
                     ShowHeader="true"
                     HeaderTitle="@DialogTitle">
         <MudGrid GutterSize="2">
-            <MudItem xs="12">
-                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Identificacion</MudText>
-            </MudItem>
+            <MudItem xs="12"><CrudFormSection Title="Identificacion"><MudGrid Spacing="2">
 
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.Empleado" Label="No. empleado" Variant="Variant.Outlined" MaxLength="15" Required="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Empleado" Label="No. empleado" Variant="Variant.Outlined" MaxLength="15" Required="true" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.Iniciales" Label="Iniciales" Variant="Variant.Outlined" MaxLength="3" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Iniciales" Label="Iniciales" Variant="Variant.Outlined" MaxLength="3" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" MaxLength="15" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Rfc" Label="RFC" Variant="Variant.Outlined" MaxLength="15" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.Curp" Label="CURP" Variant="Variant.Outlined" MaxLength="18" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Curp" Label="CURP" Variant="Variant.Outlined" MaxLength="18" />
             </MudItem>
 
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" MaxLength="50" Required="true" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Nombre" Label="Nombre" Variant="Variant.Outlined" MaxLength="50" Required="true" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Paterno" Label="Paterno" Variant="Variant.Outlined" MaxLength="50" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Paterno" Label="Paterno" Variant="Variant.Outlined" MaxLength="50" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Materno" Label="Materno" Variant="Variant.Outlined" MaxLength="50" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Materno" Label="Materno" Variant="Variant.Outlined" MaxLength="50" />
             </MudItem>
 
             <MudItem xs="12" sm="4">
-                <MudSelect T="string" @bind-Value="item.Sexo" Label="Sexo" Variant="Variant.Outlined" Clearable="true">
+                <MudSelect Margin="Margin.Dense" T="string" @bind-Value="item.Sexo" Label="Sexo" Variant="Variant.Outlined" Clearable="true">
                     <MudSelectItem T="string" Value="@("Masculino")">Masculino</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Femenino")">Femenino</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Otro")">Otro</MudSelectItem>
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudDatePicker @bind-Date="item.FechaNacimiento" Label="Nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaNacimiento" Label="Nacimiento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudSelect T="string" @bind-Value="item.EstadoCivil" Label="Estado civil" Variant="Variant.Outlined" Clearable="true">
+                <MudSelect Margin="Margin.Dense" T="string" @bind-Value="item.EstadoCivil" Label="Estado civil" Variant="Variant.Outlined" Clearable="true">
                     <MudSelectItem T="string" Value="@("Soltero")">Soltero</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Casado")">Casado</MudSelectItem>
                     <MudSelectItem T="string" Value="@("Unión Libre")">Union libre</MudSelectItem>
@@ -68,98 +66,95 @@
                 </MudSelect>
             </MudItem>
 
-            <MudItem xs="12">
-                <MudDivider Class="my-2" />
-                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Documentos de identidad</MudText>
+
+</MudGrid></CrudFormSection></MudItem>
+<MudItem xs="12"><CrudFormSection Title="Documentos de identidad"><MudGrid Spacing="2">
+            <MudItem xs="12" sm="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NoCredencialElector" Label="Credencial de elector" Variant="Variant.Outlined" MaxLength="32" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.NoCredencialElector" Label="Credencial de elector" Variant="Variant.Outlined" MaxLength="32" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NoPasaporte" Label="Pasaporte" Variant="Variant.Outlined" MaxLength="16" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.NoPasaporte" Label="Pasaporte" Variant="Variant.Outlined" MaxLength="16" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NoLicencia" Label="Licencia" Variant="Variant.Outlined" MaxLength="16" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.NoLicencia" Label="Licencia" Variant="Variant.Outlined" MaxLength="16" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NoCartilla" Label="Cartilla" Variant="Variant.Outlined" MaxLength="16" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.NoCartilla" Label="Cartilla" Variant="Variant.Outlined" MaxLength="16" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Gafete" Label="Gafete" Variant="Variant.Outlined" MaxLength="11" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Gafete" Label="Gafete" Variant="Variant.Outlined" MaxLength="11" />
             </MudItem>
 
-            <MudItem xs="12">
-                <MudDivider Class="my-2" />
-                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Contacto y domicilio</MudText>
-            </MudItem>
+
+</MudGrid></CrudFormSection></MudItem>
+<MudItem xs="12"><CrudFormSection Title="Contacto y domicilio"><MudGrid Spacing="2">
 
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Email" Label="Correo" Variant="Variant.Outlined" MaxLength="250" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Email" Label="Correo" Variant="Variant.Outlined" MaxLength="250" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Telefono" Label="Telefono" Variant="Variant.Outlined" MaxLength="15" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Telefono" Label="Telefono" Variant="Variant.Outlined" MaxLength="15" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Celular" Label="Celular" Variant="Variant.Outlined" MaxLength="15" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Celular" Label="Celular" Variant="Variant.Outlined" MaxLength="15" />
             </MudItem>
 
             <MudItem xs="12" sm="5">
-                <MudTextField @bind-Value="item.Calle" Label="Calle" Variant="Variant.Outlined" MaxLength="40" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Calle" Label="Calle" Variant="Variant.Outlined" MaxLength="40" />
             </MudItem>
             <MudItem xs="6" sm="2">
-                <MudTextField @bind-Value="item.NumExterior" Label="No. ext." Variant="Variant.Outlined" MaxLength="10" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumExterior" Label="No. ext." Variant="Variant.Outlined" MaxLength="10" />
             </MudItem>
             <MudItem xs="6" sm="2">
-                <MudTextField @bind-Value="item.NumInterior" Label="No. int." Variant="Variant.Outlined" MaxLength="10" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumInterior" Label="No. int." Variant="Variant.Outlined" MaxLength="10" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTextField @bind-Value="item.CP" Label="CP" Variant="Variant.Outlined" MaxLength="6" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.CP" Label="CP" Variant="Variant.Outlined" MaxLength="6" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Colonia" Label="Colonia" Variant="Variant.Outlined" MaxLength="40" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Colonia" Label="Colonia" Variant="Variant.Outlined" MaxLength="40" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Municipio" Label="Municipio" Variant="Variant.Outlined" MaxLength="20" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Municipio" Label="Municipio" Variant="Variant.Outlined" MaxLength="20" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Estado" Label="Estado" Variant="Variant.Outlined" MaxLength="30" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Estado" Label="Estado" Variant="Variant.Outlined" MaxLength="30" />
             </MudItem>
 
-            <MudItem xs="12">
-                <MudDivider Class="my-2" />
-                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Datos laborales y pago</MudText>
+
+</MudGrid></CrudFormSection></MudItem>
+<MudItem xs="12"><CrudFormSection Title="Datos laborales y pago"><MudGrid Spacing="2">
+
+            <MudItem xs="12" sm="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.TipoContratacion" Label="Tipo contratacion" Variant="Variant.Outlined" MaxLength="50" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Puesto" Label="Puesto" Variant="Variant.Outlined" MaxLength="100" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.RegImss" Label="Registro IMSS" Variant="Variant.Outlined" MaxLength="12" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaIngreso" Label="Ingreso" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.SueldoBase" Label="Sueldo base" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
             </MudItem>
 
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.TipoContratacion" Label="Tipo contratacion" Variant="Variant.Outlined" MaxLength="50" />
+                <MudNumericField Margin="Margin.Dense" T="decimal?" @bind-Value="item.CompensacionGarantizada" Label="Compensacion" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Puesto" Label="Puesto" Variant="Variant.Outlined" MaxLength="100" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.RegImss" Label="Registro IMSS" Variant="Variant.Outlined" MaxLength="12" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudDatePicker @bind-Date="item.FechaIngreso" Label="Ingreso" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudDatePicker @bind-Date="item.FechaFin" Label="Fin" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudNumericField T="decimal?" @bind-Value="item.SueldoBase" Label="Sueldo base" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
-            </MudItem>
-
-            <MudItem xs="12" sm="4">
-                <MudNumericField T="decimal?" @bind-Value="item.CompensacionGarantizada" Label="Compensacion" Variant="Variant.Outlined" Culture="@CultureInfo.InvariantCulture" Format="0.00" Adornment="Adornment.Start" AdornmentText="$" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.Banco" Label="Banco" Variant="Variant.Outlined" MaxLength="100" />
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudTextField @bind-Value="item.NumeroCuenta" Label="Cuenta" Variant="Variant.Outlined" MaxLength="25" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroCuenta" Label="Cuenta" Variant="Variant.Outlined" MaxLength="25" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="50" />
+                <MudTextField Margin="Margin.Dense" @bind-Value="item.Clabe" Label="CLABE" Variant="Variant.Outlined" MaxLength="50" />
             </MudItem>
 
             @if (Id.HasValue)
@@ -169,7 +164,8 @@
                                    UsuarioModificacion="@item.UsuarioModificacion" FechaModificacion="@item.FechaModificacion" />
                 </MudItem>
             }
-        </MudGrid>
+        </MudGrid></CrudFormSection></MudItem>
+</MudGrid>
     </BaseEntityForm>
 </BaseCrudDialog>
 

@@ -1,0 +1,37 @@
+{
+  "Command": "dotnet test Tests/EG.UnidTest/EG.UnidTest.csproj -c Release --logger trx --results-directory artifacts/validacion_integral_20260908/unitarias",
+  "ExitCode": 0,
+  "Start": "2026-09-08T18:32:13.8907896-06:00",
+  "Finish": "2026-09-08T18:32:16.3577030-06:00",
+  "Outcome": "Completed",
+  "Total": 38,
+  "Executed": 38,
+  "Passed": 38,
+  "Failed": 0,
+  "NotExecuted": 0,
+  "Trx": "Eliseo_DESKTOP-B2UQJB2_2026-09-08_18_32_15_net10.0.trx",
+  "Groups": [
+    {
+      "Class": "EG.UnidTest.ApiCoreBS.SecurityAuthorizationTests",
+      "Count": 8
+    },
+    {
+      "Class": "EG.UnidTest.ApiCoreBS.UserContextServiceTests",
+      "Count": 4
+    },
+    {
+      "Class": "EG.UnidTest.Application.ConteoCiclicoValidatorTests",
+      "Count": 9
+    },
+    {
+      "Class": "EG.UnidTest.Business.GenericServicePagingTests",
+      "Count": 6
+    },
+    {
+      "Class": "EG.UnidTest.Domain.EnvioWorkflowEstadosTests",
+      "Count": 11
+    }
+  ],
+  "Scope": "Pruebas unitarias existentes: paginacion/repositorio en memoria, claims de usuario, atributos de autorizacion, validadores de conteo ciclico y estados de envio. No ejecuta flujo integral Presupuesto-Contabilidad ni integraciones SQL.",
+  "DatabaseOperations": "Ninguna: se revisaron fuentes antes de ejecutar. No se inicia la API ni se consulta o modifica base de datos."
+}

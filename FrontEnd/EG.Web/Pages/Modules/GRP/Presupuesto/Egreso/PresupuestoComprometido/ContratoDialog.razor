@@ -20,9 +20,12 @@
 <BaseCrudDialog TItem="ContratoResponse" Title="@Title" MaxWidth="MaxWidth.Medium" ActionText="@ActionText" ProcessingText="@ProcessingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="ContratoResponse" @ref="form" ShowHeader="true" HeaderTitle="@Title" Loading="@_formLoading" LoadingMessage="Preparando contrato..." LoadingSkeletonRows="9">
         <MudGrid Spacing="2">
-            <MudItem xs="12" md="3"><MudTextField T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12">
+                <CrudFormSection Title="Contrato y referencias">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="3"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="3">
-                <PagedAutocomplete Value="@_selectedAutorizacion"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedAutorizacion"
                                    ValueChanged="value => _selectedAutorizacion = value"
                                    Label="Autorización"
                                    Required="true"
@@ -30,7 +33,7 @@
                                    LoadPage="LoadAutorizacionesPageAsync" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <PagedAutocomplete Value="@_selectedProveedor"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedProveedor"
                                    ValueChanged="value => _selectedProveedor = value"
                                    Label="Proveedor"
                                    Required="true"
@@ -38,29 +41,39 @@
                                    LoadPage="LoadProveedoresPageAsync" />
             </MudItem>
             <MudItem xs="12" md="3">
-                <PagedAutocomplete Value="@_selectedPoliza"
+                <PagedAutocomplete Margin="Margin.Dense" Value="@_selectedPoliza"
                                    ValueChanged="value => _selectedPoliza = value"
                                    Label="Póliza"
                                    Clearable="true"
                                    LoadPage="LoadPolizasPageAsync" />
             </MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.NumeroContrato" Label="Numero contrato" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="8"><MudTextField @bind-Value="item.Descripcion" Label="Descripcion" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaContrato" Label="Fecha contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudDatePicker @bind-Date="fechaFin" Label="Fin vigencia" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField T="decimal" @bind-Value="item.MontoTotal" Label="Monto total" Required="true" Immediate="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudTextField @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" @bind-Value="item.NumeroContrato" Label="Numero contrato" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8"><MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion" Label="Descripcion" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+
+            <MudItem xs="12">
+                <CrudFormSection Title="Vigencia e importe">
+                    <MudGrid Spacing="2">
+<MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaContrato" Label="Fecha contrato" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaInicio" Label="Inicio vigencia" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaFin" Label="Fin vigencia" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="decimal" @bind-Value="item.MontoTotal" Label="Monto total" Required="true" Immediate="true" Culture="@Culture" Format="0.00" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" @bind-Value="item.PlazoEjecucion" Label="Plazo ejecucion" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
-                <MudSelect T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
+                <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
                     <MudSelectItem Value="1">Borrador</MudSelectItem>
                     <MudSelectItem Value="2">Vigente</MudSelectItem>
                     <MudSelectItem Value="3">Concluido</MudSelectItem>
                     <MudSelectItem Value="4">Cancelado</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xs="12"><MudTextField @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
-        </MudGrid>
+            <MudItem xs="12"><MudTextField Margin="Margin.Dense" @bind-Value="item.Observaciones" Label="Observaciones" Lines="3" Variant="Variant.Outlined" /></MudItem>
+                    </MudGrid>
+                </CrudFormSection>
+            </MudItem>
+</MudGrid>
 
         @if (!Id.HasValue && detalleItems.Count > 0)
         {
