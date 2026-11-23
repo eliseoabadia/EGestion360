@@ -4,8 +4,10 @@ using EG.ApiCoreBS.Filters;
 using EG.ApiCoreBS.Initialization;
 using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
+using EG.ApiCoreBS.Services.Licensing;
 using EG.Business.Mapping.General;
 using EG.Common.GenericModel;
+using EG.Domain.Platform.Licensing;
 using EG.Domain.Platform.Settings;
 using EG.Domain.Settings;
 using EG.Infrastructure;
@@ -17,6 +19,7 @@ using DevExpress.XtraReports.Web.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
@@ -69,6 +72,12 @@ try
     builder.Services.AddLoggerGRP(builder.Configuration);
     builder.Services.AddDbContextGRP(builder.Configuration);
     builder.Services.AddApplicationServices(typeof(Program).Assembly);
+    builder.Services.AddDataProtection().SetApplicationName("GE360.Licensing");
+    builder.Services.AddSingleton<ILicenseRuntimeState, LicenseRuntimeState>();
+    builder.Services.AddSingleton<LicenseMachineStateProtector>();
+    builder.Services.AddScoped<ILicensingService, LicensingService>();
+    builder.Services.AddScoped<ModuleLicenseFilter>();
+    builder.Services.AddHostedService<LicenseClockPersistenceService>();
     builder.Services.AddDevExpressControls();
     builder.Services.ConfigureReportingServices(configurator =>
     {
@@ -92,6 +101,7 @@ try
     builder.Services.AddControllers(options =>
         {
             options.Filters.AddService<ApiResultSanitizationFilter>();
+            options.Filters.AddService<ModuleLicenseFilter>();
         })
         .AddJsonOptions(options =>
         {
@@ -207,6 +217,7 @@ try
 
     var app = builder.Build();
 
+    await LicensingInitializer.EnsureAsync(app.Services, logger);
     await EnvioWorkflowInitializer.EnsureAsync(app.Services, logger);
     await RequiredCatalogInitializer.EnsureAsync(app.Services, logger);
 

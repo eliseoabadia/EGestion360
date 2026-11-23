@@ -1,6 +1,7 @@
 using DevExpress.XtraReports.Services;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.ClientControls;
+using EG.Domain.Platform.Licensing;
 
 namespace EG.ApiCoreBS.Reporting;
 
@@ -13,6 +14,7 @@ public sealed class GenericReportProvider : IReportProvider
     private readonly ReportContextParameterConfigurator _reportContextParameterConfigurator;
     private readonly ReportLogoConfigurator _reportLogoConfigurator;
     private readonly ReportCompanyHeaderConfigurator _reportCompanyHeaderConfigurator;
+    private readonly ILicenseRuntimeState _licensing;
 
     public GenericReportProvider(
         InMemoryReportStorageWebExtension reportStorage,
@@ -21,7 +23,8 @@ public sealed class GenericReportProvider : IReportProvider
         ReportConnectionConfigurator reportConnectionConfigurator,
         ReportContextParameterConfigurator reportContextParameterConfigurator,
         ReportLogoConfigurator reportLogoConfigurator,
-        ReportCompanyHeaderConfigurator reportCompanyHeaderConfigurator)
+        ReportCompanyHeaderConfigurator reportCompanyHeaderConfigurator,
+        ILicenseRuntimeState licensing)
     {
         _reportStorage = reportStorage;
         _storedProcedureReports = storedProcedureReports;
@@ -30,11 +33,20 @@ public sealed class GenericReportProvider : IReportProvider
         _reportContextParameterConfigurator = reportContextParameterConfigurator;
         _reportLogoConfigurator = reportLogoConfigurator;
         _reportCompanyHeaderConfigurator = reportCompanyHeaderConfigurator;
+        _licensing = licensing;
     }
 
     XtraReport IReportProvider.GetReport(string id, ReportProviderContext context)
     {
         var request = ReportRequest.Parse(id);
+        var moduleCode = LicenseModuleResolver.ResolveReportModule(request.Name);
+        if (moduleCode is not null)
+        {
+            var decision = _licensing.Evaluate(moduleCode);
+            if (!decision.Allowed)
+                throw new LicenseOperationException(decision.Code, decision.Message);
+        }
+
         var storedReport = TryLoadStoredReport(request);
         if (storedReport != null)
         {

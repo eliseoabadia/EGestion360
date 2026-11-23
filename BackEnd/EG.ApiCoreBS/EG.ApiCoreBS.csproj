@@ -34,6 +34,7 @@
 	<ItemGroup>
 	  <Content Include="Reporting\ExportedXml\**\*.repx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	  <Content Include="..\EG.Logger\log4net.config" Link="log4net.config" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+	  <EmbeddedResource Include="..\..\Scripts\20260912_Licenciamiento_Modular_Local.sql" Link="Initialization\20260912_Licenciamiento_Modular_Local.sql" />
 	</ItemGroup>
 
   <ItemGroup>

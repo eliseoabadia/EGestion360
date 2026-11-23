@@ -260,6 +260,7 @@ public static class ApiServiceExtensions
         services.AddScoped<IEgresoProyectadoAiImportService, EgresoProyectadoAiImportService>();
         services.AddScoped<IPbrDashboardService, PbrDashboardService>();
         services.AddScoped<IAccessConfigurationService, AccessConfigurationService>();
+        services.AddScoped<ILicensingClientService, LicensingClientService>();
         services.AddScoped<IEmpresaLogoService, EmpresaLogoService>();
         services.AddScoped<TipoBienDefaultsService>();
 

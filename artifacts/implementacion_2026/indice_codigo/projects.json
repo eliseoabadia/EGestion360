@@ -91,6 +91,13 @@
     "Packages": ""
   },
   {
+    "Path": "Tools/LicensingGenerator/GE360.Licensing.Generator.csproj",
+    "Sdk": "Microsoft.NET.Sdk",
+    "Framework": "net10.0",
+    "References": "..\\..\\Shared\\EG.Contracts\\EG.Contracts.csproj",
+    "Packages": ""
+  },
+  {
     "Path": "Tools/StressTest/EgestionStressRunner/EgestionStressRunner.csproj",
     "Sdk": "Microsoft.NET.Sdk",
     "Framework": "net10.0",

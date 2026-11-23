@@ -12,4 +12,5 @@
 "Tests/EG.UnidTest/EG.UnidTest.csproj","Microsoft.NET.Sdk","net10.0","..\..\BackEnd\EG.ApiCoreBS\EG.ApiCoreBS.csproj; ..\..\BackEnd\EG.Business\EG.Business.csproj; ..\..\BackEnd\EG.Common\EG.Common.csproj; ..\..\BackEnd\EG.Domain\EG.Domain.csproj","coverlet.collector; Microsoft.NET.Test.Sdk; xunit; xunit.runner.visualstudio"
 "Tools/CertificadoDeploy/EGestion360.CertificateRepair/EGestion360.CertificateRepair.csproj","Microsoft.NET.Sdk","net8.0-windows","",""
 "Tools/DeployLocalInstaller/Installer.csproj","Microsoft.NET.Sdk","net10.0","",""
+"Tools/LicensingGenerator/GE360.Licensing.Generator.csproj","Microsoft.NET.Sdk","net10.0","..\..\Shared\EG.Contracts\EG.Contracts.csproj",""
 "Tools/StressTest/EgestionStressRunner/EgestionStressRunner.csproj","Microsoft.NET.Sdk","net10.0","",""
