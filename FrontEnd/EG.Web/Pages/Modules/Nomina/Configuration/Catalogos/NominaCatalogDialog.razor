@@ -780,24 +780,7 @@
             };
 
     private static string GetFallbackLookupLabel(string propertyName)
-        => propertyName switch
-        {
-            "FkidFormaCalculoNom" => "Forma de cálculo",
-            "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
-            "FkidEmpresaSis" => "Empresa",
-            "FkidEmpresaNominaNom" => "Empresa de nómina",
-            "FkidPeriodoPagoSis" => "Periodo de pago",
-            "FkidTipoPagoNom" => "Tipo de pago",
-            "FkidPuestoNom" => "Puesto",
-            "FkidPuestoPadreNom" => "Puesto padre",
-            "FkidNivelNom" => "Nivel",
-            "FkidUniversoNom" => "Universo",
-            "FkidClasePuestoNom" => "Clase de puesto",
-            "FkidNombramientoNom" => "Nombramiento",
-            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
-            "FkidNominaEspecialNom" => "Nómina especial",
-            _ => Humanize(propertyName)
-        };
+        => NominaCatalogUi.GetLabel(propertyName, typeof(TItem));
 
     private static LookupItem? ToLookupItem(AreaResponse? value)
         => value == null
@@ -805,64 +788,5 @@
             : new LookupItem { Id = value.PkidArea, Text = $"{value.Clave} - {value.Descripcion}".Trim(' ', '-') };
 
     private static string GetLabel(PropertyInfo property)
-    {
-        return property.Name switch
-        {
-            "Pkid" => "ID",
-            "PkidConcepto" => "ID",
-            "FkidEmpresaSis" when typeof(TItem) == typeof(NomConceptoTabularResponse) => "Tipo de nómina",
-            "FkidEmpresaSis" => "Empresa",
-            "FkidAreaSis" => "Área",
-            "FkidEmpresaNominaNom" => "Empresa de nómina",
-            "FkidPeriodoPagoSis" => "Periodo de pago",
-            "FkidTipoPagoNom" => "Tipo de pago",
-            "FkidPersonaNom" => "Persona",
-            "FkidConceptoNom" => "Concepto",
-            "FkidPuestoNom" => "Puesto",
-            "FkidPuestoPadreNom" => "Puesto padre",
-            "FkidNivelNom" => "Nivel",
-            "FkidUniversoNom" => "Universo",
-            "FkidClasePuestoNom" => "Clase de puesto",
-            "FkidNombramientoNom" => "Nombramiento",
-            "FkidPeriodo" => "Periodo",
-            "FkidPeriodoInicial" => "Periodo inicial",
-            "FkidPeriodoFinal" => "Periodo final",
-            "FkidContratoTerceroNom" => "Contrato de tercero",
-            "FkidConceptoProporcionalNom" => "Concepto proporcional",
-            "FkidFormaCalculoNom" => "Forma de cálculo",
-            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
-            "FkidNominaEspecialNom" => "Nómina especial",
-            "FkidContratoPres" => "Contrato",
-            "FechaIni" => "Fecha inicial",
-            "FechaFin" => "Fecha final",
-            "PerDed" => "Percepción/Deducción",
-            "TasaInteres" => "Tasa de interés",
-            "NumeroPagos" => "Número de pagos",
-            "ImporteMensualFijo" => "Importe mensual fijo",
-            "EstaCerrado" => "Cerrado",
-            "EstaComprometido" => "Comprometido",
-            "EstaDevengado" => "Devengado",
-            "EstaEjercido" => "Ejercido",
-            "EstaDescontado" => "Descontado",
-            "ZonaEconomica" => "Zona económica",
-            "QuincenaInicio" => "Quincena inicio",
-            "QuincenaFin" => "Quincena fin",
-            "TotalPeriodos" => "Total de periodos",
-            _ => Humanize(property.Name)
-        };
-    }
-
-    private static string Humanize(string value)
-    {
-        var text = value
-            .Replace("Fkid", string.Empty, StringComparison.Ordinal)
-            .Replace("Pkid", "ID", StringComparison.Ordinal)
-            .Replace("Nom", string.Empty, StringComparison.Ordinal)
-            .Replace("Sis", string.Empty, StringComparison.Ordinal)
-            .Replace("Pres", string.Empty, StringComparison.Ordinal);
-
-        return System.Text.RegularExpressions.Regex
-            .Replace(text, "([a-z])([A-Z])", "$1 $2")
-            .Trim();
-    }
+        => NominaCatalogUi.GetLabel(property.Name, typeof(TItem));
 }

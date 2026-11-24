@@ -199,23 +199,33 @@ namespace EG.Application.Services.ConteoCiclico
                     var tiposActivos = await _context.TipoBiens
                         .AsNoTracking()
                         .Where(t => t.Activo && t.FkidPartidaConta > 20000 && t.FkidPartidaConta < 30000)
-                        .Select(t => t.PkidTipoBien)
+                        .Select(t => new { t.PkidTipoBien, t.Descripcion })
                         .ToListAsync();
+                    var tiposActivosPorId = tiposActivos.ToDictionary(tipo => tipo.PkidTipoBien);
+                    var tiposActivosIds = tiposActivos.Select(tipo => tipo.PkidTipoBien).ToArray();
 
                     var existencias = await _context.VwExistencias
                         .AsNoTracking()
-                        .Where(e => tiposActivos.Contains(e.PkidTipoBien) && e.Existencias > 0)
+                        .Where(e => tiposActivosIds.Contains(e.PkidTipoBien) && e.Existencias > 0)
+                        .GroupBy(e => e.PkidTipoBien)
+                        .Select(grupo => new
+                        {
+                            TipoBienId = grupo.Key,
+                            Cantidad = grupo.Sum(e => e.Existencias ?? 0)
+                        })
                         .ToListAsync();
 
-                    foreach (var grupo in existencias.GroupBy(e => e.PkidTipoBien))
+                    foreach (var existencia in existencias)
                     {
-                        var primera = grupo.First();
+                        var descripcion = tiposActivosPorId.TryGetValue(existencia.TipoBienId, out var tipo)
+                            ? tipo.Descripcion
+                            : null;
                         _context.Conteos.Add(new Conteo
                         {
-                            FkidTipoBienAlma = grupo.Key,
+                            FkidTipoBienAlma = existencia.TipoBienId,
                             FkidPeriodoConteoAlma = id,
-                            CantidadInventario = grupo.Sum(e => e.Existencias ?? 0),
-                            Descripcion = primera.Descripcion ?? $"Conteo del tipo de bien {grupo.Key}",
+                            CantidadInventario = existencia.Cantidad,
+                            Descripcion = descripcion ?? $"Conteo del tipo de bien {existencia.TipoBienId}",
                             FechaInicio = DateTime.Now,
                             Activo = true,
                             UsuarioCreacion = usuarioActual,

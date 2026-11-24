@@ -1,10 +1,19 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
+using EG.Domain.DTOs.Responses.Nomina;
 
 namespace EG.Web.Pages.Modules.Nomina.Configuration.Catalogos;
 
 public static class NominaCatalogUi
 {
+    private static class ItemMetadata<TItem>
+    {
+        internal static readonly PropertyInfo? IdProperty = typeof(TItem).GetProperties()
+            .FirstOrDefault(property => property.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase)
+                && !property.Name.StartsWith("PkidNom", StringComparison.OrdinalIgnoreCase)
+                && property.PropertyType == typeof(int));
+    }
+
     private static readonly HashSet<string> HiddenColumns = new(StringComparer.OrdinalIgnoreCase)
     {
         "ClaveNombre",
@@ -62,11 +71,7 @@ public static class NominaCatalogUi
             return 0;
         }
 
-        var property = typeof(TItem).GetProperties()
-            .FirstOrDefault(p => p.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase)
-                                 && !p.Name.StartsWith("PkidNom", StringComparison.OrdinalIgnoreCase)
-                                 && p.PropertyType == typeof(int));
-        return property?.GetValue(item) as int? ?? 0;
+        return ItemMetadata<TItem>.IdProperty?.GetValue(item) as int? ?? 0;
     }
 
     public static string FormatValue(object? value)
@@ -82,98 +87,118 @@ public static class NominaCatalogUi
         };
     }
 
-    public static string GetLabel(PropertyInfo property)
+    private static readonly IReadOnlyDictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        return property.Name switch
+        ["PkidConcepto"] = "ID",
+        ["PkidConceptoTabulador"] = "ID",
+        ["PkidEmpresaNomina"] = "ID",
+        ["PkidUniverso"] = "ID",
+        ["PkidNivel"] = "ID",
+        ["PkidClasePuesto"] = "ID",
+        ["PkidPuesto"] = "ID",
+        ["PkidPlazaAutorizada"] = "ID",
+        ["PkidNombramiento"] = "ID",
+        ["PkidImporteNivel"] = "ID",
+        ["PkidContratoLaboral"] = "ID",
+        ["PkidCatalogoSimple"] = "ID",
+        ["PkidEstadoCivil"] = "ID",
+        ["PkidEscolaridad"] = "ID",
+        ["PkidDiaSemana"] = "ID",
+        ["PkidMetodoPago"] = "ID",
+        ["FkidEmpresaSis"] = "Empresa",
+        ["EmpresaNombre"] = "Empresa",
+        ["TipoNomina"] = "Tipo de nómina",
+        ["FkidAreaSis"] = "Área",
+        ["AreaNombre"] = "Área",
+        ["FkidEmpresaNominaNom"] = "Empresa de nómina",
+        ["EmpresaNominaNombre"] = "Empresa de nómina",
+        ["FkidPersonaNom"] = "Persona",
+        ["PersonaClaveNombre"] = "Persona",
+        ["FkidConceptoNom"] = "Concepto",
+        ["ConceptoClaveNombre"] = "Concepto",
+        ["FkidPuestoNom"] = "Puesto",
+        ["FkidPuestoPadreNom"] = "Puesto padre",
+        ["PuestoNombre"] = "Puesto",
+        ["PuestoClaveNombre"] = "Puesto",
+        ["PuestoPadreNombre"] = "Puesto padre",
+        ["FkidNivelNom"] = "Nivel",
+        ["NivelClave"] = "Nivel",
+        ["FkidUniversoNom"] = "Universo",
+        ["UniversoDescripcion"] = "Universo",
+        ["FkidClasePuestoNom"] = "Clase de puesto",
+        ["ClasePuestoDescripcion"] = "Clase de puesto",
+        ["FkidNombramientoNom"] = "Nombramiento",
+        ["NombramientoDescripcion"] = "Nombramiento",
+        ["FkidPeriodo"] = "Periodo",
+        ["FkidPeriodoInicial"] = "Periodo inicial",
+        ["FkidPeriodoFinal"] = "Periodo final",
+        ["FkidPeriodoPagoSis"] = "Periodo de pago",
+        ["FkidTipoPagoNom"] = "Tipo de pago",
+        ["FkidContratoTerceroNom"] = "Contrato de tercero",
+        ["FkidConceptoProporcionalNom"] = "Concepto proporcional",
+        ["FkidFormaCalculoNom"] = "Forma de cálculo",
+        ["FkidUnidadInfonavitNom"] = "Unidad Infonavit",
+        ["FkidNominaEspecialNom"] = "Nómina especial",
+        ["FkidContratoPres"] = "Contrato",
+        ["FkidCatalogoPadreNom"] = "Catálogo padre",
+        ["FechaIni"] = "Fecha inicial",
+        ["FechaFin"] = "Fecha final",
+        ["FechaInicio"] = "Fecha inicial",
+        ["DescripcionCorta"] = "Descripción corta",
+        ["ValorDecimal1"] = "Valor decimal 1",
+        ["ValorDecimal2"] = "Valor decimal 2",
+        ["ValorEntero1"] = "Valor entero 1",
+        ["ValorEntero2"] = "Valor entero 2",
+        ["DatoExtra1"] = "Dato extra 1",
+        ["DatoExtra2"] = "Dato extra 2",
+        ["RegImss"] = "Registro IMSS",
+        ["PrimaRiesgoImss"] = "Prima riesgo IMSS",
+        ["ImpSdi"] = "Importe SDI",
+        ["PerDed"] = "Percepción/Deducción",
+        ["TasaInteres"] = "Tasa de interés",
+        ["NumeroPagos"] = "Número de pagos",
+        ["ImporteMensualFijo"] = "Importe mensual fijo",
+        ["EstaCerrado"] = "Cerrado",
+        ["EstaComprometido"] = "Comprometido",
+        ["EstaDevengado"] = "Devengado",
+        ["EstaEjercido"] = "Ejercido",
+        ["EstaDescontado"] = "Descontado",
+        ["ZonaEconomica"] = "Zona económica",
+        ["QuincenaInicio"] = "Quincena inicio",
+        ["QuincenaFin"] = "Quincena fin",
+        ["TotalPeriodos"] = "Total de periodos",
+        ["FormaCalculoDescripcion"] = "Forma de cálculo",
+    };
+
+    public static string GetLabel(PropertyInfo property)
+        => GetLabel(property.Name, property.DeclaringType);
+
+    public static string GetLabel(string propertyName, Type? itemType = null)
+    {
+        if (propertyName == "FkidEmpresaSis" && itemType == typeof(NomConceptoTabularResponse))
         {
-            "PkidConcepto" => "ID",
-            "PkidConceptoTabulador" => "ID",
-            "PkidEmpresaNomina" => "ID",
-            "PkidUniverso" => "ID",
-            "PkidNivel" => "ID",
-            "PkidClasePuesto" => "ID",
-            "PkidPuesto" => "ID",
-            "PkidPlazaAutorizada" => "ID",
-            "PkidNombramiento" => "ID",
-            "PkidImporteNivel" => "ID",
-            "PkidContratoLaboral" => "ID",
-            "PkidCatalogoSimple" => "ID",
-            "PkidEstadoCivil" => "ID",
-            "PkidEscolaridad" => "ID",
-            "PkidDiaSemana" => "ID",
-            "PkidMetodoPago" => "ID",
-            "FkidEmpresaSis" => "Empresa nomina",
-            "EmpresaNombre" => "Empresa",
-            "TipoNomina" => "Tipo de nomina",
-            "FkidAreaSis" => "Área",
-            "AreaNombre" => "Área",
-            "FkidEmpresaNominaNom" => "Empresa nomina",
-            "EmpresaNominaNombre" => "Empresa nomina",
-            "FkidPersonaNom" => "Persona",
-            "PersonaClaveNombre" => "Persona",
-            "FkidConceptoNom" => "Concepto",
-            "ConceptoClaveNombre" => "Concepto",
-            "FkidPuestoNom" => "Puesto",
-            "FkidPuestoPadreNom" => "Puesto padre",
-            "PuestoNombre" => "Puesto",
-            "PuestoClaveNombre" => "Puesto",
-            "PuestoPadreNombre" => "Puesto padre",
-            "FkidNivelNom" => "Nivel",
-            "NivelClave" => "Nivel",
-            "FkidUniversoNom" => "Universo",
-            "UniversoDescripcion" => "Universo",
-            "FkidClasePuestoNom" => "Clase de puesto",
-            "ClasePuestoDescripcion" => "Clase de puesto",
-            "FkidNombramientoNom" => "Nombramiento",
-            "NombramientoDescripcion" => "Nombramiento",
-            "FkidPeriodo" => "Periodo",
-            "FkidPeriodoInicial" => "Periodo inicial",
-            "FkidPeriodoFinal" => "Periodo final",
-            "FkidContratoTerceroNom" => "Contrato de tercero",
-            "FkidConceptoProporcionalNom" => "Concepto proporcional",
-            "FkidFormaCalculoNom" => "Forma de calculo",
-            "FkidUnidadInfonavitNom" => "Unidad Infonavit",
-            "FkidNominaEspecialNom" => "Nomina especial",
-            "FkidContratoPres" => "Contrato",
-            "FkidCatalogoPadreNom" => "Catalogo padre",
-            "FechaIni" => "Fecha inicial",
-            "FechaFin" => "Fecha final",
-            "FechaInicio" => "Fecha inicial",
-            "DescripcionCorta" => "Descripcion corta",
-            "ValorDecimal1" => "Valor decimal 1",
-            "ValorDecimal2" => "Valor decimal 2",
-            "ValorEntero1" => "Valor entero 1",
-            "ValorEntero2" => "Valor entero 2",
-            "DatoExtra1" => "Dato extra 1",
-            "DatoExtra2" => "Dato extra 2",
-            "RegImss" => "Registro IMSS",
-            "PrimaRiesgoImss" => "Prima riesgo IMSS",
-            "ImpSdi" => "Importe SDI",
-            "PerDed" => "Percepcion/Deduccion",
-            "TasaInteres" => "Tasa de interes",
-            "NumeroPagos" => "Numero de pagos",
-            "ImporteMensualFijo" => "Importe mensual fijo",
-            "EstaCerrado" => "Cerrado",
-            "EstaComprometido" => "Comprometido",
-            "EstaDevengado" => "Devengado",
-            "EstaEjercido" => "Ejercido",
-            "EstaDescontado" => "Descontado",
-            "ZonaEconomica" => "Zona economica",
-            "QuincenaInicio" => "Quincena inicio",
-            "QuincenaFin" => "Quincena fin",
-            "TotalPeriodos" => "Total de periodos",
-            _ => Humanize(property.Name)
-        };
+            return "Tipo de nómina";
+        }
+
+        return Labels.TryGetValue(propertyName, out var label) ? label : Humanize(propertyName);
     }
 
     private static string Humanize(string value)
     {
-        var text = value
-            .Replace("Fkid", string.Empty, StringComparison.Ordinal)
-            .Replace("Pkid", "ID", StringComparison.Ordinal)
-            .Replace("Nom", string.Empty, StringComparison.Ordinal)
-            .Replace("Sis", string.Empty, StringComparison.Ordinal)
-            .Replace("Pres", string.Empty, StringComparison.Ordinal);
+        var text = value;
+        if (text.StartsWith("Fkid", StringComparison.Ordinal))
+            text = text[4..];
+        else if (text.StartsWith("Pkid", StringComparison.Ordinal))
+            text = "ID" + text[4..];
+
+        foreach (var suffix in new[] { "Nom", "Sis", "Pres" })
+        {
+            if (text.EndsWith(suffix, StringComparison.Ordinal))
+            {
+                text = text[..^suffix.Length];
+                break;
+            }
+        }
 
         return System.Text.RegularExpressions.Regex
             .Replace(text, "([a-z])([A-Z])", "$1 $2")

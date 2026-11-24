@@ -2,6 +2,7 @@ using Mapster;
 using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
@@ -25,6 +26,11 @@ namespace EG.Business.Services
         protected readonly ILogger<GenericService<TEntity, TDto, TResponse>>? _logger = logger;
         private const int DefaultPageSize = 10;
         private const int MaxPageSize = 250;
+        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, PropertyInfo>> PublicPropertyCache = new();
+        private static readonly PropertyInfo[] DefaultSearchProperties = GetPublicProperties(typeof(TEntity))
+            .Values
+            .Where(IsDefaultSearchProperty)
+            .ToArray();
 
         private static readonly string[] EmpresaPropertyCandidates =
         [
@@ -870,15 +876,13 @@ namespace EG.Business.Services
             var parameter = Expression.Parameter(typeof(TEntity), "x");
             Expression? finalExpression = null;
 
-            var properties = _searchFilterProperties.Count > 0
+            IEnumerable<PropertyInfo> properties = _searchFilterProperties.Count > 0
                 ? _searchFilterProperties
                     .Select(GetSearchProperty)
                     .Where(p => p != null)
                     .Cast<PropertyInfo>()
                     .ToList()
-                : typeof(TEntity).GetProperties()
-                    .Where(IsDefaultSearchProperty)
-                    .ToList();
+                : DefaultSearchProperties;
 
             foreach (var prop in properties)
             {
@@ -895,7 +899,7 @@ namespace EG.Business.Services
 
             foreach (var relation in _relationFilters)
             {
-                var relationProperty = typeof(TEntity).GetProperty(relation.Key);
+                var relationProperty = GetPublicProperty(typeof(TEntity), relation.Key);
                 if (relationProperty == null)
                 {
                     continue;
@@ -906,7 +910,7 @@ namespace EG.Business.Services
 
                 foreach (var propName in relation.Value)
                 {
-                    var relationProp = relationProperty.PropertyType.GetProperty(propName);
+                    var relationProp = GetPublicProperty(relationProperty.PropertyType, propName);
                     if (relationProp == null)
                     {
                         continue;
@@ -1080,9 +1084,23 @@ namespace EG.Business.Services
 
         private static PropertyInfo? GetSearchProperty(string propertyName)
         {
-            return typeof(TEntity).GetProperty(
-                propertyName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            return GetPublicProperty(typeof(TEntity), propertyName);
+        }
+
+        private static PropertyInfo? GetPublicProperty(Type type, string propertyName)
+        {
+            return GetPublicProperties(type).TryGetValue(propertyName, out var property)
+                ? property
+                : null;
+        }
+
+        private static IReadOnlyDictionary<string, PropertyInfo> GetPublicProperties(Type type)
+        {
+            return PublicPropertyCache.GetOrAdd(type, static propertyType =>
+                propertyType
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .GroupBy(property => property.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase));
         }
 
         protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query, string sortLabel, string sortDirection)
@@ -1090,16 +1108,13 @@ namespace EG.Business.Services
             if (string.IsNullOrWhiteSpace(sortLabel))
                 return query;
 
-            var propertyInfo = typeof(TEntity).GetProperty(sortLabel,
-                System.Reflection.BindingFlags.IgnoreCase |
-                System.Reflection.BindingFlags.Public |
-                System.Reflection.BindingFlags.Instance);
+            var propertyInfo = GetPublicProperty(typeof(TEntity), sortLabel);
 
             if (propertyInfo == null)
             {
                 foreach (var relation in _relationFilters)
                 {
-                    var relationProperty = typeof(TEntity).GetProperty(relation.Key);
+                    var relationProperty = GetPublicProperty(typeof(TEntity), relation.Key);
                     if (relationProperty != null && relation.Value.Contains(sortLabel))
                     {
                         return ApplyRelationOrdering(query, relation.Key, sortLabel, sortDirection);

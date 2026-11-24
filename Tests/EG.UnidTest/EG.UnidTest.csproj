@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Compile Include="../../FrontEnd/EG.Web/Pages/Modules/Nomina/Configuration/Catalogos/NominaCatalogUi.cs" Link="Presentation/NominaCatalogUi.cs" />
   </ItemGroup>
 
   <ItemGroup>

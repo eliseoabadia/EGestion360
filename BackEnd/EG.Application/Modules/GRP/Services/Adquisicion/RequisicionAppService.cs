@@ -360,18 +360,45 @@ namespace EG.Application.Services.Adquisicion
             {
                 var partidas = await _context.RequisicionPartida.AsNoTracking()
                     .Where(x => x.Activo && x.FkidRequisicionOrco == requisicionId.Value)
+                    .Select(x => new
+                    {
+                        x.Monto,
+                        x.FkidEgresoAutorizadoPres,
+                        x.FkidPartidaConta
+                    })
                     .ToListAsync();
                 if (partidas.Sum(x => x.Monto ?? 0m) > response.Importe.Value)
                     throw new ArgumentException("El nuevo importe es menor que el monto ya distribuido en partidas.");
 
+                if (partidas.Any(partida => !partida.FkidEgresoAutorizadoPres.HasValue))
+                    throw new ArgumentException("Existen partidas sin posicion presupuestal; corrigelas antes de editar la requisicion.");
+
+                var posicionesIds = partidas
+                    .Select(partida => partida.FkidEgresoAutorizadoPres!.Value)
+                    .Distinct()
+                    .ToArray();
+                var posiciones = await _context.VwEgresoDisponibles
+                    .AsNoTracking()
+                    .Where(posicion => posicionesIds.Contains(posicion.PkidEgresoAutorizado))
+                    .Select(posicion => new
+                    {
+                        posicion.PkidEgresoAutorizado,
+                        posicion.FkidPartidaConta,
+                        posicion.FkidAnioSis,
+                        posicion.FkidAreaSis,
+                        posicion.FkidProgramaPres,
+                        posicion.FkidFuenteFinanciamientoPres,
+                        posicion.FkidTipoGastoPres,
+                        posicion.FkidDigitoIdentificadorPres,
+                        posicion.FkidDestinoGastoPres,
+                        posicion.FkidPyPres
+                    })
+                    .ToDictionaryAsync(posicion => posicion.PkidEgresoAutorizado);
+
                 foreach (var partida in partidas)
                 {
-                    if (!partida.FkidEgresoAutorizadoPres.HasValue)
-                        throw new ArgumentException("Existen partidas sin posicion presupuestal; corrigelas antes de editar la requisicion.");
-
-                    var partidaPosicion = await _context.VwEgresoDisponibles.AsNoTracking().FirstOrDefaultAsync(x =>
-                        x.PkidEgresoAutorizado == partida.FkidEgresoAutorizadoPres.Value);
-                    if (partidaPosicion == null ||
+                    var partidaPosicionId = partida.FkidEgresoAutorizadoPres!.Value;
+                    if (!posiciones.TryGetValue(partidaPosicionId, out var partidaPosicion) ||
                         partidaPosicion.FkidPartidaConta != partida.FkidPartidaConta ||
                         partidaPosicion.FkidAnioSis != response.FkidAnioSis ||
                         partidaPosicion.FkidAreaSis != response.FkidAreaSis ||
