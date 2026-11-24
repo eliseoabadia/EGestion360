@@ -42,7 +42,11 @@ namespace EG.Application.Services.Adquisicion
                 return false;
             }
 
-            var userId = usuarioId > 0 ? usuarioId : 1;
+            if (usuarioId <= 0)
+            {
+                throw new UnauthorizedAccessException("Se requiere una identidad autenticada para registrar el proyecto de presupuesto.");
+            }
+
             var descripcion = proyectoPres.Descripcion ?? string.Empty;
 
             await context.Database.ExecuteSqlRawAsync(
@@ -81,7 +85,7 @@ namespace EG.Application.Services.Adquisicion
                 """,
                 new SqlParameter("@ProyectoId", proyectoId.Value),
                 new SqlParameter("@Descripcion", SqlDbType.NVarChar, 256) { Value = descripcion },
-                new SqlParameter("@UsuarioId", userId));
+                new SqlParameter("@UsuarioId", usuarioId));
 
             return true;
         }

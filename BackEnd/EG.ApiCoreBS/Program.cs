@@ -6,6 +6,7 @@ using EG.ApiCoreBS.Middleware;
 using EG.ApiCoreBS.Reporting;
 using EG.ApiCoreBS.Services.Licensing;
 using EG.Business.Mapping.General;
+using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.Platform.Licensing;
 using EG.Domain.Platform.Settings;
@@ -38,15 +39,45 @@ try
     logger.LogInformation("=== INICIANDO APLICACION ===");
 
     var builder = WebApplication.CreateBuilder(args);
+    var databaseConnection = builder.Configuration.GetConnectionString(Constants.BD_CON);
+    if (string.IsNullOrWhiteSpace(databaseConnection))
+    {
+        throw new InvalidOperationException(
+            $"Falta la cadena de conexión '{Constants.BD_CON}'. Configúrala con User Secrets en desarrollo o con variables de entorno en el servidor.");
+    }
+
+    var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
+    if (string.IsNullOrWhiteSpace(key) || Encoding.UTF8.GetByteCount(key) < 32)
+    {
+        throw new InvalidOperationException(
+            "JsonWebTokenKeys:IssuerSigningKey debe configurarse fuera de los archivos del repositorio y contener al menos 32 bytes UTF-8.");
+    }
 
     TypeAdapterConfig.GlobalSettings.Scan(typeof(EmpresaMappingProfile).Assembly);
 
-    var corsOrigins = builder.Configuration.GetSection("CorsSettings:AllowOrigins").Get<string[]>() ?? [];
+    var corsOrigins = (builder.Configuration.GetSection("CorsSettings:AllowOrigins").Get<string[]>() ?? [])
+        .Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .Select(origin => origin.Trim())
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+    var allowAnyOrigin = corsOrigins.Length == 0 || corsOrigins.Any(origin => origin == "*");
+    if (allowAnyOrigin && !builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException(
+            "CorsSettings:AllowOrigins debe declarar orígenes explícitos fuera del entorno Development.");
+    }
+    if (!builder.Environment.IsDevelopment() && corsOrigins.Any(origin =>
+            !Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
+    {
+        throw new InvalidOperationException(
+            "CorsSettings:AllowOrigins solo puede incluir URLs HTTPS fuera del entorno Development.");
+    }
+
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowFrontend", policy =>
         {
-            if (corsOrigins.Length == 0 || corsOrigins.Contains("*"))
+            if (allowAnyOrigin)
             {
                 policy.AllowAnyOrigin()
                       .AllowAnyMethod()
@@ -123,7 +154,6 @@ try
         c.CustomSchemaIds(GetSwaggerSchemaId);
     });
 
-    var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
     var issuer = builder.Configuration["JsonWebTokenKeys:ValidIssuer"];
     var audience = builder.Configuration["JsonWebTokenKeys:ValidAudience"];
     var clockSkewMinutes = builder.Configuration.GetValue<double?>("JsonWebTokenKeys:ClockSkewMinutes") ?? 1d;

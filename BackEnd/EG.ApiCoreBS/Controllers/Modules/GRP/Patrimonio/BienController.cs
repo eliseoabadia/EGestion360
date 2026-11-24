@@ -34,6 +34,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpGet]
+        [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<BienResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
@@ -41,6 +42,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<BienResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
@@ -48,6 +50,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpPost]
+        [Authorize(Policy = "Patrimonio|Bienes|new")]
         public async Task<ActionResult<PagedResult<BienResponse>>> Create([FromBody] BienResponse response)
         {
             var result = await _appService.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -61,6 +64,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Patrimonio|Bienes|update")]
         public async Task<ActionResult<PagedResult<BienResponse>>> Update(int id, [FromBody] BienResponse response)
         {
             var result = await _appService.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -73,6 +77,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Patrimonio|Bienes|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _appService.DeleteAsync(id);
@@ -85,6 +90,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<BienResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
@@ -123,6 +129,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
                 "Patrimonio|Clasificacion_Bienes_Muebles|update")).Succeeded;
 
         [HttpPost("tipos-bien-capitulo-5000")]
+        [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetTiposBienCapitulo5000([FromBody] PagedRequest request)
         {
             var query = _context.TipoBiens.AsNoTracking().Where(x => x.Activo &&
@@ -141,6 +148,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<BienResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

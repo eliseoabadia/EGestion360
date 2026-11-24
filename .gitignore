@@ -91,3 +91,10 @@ Desktop.ini
 /tmp/test-*/
 /tmp/verify-*/
 /.codex-tmp/
+
+# Configuración y credenciales locales
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+**/secrets.json

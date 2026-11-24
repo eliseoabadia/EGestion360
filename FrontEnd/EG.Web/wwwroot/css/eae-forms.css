@@ -21,8 +21,9 @@
 }
 .mud-dialog:is(.eae-form-dialog, :has(.eae-form-dialog)) > .mud-dialog-title::before { display: none; }
 .mud-dialog:is(.eae-form-dialog, :has(.eae-form-dialog)) .mud-dialog-content {
-    flex: 1 1 auto; min-height: 0; min-width: 0; overflow-y: auto !important;
-    overscroll-behavior: contain; scrollbar-gutter: stable; padding: 18px 20px !important;
+    flex: 1 1 auto; min-height: 0; min-width: 0; overflow-x: hidden !important; overflow-y: auto !important;
+    overscroll-behavior: contain; scroll-padding-block: 14px; scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch; padding: 18px 20px !important;
     background: var(--mud-palette-surface); container-type: inline-size;
 }
 .mud-dialog:is(.eae-form-dialog, :has(.eae-form-dialog)) .mud-dialog-actions {

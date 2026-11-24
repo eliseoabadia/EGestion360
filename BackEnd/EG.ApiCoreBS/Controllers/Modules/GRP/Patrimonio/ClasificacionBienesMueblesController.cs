@@ -9,7 +9,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "Patrimonio|Clasificacion_Bienes_Muebles|view")]
     public class ClasificacionBienesMueblesController : ControllerBase
     {
         private readonly IClasificacionBienesMueblesAppService _service;

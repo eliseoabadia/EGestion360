@@ -3,6 +3,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>egestion360-builder</UserSecretsId>
 	</PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackEnd\EG.Infraestructure\EG.Infraestructure.csproj" />
