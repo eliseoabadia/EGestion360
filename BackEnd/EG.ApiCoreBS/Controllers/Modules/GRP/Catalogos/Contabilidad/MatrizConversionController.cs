@@ -1,5 +1,5 @@
+using EG.Application.Interfaces.General;
 using Mapster;
-using EG.ApiCoreBS.Helpers;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Application.Interfaces.Contabilidad;
@@ -9,10 +9,8 @@ using EG.Domain.DTOs.Requests;
 using EG.Domain.DTOs.Requests.Contabilidad;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 {
@@ -23,16 +21,19 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     {
         private readonly IMatrizConversionService _service;
         private readonly IUserContextService _userContext;
-        private readonly EGestionContext _context;
+        private readonly ICatalogLookupAppService _lookups;
+        private readonly IMatrizConversionValidationService _validation;
 
         public MatrizConversionController(
             IMatrizConversionService service,
             IUserContextService userContext,
-            EGestionContext context)
+            ICatalogLookupAppService lookups,
+            IMatrizConversionValidationService validation)
         {
             _service = service;
             _userContext = userContext;
-            _context = context;
+            _lookups = lookups;
+            _validation = validation;
         }
 
         [HttpGet]
@@ -76,6 +77,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpPost]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion|new")]
         public async Task<ActionResult<PagedResult<MatrizConversionResponse>>> Create([FromBody] MatrizConversionResponse request)
         {
             if (!ModelState.IsValid)
@@ -124,6 +126,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion|update")]
         public async Task<ActionResult<PagedResult<MatrizConversionResponse>>> Update(int id, [FromBody] MatrizConversionResponse request)
         {
             if (!ModelState.IsValid)
@@ -174,6 +177,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion|delete")]
         public async Task<ActionResult<PagedResult<MatrizConversionResponse>>> Delete(int id)
         {
             try
@@ -261,310 +265,150 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetPrograma")]
         public async Task<IActionResult> GetPrograma([FromQuery] int? idAnio = null)
         {
-            var query = _context.Set<Programa>().AsQueryable();
-            if (idAnio.HasValue)
-            {
-                query = query.Where(p => p.MatrizConversions.Any(mc => mc.FkidAnioSis == idAnio.Value && mc.Activo));
-            }
-
-            var programas = await query
-                .Select(p => new { PkidCuenta = p.PkidPrograma, ClaveNombre = p.Clave })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(programas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.Programa, idAnio);
+            return Ok(items.Select(item => new { PkidCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetAllProgramas")]
         public async Task<IActionResult> GetAllProgramas()
         {
-            var programas = await _context.Set<Programa>()
-                .Select(p => new { PkidCuenta = p.PkidPrograma, ClaveNombre = p.Clave })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(programas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.Programa);
+            return Ok(items.Select(item => new { PkidCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetAllProgramasLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetAllProgramasLookupPaginado(int page = 1, int pageSize = 25, string? filter = null, int? idAnio = null)
         {
-            var query = _context.Set<Programa>()
-                .Where(p => p.Activo && (!idAnio.HasValue || p.FkidAnioSis == idAnio.Value))
-                .OrderBy(p => p.Clave)
-                .Select(p => new LookupItem
-                {
-                    Id = p.PkidPrograma,
-                    Text = (p.Clave ?? "") + " - " + (p.Descripcion ?? "")
-                });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.Programa, page, pageSize, filter, idAnio));
         }
 
         [HttpGet("GetPartida")]
         public async Task<IActionResult> GetPartida()
         {
-            var partidas = await _context.Set<Partidum1>()
-                .Where(p => p.Activo)
-                .Select(p => new { PkidCuenta = p.PkidPartida, ClaveNombre = p.Descripcion })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(partidas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.Partida);
+            return Ok(items.Select(item => new { PkidCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetPartidaLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetPartidaLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.Set<Partidum1>()
-                .Where(p => p.Activo)
-                .OrderBy(p => p.Descripcion)
-                .Select(p => new LookupItem
-                {
-                    Id = p.PkidPartida,
-                    Text = p.Descripcion ?? ""
-                });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.Partida, page, pageSize, filter));
         }
 
         [HttpGet("GetTipoGastoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetTipoGastoLookupPaginado(
             int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.TipoGastos.AsNoTracking().Where(x => x.Activo)
-                .OrderBy(x => x.Clave)
-                .Select(x => new LookupItem { Id = x.PkidTipoGasto, Text = x.Clave + " - " + x.Descripcion });
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.TipoGasto, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableAprobado")]
         public async Task<IActionResult> GetCuentaContableAprobado()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 1") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaAprobado);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableAprobadoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableAprobadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 1") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaAprobado, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContablePorEjercer")]
         public async Task<IActionResult> GetCuentaContablePorEjercer()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 2") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaPorEjercer);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContablePorEjercerLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePorEjercerLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 2") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaPorEjercer, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableModificado")]
         public async Task<IActionResult> GetCuentaContableModificado()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 3") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaModificado);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableModificadoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableModificadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 3") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaModificado, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableComprometido")]
         public async Task<IActionResult> GetCuentaContableComprometido()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 4") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaComprometido);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableComprometidoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableComprometidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 4") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaComprometido, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableDevengado")]
         public async Task<IActionResult> GetCuentaContableDevengado()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 5") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaDevengado);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableDevengadoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableDevengadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 5") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaDevengado, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableEjercido")]
         public async Task<IActionResult> GetCuentaContableEjercido()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 6") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaEjercido);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableEjercidoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableEjercidoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 6") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaEjercido, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContablePagado")]
         public async Task<IActionResult> GetCuentaContablePagado()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 7") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaPagado);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContablePagadoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContablePagadoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("8 2 7") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaPagado, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaContableGasto")]
         public async Task<IActionResult> GetCuentaContableGasto()
         {
-            var cuentas = await _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("5") && c.NivelCuenta == 7)
-                .Select(c => new { c.PkIdCuenta, c.ClaveNombre })
-                .Distinct()
-                .ToListAsync();
-
-            return Ok(cuentas);
+            var items = await _lookups.GetLegacyAsync(CatalogLookupKind.CuentaGasto);
+            return Ok(items.Select(item => new { PkIdCuenta = item.Id, ClaveNombre = item.Text }));
         }
 
         [HttpGet("GetCuentaContableGastoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaContableGastoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas
-                .Where(c => c.ClaveOrd.StartsWith("5") && c.NivelCuenta == 7)
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? "" });
-
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaGasto, page, pageSize, filter));
         }
 
         private async Task<string?> ValidateAccountingRulesAsync(MatrizConversionResponse request)
         {
-            var programaValido = await _context.Set<Programa>().AsNoTracking().AnyAsync(p =>
-                p.PkidPrograma == request.FkidProgramaPres &&
-                p.FkidAnioSis == request.FkidAnioSis &&
-                p.Activo);
-            if (!programaValido)
-                return "El programa no pertenece al ejercicio seleccionado o esta inactivo.";
-
-            if (!await _context.Set<Partidum1>().AsNoTracking().AnyAsync(p => p.PkidPartida == request.FkidPartidaSis && p.Activo))
-                return "La partida seleccionada no existe o esta inactiva.";
-
-            if (!await _context.TipoGastos.AsNoTracking().AnyAsync(t => t.PkidTipoGasto == request.FkidTipoGastoPres && t.Activo))
-                return "El tipo de gasto seleccionado no existe o esta inactivo.";
-
-            var reglas = new[]
-            {
-                (Id: request.FkidCuentaContableAprobado, Prefijo: "8 2 1"),
-                (Id: request.FkidCuentaContablePorEjercer, Prefijo: "8 2 2"),
-                (Id: request.FkidCuentaContableModificado, Prefijo: "8 2 3"),
-                (Id: request.FkidCuentaContableComprometido, Prefijo: "8 2 4"),
-                (Id: request.FkidCuentaContableDevengado, Prefijo: "8 2 5"),
-                (Id: request.FkidCuentaContableEjercido, Prefijo: "8 2 6"),
-                (Id: request.FkidCuentaContablePagado, Prefijo: "8 2 7"),
-                (Id: request.FkidCuentaContableGasto, Prefijo: "5")
-            };
-
-            var cuentas = await _context.VwCuentas.AsNoTracking()
-                .Where(c => reglas.Select(r => r.Id).Contains(c.PkIdCuenta))
-                .ToDictionaryAsync(c => c.PkIdCuenta);
-
-            foreach (var regla in reglas)
-            {
-                if (!cuentas.TryGetValue(regla.Id, out var cuenta) ||
-                    !cuenta.Activo || cuenta.NivelCuenta != 7 ||
-                    string.IsNullOrWhiteSpace(cuenta.ClaveOrd) ||
-                    !cuenta.ClaveOrd.StartsWith(regla.Prefijo))
-                {
-                    return $"La cuenta {regla.Id} no cumple la naturaleza {regla.Prefijo} de nivel 7.";
-                }
-            }
-
-            return null;
+            return await _validation.ValidateAsync(request);
         }
 
         private static PagedResult<MatrizConversionResponse> ValidationFailure(string message) => new()

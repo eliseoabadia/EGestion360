@@ -64,6 +64,13 @@ try {
     })
     Add-Violations 'EG003 excepcion tecnica asignada a una respuesta visual' $rawResponseErrors
 
+    $controllerPersistence = Invoke-Ripgrep @(
+        '-n', '--glob', '*.cs',
+        '\bEGestionContext\b|\bDbContext\b|\bSqlConnection\b|\.Database\.|ExecuteSqlRaw',
+        'BackEnd/EG.ApiCoreBS/Controllers'
+    )
+    Add-Violations 'EG006 persistencia directa en controlador' $controllerPersistence
+
     $grpRoot = (Resolve-Path 'FrontEnd\EG.Web\Pages\Modules\GRP').Path
     Get-ChildItem -LiteralPath $grpRoot -Recurse -Filter '*.razor' | ForEach-Object {
         $relative = $_.FullName.Substring($grpRoot.Length + 1)

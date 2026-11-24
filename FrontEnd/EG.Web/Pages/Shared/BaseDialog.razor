@@ -1,5 +1,9 @@
 ﻿@using MudBlazor
 
+@inject ILogger<BaseDialog> Logger
+@inject ISnackbar Snackbar
+@implements IDisposable
+
 <MudDialog MaxWidth="@MaxWidth" FullWidth="true" CloseOnEscapeKey="false" Class="base-dialog mission-form-dialog">
     <TitleContent>
         <div class="mission-base-title">
@@ -23,12 +27,12 @@
     <DialogActions>
         @if (ShowActions)
         {
-            <MudButton OnClick="OnCancel" Disabled="@Loading">@CancelText</MudButton>
+            <MudButton OnClick="OnCancel" Disabled="@(Loading || _confirming)">@CancelText</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="@ActionColor"
-                       OnClick="OnConfirm"
-                       Disabled="@(Loading || !CanConfirm)">
-                @if (Loading)
+                       OnClick="ConfirmAsync"
+                       Disabled="@(Loading || _confirming || !CanConfirm)">
+                @if (Loading || _confirming)
                 {
                     <MudProgressCircular Size="Size.Small" Color="Color.Default" Indeterminate="true" />
                     <span class="ml-2">@LoadingActionText</span>
@@ -58,5 +62,50 @@
     [Parameter] public bool CanConfirm { get; set; } = true;
     [Parameter] public EventCallback OnConfirm { get; set; }
     
-    protected void OnCancel() => MudDialog.Cancel();
+    private bool _confirming;
+
+    private async Task ConfirmAsync()
+    {
+        if (_confirming || Loading || !CanConfirm)
+        {
+            return;
+        }
+
+        _confirming = true;
+        var originalOptions = MudDialog.Options;
+        try
+        {
+            await MudDialog.SetOptionsAsync(originalOptions with
+            {
+                BackdropClick = false,
+                CloseOnEscapeKey = false,
+                CloseButton = false
+            });
+            await OnConfirm.InvokeAsync();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "No se pudo confirmar {Title}", Title);
+            Snackbar.Add("No fue posible completar la operación. Intenta nuevamente.", Severity.Error);
+        }
+        finally
+        {
+            _confirming = false;
+            if (!_disposed)
+            {
+                await MudDialog.SetOptionsAsync(originalOptions);
+            }
+        }
+    }
+
+    protected void OnCancel()
+    {
+        if (!Loading && !_confirming)
+        {
+            MudDialog.Cancel();
+        }
+    }
+
+    private bool _disposed;
+    public void Dispose() => _disposed = true;
 }

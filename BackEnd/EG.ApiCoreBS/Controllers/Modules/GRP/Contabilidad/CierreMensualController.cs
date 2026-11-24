@@ -23,6 +23,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpGet]
+        [Authorize(Policy = "Contabilidad|Cierre_Mensual|view")]
         public async Task<ActionResult<PagedResult<CierreMensualResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -30,6 +31,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Contabilidad|Cierre_Mensual|view")]
         public async Task<ActionResult<PagedResult<CierreMensualResponse>>> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
@@ -37,6 +39,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = "Contabilidad|Cierre_Mensual|view")]
         public async Task<ActionResult<PagedResult<CierreMensualResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
@@ -44,6 +47,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("estado")]
+        [Authorize(Policy = "Contabilidad|Cierre_Mensual|view")]
         public async Task<ActionResult<PagedResult<CierreMensualResponse>>> Estado()
         {
             var result = await _service.GetEstadoAsync();
@@ -51,8 +55,15 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("aplicar")]
-        public async Task<ActionResult<PagedResult<CierreMensualResponse>>> Aplicar()
+        public async Task<ActionResult<PagedResult<CierreMensualResponse>>> Aplicar([FromServices] IAuthorizationService authorization)
         {
+            var canCreate = await authorization.AuthorizeAsync(User, null, "Contabilidad|Cierre_Mensual|new");
+            var canUpdate = await authorization.AuthorizeAsync(User, null, "Contabilidad|Cierre_Mensual|update");
+            if (!canCreate.Succeeded && !canUpdate.Succeeded)
+            {
+                return Forbid();
+            }
+
             var result = await _service.AplicarCierreMensualAsync(_userContext.GetCurrentUserId());
             if (!result.Success)
             {
@@ -63,6 +74,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = "Contabilidad|Cierre_Mensual|view")]
         public async Task<ActionResult<PagedResult<CierreMensualResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

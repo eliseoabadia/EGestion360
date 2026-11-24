@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EG.ApiCoreBS.Controllers.Modules.GRP.Administracion.Seguridad;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "Seguridad|Bitacora|view")]
 [Route("api/[controller]")]
 public sealed class BitacoraController(IBitacoraService service) : ControllerBase
 {

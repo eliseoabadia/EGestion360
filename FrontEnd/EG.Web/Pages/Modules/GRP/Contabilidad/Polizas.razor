@@ -72,10 +72,10 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.Send"
                                                    Color="Color.Success"
                                                    Size="Size.Small"
-                                                   Disabled="@(_preparingFirmaPolizaId == context.Item.PkidPoliza || !context.Item.PuedeEnviarFirma)"
+                                                   Disabled="@(!CanUpdate || _preparingFirmaPolizaId == context.Item.PkidPoliza || !context.Item.PuedeEnviarFirma)"
                                                    OnClick="@(() => PrepararPolizaParaFirma(context.Item, true))" />
                                 </MudTooltip>
-                                @if (context.Item.PuedeRechazarFirma)
+                                @if (CanUpdate && context.Item.PuedeRechazarFirma)
                                 {
                                     <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
                                         <MudIconButton Icon="@Icons.Material.Filled.Undo"
@@ -199,11 +199,11 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Send"
                                        Color="Color.Success"
                                        Size="Size.Small"
-                                       Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza || !SelectedPoliza.PuedeEnviarFirma)"
+                                       Disabled="@(!CanUpdate || _preparingFirmaPolizaId == SelectedPoliza.PkidPoliza || !SelectedPoliza.PuedeEnviarFirma)"
                                        OnClick="@(() => PrepararPolizaParaFirma(SelectedPoliza, true))"
                                        Class="ml-1" />
                     </MudTooltip>
-                    @if (SelectedPoliza.PuedeRechazarFirma)
+                    @if (CanUpdate && SelectedPoliza.PuedeRechazarFirma)
                     {
                         <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
                             <MudIconButton Icon="@Icons.Material.Filled.Undo"

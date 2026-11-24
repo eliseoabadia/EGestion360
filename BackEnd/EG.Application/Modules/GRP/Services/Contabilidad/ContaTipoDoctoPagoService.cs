@@ -50,7 +50,6 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.UsuarioCreacion = usuarioId.ToString();
             dto.FechaCreacion = DateTime.UtcNow;
 
-            await _service.CanAddAsync(dto);
             await _service.AddAsync(dto);
 
             var created = _service.GetQueryWithIncludes()
@@ -70,7 +69,6 @@ namespace EG.ApiCoreBS.Services.Contabilidad
             dto.UsuarioModificacion = usuarioId.ToString();
             dto.FechaModificacion = DateTime.UtcNow;
 
-            await _service.CanUpdateAsync(id, dto);
             await _service.UpdateAsync(id, dto);
 
             return await _service.GetByIdAsync(id);

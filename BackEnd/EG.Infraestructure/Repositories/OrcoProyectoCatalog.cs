@@ -4,7 +4,7 @@ using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-namespace EG.Application.Services.Adquisicion
+namespace EG.Infrastructure
 {
     public static class OrcoProyectoCatalog
     {

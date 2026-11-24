@@ -61,8 +61,6 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
 
-            var empresaContexto = userContext.TryGetCurrentEmpresaId();
-
             var dto = new DocumentRagUploadRequest
             {
                 SessionId = request.SessionId,
@@ -71,7 +69,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.DocumentRag
                 Controlador = request.Controlador,
                 Servicio = request.Servicio,
                 EntidadId = request.EntidadId,
-                FkidEmpresaSis = empresaContexto ?? request.FkidEmpresaSis,
+                FkidEmpresaSis = userContext.GetCurrentEmpresaId(),
                 Titulo = request.Titulo,
                 Descripcion = request.Descripcion,
                 NombreOriginal = request.File.FileName,

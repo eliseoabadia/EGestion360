@@ -1,13 +1,12 @@
+using EG.Domain.Interfaces;
+using EG.Application.Interfaces.General;
 using Mapster;
-using EG.ApiCoreBS.Helpers;
 using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
 {
@@ -17,14 +16,14 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
     public class MatrizIngresoController : EG.ApiCoreBS.Controllers.BaseApiController
     {
         private readonly IMatrizIngresoService _service;
-        private readonly EGestionContext _context;
+        private readonly ICatalogLookupAppService _lookups;
 
         public MatrizIngresoController(
             IMatrizIngresoService service,
-            EGestionContext context)
+            ICatalogLookupAppService lookups)
         {
             _service = service;
-            _context = context;
+            _lookups = lookups;
         }
 
         [HttpGet]
@@ -68,6 +67,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpPost]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion_Ingresos|new")]
         public async Task<ActionResult<PagedResult<MatrizIngresoResponse>>> Create([FromBody] MatrizIngresoResponse request)
         {
             if (!ModelState.IsValid)
@@ -103,6 +103,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion_Ingresos|update")]
         public async Task<ActionResult<PagedResult<MatrizIngresoResponse>>> Update(int id, [FromBody] MatrizIngresoResponse request)
         {
             if (!ModelState.IsValid)
@@ -147,6 +148,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Contabilidad|Matriz_Conversion_Ingresos|delete")]
         public async Task<ActionResult<PagedResult<MatrizIngresoResponse>>> Delete(int id)
         {
             try
@@ -247,21 +249,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Contabilidad
         [HttpGet("GetCuentaPresupuestalLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaPresupuestalLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas.AsNoTracking()
-                .Where(c => c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("8 1"))
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? string.Empty });
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaPresupuestalIngreso, page, pageSize, filter));
         }
 
         [HttpGet("GetCuentaDepositoLookupPaginado")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetCuentaDepositoLookupPaginado(int page = 1, int pageSize = 25, string? filter = null)
         {
-            var query = _context.VwCuentas.AsNoTracking()
-                .Where(c => c.Activo && c.NivelCuenta == 7 && c.ClaveOrd.StartsWith("1"))
-                .OrderBy(c => c.ClaveNombre)
-                .Select(c => new LookupItem { Id = c.PkIdCuenta, Text = c.ClaveNombre ?? string.Empty });
-            return Ok(await LookupPagingHelper.ToPagedResultAsync(query, page, pageSize, filter));
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.CuentaDepositoIngreso, page, pageSize, filter));
         }
 
         private static PagedResult<MatrizIngresoResponse> ValidationFailure(string message) => new()

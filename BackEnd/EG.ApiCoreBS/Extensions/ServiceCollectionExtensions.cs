@@ -79,6 +79,9 @@ namespace EG.ApiCoreBS.Extensions
 
             // Application services - Account
             services.AddScoped<IAuthAppService, AuthAppService>();
+            services.AddScoped<IPasswordResetAppService, PasswordResetAppService>();
+            services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+            services.AddSingleton<IPasswordResetTokenService, PasswordResetTokenService>();
             services.AddScoped<INavigateAppService, NavigateAppService>();
 
             // Application services - General
@@ -96,6 +99,19 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<INotificacionAppService, NotificacionAppService>();
             services.AddScoped<IUserProfileAppService, UserProfileAppService>();
             services.AddScoped<IEnvioWorkflowService, EnvioWorkflowService>();
+            services.AddScoped<IEnvioWorkflowRepository, EnvioWorkflowRepository>();
+            services.AddScoped<IResguardoMovimientoAppService, ResguardoMovimientoAppService>();
+            services.AddScoped<IResguardoMovimientoQueries, ResguardoMovimientoQueries>();
+            services.AddScoped<ICatalogLookupQueries, CatalogLookupQueries>();
+            services.AddScoped<IRepositoryProvider, RepositoryProvider>();
+            services.AddScoped<IPaaaPersistence, PaaaPersistence>();
+            services.AddScoped<IPaaaService, PaaaService>();
+            services.AddScoped<IPaaaAppService, PaaaAppService>();
+            services.AddScoped<ICatalogLookupAppService, CatalogLookupAppService>();
+            services.AddScoped<IRhIncidenciaQueries, RhIncidenciaQueries>();
+            services.AddScoped<INominaRhIncidenciaListadoAppService, NominaRhIncidenciaListadoAppService>();
+            services.AddScoped<IMatrizConversionReferences, MatrizConversionReferences>();
+            services.AddScoped<IMatrizConversionValidationService, EG.Application.Services.Contabilidad.MatrizConversionValidationService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
             services.AddScoped<IUsuarioDepartamentoAppService, UsuarioDepartamentoAppService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();

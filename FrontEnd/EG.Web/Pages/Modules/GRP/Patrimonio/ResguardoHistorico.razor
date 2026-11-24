@@ -102,6 +102,11 @@
             state.SortDirection,
             EmpresaFilters);
 
+        if (response?.Success != true)
+        {
+            throw new InvalidOperationException("No fue posible consultar el historial de resguardos.");
+        }
+
         return new TableData<ResguardoMovimientoResponse>
         {
             Items = response?.Items ?? new List<ResguardoMovimientoResponse>(),

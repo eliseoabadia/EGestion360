@@ -1,3 +1,4 @@
+using EG.Infrastructure;
 using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
 using EG.Common.Exceptions;

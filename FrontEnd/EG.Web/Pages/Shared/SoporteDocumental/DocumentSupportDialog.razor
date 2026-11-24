@@ -8,6 +8,7 @@
 @inject IDocumentSupportService DocumentService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject ILogger<DocumentSupportDialog> Logger
 
 <MudDialog Class="document-support-dialog">
     <TitleContent>
@@ -570,8 +571,9 @@
         {
             await JS.InvokeVoidAsync("documentSupport.revokePreviewUrl", InputId);
         }
-        catch (JSDisconnectedException)
+        catch (JSDisconnectedException exception)
         {
+            Logger.LogDebug(exception, "La vista documental se desconectó antes de liberar la previsualización.");
         }
     }
 

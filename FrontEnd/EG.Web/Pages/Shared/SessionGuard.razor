@@ -159,7 +159,8 @@ else
     private static bool IsPublicPath(string path)
     {
         return path.StartsWith("/login", StringComparison.OrdinalIgnoreCase)
-            || path.StartsWith("/account/login", StringComparison.OrdinalIgnoreCase);
+            || path.StartsWith("/account/login", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(path.Split('?', '#')[0], "/resetPassword", StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()

@@ -25,6 +25,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpGet]
+        [Authorize(Policy = "Contabilidad|Polizas|view")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -32,6 +33,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Contabilidad|Polizas|view")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
@@ -39,6 +41,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost]
+        [Authorize(Policy = "Contabilidad|Polizas|new")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> Create([FromBody] PolizaResponse response)
         {
             var result = await _service.CreateAsync(response, _userContext.GetCurrentUserId());
@@ -51,6 +54,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("ai-import/preview")]
+        [Authorize(Policy = "Contabilidad|Polizas|new")]
         [RequestSizeLimit(MaxAiImportFileSize)]
         public async Task<ActionResult<PagedResult<PolizaAiImportPreviewResponse>>> PreviewAiImport([FromForm] PolizaAiImportUploadFormRequest request)
         {
@@ -78,11 +82,9 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
 
-            var empresaContexto = _userContext.TryGetCurrentEmpresaId();
-
             var header = new PolizaAiImportHeaderRequest
             {
-                FkidEmpresaSis = empresaContexto ?? request.FkidEmpresaSis,
+                FkidEmpresaSis = _userContext.GetCurrentEmpresaId(),
                 FkidAnioSis = request.FkidAnioSis,
                 Anio = request.Anio,
                 FkidMesSis = request.FkidMesSis,
@@ -112,6 +114,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("ai-import/confirm")]
+        [Authorize(Policy = "Contabilidad|Polizas|new")]
         public async Task<ActionResult<PagedResult<PolizaAiImportPreviewResponse>>> ConfirmAiImport([FromBody] PolizaAiImportConfirmRequest request)
         {
             request.Header.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
@@ -120,6 +123,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "Contabilidad|Polizas|update")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> Update(int id, [FromBody] PolizaResponse response)
         {
             var result = await _service.UpdateAsync(id, response, _userContext.GetCurrentUserId());
@@ -132,6 +136,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Contabilidad|Polizas|delete")]
         public async Task<ActionResult<PagedResult<bool>>> Delete(int id)
         {
             var result = await _service.DeleteAsync(id, _userContext.GetCurrentUserId());
@@ -144,6 +149,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = "Contabilidad|Polizas|view")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _service.GetAllPaginadoAsync(request);
@@ -151,6 +157,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = "Contabilidad|Polizas|view")]
         public async Task<ActionResult<PagedResult<PolizaResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

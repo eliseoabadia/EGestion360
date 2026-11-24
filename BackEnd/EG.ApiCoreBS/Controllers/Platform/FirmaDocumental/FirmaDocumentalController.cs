@@ -1,6 +1,7 @@
 using DevExpress.XtraReports.Services;
 using EG.ApiCoreBS.Reporting;
 using EG.Application.Interfaces.FirmaDocumental;
+using EG.Application.Interfaces.Contabilidad;
 using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.SoporteDocumental;
 using EG.Application.Services.FirmaDocumental.Models;
@@ -11,10 +12,8 @@ using EG.Domain.DTOs.Responses.FirmaDocumental;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.DTOs.Responses.SoporteDocumental;
 using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
 {
@@ -28,7 +27,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
         IReportProvider reportProvider,
         IUserContextService userContext,
         IEnvioWorkflowService envioWorkflow,
-        EGestionContext context) : ControllerBase
+        IPolizaService polizas) : ControllerBase
     {
         [HttpGet("proveedores")]
         public async Task<ActionResult<PagedResult<FirmaProveedorResponse>>> ObtenerProveedores()
@@ -85,6 +84,7 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
         }
 
         [HttpPost("polizas/{polizaId:int}/preparar-firma")]
+        [Authorize(Policy = "Contabilidad|Polizas|update")]
         public async Task<ActionResult<PagedResult<DocumentoResponse>>> PrepararPolizaParaFirma(int polizaId)
         {
             if (polizaId <= 0)
@@ -98,12 +98,9 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
             }
 
             var usuarioActual = userContext.GetCurrentUserId();
-            var empresaId = userContext.TryGetCurrentEmpresaId();
-            var poliza = await context.Polizas
-                .AsNoTracking()
-                .Where(x => x.PkidPoliza == polizaId && x.Activo)
-                .Select(x => new { x.PkidPoliza, x.EstaBalanceado })
-                .FirstOrDefaultAsync();
+            var empresaId = userContext.GetCurrentEmpresaId();
+            var polizaResult = await polizas.GetByIdAsync(polizaId);
+            var poliza = polizaResult.Success ? polizaResult.Data : null;
             if (poliza == null)
             {
                 return NotFound(new PagedResult<DocumentoResponse>
@@ -221,14 +218,13 @@ namespace EG.ApiCoreBS.Controllers.Platform.FirmaDocumental
         }
 
         [HttpPost("polizas/{polizaId:int}/rechazar-envio")]
+        [Authorize(Policy = "Contabilidad|Polizas|update")]
         public async Task<ActionResult<PagedResult<bool>>> RechazarEnvioPoliza(
             int polizaId,
             [FromBody] string? motivo = null)
         {
-            var exists = await context.Polizas
-                .AsNoTracking()
-                .AnyAsync(x => x.PkidPoliza == polizaId && x.Activo);
-            if (!exists)
+            var polizaResult = await polizas.GetByIdAsync(polizaId);
+            if (!polizaResult.Success || polizaResult.Data == null)
             {
                 return NotFound(new PagedResult<bool>
                 {

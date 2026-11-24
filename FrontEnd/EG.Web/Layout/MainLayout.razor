@@ -199,7 +199,8 @@
     private bool _sidebarResizeInitialized;
     private bool _sucursalChangeSubscribed;
     private bool _empresaChangeSubscribed;
-    private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase);
+    private bool esPaginaLogin => NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(new Uri(NavigationManager.Uri).AbsolutePath.TrimEnd('/'), "/resetPassword", StringComparison.OrdinalIgnoreCase);
     private string BrandTitle => string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
         ? _headerCompanyName
         : SucursalStateService.EmpresaNombre;
@@ -274,7 +275,7 @@
     {
         try
         {
-            if (e.Location.Contains("/login", StringComparison.OrdinalIgnoreCase))
+            if (esPaginaLogin)
             {
                 _shellInitialized = false;
                 _sidebarResizeInitialized = false;

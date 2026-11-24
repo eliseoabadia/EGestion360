@@ -187,6 +187,16 @@ try
     builder.Services.AddRateLimiter(options =>
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.AddPolicy("password-reset", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 3,
+                    Window = TimeSpan.FromMinutes(15),
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                }));
         options.AddPolicy("login", context =>
             RateLimitPartition.GetFixedWindowLimiter(
                 partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

@@ -1,13 +1,12 @@
+using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Patrimonio;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EG.ApiCoreBS.Controllers.Patrimonio
 {
@@ -18,18 +17,18 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
     {
         private readonly IBienAppService _appService;
         private readonly IUserContextService _userContext;
-        private readonly EGestionContext _context;
+        private readonly ICatalogLookupAppService _lookups;
         private readonly IAuthorizationService _authorization;
 
         public BienController(
             IBienAppService appService,
             IUserContextService userContext,
-            EGestionContext context,
+            ICatalogLookupAppService lookups,
             IAuthorizationService authorization)
         {
             _appService = appService;
             _userContext = userContext;
-            _context = context;
+            _lookups = lookups;
             _authorization = authorization;
         }
 
@@ -132,19 +131,7 @@ namespace EG.ApiCoreBS.Controllers.Patrimonio
         [Authorize(Policy = "Patrimonio|Bienes|view")]
         public async Task<ActionResult<PagedResult<LookupItem>>> GetTiposBienCapitulo5000([FromBody] PagedRequest request)
         {
-            var query = _context.TipoBiens.AsNoTracking().Where(x => x.Activo &&
-                x.FkidPartidaContaNavigation.Activo && x.FkidPartidaContaNavigation.Clave.StartsWith("5"));
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
-            {
-                var filter = request.Filtro.Trim();
-                query = query.Where(x => x.CodigoClave.Contains(filter) || x.Descripcion.Contains(filter));
-            }
-            var page = Math.Max(1, request.Page);
-            var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
-            var total = await query.CountAsync();
-            var items = await query.OrderBy(x => x.CodigoClave).Skip((page - 1) * pageSize).Take(pageSize)
-                .Select(x => new LookupItem { Id = x.PkidTipoBien, Text = x.CodigoClave + " - " + x.Descripcion }).ToListAsync();
-            return Ok(new PagedResult<LookupItem> { Success = true, Code = "SUCCESS", Message = "Tipos patrimoniales", Items = items, TotalCount = total });
+            return Ok(await _lookups.GetAsync(CatalogLookupKind.TipoBienCapitulo5000, request.Page, request.PageSize <= 0 ? 25 : request.PageSize, request.Filtro));
         }
 
         [HttpPost("buscar")]

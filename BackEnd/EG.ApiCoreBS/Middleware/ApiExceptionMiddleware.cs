@@ -36,8 +36,9 @@ public sealed class ApiExceptionMiddleware
             var isBusinessRule = ex is InvalidOperationException || isConcurrencyConflict;
             var isInvalidRequest = ex is ArgumentException;
             var isForbidden = ex is UnauthorizedAccessException;
+            var isNotFound = ex is KeyNotFoundException;
 
-            if (isBusinessRule || isInvalidRequest || isForbidden)
+            if (isBusinessRule || isInvalidRequest || isForbidden || isNotFound)
             {
                 LogControlledException(context, userIpService, ex);
             }
@@ -49,6 +50,8 @@ public sealed class ApiExceptionMiddleware
             context.Response.Clear();
             context.Response.StatusCode = isForbidden
                 ? StatusCodes.Status403Forbidden
+                : isNotFound
+                ? StatusCodes.Status404NotFound
                 : isInvalidRequest
                 ? StatusCodes.Status400BadRequest
                 : isBusinessRule
@@ -61,6 +64,8 @@ public sealed class ApiExceptionMiddleware
                 success = false,
                 message = isForbidden
                     ? "No tienes permiso para acceder a este recurso."
+                    : isNotFound
+                    ? "No se encontró el registro solicitado."
                     : isInvalidRequest
                     ? "La informacion enviada no es valida. Revisa los datos e intenta nuevamente."
                     : isConcurrencyConflict
@@ -72,6 +77,8 @@ public sealed class ApiExceptionMiddleware
                         : UserFacingMessages.UnexpectedError,
                 code = isForbidden
                     ? "FORBIDDEN"
+                    : isNotFound
+                    ? "NOT_FOUND"
                     : isInvalidRequest
                     ? ApiResponseCode.InvalidData.ToCode()
                     : isConcurrencyConflict

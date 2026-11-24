@@ -545,9 +545,14 @@ namespace EG.Business.Services
 
         public virtual async Task AddAsync(TDto dto)
         {
+            ArgumentNullException.ThrowIfNull(dto);
             ApplyCreationAuditIfPresent(dto);
             ApplyCurrentEmpresaIfPresent(dto);
             ApplyCurrentAnioIfPresent(dto);
+            if (!await CanAddAsync(dto))
+            {
+                throw new InvalidOperationException("No se puede crear el registro porque no cumple las reglas de validación del catálogo.");
+            }
             var entity = dto.Adapt<TEntity>();
             ApplyCreationAuditIfPresent(entity);
             ApplyCurrentEmpresaIfPresent(entity);
@@ -570,6 +575,7 @@ namespace EG.Business.Services
 
         public virtual async Task UpdateAsync(int id, TDto dto)
         {
+            ArgumentNullException.ThrowIfNull(dto);
             var originalRowVersion = GetRowVersion(dto);
             var existing = await _repository.GetByIdAsync(id);
             if (existing == null)
@@ -581,6 +587,10 @@ namespace EG.Business.Services
 
             ApplyCurrentEmpresaIfPresent(dto);
             ApplyCurrentAnioIfPresent(dto);
+            if (!await CanUpdateAsync(id, dto))
+            {
+                throw new InvalidOperationException("No se puede actualizar el registro porque no cumple las reglas de validación del catálogo.");
+            }
             EntityUpdateMapper.Apply(dto, existing);
             ApplyModificationAuditIfPresent(existing);
             ApplyCurrentEmpresaIfPresent(existing);
@@ -612,8 +622,8 @@ namespace EG.Business.Services
         private void ApplyCreationAuditIfPresent(object target)
         {
             SetPropertyIfPresent(target, "Activo", true, onlyWhenDefault: true);
-            SetPropertyIfPresent(target, "UsuarioCreacion", _userContext?.TryGetCurrentUserId(), onlyWhenDefault: true);
-            SetPropertyIfPresent(target, "FechaCreacion", DateTime.Now, onlyWhenDefault: true);
+            SetPropertyIfPresent(target, "UsuarioCreacion", _userContext?.TryGetCurrentUserId(), onlyWhenDefault: false);
+            SetPropertyIfPresent(target, "FechaCreacion", DateTime.Now, onlyWhenDefault: false);
         }
 
         private void ApplyModificationAuditIfPresent(object target)
