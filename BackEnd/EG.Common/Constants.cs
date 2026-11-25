@@ -5,7 +5,6 @@ namespace EG.Common
     {
         #region Constants
 
-        public const string KEY_SECURITY = "ContraseñaSuperSecreta";
         public const string KEY_USERID = "UserId";
         public const string KEY_TOKEN = "Token";
         public const string BD_CON = "GestionEmpresarialConn";

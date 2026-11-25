@@ -732,6 +732,25 @@ namespace EG.Business.Services
             };
         }
 
+        public virtual async Task<IList<TResponse>> GetAllForExportAsync(PagedRequest request)
+        {
+            var query = GetQueryWithIncludes();
+            var searchTerm = ResolveSearchTerm(request);
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                query = ApplyFilterWithRelations(query, searchTerm);
+            if (request.AdditionalFilters != null)
+            {
+                foreach (var filter in request.AdditionalFilters)
+                {
+                    if (filter.Value != null)
+                        query = ApplyAdditionalFilter(query, filter.Key, filter.Value);
+                }
+            }
+            query = ApplyOrdering(query, request.SortLabel, request.SortDirection);
+            var entities = await query.ToListAsync();
+            return entities.Adapt<IList<TResponse>>();
+        }
+
         private IQueryable<TEntity> ApplyAdditionalFilter(IQueryable<TEntity> query, string propertyName, object value)
         {
             const string notEqualSuffix = "__ne";

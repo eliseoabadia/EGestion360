@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using EG.Application.Interfaces.Account;
 using EG.Application.Interfaces.General;
+using EG.Application.Services.General;
 using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests;
@@ -30,9 +31,7 @@ public sealed class PasswordResetAppService(
 
         var frontend = GetFrontendUri();
         var smtp = emailSettings.Value;
-        if (frontend == null || string.IsNullOrWhiteSpace(smtp.Host) ||
-            string.IsNullOrWhiteSpace(smtp.UserName) || string.IsNullOrWhiteSpace(smtp.Password) ||
-            string.IsNullOrWhiteSpace(smtp.FromEmail))
+        if (frontend == null || !EmailConfigurationValidator.IsValid(smtp))
         {
             logger.LogError("La recuperación de acceso requiere una URL de frontend válida y configuración SMTP completa.");
             var unavailable = Result(false, "La recuperación por correo no está disponible. Contacta al administrador.");

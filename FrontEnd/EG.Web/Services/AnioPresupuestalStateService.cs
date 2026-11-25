@@ -31,11 +31,17 @@ namespace EG.Web.Services
             {
                 var anioJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", ANIO_KEY);
                 if (string.IsNullOrWhiteSpace(anioJson))
+                {
+                    ResetSelection();
                     return;
+                }
 
                 var anio = JsonSerializer.Deserialize<AnioPresupuestalSeleccionado>(anioJson);
                 if (anio == null || anio.Id <= 0)
+                {
+                    ResetSelection();
                     return;
+                }
 
                 AnioId = anio.Id;
                 AnioClave = anio.Clave;
@@ -43,10 +49,15 @@ namespace EG.Web.Services
             }
             catch
             {
-                AnioId = null;
-                AnioClave = null;
-                AnioDescripcion = string.Empty;
+                ResetSelection();
             }
+        }
+
+        private void ResetSelection()
+        {
+            AnioId = null;
+            AnioClave = null;
+            AnioDescripcion = string.Empty;
         }
 
         public async Task SetAnioAsync(int anioId, int? anioClave, string? anioDescripcion)

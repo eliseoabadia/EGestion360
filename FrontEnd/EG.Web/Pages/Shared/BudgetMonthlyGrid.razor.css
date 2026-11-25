@@ -1,0 +1,11 @@
+.budget-monthly-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+    align-items: start;
+    gap: 12px;
+    min-width: 0;
+}
+
+.budget-monthly-grid > div {
+    min-width: 0;
+}

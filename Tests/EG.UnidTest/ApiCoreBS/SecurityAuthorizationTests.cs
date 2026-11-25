@@ -31,6 +31,23 @@ public sealed class SecurityAuthorizationTests
     }
 
     [Theory]
+    [InlineData(nameof(MenuController.Add), "Sistema|Menu|new")]
+    [InlineData(nameof(MenuController.Update), "Sistema|Menu|update")]
+    [InlineData(nameof(MenuController.Delete), "Sistema|Menu|delete")]
+    [InlineData(nameof(MenuController.ReordenarMenus), "Sistema|Menu|update")]
+    [InlineData(nameof(MenuController.Export), "Sistema|Menu|CanExportToExcel")]
+    public void MenuActionsRequireTheirSpecificPermission(string methodName, string policy) =>
+        AssertMethodPolicy(typeof(MenuController), methodName, policy);
+
+    [Theory]
+    [InlineData(nameof(MenuRoleController.Add))]
+    [InlineData(nameof(MenuRoleController.Update))]
+    [InlineData(nameof(MenuRoleController.Delete))]
+    [InlineData(nameof(MenuRoleController.DeleteByKey))]
+    public void RoleAssignmentsRequireAccessConfigurationUpdate(string methodName) =>
+        AssertMethodPolicy(typeof(MenuRoleController), methodName, "Sistema|Configurar_Accesos|update");
+
+    [Theory]
     [InlineData(nameof(PbrCrudController<object>.Create), "PBR|PBR|new")]
     [InlineData(nameof(PbrCrudController<object>.Update), "PBR|PBR|update")]
     [InlineData(nameof(PbrCrudController<object>.Delete), "PBR|PBR|delete")]

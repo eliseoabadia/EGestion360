@@ -1,8 +1,7 @@
-using EG.Business.Services;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +12,9 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Presupuestales
     [Authorize]
     public class UrController : ControllerBase
     {
-        private readonly GenericService<Ur, UrDto, UrResponse> _service;
+        private readonly IReadOnlyCatalogAppService<UrResponse> _service;
 
-        public UrController(GenericService<Ur, UrDto, UrResponse> service)
+        public UrController(IReadOnlyCatalogAppService<UrResponse> service)
         {
             _service = service;
         }

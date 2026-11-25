@@ -1,13 +1,11 @@
-using System.Security.Claims;
-using EG.ApiCoreBS.Controllers.PresupuestoModificado;
+using EG.Common.Enums;
+using EG.Application.Interfaces.General;
 using EG.Application.Interfaces.Adquisicion;
 using EG.Application.Interfaces.PresupuestoModificado;
-using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,14 +14,22 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
     [Route("api/[controller]")]
     public class IngreAdecuacionController(
         IIngresoAdecuacionAppService service,
-        IUserContextService userContext)
-        : PresupuestoModificadoControllerBase<IngreAdecuacionResponse>(service, userContext)
+        IUserContextService userContext,
+        IAuthorizationService authorization)
+        : PresupuestoModificadoControllerBase<IngreAdecuacionResponse>(service, userContext, authorization)
     {
         private readonly IIngresoAdecuacionAppService _service = service;
+        protected override string PermissionFilterName => nameof(IngreAdecuacionResponse.FkidTipoAdecuacionPres);
+        protected override Task<int?> GetTipoAdecuacionAsync(IngreAdecuacionResponse response) =>
+            Task.FromResult<int?>(response.FkidTipoAdecuacionPres);
+        protected override Task<int?> GetFilterTipoAdecuacionAsync(int value) => Task.FromResult<int?>(value);
 
         [HttpPost("{id:int}/enviar-solicitud")]
         public async Task<ActionResult<PagedResult<IngreAdecuacionResponse>>> EnviarSolicitud(int id)
         {
+            var current = await _service.GetByIdAsync(id);
+            if (!current.Success || current.Data == null) return NotFound(current);
+            if (!await HasPermissionAsync(current.Data.FkidTipoAdecuacionPres, PermissionAction.Update)) return Forbid();
             var result = await _service.EnviarSolicitudAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
@@ -34,8 +40,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             var current = await _service.GetByIdAsync(id);
             if (!current.Success || current.Data == null) return NotFound(current);
 
-            var subModule = GetSubModuleName(current.Data.FkidTipoAdecuacionPres);
-            if (!HasAuthorizePermission(User, subModule)) return Forbid();
+            if (!await HasPermissionAsync(current.Data.FkidTipoAdecuacionPres, PermissionAction.Authorize)) return Forbid();
 
             var result = await _service.AutorizarAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
@@ -47,69 +52,37 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             var current = await _service.GetByIdAsync(id);
             if (!current.Success || current.Data == null) return NotFound(current);
 
-            var subModule = GetSubModuleName(current.Data.FkidTipoAdecuacionPres);
-            if (!HasAuthorizePermission(User, subModule)) return Forbid();
+            if (!await HasPermissionAsync(current.Data.FkidTipoAdecuacionPres, PermissionAction.Authorize)) return Forbid();
 
             var result = await _service.RechazarAsync(id, UserContext.GetCurrentUserId());
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        private static string GetSubModuleName(int tipoAdecuacionId) => tipoAdecuacionId switch
-        {
-            1 => "Adecuaciones_Compensadas",
-            2 => "Reducciones",
-            3 => "Ampliaciones",
-            _ => string.Empty
-        };
-
-        private static bool HasAuthorizePermission(ClaimsPrincipal user, string subModule)
-        {
-            if (string.IsNullOrWhiteSpace(subModule)) return false;
-            if (user.IsInRole("SuperAdmin") || user.Claims.Any(claim =>
-                    string.Equals(claim.Type, ClaimTypes.Role, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(claim.Value, "SuperAdmin", StringComparison.OrdinalIgnoreCase)))
-                return true;
-
-            var claims = user.Claims.ToList();
-            for (var index = 0; index < claims.Count; index++)
-            {
-                if (!IsClaim(claims[index], "Group", "Presupuesto_Modificado")) continue;
-
-                var subGroup = claims.Skip(index + 1).FirstOrDefault(claim => IsClaimType(claim, "SubGroup"));
-                var values = claims.Skip(index + 1).FirstOrDefault(claim => IsClaimType(claim, "Values"));
-                if (subGroup != null && values != null &&
-                    string.Equals(subGroup.Value, subModule, StringComparison.OrdinalIgnoreCase) &&
-                    HasAction(values.Value, "authorize"))
-                    return true;
-            }
-
-            return user.Claims.Any(claim => IsClaim(claim, "Group", "Presupuesto_Modificado")) &&
-                   user.Claims.Any(claim => IsClaim(claim, "SubGroup", subModule)) &&
-                   user.Claims.Any(claim => IsClaimType(claim, "Values") && HasAction(claim.Value, "authorize"));
-        }
-
-        private static bool IsClaim(Claim claim, string type, string value) =>
-            IsClaimType(claim, type) && string.Equals(claim.Value, value, StringComparison.OrdinalIgnoreCase);
-
-        private static bool IsClaimType(Claim claim, string type) =>
-            string.Equals(claim.Type, type, StringComparison.OrdinalIgnoreCase);
-
-        private static bool HasAction(string values, string action) =>
-            values.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Any(value => string.Equals(value, action, StringComparison.OrdinalIgnoreCase));
     }
 
     [Route("api/[controller]")]
     public class IngreAdecuacionDetalleController(
         IAdquisicionCrudAppService<IngreAdecuacionDetalleResponse> service,
-        IUserContextService userContext)
-        : PresupuestoModificadoControllerBase<IngreAdecuacionDetalleResponse>(service, userContext);
+        IUserContextService userContext,
+        IAuthorizationService authorization,
+        IIngresoAdecuacionAppService headers)
+        : PresupuestoModificadoControllerBase<IngreAdecuacionDetalleResponse>(service, userContext, authorization)
+    {
+        protected override string PermissionFilterName => nameof(IngreAdecuacionDetalleResponse.FkidIngreAdecuacionPres);
+        protected override Task<int?> GetTipoAdecuacionAsync(IngreAdecuacionDetalleResponse response) =>
+            GetFilterTipoAdecuacionAsync(response.FkidIngreAdecuacionPres);
+        protected override async Task<int?> GetFilterTipoAdecuacionAsync(int value)
+        {
+            var parent = await headers.GetByIdAsync(value);
+            return parent.Success ? parent.Data?.FkidTipoAdecuacionPres : null;
+        }
+    }
 
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
     public class IngresoDisponibleController(
-        GenericService<VwIngresoDisponible, IngresoDisponibleDto, IngresoDisponibleResponse> service,
+        IReadOnlyCatalogAppService<IngresoDisponibleResponse> service,
         IUserContextService userContext) : ControllerBase
     {
         [HttpGet("{id:int}")]
@@ -118,7 +91,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             if (!userContext.TryGetCurrentEmpresaId().HasValue)
                 return BadRequest(CompanyRequired());
 
-            var item = await service.GetByIdAsync(id, idPropertyName: "PkidIngresoAutorizado");
+            var item = await service.GetByIdAsync(id);
             return item == null
                 ? NotFound(new PagedResult<IngresoDisponibleResponse> { Success = false, Message = "Registro no encontrado", Code = "NOT_FOUND" })
                 : Ok(new PagedResult<IngresoDisponibleResponse> { Success = true, Data = item, Items = [item], TotalCount = 1 });
@@ -145,7 +118,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
     [Authorize]
     [Route("api/[controller]")]
     public class IngresoRecaudarController(
-        GenericService<VwIngreXejer, IngreXEjerDto, IngreXEjerResponse> service,
+        IReadOnlyCatalogAppService<IngreXEjerResponse> service,
         IUserContextService userContext) : ControllerBase
     {
         [HttpGet("{id:int}")]
@@ -154,7 +127,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             if (!userContext.TryGetCurrentEmpresaId().HasValue)
                 return BadRequest(CompanyRequired());
 
-            var item = await service.GetByIdAsync(id, idPropertyName: "PkIdIngresoAutorizado");
+            var item = await service.GetByIdAsync(id);
             return item == null
                 ? NotFound(new PagedResult<IngreXEjerResponse> { Success = false, Message = "Registro no encontrado", Code = "NOT_FOUND" })
                 : Ok(new PagedResult<IngreXEjerResponse> { Success = true, Data = item, Items = [item], TotalCount = 1 });
@@ -181,7 +154,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
     [Authorize]
     [Route("api/[controller]")]
     public class IngresoCLCFacturaController(
-        GenericService<VwClcfactura, IngresoCLCFacturaDto, IngresoCLCFacturaResponse> service,
+        IReadOnlyCatalogAppService<IngresoCLCFacturaResponse> service,
         IUserContextService userContext) : ControllerBase
     {
         [HttpGet("{id:int}")]
@@ -190,7 +163,7 @@ namespace EG.ApiCoreBS.Controllers.PresupuestoModificado
             if (!userContext.TryGetCurrentEmpresaId().HasValue)
                 return BadRequest(CompanyRequired());
 
-            var item = await service.GetByIdAsync(id, idPropertyName: "PkidClcfactura");
+            var item = await service.GetByIdAsync(id);
             return item == null
                 ? NotFound(new PagedResult<IngresoCLCFacturaResponse> { Success = false, Message = "Registro no encontrado", Code = "NOT_FOUND" })
                 : Ok(new PagedResult<IngresoCLCFacturaResponse> { Success = true, Data = item, Items = [item], TotalCount = 1 });

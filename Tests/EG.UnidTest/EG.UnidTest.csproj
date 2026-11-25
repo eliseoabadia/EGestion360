@@ -17,6 +17,13 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Compile Include="../../FrontEnd/EG.Web/Pages/Modules/Nomina/Configuration/Catalogos/NominaCatalogUi.cs" Link="Presentation/NominaCatalogUi.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Models/Forms/EditorRequestState.cs" Link="Presentation/EditorRequestState.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Models/PresupuestoModificado/BudgetCaptureUi.cs" Link="Presentation/BudgetCaptureUi.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Models/PresupuestoModificado/BudgetPageReader.cs" Link="Presentation/BudgetPageReader.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Models/ApiResponse.cs" Link="Presentation/ApiResponse.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Services/AnioPresupuestalStateService.cs" Link="Presentation/AnioPresupuestalStateService.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Services/SucursalStateService.cs" Link="Presentation/SucursalStateService.cs" />
+    <Using Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <ItemGroup>

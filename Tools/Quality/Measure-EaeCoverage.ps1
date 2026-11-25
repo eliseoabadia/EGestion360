@@ -31,6 +31,8 @@ $report = [pscustomobject]@{
     ViewsWithInlineCode = @($views | Where-Object HasInlineCode).Count
     DirectContextControllerCount = $directContextControllers.Count
     DirectContextControllersToReview = $directContextControllers
+    DirectGenericServiceControllerCount = @(Get-ChildItem -LiteralPath $controllerRoot -Recurse -File -Filter '*.cs' |
+        Where-Object { [IO.File]::ReadAllText($_.FullName) -match '\bGenericService\s*<' }).Count
     Views = $views
 }
 
@@ -39,5 +41,5 @@ if ($AsJson) {
 }
 else {
     $report | Select-Object Scope, RazorViews, ViewsUsingSharedEditors, ViewsUsingSharedGrids,
-        ViewsWithInlineCode, DirectContextControllerCount
+        ViewsWithInlineCode, DirectContextControllerCount, DirectGenericServiceControllerCount
 }

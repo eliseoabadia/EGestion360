@@ -50,6 +50,9 @@ using EG.Business.Interfaces;
 using EG.Business.Services;
 using EG.Common.Util;
 using EG.Domain.Interfaces;
+using EG.Domain.DTOs.Requests.Presupuestales;
+using EG.Domain.DTOs.Requests.PresupuestoModificado;
+using EG.Domain.DTOs.Responses.Presupuestales;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Domain.DTOs.Responses.Contratos;
 using EG.Domain.DTOs.Responses.Nomina;
@@ -70,6 +73,10 @@ namespace EG.ApiCoreBS.Extensions
         public static void AddApplicationServices(this IServiceCollection services, Assembly assembly)
         {
             // Repositories
+            services.AddScoped<IMenuPersistence, MenuPersistence>();
+            services.AddScoped<IMenuRoleRepository, MenuRoleRepository>();
+            services.AddScoped<IMenuAppService, MenuAppService>();
+            services.AddScoped<IMenuRoleAppService, MenuRoleAppService>();
             services.AddScoped<IRepositorySP<LoginInformationEmployeeResult>, RepositorySP<LoginInformationEmployeeResult>>();
             services.AddScoped<IRepositorySP<spGetClaimsByUserResult>, RepositorySP<spGetClaimsByUserResult>>();
             services.AddScoped<IRepositorySP<spEliminarUsuarioSucursalResult>, RepositorySP<spEliminarUsuarioSucursalResult>>();
@@ -367,6 +374,23 @@ namespace EG.ApiCoreBS.Extensions
             //// ===== SERVICIOS GENÉRICOS =====
             services.AddScoped(typeof(GenericService<,,>)); // 3 parámetros: TEntity, TDto, TResponse
             services.AddScoped(typeof(GenericService<,>));  // 2 parámetros: TEntity, TDto
+            AddReadOnlyCatalog<Ur, UrDto, UrResponse>(services, nameof(Ur.PkidUr));
+            AddReadOnlyCatalog<TipoAdecuacion, TipoAdecuacionDto, TipoAdecuacionResponse>(services, nameof(TipoAdecuacion.PkidTipoAdecuacion));
+            AddReadOnlyCatalog<EstatusAdecuacion, EstatusAdecuacionDto, EstatusAdecuacionResponse>(services, nameof(EstatusAdecuacion.PkidEstatusAdecuacion));
+            AddReadOnlyCatalog<TipoMovimiento, TipoMovimientoDto, TipoMovimientoResponse>(services, nameof(TipoMovimiento.PkidTipoMovimiento));
+            AddReadOnlyCatalog<VwIngresoDisponible, IngresoDisponibleDto, IngresoDisponibleResponse>(services, nameof(VwIngresoDisponible.PkidIngresoAutorizado));
+            AddReadOnlyCatalog<VwIngreXejer, IngreXEjerDto, IngreXEjerResponse>(services, nameof(VwIngreXejer.PkIdIngresoAutorizado));
+            AddReadOnlyCatalog<VwClcfactura, IngresoCLCFacturaDto, IngresoCLCFacturaResponse>(services, nameof(VwClcfactura.PkidClcfactura));
+        }
+
+        private static void AddReadOnlyCatalog<TEntity, TDto, TResponse>(IServiceCollection services, string idPropertyName)
+            where TEntity : class
+            where TDto : class
+            where TResponse : class
+        {
+            services.AddScoped<IReadOnlyCatalogAppService<TResponse>>(provider =>
+                new ReadOnlyCatalogAppService<TEntity, TDto, TResponse>(
+                    provider.GetRequiredService<GenericService<TEntity, TDto, TResponse>>(), idPropertyName));
         }
     }
 }

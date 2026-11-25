@@ -9,6 +9,8 @@ namespace EG.Business.Services
         [
             "UsuarioCreacion",
             "FechaCreacion",
+            "CreatedByOperatorId",
+            "CreatedDateTime",
             "RowVersion"
         ];
 

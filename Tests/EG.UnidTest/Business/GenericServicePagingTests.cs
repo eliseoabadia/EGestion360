@@ -152,6 +152,30 @@ public sealed class GenericServicePagingTests
             item => Assert.Equal(2, item.Id));
     }
 
+    [Fact]
+    public async Task ExportIncludesMoreThanOnePageAndPreservesCompanyScopeAndSearch()
+    {
+        var entities = Enumerable.Range(1, 320).Select(id => new CatalogEntity
+        {
+            Id = id, Nombre = "Menú " + id, Activo = true, FkidEmpresaSis = 7
+        }).Concat([
+            new() { Id = 900, Nombre = "Menú de otra empresa", Activo = true, FkidEmpresaSis = 8 },
+            new() { Id = 901, Nombre = "Menú inactivo", Activo = false, FkidEmpresaSis = 7 },
+            new() { Id = 902, Nombre = "Otro registro", Activo = true, FkidEmpresaSis = 7 }
+        ]);
+        var service = CreateService(entities, new FixedUserContext(7, 7));
+
+        var result = await service.GetAllForExportAsync(new()
+        {
+            Page = 1, PageSize = 10, Filtro = "Menú", SortLabel = nameof(CatalogEntity.Id), SortDirection = "Ascending"
+        });
+
+        Assert.Equal(320, result.Count);
+        Assert.All(result, item => Assert.Equal(7, item.FkidEmpresaSis));
+        Assert.Equal(1, result[0].Id);
+        Assert.Equal(320, result[^1].Id);
+    }
+
     private static GenericService<CatalogEntity, CatalogDto, CatalogResponse> CreateService(
         IEnumerable<CatalogEntity> entities,
         IUserContextService? userContext = null)

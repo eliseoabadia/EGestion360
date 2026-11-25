@@ -71,6 +71,13 @@ try {
     )
     Add-Violations 'EG006 persistencia directa en controlador' $controllerPersistence
 
+    $controllerGenericServices = Invoke-Ripgrep @(
+        '-n', '--glob', '*.cs',
+        '\bGenericService\s*<',
+        'BackEnd/EG.ApiCoreBS/Controllers'
+    )
+    Add-Violations 'EG007 servicio generico de negocio directo en controlador' $controllerGenericServices
+
     $grpRoot = (Resolve-Path 'FrontEnd\EG.Web\Pages\Modules\GRP').Path
     Get-ChildItem -LiteralPath $grpRoot -Recurse -Filter '*.razor' | ForEach-Object {
         $relative = $_.FullName.Substring($grpRoot.Length + 1)

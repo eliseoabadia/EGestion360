@@ -117,8 +117,30 @@ public sealed class PasswordResetAppServiceTests
         Assert.Equal(0, repository.Updates);
     }
 
+    [Theory]
+    [InlineData(465, true, 30)]
+    [InlineData(587, false, 30)]
+    [InlineData(587, true, 0)]
+    public async Task InvalidSmtpSettingsNeverLookUpAccountsOrSendTokens(int port, bool ssl, int timeout)
+    {
+        var repository = new Repository { Account = Account };
+        var mail = new Mail();
+        var service = Create(repository, mail, smtpSettings: new EmailSettings
+        {
+            Host = "smtp.gmail.com", Port = port, EnableSsl = ssl, TimeoutSeconds = timeout,
+            UserName = "test@example.com", FromEmail = "test@example.com", Password = "test-placeholder"
+        });
+
+        var result = await service.RequestAsync(new() { Email = Account.Email }, default);
+
+        Assert.Equal("RECOVERY_UNAVAILABLE", result.Code);
+        Assert.Equal(0, repository.Lookups);
+        Assert.Empty(mail.Messages);
+    }
+
     private static PasswordResetAppService Create(Repository repository, Mail mail, bool smtpConfigured = true,
-        string? frontend = "https://portal.example.com/app/", string[]? origins = null)
+        string? frontend = "https://portal.example.com/app/", string[]? origins = null,
+        EmailSettings? smtpSettings = null)
     {
         var values = new Dictionary<string, string?> { ["PasswordReset:FrontendUrl"] = frontend };
         for (var i = 0; i < origins?.Length; i++)
@@ -126,7 +148,7 @@ public sealed class PasswordResetAppServiceTests
             values[$"CorsSettings:AllowOrigins:{i}"] = origins[i];
         }
         return new PasswordResetAppService(repository, new Tokens(), mail,
-            Options.Create(new EmailSettings
+            Options.Create(smtpSettings ?? new EmailSettings
             {
                 Host = "smtp.example.com", UserName = "test", FromEmail = "test@example.com",
                 Password = smtpConfigured ? "test-only-placeholder" : ""

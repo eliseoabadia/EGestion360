@@ -2,16 +2,25 @@
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using MudBlazor
+@using EG.Web.Models.PresupuestoModificado
 
 @inject IGenericCrudService<EgreAdecuacionResponse> Service
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
-<BaseCrudDialog TItem="EgreAdecuacionResponse" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(!_formLoading)" OnConfirm="SaveAsync">
-    <BaseEntityForm TEntity="EgreAdecuacionResponse" @ref="form" ShowHeader="true" HeaderTitle="@dialogTitle" Loading="@_formLoading" LoadingMessage="Preparando presupuesto modificado..." LoadingSkeletonRows="5">
+<BaseCrudDialog TItem="EgreAdecuacionResponse" @ref="dialog" Title="@dialogTitle" ActionText="@actionText" ProcessingText="@processingText" CanConfirm="@(load.IsReady && !saving)" OnConfirm="SaveAsync">
+    @if (load.Error != null)
+    {
+        <EditorLoadError Message="@load.Error" OnRetry="LoadAsync" />
+    }
+    else
+    {
+    <BaseEntityForm TEntity="EgreAdecuacionResponse" @ref="form" ShowHeader="false" Loading="@load.IsLoading" LoadingMessage="Preparando presupuesto modificado..." LoadingSkeletonRows="5">
         <MudGrid GutterSize="2">
             <MudItem xs="12" md="6">
-                <MudDatePicker Margin="Margin.Dense" Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined" />
+                <MudDatePicker Margin="Margin.Dense" Date="@_fecha" DateChanged="value => _fecha = value" Label="Fecha" Variant="Variant.Outlined"
+                               Required="true" RequiredError="Captura una fecha válida." Clearable="true" Disabled="@saving"
+                               Validation="@(new Func<DateTime?, string?>(ValidateDate))" DateFormat="dd/MM/yyyy" Culture="@BudgetCaptureUi.DateCulture" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField Margin="Margin.Dense" T="string" Value="@TipoTexto" Label="Tipo de adecuacion" Variant="Variant.Outlined" ReadOnly="true" />
@@ -19,10 +28,10 @@
             <MudItem xs="12">
                 <div class="format-toolbar">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">Formato rapido</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.FormatBold" Size="Size.Small" Color="Color.Primary" Title="Negritas" OnClick="ApplyBold" />
-                    <MudIconButton Icon="@Icons.Material.Filled.FormatListBulleted" Size="Size.Small" Color="Color.Primary" Title="Lista" OnClick="ApplyBulletList" />
-                    <MudIconButton Icon="@Icons.Material.Filled.FormatListNumbered" Size="Size.Small" Color="Color.Primary" Title="Lista numerada" OnClick="ApplyNumberedList" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Notes" Size="Size.Small" Color="Color.Primary" Title="Parrafo" OnClick="ApplyParagraph" />
+                    <MudIconButton Icon="@Icons.Material.Filled.FormatBold" Size="Size.Small" Color="Color.Primary" Title="Negritas" aria-label="Añadir negritas" Disabled="@saving" OnClick="ApplyBold" />
+                    <MudIconButton Icon="@Icons.Material.Filled.FormatListBulleted" Size="Size.Small" Color="Color.Primary" Title="Lista" aria-label="Añadir lista" Disabled="@saving" OnClick="ApplyBulletList" />
+                    <MudIconButton Icon="@Icons.Material.Filled.FormatListNumbered" Size="Size.Small" Color="Color.Primary" Title="Lista numerada" aria-label="Añadir lista numerada" Disabled="@saving" OnClick="ApplyNumberedList" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Notes" Size="Size.Small" Color="Color.Primary" Title="Párrafo" aria-label="Añadir párrafo" Disabled="@saving" OnClick="ApplyParagraph" />
                 </div>
                 <MudTextField Margin="Margin.Dense" T="string"
                               @bind-Value="item.Justificacion"
@@ -31,116 +40,10 @@
                               Lines="8"
                               Required="true"
                               RequiredError="Captura la justificacion."
+                              Disabled="@saving"
                               HelperText="Puedes usar saltos de linea, listas y marcas simples como **texto importante**." />
             </MudItem>
         </MudGrid>
     </BaseEntityForm>
+    }
 </BaseCrudDialog>
-
-<style>
-    .format-toolbar {
-        align-items: center;
-        display: flex;
-        gap: 4px;
-        margin-bottom: 6px;
-    }
-</style>
-
-@code {
-    [Parameter] public int? Id { get; set; }
-    [Parameter] public int TipoAdecuacionId { get; set; }
-    [Parameter] public int AnioId { get; set; }
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
-
-    private BaseEntityForm<EgreAdecuacionResponse> form = null!;
-    private EgreAdecuacionResponse item = new() { Activo = true, Fecha = DateOnly.FromDateTime(DateTime.Today), FkidEstatusAdecuacionPres = 1, FkidAccionAdecuacionMasterPres = 1 };
-    private DateTime? _fecha = DateTime.Today;
-    private bool _formLoading = true;
-
-    private string dialogTitle => Id.HasValue ? "Editar presupuesto modificado" : "Nuevo presupuesto modificado";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
-    private string TipoTexto => TipoAdecuacionId switch { 1 => "Adecuacion compensada", 2 => "Reduccion", 3 => "Ampliacion", _ => "Adecuacion" };
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            await AnioStateService.InitializeAsync();
-            if (!Id.HasValue)
-            {
-                item.FkidTipoAdecuacionPres = TipoAdecuacionId;
-                item.FkidAnioSis = AnioId;
-                if (AnioStateService.AnioClave is > 0)
-                {
-                    _fecha = new DateTime(AnioStateService.AnioClave.Value, 1, 1);
-                    item.Fecha = DateOnly.FromDateTime(_fecha.Value);
-                }
-                return;
-            }
-
-            var response = await Service.GetByIdAsync(Id.Value);
-            if (response?.Success == true && response.Data != null)
-            {
-                item = response.Data;
-                _fecha = item.Fecha.ToDateTime(TimeOnly.MinValue);
-            }
-        }
-        finally
-        {
-            _formLoading = false;
-        }
-    }
-
-    private async Task SaveAsync()
-    {
-        if (_formLoading || form == null) return;
-        if (!await form.ValidateAsync()) return;
-        if (AnioId <= 0 || AnioStateService.AnioId is not > 0 || AnioStateService.AnioClave is not > 0)
-        {
-            Snackbar.Add("Selecciona un anio presupuestal.", Severity.Warning);
-            return;
-        }
-        if (AnioStateService.AnioId.Value != AnioId)
-        {
-            Snackbar.Add("El ejercicio presupuestal cambió; cierra y vuelve a abrir la captura.", Severity.Warning);
-            return;
-        }
-
-        item.FkidAnioSis = AnioId;
-        item.FkidTipoAdecuacionPres = TipoAdecuacionId;
-        item.FkidEstatusAdecuacionPres = item.FkidEstatusAdecuacionPres <= 0 ? 1 : item.FkidEstatusAdecuacionPres;
-        item.FkidAccionAdecuacionMasterPres ??= 1;
-        item.Fecha = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
-        if (item.Fecha.Year != AnioStateService.AnioClave.Value)
-        {
-            Snackbar.Add($"La fecha debe pertenecer al ejercicio {AnioStateService.AnioClave.Value}.", Severity.Warning);
-            return;
-        }
-
-        var response = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
-        if (response?.Success == true)
-        {
-            Snackbar.Add(response.Message ?? "Registro guardado correctamente.", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-            return;
-        }
-
-        Snackbar.Add(response?.Message ?? "No fue posible guardar.", Severity.Error);
-    }
-
-    private void ApplyBold() => ApplyFormat("**texto importante**");
-
-    private void ApplyBulletList() => ApplyFormat("- Punto principal" + Environment.NewLine + "- Punto adicional");
-
-    private void ApplyNumberedList() => ApplyFormat("1. Primer punto" + Environment.NewLine + "2. Segundo punto");
-
-    private void ApplyParagraph() => ApplyFormat("Titulo:" + Environment.NewLine + "Detalle de la justificacion...");
-
-    private void ApplyFormat(string snippet)
-    {
-        var current = item.Justificacion?.TrimEnd() ?? string.Empty;
-        var separator = string.IsNullOrWhiteSpace(current) ? string.Empty : Environment.NewLine;
-        item.Justificacion = current + separator + snippet;
-    }
-}

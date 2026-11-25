@@ -1,0 +1,60 @@
+@using EG.Dommain.DTOs.Responses
+@implements IDisposable
+
+<BaseCrudDialog TItem="MenuItemsResponse" @ref="dialog"
+                Title="@(MenuId.HasValue ? "Editar menú" : "Nuevo menú")"
+                Subtitle="@ContextDescription" MaxWidth="MaxWidth.Medium"
+                ActionText="@(MenuId.HasValue ? "Actualizar" : "Crear")"
+                CanConfirm="@(!loading && loaded && !saving)" OnConfirm="SaveMenuAsync">
+    @if (loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="Cargando menú" />
+    }
+    else if (!loaded)
+    {
+        <MudAlert Severity="Severity.Error">@loadError</MudAlert>
+        <MudButton OnClick="LoadMenuAsync" StartIcon="@Icons.Material.Filled.Refresh" Class="mt-2">Reintentar</MudButton>
+    }
+    else
+    {
+        <BaseEntityForm TEntity="MenuItemsResponse" @ref="form" ShowHeader="false">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="menu.Nombre" Label="Nombre del menú" Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Required="true" RequiredError="El nombre es requerido."
+                                  Validation="@(new Func<string, string?>(ValidateName))" MaxLength="150" Disabled="@saving" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="menu.Ruta" Label="Ruta" Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Required="@(menu.Tipo == 2)" RequiredError="La ruta es requerida."
+                                  HelperText="Dirección de la pantalla dentro de la aplicación." MaxLength="200" Disabled="@(saving || menu.Tipo == 1)" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="int?" @bind-Value="menu.Orden" Label="Orden" Margin="Margin.Dense"
+                                     Variant="Variant.Outlined" Min="0" Max="999" Required="true"
+                                     RequiredError="El orden es requerido." Disabled="@saving" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudAutocomplete T="IconosDisponibles.IconoItem" @bind-Value="SelectedIcon"
+                                     Label="Icono" Margin="Margin.Dense" Variant="Variant.Outlined"
+                                     SearchFunc="SearchIconsAsync" ToStringFunc="@(icon => icon?.Nombre ?? string.Empty)"
+                                     AdornmentIcon="@Icons.Material.Filled.Image" Clearable="true" CoerceText="true"
+                                     ResetValueOnEmptyText="true" MaxItems="50" Disabled="@saving">
+                        <ItemTemplate>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@context.MaterialIcon" Size="Size.Small" />
+                                <MudText>@context.Nombre</MudText>
+                            </MudStack>
+                        </ItemTemplate>
+                        <ItemSelectedTemplate>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@context.MaterialIcon" Size="Size.Small" />
+                                <MudText>@context.Nombre</MudText>
+                            </MudStack>
+                        </ItemSelectedTemplate>
+                    </MudAutocomplete>
+                </MudItem>
+            </MudGrid>
+        </BaseEntityForm>
+    }
+</BaseCrudDialog>

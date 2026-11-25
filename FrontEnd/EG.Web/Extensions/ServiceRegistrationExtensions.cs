@@ -1,4 +1,5 @@
 using EG.Common.Helper;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.Almacen;
@@ -45,7 +46,8 @@ public static class ApiServiceExtensions
         RegisterCrud<EstadoResponse>(services, "api/Estado");
         RegisterCrud<PeriodoPagoResponse>(services, "api/PeriodoPago");
         RegisterCrud<EmpresaResponse>(services, "api/Empresa");
-        RegisterCrud<MenuItemsResponse>(services, "api/Menu");
+        RegisterCrud<MenuItemsResponse>(services, MenuModule.ApiRoute);
+        services.AddScoped<IMenuExportService, MenuExportService>();
         RegisterCrud<UsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<VwUsuarioSucursalResponse>(services, "api/UsuarioSucursal");
         RegisterCrud<UsuarioAreaResponse>(services, "api/UsuarioArea");

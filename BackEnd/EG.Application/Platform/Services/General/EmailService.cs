@@ -6,22 +6,26 @@ using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Domain.Settings;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace EG.Application.Services.General
 {
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _settings;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IOptions<EmailSettings> options)
+        public EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger)
         {
             _settings = options.Value;
+            _logger = logger;
         }
 
         public async Task<PagedResult<EmailSendResponse>> SendAsync(EmailMessageRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var validation = Validate(request);
                 if (validation != null)
                 {
@@ -48,7 +52,9 @@ namespace EG.Application.Services.General
                     Timeout = Math.Max(1, _settings.TimeoutSeconds) * 1000
                 };
 
-                await smtp.SendMailAsync(message, cancellationToken);
+                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                deadline.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
+                await smtp.SendMailAsync(message, deadline.Token);
 
                 var response = new EmailSendResponse
                 {
@@ -72,13 +78,19 @@ namespace EG.Application.Services.General
                     TotalCount = 1
                 };
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
+                // SMTP exceptions can contain addresses or server responses. Log only the type.
+                _logger.LogWarning("Falló el envío de correo. Tipo de error: {ErrorType}", ex.GetType().Name);
                 return new PagedResult<EmailSendResponse>
                 {
                     Success = false,
                     Code = "ERROR",
-                    Message = $"Error al enviar correo: {ex.Message}",
+                    Message = "No fue posible confirmar el envío del correo. Revisa la configuración o contacta al administrador.",
                     TotalCount = 0
                 };
             }
@@ -86,20 +98,25 @@ namespace EG.Application.Services.General
 
         private PagedResult<EmailSendResponse>? Validate(EmailMessageRequest request)
         {
-            if (string.IsNullOrWhiteSpace(_settings.Host) ||
-                string.IsNullOrWhiteSpace(_settings.UserName) ||
-                string.IsNullOrWhiteSpace(_settings.Password) ||
-                string.IsNullOrWhiteSpace(_settings.FromEmail))
+            if (!EmailConfigurationValidator.IsValid(_settings))
             {
                 return Failure("La configuracion de correo esta incompleta.");
             }
 
-            if (request == null || !request.To.Any(x => !string.IsNullOrWhiteSpace(x)))
+            if (request == null || request.To == null || !request.To.Any(x => !string.IsNullOrWhiteSpace(x)))
             {
                 return Failure("Debe indicar al menos un destinatario.");
             }
 
-            if (string.IsNullOrWhiteSpace(request.Subject))
+            if (request.Cc == null || request.Bcc == null || request.Attachments == null ||
+                request.To.Concat(request.Cc).Concat(request.Bcc)
+                    .Where(address => !string.IsNullOrWhiteSpace(address))
+                    .Any(address => !MailAddress.TryCreate(address.Trim(), out _)))
+            {
+                return Failure("Revisa las direcciones de los destinatarios del correo.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Subject) || request.Subject.Contains('\r') || request.Subject.Contains('\n'))
             {
                 return Failure("Debe indicar el asunto del correo.");
             }

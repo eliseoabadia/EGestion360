@@ -11,6 +11,7 @@ namespace EG.Web.Services
         private const string SUCURSAL_KEY = "sucursal_seleccionada";
         private const string EMPRESA_KEY = "empresa_seleccionada";
         private const string EMPRESA_HEADER = "X-Empresa-Id";
+        private int selectionVersion;
 
         public event Action<int, string>? OnSucursalChanged;
         public event Action<int>? OnEmpresaChanged;
@@ -33,13 +34,16 @@ namespace EG.Web.Services
 
         public async Task InitializeAsync()
         {
+            var version = ++selectionVersion;
             try
             {
                 var sucursalJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", SUCURSAL_KEY);
-                if (!string.IsNullOrEmpty(sucursalJson))
+                if (version != selectionVersion) return;
+                ResetSelection();
+                if (!string.IsNullOrWhiteSpace(sucursalJson))
                 {
                     var sucursal = JsonSerializer.Deserialize<SucursalSeleccionada>(sucursalJson);
-                    if (sucursal != null)
+                    if (sucursal != null && sucursal.Id > 0 && sucursal.EmpresaId > 0)
                     {
                         SucursalId = sucursal.Id;
                         SucursalNombre = sucursal.Nombre;
@@ -52,6 +56,8 @@ namespace EG.Web.Services
             }
             catch (Exception ex)
             {
+                if (version != selectionVersion) return;
+                ResetSelection();
                 _logger.LogWarning(ex, "No se pudo restaurar la sucursal seleccionada.");
             }
         }
@@ -63,11 +69,13 @@ namespace EG.Web.Services
             string? empresaNombre = null,
             string? empresaNombreCorto = null)
         {
+            selectionVersion++;
             SucursalId = sucursalId;
             SucursalNombre = sucursalNombre;
-            EmpresaId = empresaId;
+            EmpresaId = empresaId > 0 ? empresaId : null;
             EmpresaNombre = empresaNombre;
             EmpresaNombreCorto = empresaNombreCorto;
+            ApplyEmpresaHeader();
 
             var sucursal = new SucursalSeleccionada
             {
@@ -80,11 +88,16 @@ namespace EG.Web.Services
 
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", SUCURSAL_KEY, JsonSerializer.Serialize(sucursal));
             
-            if (empresaId.HasValue)
+            if (EmpresaId.HasValue)
             {
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", EMPRESA_KEY, empresaId.Value.ToString());
                 ApplyEmpresaHeader();
                 OnEmpresaChanged?.Invoke(empresaId.Value);
+            }
+            else
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", EMPRESA_KEY);
+                OnEmpresaChanged?.Invoke(0);
             }
             
             OnSucursalChanged?.Invoke(sucursalId, sucursalNombre);
@@ -96,6 +109,7 @@ namespace EG.Web.Services
             string? empresaNombreCorto,
             bool notify = true)
         {
+            selectionVersion++;
             EmpresaId = empresaId > 0 ? empresaId : EmpresaId;
             EmpresaNombre = string.IsNullOrWhiteSpace(empresaNombre)
                 ? EmpresaNombre
@@ -132,16 +146,28 @@ namespace EG.Web.Services
 
         public async Task ClearSucursalAsync()
         {
+            selectionVersion++;
+            ResetSelection();
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", SUCURSAL_KEY);
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", EMPRESA_KEY);
+            }
+            finally
+            {
+                OnSucursalChanged?.Invoke(0, string.Empty);
+                OnEmpresaChanged?.Invoke(0);
+            }
+        }
+
+        private void ResetSelection()
+        {
             SucursalId = null;
             SucursalNombre = null;
             EmpresaId = null;
             EmpresaNombre = null;
             EmpresaNombreCorto = null;
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", SUCURSAL_KEY);
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", EMPRESA_KEY);
             ApplyEmpresaHeader();
-            OnSucursalChanged?.Invoke(0, string.Empty);
-            OnEmpresaChanged?.Invoke(0);
         }
 
         public bool HasSucursalSeleccionada => SucursalId.HasValue && SucursalId > 0;
@@ -151,7 +177,7 @@ namespace EG.Web.Services
             try
             {
                 var empresaIdStr = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", EMPRESA_KEY);
-                if (!string.IsNullOrEmpty(empresaIdStr) && int.TryParse(empresaIdStr, out int empresaId))
+                if (!string.IsNullOrEmpty(empresaIdStr) && int.TryParse(empresaIdStr, out int empresaId) && empresaId > 0)
                 {
                     return empresaId;
                 }
