@@ -2,6 +2,7 @@ using EG.Common;
 using EG.Common.Enums;
 using EG.Common.Helper;
 using EG.Web.Helpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -241,6 +242,11 @@ namespace EG.Web.Services
                     }
 
                     var result = DeserializeResponse<T>(responseBody);
+                    if (IsApiResponseType(typeof(T)) && result is null &&
+                        !responseBody.TrimStart().StartsWith('['))
+                        return CreateErrorContract<T>("No fue posible interpretar la respuesta del servidor. Verifica el resultado antes de repetir la operación.", ApiResponseCode.Error);
+                    if (result is null && IsApiResponseType(typeof(T)) && LooksLikeApiResponse(responseBody))
+                        return CreateErrorContract<T>("No fue posible interpretar la respuesta del servidor. Verifica el resultado antes de repetir la operación.", ApiResponseCode.Error);
                     return NormalizeSuccessfulResponse(responseBody, result);
                 }
 
@@ -264,7 +270,7 @@ namespace EG.Web.Services
             catch (OperationCanceledException ex)
             {
                 _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} fue cancelada o excedio el tiempo de espera.", method, endpoint);
-                return CreateErrorContract<T>("La solicitud tardo demasiado. Intenta nuevamente.", ApiResponseCode.Error);
+                return CreateErrorContract<T>("La solicitud tardó demasiado. Verifica el resultado antes de repetir la operación.", ApiResponseCode.Error);
             }
             catch (HttpRequestException ex)
             {
@@ -312,7 +318,14 @@ namespace EG.Web.Services
                         result = DeserializeResponse<T>(responseBody);
                     }
 
-                    return (result, true, "Operacion exitosa");
+                    if (result is null && !string.IsNullOrWhiteSpace(responseBody))
+                        return (default, false, "No fue posible interpretar la respuesta del servidor. Verifica el resultado antes de repetir la operación.");
+                    result = NormalizeSuccessfulResponse(responseBody, result);
+                    var successful = result is not null && typeof(T).GetProperty("Success")?.GetValue(result) is false
+                        ? false : typeof(T) == typeof(bool) ? result is true : true;
+                    var message = result is null ? null : typeof(T).GetProperty("Message")?.GetValue(result)?.ToString();
+                    return (result, successful, UserFacingMessageSanitizer.SafeOrFallback(message,
+                        successful ? "Operacion exitosa" : UserFacingMessages.UnexpectedError));
                 }
 
                 return (default, false, ExtractErrorMessage(responseBody, response.StatusCode));
@@ -325,7 +338,7 @@ namespace EG.Web.Services
             catch (OperationCanceledException ex)
             {
                 _logger.LogWarning(ex, "La solicitud {Method} {Endpoint} fue cancelada o excedio el tiempo de espera.", method, endpoint);
-                return (default, false, "La solicitud tardo demasiado. Intenta nuevamente.");
+                return (default, false, "La solicitud tardó demasiado. Verifica el resultado antes de repetir la operación.");
             }
             catch (Exception ex)
             {
@@ -370,6 +383,12 @@ namespace EG.Web.Services
         private T? NormalizeSuccessfulResponse<T>(string responseBody, T? result)
         {
             var type = typeof(T);
+            if (LooksLikeApiResponse(responseBody) && result is not null &&
+                type.GetProperty("Success")?.GetValue(result) is false)
+            {
+                EnsureErrorContract(result, ExtractErrorMessage(responseBody, HttpStatusCode.BadRequest), ApiResponseCode.Error);
+                return result;
+            }
             if (!IsApiResponseType(type) || LooksLikeApiResponse(responseBody))
             {
                 if (result != null && IsApiResponseType(type))
@@ -477,14 +496,30 @@ namespace EG.Web.Services
                 try
                 {
                     using var document = JsonDocument.Parse(responseBody);
-                    if (document.RootElement.TryGetProperty("message", out var message) ||
-                        document.RootElement.TryGetProperty("Message", out message))
+                    var root = document.RootElement;
+                    if (root.ValueKind == JsonValueKind.Object &&
+                        (root.TryGetProperty("message", out var message) || root.TryGetProperty("Message", out message)) &&
+                        message.ValueKind == JsonValueKind.String)
                     {
                         var value = message.GetString();
                         if (!string.IsNullOrWhiteSpace(value))
                         {
-                            return value;
+                            return UserFacingMessageSanitizer.SafeOrFallback(value, UserFacingMessages.UnexpectedError);
                         }
+                    }
+                    if (root.ValueKind == JsonValueKind.Object &&
+                        (root.TryGetProperty("errors", out var errors) || root.TryGetProperty("Errors", out errors)) &&
+                        errors.ValueKind == JsonValueKind.Object)
+                    {
+                        var messages = errors.EnumerateObject()
+                            .Where(field => field.Value.ValueKind == JsonValueKind.Array)
+                            .SelectMany(field => field.Value.EnumerateArray())
+                            .Where(value => value.ValueKind == JsonValueKind.String)
+                            .Select(value => value.GetString())
+                            .Where(value => !string.IsNullOrWhiteSpace(value) && !UserFacingMessageSanitizer.LooksTechnical(value))
+                            .Distinct().Take(5);
+                        var summary = string.Join(" ", messages);
+                        if (!string.IsNullOrWhiteSpace(summary)) return summary;
                     }
                 }
                 catch (JsonException)
@@ -500,7 +535,7 @@ namespace EG.Web.Services
                 HttpStatusCode.Forbidden => "No tienes permisos para realizar esta operacion.",
                 HttpStatusCode.NotFound => "La informacion solicitada ya no existe o no esta disponible.",
                 HttpStatusCode.Conflict => "La operacion no puede completarse por el estado actual de la informacion.",
-                HttpStatusCode.RequestTimeout => "La solicitud tardo demasiado. Intenta nuevamente.",
+                HttpStatusCode.RequestTimeout => "La solicitud tardó demasiado. Verifica el resultado antes de repetir la operación.",
                 HttpStatusCode.TooManyRequests => "Hay demasiadas solicitudes en curso. Espera un momento e intenta nuevamente.",
                 _ => UserFacingMessages.OperationFailed("completar la solicitud")
             };
@@ -617,7 +652,7 @@ namespace EG.Web.Services
             SetProperty(type, result, "Success", false);
 
             var messageProperty = type.GetProperty("Message");
-            if (messageProperty?.CanWrite == true && string.IsNullOrWhiteSpace(messageProperty.GetValue(result)?.ToString()))
+            if (messageProperty?.CanWrite == true)
             {
                 messageProperty.SetValue(result, message);
             }

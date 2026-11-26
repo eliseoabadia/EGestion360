@@ -46,6 +46,13 @@ public sealed class ApiResultSanitizationFilter(ILogger<ApiResultSanitizationFil
         else if (applicationFailure is not null)
         {
             LogApplicationFailure(context, statusCode, applicationFailure);
+            if (HasUnsafeUserResponse(context.Result) ||
+                context.Result is ObjectResult { Value: not null } failureResult &&
+                string.IsNullOrWhiteSpace(GetMessageProperty(failureResult.Value)))
+            {
+                context.Result = BuildErrorResult(statusCode, applicationFailure.Message,
+                    applicationFailure.Code, context.HttpContext.TraceIdentifier);
+            }
         }
 
         await next();
