@@ -47,7 +47,8 @@ namespace EG.Application.Services
         string userName,
         string email,
         int? empresaId,
-        JwtSettings jwtSettings)
+        JwtSettings jwtSettings,
+        IEnumerable<string>? roles = null)
         {
             try
             {
@@ -62,7 +63,11 @@ namespace EG.Application.Services
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience,
-                    claims: GetClaims(pkIdUsuario.ToString(), userName, email, empresaId),
+                    claims: GetClaims(pkIdUsuario.ToString(), userName, email, empresaId)
+                        .Concat((roles ?? Enumerable.Empty<string>())
+                            .Where(role => !string.IsNullOrWhiteSpace(role))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .Select(role => new Claim(ClaimTypes.Role, role))),
                     notBefore: DateTime.Now,
                     expires: new DateTimeOffset(expireTime).DateTime,
                     signingCredentials: new SigningCredentials(

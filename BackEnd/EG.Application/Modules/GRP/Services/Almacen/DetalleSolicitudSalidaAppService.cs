@@ -232,7 +232,8 @@ namespace EG.Application.Services.Almacen
                     if (surtidaTotalmente && !solicitud.FkidPolizaConta.HasValue)
                     {
                         var accountingDecision = _licensing.Evaluate(LicenseModuleCodes.GrpContabilidad);
-                        if (!accountingDecision.Allowed)
+                        if (!accountingDecision.Allowed &&
+                            !EG.Common.Security.SystemRoles.IsSuperAdmin(_userContext.GetUserPrincipal()))
                         {
                             throw new LicenseOperationException(
                                 accountingDecision.Code,

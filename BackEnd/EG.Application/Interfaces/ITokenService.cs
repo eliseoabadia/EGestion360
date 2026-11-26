@@ -24,7 +24,8 @@ namespace EG.Application.Interfaces
             string userName,
             string email,
             int? empresaId,
-            JwtSettings jwtSettings);
+            JwtSettings jwtSettings,
+            IEnumerable<string>? roles = null);
 
         /// <summary>
         /// Valida un token JWT y devuelve el ID del usuario

@@ -10,11 +10,14 @@ namespace EG.Application.Services.Account
     {
         private readonly INavigateService _navigateService;
         private readonly ILicenseRuntimeState _licensing;
+        private readonly EG.Domain.Interfaces.IUserContextService _userContext;
 
-        public NavigateAppService(INavigateService navigateService, ILicenseRuntimeState licensing)
+        public NavigateAppService(INavigateService navigateService, ILicenseRuntimeState licensing,
+            EG.Domain.Interfaces.IUserContextService userContext)
         {
             _navigateService = navigateService;
             _licensing = licensing;
+            _userContext = userContext;
         }
 
         public async Task<IEnumerable<spNodeMenuResponse>> GetMenuAsync(int userId)
@@ -31,7 +34,9 @@ namespace EG.Application.Services.Account
                 if (menu == null)
                     throw new KeyNotFoundException($"Menú para usuario {userId} no encontrado");
 
-                return FilterLicensedMenu(menu);
+                return EG.Common.Security.SystemRoles.IsSuperAdmin(_userContext.GetUserPrincipal())
+                    ? menu
+                    : FilterLicensedMenu(menu);
             }
             catch (KeyNotFoundException)
             {

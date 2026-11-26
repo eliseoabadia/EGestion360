@@ -14,6 +14,12 @@ public sealed class ModuleLicenseFilter(
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
+        if (EG.Common.Security.SystemRoles.IsSuperAdmin(context.HttpContext.User))
+        {
+            await next();
+            return;
+        }
+
         var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
         var controllerNamespace = descriptor?.ControllerTypeInfo.Namespace;
         var moduleCode = LicenseModuleResolver.ResolveControllerModule(controllerNamespace);

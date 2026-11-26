@@ -26,7 +26,7 @@ namespace EG.ApiCoreBS.Auth
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            if (HasSuperAdminRole(context.User))
+            if (EG.Common.Security.SystemRoles.IsSuperAdmin(context.User))
             {
                 context.Succeed(requirement);
                 return;
@@ -53,14 +53,6 @@ namespace EG.ApiCoreBS.Auth
             {
                 _logger.LogError(ex, "Error cargando permisos para el usuario {UserId}", userId.Value);
             }
-        }
-
-        private static bool HasSuperAdminRole(ClaimsPrincipal user)
-        {
-            return user.IsInRole("SuperAdmin")
-                || user.Claims.Any(c =>
-                    string.Equals(c.Type, ClaimTypes.Role, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(c.Value, "SuperAdmin", StringComparison.OrdinalIgnoreCase));
         }
 
         private static int? GetUserId(ClaimsPrincipal user)

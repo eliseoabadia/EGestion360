@@ -1,0 +1,217 @@
+[
+  [
+    {
+      "query_id": 47071,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 47076,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 47101,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 47134,
+      "QueryCategory": "REVIEW_APPLICATION_QUERY",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 48044,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 48059,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 48075,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 48104,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53760,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53867,
+      "QueryCategory": "REVIEW_APPLICATION_QUERY",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53910,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53911,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53912,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53914,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    },
+    {
+      "query_id": 53916,
+      "QueryCategory": "METADATA_OR_DIAGNOSTICS",
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null
+    }
+  ],
+  [
+    {
+      "SchemaName": null,
+      "ObjectName": null,
+      "query_id": 47134,
+      "Executions": 25,
+      "WeightedAverageMs": 264.10432000000003,
+      "MaxMs": 439.243000
+    },
+    {
+      "SchemaName": null,
+      "ObjectName": null,
+      "query_id": 53867,
+      "Executions": 3,
+      "WeightedAverageMs": 169.868,
+      "MaxMs": 507.631000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "spNodeMenu",
+      "query_id": 53871,
+      "Executions": 4,
+      "WeightedAverageMs": 27.21175,
+      "MaxMs": 43.389000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "spGetClaimsByUser",
+      "query_id": 53868,
+      "Executions": 4,
+      "WeightedAverageMs": 13.95175,
+      "MaxMs": 19.696000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "spNodeMenu",
+      "query_id": 53870,
+      "Executions": 4,
+      "WeightedAverageMs": 8.51975,
+      "MaxMs": 16.896000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "WriteSystemLog",
+      "query_id": 53847,
+      "Executions": 50,
+      "WeightedAverageMs": 0.2524,
+      "MaxMs": 3.145000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "WriteSystemLog",
+      "query_id": 53846,
+      "Executions": 50,
+      "WeightedAverageMs": 0.16913999999999998,
+      "MaxMs": 1.280000
+    },
+    {
+      "SchemaName": "SIS",
+      "ObjectName": "LoginInformationEmployee",
+      "query_id": 53864,
+      "Executions": 2,
+      "WeightedAverageMs": 2.147,
+      "MaxMs": 2.377000
+    }
+  ],
+  [
+    {
+      "SchemaName": "ALMA",
+      "TableName": "Bajas",
+      "ColumnName": "FKIdEmpresa_SIS",
+      "DataType": "int",
+      "max_length": 4
+    },
+    {
+      "SchemaName": "ALMA",
+      "TableName": "Bien",
+      "ColumnName": "FKIdEmpresa_SIS",
+      "DataType": "int",
+      "max_length": 4
+    },
+    {
+      "SchemaName": "ALMA",
+      "TableName": "CalendarioInventario",
+      "ColumnName": "FKIdEmpresa_SIS",
+      "DataType": "int",
+      "max_length": 4
+    },
+    {
+      "SchemaName": "ALMA",
+      "TableName": "Inventario",
+      "ColumnName": "FKIdEmpresa_SIS",
+      "DataType": "int",
+      "max_length": 4
+    },
+    {
+      "SchemaName": "ALMA",
+      "TableName": "Resguardo",
+      "ColumnName": "FKIdEmpresa_SIS",
+      "DataType": "int",
+      "max_length": 4
+    }
+  ],
+  [
+    {
+      "UnschemaBoundUnresolvedReferences": 0
+    }
+  ]
+]

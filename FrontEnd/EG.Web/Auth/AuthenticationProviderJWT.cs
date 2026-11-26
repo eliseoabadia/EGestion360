@@ -181,6 +181,8 @@ namespace EG.Web.Auth
         {
             if (sessionCleared || (_activeAuthenticationState != null && IsTokenExpired(_activeAuthenticationState.User.Claims)))
                 return false;
+            if (EG.Common.Security.SystemRoles.IsSuperAdmin(_activeAuthenticationState?.User))
+                return true;
             if (string.IsNullOrWhiteSpace(group) || string.IsNullOrWhiteSpace(action))
                 return false;
 

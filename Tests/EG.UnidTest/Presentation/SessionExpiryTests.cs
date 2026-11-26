@@ -8,8 +8,10 @@ namespace EG.UnidTest.Presentation;
 
 public sealed class SessionExpiryTests
 {
-    [Fact]
-    public async Task CachedSessionStopsGrantingPermissionsWhenTokenExpires()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CachedSessionStopsGrantingPermissionsWhenTokenExpires(bool superAdmin)
     {
         var clock = new Clock();
         var browser = new Storage();
@@ -18,13 +20,15 @@ public sealed class SessionExpiryTests
         var year = new AnioPresupuestalStateService(browser);
         var provider = new AuthenticationProviderJWT(browser, client,
             NullLogger<AuthenticationProviderJWT>.Instance, branch, year, clock);
-        var token = Token("\"exp\":" + clock.Now.AddMinutes(2).ToUnixTimeSeconds());
+        var token = Token("\"exp\":" + clock.Now.AddMinutes(2).ToUnixTimeSeconds() +
+            (superAdmin ? ",\"role\":\"SuperAdmin\"" : ""));
         await provider.LoginAsync(token);
         await provider.LoadClaimsFromDbAsync([new() { Group = "Test", SubGroup = "Module", Values = "update" }], token);
         await branch.SetSucursalAsync(1, "Actual", 7);
         await year.SetAnioAsync(1, 2026, "Actual");
         Assert.Equal(42, provider.GetUserId());
         Assert.True(provider.HasPermission("Test", "Module", "update"));
+        Assert.Equal(superAdmin, provider.HasPermission("Other", "Unassigned", "view"));
 
         clock.Now = clock.Now.AddMinutes(3);
 

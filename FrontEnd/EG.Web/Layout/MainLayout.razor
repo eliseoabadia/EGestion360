@@ -16,6 +16,7 @@
 <MudDialogProvider />
 <MudPopoverProvider />
 <MudSnackbarProvider />
+<MudBreakpointProvider OnBreakpointChanged="HandleBreakpointChanged" />
 
 <div class="layout-root @ShellThemeClass">
     <MudAppBar Elevation="0" Class="modern-app-bar">
@@ -26,6 +27,7 @@
                                Color="Color.Inherit"
                                Edge="Edge.Start"
                                OnClick="@((e) => DrawerToggle())"
+                               aria-label="Abrir o cerrar menú principal"
                                class="menu-toggle" />
             }
 
@@ -148,6 +150,10 @@
     @if (!esPaginaLogin)
     {
         <div class="page-body">
+            @if (_mobileLayout && _drawerOpen)
+            {
+                <button type="button" class="mobile-menu-backdrop" aria-label="Cerrar menú principal" @onclick="DrawerToggle"></button>
+            }
             <div class="sidebar-container @(_drawerOpen ? "expanded" : "collapsed")">
                 <DynamicMenu IsCollapsed="!_drawerOpen" ThemeKey="@_selectedTheme" />
             </div>
@@ -187,6 +193,8 @@
     private AppThemeOption _selectedThemeOption { get; set; } = AppThemeOption.Oscuro;
 
     private bool _drawerOpen = true;
+    private bool _mobileLayout;
+    private bool _desktopDrawerOpen = true;
     private bool _isDarkMode = true;
     private string _selectedTheme = "default";
     private MudTheme _theme = new MudTheme();
@@ -275,6 +283,7 @@
     {
         try
         {
+            if (_mobileLayout) _drawerOpen = false;
             if (esPaginaLogin)
             {
                 _shellInitialized = false;
@@ -673,6 +682,15 @@
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private void HandleBreakpointChanged(Breakpoint breakpoint)
+    {
+        var mobile = breakpoint < Breakpoint.Md;
+        if (_mobileLayout == mobile) return;
+        if (mobile) _desktopDrawerOpen = _drawerOpen;
+        _mobileLayout = mobile;
+        _drawerOpen = mobile ? false : _desktopDrawerOpen;
     }
 
     private void NavigateHome()
@@ -1372,6 +1390,24 @@
 
         .app-title {
             font-size: 1.2rem;
+        }
+
+        .sidebar-container.collapsed { display: none; }
+        .sidebar-container.expanded {
+            position: fixed;
+            top: var(--eg-appbar-height);
+            bottom: var(--eg-footer-height);
+            left: 0;
+            z-index: 1299;
+            width: min(var(--eg-sidebar-width), calc(100vw - 48px));
+        }
+        .sidebar-resize-handle { display: none; }
+        .mobile-menu-backdrop {
+            position: fixed;
+            inset: var(--eg-appbar-height) 0 var(--eg-footer-height);
+            border: 0;
+            background: rgba(0, 0, 0, .45);
+            z-index: 1298;
         }
     }
 

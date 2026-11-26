@@ -1,0 +1,1574 @@
+[
+  [
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 47101,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 1550.76992,
+      "MaxMs": 2365.914000,
+      "AverageLogicalReads": 79407.0,
+      "FirstExecution": "2026-10-26T20:41:03.417+00:00",
+      "LastExecution": "2026-11-25T14:28:46.177+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 47071,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 1013.97732,
+      "MaxMs": 1872.765000,
+      "AverageLogicalReads": 74387.48,
+      "FirstExecution": "2026-10-26T20:40:31.01+00:00",
+      "LastExecution": "2026-11-25T14:28:32.057+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 47076,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 325.42624,
+      "MaxMs": 637.659000,
+      "AverageLogicalReads": 40006.44,
+      "FirstExecution": "2026-10-26T20:40:43.073+00:00",
+      "LastExecution": "2026-11-25T14:28:37.097+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 47134,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 264.10432000000003,
+      "MaxMs": 439.243000,
+      "AverageLogicalReads": 1681.72,
+      "FirstExecution": "2026-10-26T20:41:31.223+00:00",
+      "LastExecution": "2026-11-25T14:28:56.513+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 48044,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 206.49924,
+      "MaxMs": 413.774000,
+      "AverageLogicalReads": 55416.36,
+      "FirstExecution": "2026-10-26T20:40:11.5+00:00",
+      "LastExecution": "2026-11-25T14:28:24.357+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 48104,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 197.17596,
+      "MaxMs": 337.344000,
+      "AverageLogicalReads": 17187.36,
+      "FirstExecution": "2026-10-26T20:41:19.373+00:00",
+      "LastExecution": "2026-11-25T14:28:52.09+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 48059,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 193.80772,
+      "MaxMs": 354.347000,
+      "AverageLogicalReads": 10658.0,
+      "FirstExecution": "2026-10-26T20:40:21.39+00:00",
+      "LastExecution": "2026-11-25T14:28:29.077+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 48075,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 149.52048000000002,
+      "MaxMs": 244.288000,
+      "AverageLogicalReads": 2951.72,
+      "FirstExecution": "2026-10-26T20:40:53.883+00:00",
+      "LastExecution": "2026-11-25T14:28:42.063+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53916,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 1,
+      "WeightedAverageMs": 3617.757,
+      "MaxMs": 3617.757000,
+      "AverageLogicalReads": 325256.0,
+      "FirstExecution": "2026-11-26T05:46:14.477+00:00",
+      "LastExecution": "2026-11-26T05:46:14.477+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53914,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 1,
+      "WeightedAverageMs": 1860.104,
+      "MaxMs": 1860.104000,
+      "AverageLogicalReads": 66451.0,
+      "FirstExecution": "2026-11-26T05:46:10.803+00:00",
+      "LastExecution": "2026-11-26T05:46:10.803+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53760,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 25,
+      "WeightedAverageMs": 64.63848,
+      "MaxMs": 124.071000,
+      "AverageLogicalReads": 66.0,
+      "FirstExecution": "2026-10-26T20:41:39.077+00:00",
+      "LastExecution": "2026-11-25T14:28:59.75+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53867,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 3,
+      "WeightedAverageMs": 169.868,
+      "MaxMs": 507.631000,
+      "AverageLogicalReads": 24.0,
+      "FirstExecution": "2026-11-26T05:11:05.63+00:00",
+      "LastExecution": "2026-11-26T05:15:27.35+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53912,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 1,
+      "WeightedAverageMs": 378.395,
+      "MaxMs": 378.395000,
+      "AverageLogicalReads": 52785.0,
+      "FirstExecution": "2026-11-26T05:46:08.93+00:00",
+      "LastExecution": "2026-11-26T05:46:08.93+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53910,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 1,
+      "WeightedAverageMs": 295.942,
+      "MaxMs": 295.942000,
+      "AverageLogicalReads": 80088.0,
+      "FirstExecution": "2026-11-26T05:46:08.313+00:00",
+      "LastExecution": "2026-11-26T05:46:08.313+00:00"
+    },
+    {
+      "Section": "QueryStoreTop",
+      "query_id": 53911,
+      "object_id": 0,
+      "SchemaName": null,
+      "ObjectName": null,
+      "Executions": 1,
+      "WeightedAverageMs": 231.208,
+      "MaxMs": 231.208000,
+      "AverageLogicalReads": 29167.0,
+      "FirstExecution": "2026-11-26T05:46:08.547+00:00",
+      "LastExecution": "2026-11-26T05:46:08.547+00:00"
+    }
+  ],
+  [
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Empresa",
+      "ReferencingObjects": 71
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "CatalogoSimple",
+      "ReferencingObjects": 56
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "TipoBien",
+      "ReferencingObjects": 40
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "FirmaAutorizada",
+      "ReferencingObjects": 35
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Reporte",
+      "ReferencingObjects": 35
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Persona",
+      "ReferencingObjects": 34
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Anio",
+      "ReferencingObjects": 34
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Area",
+      "ReferencingObjects": 22
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Proveedor",
+      "ReferencingObjects": 19
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Unidades",
+      "ReferencingObjects": 19
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Bien",
+      "ReferencingObjects": 17
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Usuario",
+      "ReferencingObjects": 13
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ContratoLaboral",
+      "ReferencingObjects": 12
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "TablaFiscal",
+      "ReferencingObjects": 12
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Puesto",
+      "ReferencingObjects": 10
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "CorridaNomina",
+      "ReferencingObjects": 10
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "GrupoBien",
+      "ReferencingObjects": 9
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Documento",
+      "ReferencingObjects": 9
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Bajas",
+      "ReferencingObjects": 8
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PeriodoActivo",
+      "ReferencingObjects": 7
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PeriodoNomina",
+      "ReferencingObjects": 7
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "SolicitudSalida",
+      "ReferencingObjects": 7
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "dbo",
+      "TableName": "AspNetUsers",
+      "ReferencingObjects": 7
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "dbo",
+      "TableName": "AspNetUserRoles",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "EmpleadoExpediente",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PersonaPension",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Incidencia",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Nombramiento",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Almacen",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "TipoPension",
+      "ReferencingObjects": 6
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "MenuRole",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Moneda",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Sucursal",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Departamento",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "CorridaNominaDetalle",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "dbo",
+      "TableName": "AspNetRoles",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "ResguardoDetalle",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Inventario",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "EstadoBien",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "CalendarioInventario",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Conteo",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "DetalleSolicitudSalida",
+      "ReferencingObjects": 5
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "UsuarioSucursal",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "InventarioDetalle",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Familia",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "PeriodoConteo",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SueldoQuincenal",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "PlanConteoCiclico",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PersonaDependiente",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Notificacion",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Partida",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "DocumentoEvento",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "DocumentoAnotacion",
+      "ReferencingObjects": 4
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Universo",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Estados",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionTipo",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PlazaAutorizada",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Liquidacion",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ImporteNivel",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Concepto",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Concepto",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Resguardo",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "EstatusPeriodo",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Marca",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "ResguardoMovimiento",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "EstatusInventario",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoPoliza",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "ConteoDetalle",
+      "ReferencingObjects": 3
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "ConteoDetalleEscaneo",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoContratacion",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "EstatusBaja",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "UsuarioDepartamento",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "TipoAdquisicion",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "TipoBaja",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "TipoConteo",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "TipoPatrimonio",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Material",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoVariable",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaimValues",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "Nivel",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ClasePuesto",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "DescuentoCredito",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "DescuentoInfonavit",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Capitulo",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SueldoSemanal",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SueldoLiqFin",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SueldoMensual",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "FactorInt",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Nivel",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PersonaArea",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Paises",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Idioma",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "DocumentoTipoAnotacion",
+      "ReferencingObjects": 2
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "DocumentoExtensionPermitida",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Vacacion",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "EstatusProveedor",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "EmpresaEstado",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Escolaridad",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Municipios",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "MedodoPago",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionEstado",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionRegla",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "Parentesco",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "SystemParamCatalog",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "SystemParamValue",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "PersonaPlaza",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "MotivoMovimiento",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "MovimientoPersonal",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Infonavit",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SalarioMinimo",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "SueldoEspecial",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "ActividadInstitucional",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "TipoIncapacidad",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "TipoPago",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "DiaSemana",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "Credito",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "EstatusPago",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "EnvioWorkflow",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ContratoTerceros",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoFactor",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoFijo",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoPorcentaje",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoProporcional",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "NOM",
+      "TableName": "ConceptoTabular",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "MotivoES",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "CierreInventario",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "NormaJuridicaVersion",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "ALMA",
+      "TableName": "EstatusSolicitudSalida",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoProveedor",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoDetallePoliza",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoIncidencia",
+      "ReferencingObjects": 1
+    },
+    {
+      "Section": "CrossSchemaReferences",
+      "SchemaName": "SIS",
+      "TableName": "TipoJustificacion",
+      "ReferencingObjects": 1
+    }
+  ],
+  [
+    {
+      "Section": "ActiveRequests",
+      "UserRequests": 0,
+      "LongerThan5s": 0,
+      "BlockedRequests": 0
+    }
+  ],
+  [
+    {
+      "Section": "DeadlockRingBuffer",
+      "BufferTruncated": 1,
+      "RetainedDeadlocks": 0
+    }
+  ],
+  [
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000012_373B3228",
+      "last_updated": "2026-07-05T11:55:33.2033333",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000004_373B3228",
+      "last_updated": "2026-07-05T11:59:27.4",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000008_373B3228",
+      "last_updated": "2026-07-05T11:59:27.44",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000009_373B3228",
+      "last_updated": "2026-07-05T11:59:27.4433333",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000A_373B3228",
+      "last_updated": "2026-07-05T11:59:27.46",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000C_373B3228",
+      "last_updated": "2026-07-05T11:59:27.4833333",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000E_373B3228",
+      "last_updated": "2026-07-05T11:59:27.4966667",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000F_373B3228",
+      "last_updated": "2026-07-05T11:59:27.5",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000010_373B3228",
+      "last_updated": "2026-07-05T11:59:27.5",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000011_373B3228",
+      "last_updated": "2026-07-05T11:59:27.5066667",
+      "rows": 35,
+      "rows_sampled": 35,
+      "modification_counter": 3362
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000D_373B3228",
+      "last_updated": "2026-07-14T22:46:19.21",
+      "rows": 824,
+      "rows_sampled": 824,
+      "modification_counter": 2848
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "ALMA",
+      "TableName": "PlanConteoCiclico",
+      "StatisticsName": "_WA_Sys_00000004_10373EF7",
+      "last_updated": "2026-07-24T18:51:45.1333333",
+      "rows": 661,
+      "rows_sampled": 661,
+      "modification_counter": 1983
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_0000000C_66603565",
+      "last_updated": "2026-07-05T11:55:34.7666667",
+      "rows": 1296,
+      "rows_sampled": 1296,
+      "modification_counter": 1785
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_00000003_66603565",
+      "last_updated": "2026-07-05T11:59:28.7633333",
+      "rows": 1296,
+      "rows_sampled": 1296,
+      "modification_counter": 1785
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_00000006_66603565",
+      "last_updated": "2026-07-05T11:59:28.77",
+      "rows": 1296,
+      "rows_sampled": 1296,
+      "modification_counter": 1785
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_00000009_66603565",
+      "last_updated": "2026-07-05T11:59:28.7966667",
+      "rows": 1296,
+      "rows_sampled": 1296,
+      "modification_counter": 1785
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_0000000A_66603565",
+      "last_updated": "2026-07-05T11:59:28.8033333",
+      "rows": 1296,
+      "rows_sampled": 1296,
+      "modification_counter": 1785
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_00000002_2704CA5F",
+      "last_updated": "2026-07-06T17:37:34.96",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1650
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_00000006_2704CA5F",
+      "last_updated": "2026-07-07T13:39:50.42",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1650
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_00000003_2704CA5F",
+      "last_updated": "2026-07-05T11:55:32.46",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1323
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_00000009_2704CA5F",
+      "last_updated": "2026-07-05T11:55:32.4633333",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1323
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_0000000B_2704CA5F",
+      "last_updated": "2026-07-05T11:55:32.4666667",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1323
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_00000007_2704CA5F",
+      "last_updated": "2026-07-05T11:59:27.0933333",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 1323
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "Menu",
+      "StatisticsName": "_WA_Sys_0000000D_2704CA5F",
+      "last_updated": "2026-07-05T11:55:32.47",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 996
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "MenuRole",
+      "StatisticsName": "_WA_Sys_00000004_27F8EE98",
+      "last_updated": "2026-07-05T11:55:32.4866667",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 990
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "MenuRole",
+      "StatisticsName": "_WA_Sys_00000006_27F8EE98",
+      "last_updated": "2026-07-05T11:55:32.4966667",
+      "rows": 327,
+      "rows_sampled": 327,
+      "modification_counter": 990
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000006_373B3228",
+      "last_updated": "2026-08-11T19:58:12.8",
+      "rows": 311,
+      "rows_sampled": 311,
+      "modification_counter": 542
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000003_373B3228",
+      "last_updated": "2026-08-11T19:58:12.8",
+      "rows": 311,
+      "rows_sampled": 311,
+      "modification_counter": 542
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_0000000B_373B3228",
+      "last_updated": "2026-08-11T19:58:42.4333333",
+      "rows": 312,
+      "rows_sampled": 312,
+      "modification_counter": 541
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "IX_SystemLog_FKIdOrigenLogMessage_SIS_814625945",
+      "last_updated": "2026-08-11T19:58:42.4366667",
+      "rows": 312,
+      "rows_sampled": 312,
+      "modification_counter": 541
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000005_373B3228",
+      "last_updated": "2026-08-11T20:21:25.4966667",
+      "rows": 320,
+      "rows_sampled": 320,
+      "modification_counter": 533
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "_WA_Sys_00000007_373B3228",
+      "last_updated": "2026-08-11T20:21:25.53",
+      "rows": 320,
+      "rows_sampled": 320,
+      "modification_counter": 533
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "SystemLog",
+      "StatisticsName": "CONSTRAINT_PK_SystemLog",
+      "last_updated": "2026-08-11T20:51:57.66",
+      "rows": 506,
+      "rows_sampled": 506,
+      "modification_counter": 347
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_0000000B_66603565",
+      "last_updated": "2026-08-11T19:44:53.4666667",
+      "rows": 332,
+      "rows_sampled": 332,
+      "modification_counter": 266
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "IX_AspNetClaims_ClaimTypeId_2005582183",
+      "last_updated": "2026-08-11T19:45:17.0933333",
+      "rows": 332,
+      "rows_sampled": 332,
+      "modification_counter": 263
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "IX_AspNetClaims_RoleId_2005582183",
+      "last_updated": "2026-08-11T19:45:17.0933333",
+      "rows": 332,
+      "rows_sampled": 332,
+      "modification_counter": 263
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_00000004_66603565",
+      "last_updated": "2026-08-11T19:45:17.09",
+      "rows": 332,
+      "rows_sampled": 332,
+      "modification_counter": 263
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaims",
+      "StatisticsName": "_WA_Sys_00000008_66603565",
+      "last_updated": "2026-08-11T19:45:17.0966667",
+      "rows": 332,
+      "rows_sampled": 332,
+      "modification_counter": 263
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_FKIdCuentaContable_CONTA_1909581841",
+      "last_updated": "2026-07-24T13:29:17.7233333",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 162
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "_WA_Sys_00000007_628FA481",
+      "last_updated": "2026-07-24T13:29:17.7333333",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 162
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "_WA_Sys_00000006_628FA481",
+      "last_updated": "2026-07-24T17:55:12.98",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 160
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_FKIdPoliza_CONTA_1909581841",
+      "last_updated": "2026-07-24T13:29:17.7266667",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_FKIdTipoDetallePoliza_SIS_1909581841",
+      "last_updated": "2026-07-24T13:29:17.73",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_UsuarioCreacion_1909581841",
+      "last_updated": "2026-07-24T13:29:17.73",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_UsuarioModificacion_1909581841",
+      "last_updated": "2026-07-24T13:29:17.73",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "PK_PolizaDetalle",
+      "last_updated": "2026-07-24T13:29:17.7366667",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "CONTA",
+      "TableName": "PolizaDetalle",
+      "StatisticsName": "IX_PolizaDetalle_Activo_1909581841",
+      "last_updated": "2026-07-24T13:29:17.7233333",
+      "rows": 2,
+      "rows_sampled": 2,
+      "modification_counter": 158
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaimValues",
+      "StatisticsName": "IX_AspNetClaimValues_ClaimId_2069582411",
+      "last_updated": "2026-08-11T19:45:17.37",
+      "rows": 136,
+      "rows_sampled": 136,
+      "modification_counter": 132
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "dbo",
+      "TableName": "AspNetClaimValues",
+      "StatisticsName": "_WA_Sys_00000003_68487DD7",
+      "last_updated": "2026-08-11T19:45:17.3733333",
+      "rows": 136,
+      "rows_sampled": 136,
+      "modification_counter": 132
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "StatisticsName": "_WA_Sys_00000004_2BC97F7C",
+      "last_updated": "2026-07-06T21:38:20.3866667",
+      "rows": 5,
+      "rows_sampled": 5,
+      "modification_counter": 119
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "StatisticsName": "PK__Notifica__3741935BF94B83DF",
+      "last_updated": "2026-07-06T21:41:39.8",
+      "rows": 5,
+      "rows_sampled": 5,
+      "modification_counter": 114
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "StatisticsName": "IX_NotificacionDestino_Notificacion",
+      "last_updated": "2026-07-06T21:38:20.36",
+      "rows": 5,
+      "rows_sampled": 5,
+      "modification_counter": 114
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "StatisticsName": "IX_NotificacionDestino_UsuarioEstado",
+      "last_updated": "2026-07-06T21:38:20.36",
+      "rows": 5,
+      "rows_sampled": 5,
+      "modification_counter": 114
+    },
+    {
+      "Section": "Statistics",
+      "SchemaName": "SIS",
+      "TableName": "NotificacionDestino",
+      "StatisticsName": "_WA_Sys_0000000B_2BC97F7C",
+      "last_updated": "2026-07-06T21:38:20.3666667",
+      "rows": 5,
+      "rows_sampled": 5,
+      "modification_counter": 114
+    }
+  ]
+]

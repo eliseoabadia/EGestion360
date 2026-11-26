@@ -64,7 +64,8 @@ var loginResponse = _tokenService.GenTokenkey(
     usuarioSP.NombreUsuario,
     usuarioSP.Email,
     usuarioSP.FkidEmpresaSis,
-    _jwtSettings.Value);
+    _jwtSettings.Value,
+    usuarioSP.Roles);
 
                 _logger.LogInformation(
                     "Login exitoso para {Email}. UsuarioId={UsuarioId}",

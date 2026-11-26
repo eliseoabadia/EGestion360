@@ -1,0 +1,9 @@
+{
+  "initialEnabled": true,
+  "saves": 1,
+  "overflow": false,
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

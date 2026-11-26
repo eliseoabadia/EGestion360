@@ -100,6 +100,12 @@ namespace EG.Business.Services
 
                 var usuario = await _repository.GetByIdAsync(usuarioSP.PkIdUsuario);
                 usuarioSP.FkidEmpresaSis = usuario?.FkidEmpresaSis;
+                usuarioSP.Roles = await _context.AspNetUserRoles.AsNoTracking()
+                    .Where(role => role.User.PkIdUsuario == usuarioSP.PkIdUsuario &&
+                        (role.ExpireDate == null || role.ExpireDate > utcNow))
+                    .Select(role => role.Role.Name)
+                    .Distinct()
+                    .ToListAsync();
 
                 return usuarioSP;
             }

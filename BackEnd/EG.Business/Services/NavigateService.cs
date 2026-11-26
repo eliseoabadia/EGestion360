@@ -16,6 +16,20 @@ namespace EG.Business.Services
 
         public async Task<IEnumerable<spNodeMenuResponse>> GetMenuAsync(int empId)
         {
+            var utcNow = DateTime.UtcNow;
+            var isSuperAdmin = await _context.AspNetUserRoles.AsNoTracking()
+                .AnyAsync(role => role.User.PkIdUsuario == empId &&
+                    role.Role.Name == EG.Common.Security.SystemRoles.SuperAdmin &&
+                    (role.ExpireDate == null || role.ExpireDate > utcNow));
+            if (isSuperAdmin)
+            {
+                var allMenus = await _context.Menus.AsNoTracking()
+                    .Where(menu => menu.Activo && menu.Lenguaje == "ESP")
+                    .OrderBy(menu => menu.Orden)
+                    .ToListAsync();
+                return allMenus.Select(ToMenuResponse).ToList();
+            }
+
             var param1 = new SqlParameter("@NoEmploye", empId);
             var param2 = new SqlParameter("@Lenguaje", "ESP");
             var menu = await _repositorySP.ExecuteStoredProcedureAsync<spNodeMenuResult>("[SIS].[spNodeMenu]", param1, param2);

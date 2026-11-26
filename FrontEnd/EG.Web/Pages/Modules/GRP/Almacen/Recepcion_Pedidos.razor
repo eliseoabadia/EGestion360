@@ -6,402 +6,130 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
 @using EG.Web.Services
-@using EG.Web.Shared
 @using MudBlazor
 @implements IDisposable
 @inherits BaseCrudPage<OrdenCompraResponse, OrdenCompraResponse>
-
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenDetalleService
 @inject IGenericCrudService<AlmacenResponse> AlmacenService
 
-<AccessVerification IsInitialized="@IsInitialized"
-                    HasAccess="@HasAccess"
-                    NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column recepcion-page" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
-        <PageHeader Title="Recepcion de pedidos"
-                    Subtitle="Recepcion contra orden de compra con entradas de almacen trazables"
-                    Icon="@Icons.Material.Filled.MoveToInbox"
-                    CanCreate="false"
-                    OnRefresh="RefreshAll" />
+<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+<div class="recepcion-page">
+    <PageTitle>Recepción de pedidos · EGestion360</PageTitle>
+    <PageHeader Title="Recepción de pedidos" Subtitle="Selecciona una orden, captura la cantidad y confirma la entrada." Icon="@Icons.Material.Filled.MoveToInbox" Kicker="MÓDULO OPERATIVO" ShowCreateButton="false" OnRefresh="RefreshAll">
+        <AdditionalButtons>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@(!CanReceive)" OnClick="FocusReceiptAsync">Nueva recepción</MudButton>
+        </AdditionalButtons>
+    </PageHeader>
 
-        <div class="split-shell">
-            <div class="orders-panel">
-                <GenericDataGrid TItem="OrdenCompraResponse"
-                              @ref="table"
-                              Title="Ordenes de compra"
-                              SearchPlaceholder="Buscar orden, proveedor o descripcion..."
-                              ShowExportButton="@CanExport"
-                              ServerDataFunc="LoadServerData"
-                              ExportFunc="ExportToExcel"
-                              SearchString="@SearchString"
-                              SearchStringChanged="(s) => SearchString = s"
-                              OnSearch="OnSearch">
-            <Columns>
-                <TemplateColumn T="OrdenCompraResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
-                    <CellTemplate Context="cell">
-                        <DocumentSupportButton Modulo="Almacen"
-                        SubModulo="Recepcion_Pedidos"
-                        Controlador="OrdenCompra"
-                        EntidadId="@cell.Item.PkidOrdenCompra"
-                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
-                        RegistroTitulo="@TextOrDash(cell.Item.NumeroOrdenCompra)"
-                        RegistroDescripcion="@TextOrDash(cell.Item.ProveedorNombre)" />
-                        <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectOrden(cell.Item))" />
-                        </MudTooltip>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraResponse" Title="Orden" Identifier="NumeroOrdenCompra" PropertyName="NumeroOrdenCompra" SortBy="x => x.NumeroOrdenCompra">
-                    <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.NumeroOrdenCompra)</div>
-                        <span>@TextOrDash(cell.Item.Descripcion)</span>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
-                    <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.ProveedorNombre)</div>
-                        <span>@TextOrDash(cell.Item.ProveedorRfc)</span>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
-                    <CellTemplate Context="cell">
-                        @cell.Item.FechaOrdenCompra.ToString("dd/MM/yyyy")
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraResponse" Title="Total" Identifier="Total" PropertyName="Total" SortBy="x => x.Total">
-                    <CellTemplate Context="cell">
-                        <strong>@Money(cell.Item.Total)</strong>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraResponse" Title="Estatus" Identifier="__column_5" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Size="Size.Small" Style="@StatusStyle(cell.Item)">
-                        @TextOrDash(cell.Item.EstatusDescripcion)
-                        </MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-        </GenericDataGrid>
-            </div>
+    <section class="receipt-metrics" aria-label="Resumen de recepción">
+        <article><MudIcon Icon="@Icons.Material.Filled.ShoppingCart" /><div><span>Órdenes autorizadas</span><strong>@TotalCount.ToString("N0")</strong><small>Resultado de la búsqueda actual</small></div></article>
+        <article><MudIcon Icon="@Icons.Material.Filled.Inventory2" /><div><span>Renglones de la orden</span><strong>@detalleTotal.ToString("N0")</strong><small>@OrderLabel</small></div></article>
+        <article><MudIcon Icon="@Icons.Material.Filled.PendingActions" /><div><span>Renglones pendientes visibles</span><strong>@detalles.Count(x => Pending(x) > 0)</strong><small>En esta página de la orden</small></div></article>
+        <article><MudIcon Icon="@Icons.Material.Filled.LocalShipping" /><div><span>Bien seleccionado</span><strong>@(selectedDetalle is null ? "—" : Qty(Pending(selectedDetalle)))</strong><small>@(selectedDetalle is null ? "Selecciona un bien" : $"{selectedDetalle.UnidadMedida} por recibir")</small></div></article>
+    </section>
 
-            <div class="detail-panel">
-                <div class="detail-header">
-                    <div>
-                        <span>Orden seleccionada</span>
-                        <strong>@(selectedOrden == null ? "Selecciona una orden" : selectedOrden.NumeroOrdenCompra)</strong>
-                    </div>
-                    <MudSpacer />
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Success"
-                               StartIcon="@Icons.Material.Filled.AddBox"
-                               Disabled="@(selectedDetalle == null || selectedDetalle.CantidadPendiente.GetValueOrDefault() <= 0)"
-                               OnClick="@(() => selectedDetalle == null ? Task.CompletedTask : RegistrarEntrada(selectedDetalle))">
-                        Registrar entrada
-                    </MudButton>
+    @if (!string.IsNullOrWhiteSpace(loadError))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">@loadError</MudAlert>
+    }
+
+    <div class="receipt-workspace">
+        <section class="receipt-panel quick-receipt" aria-labelledby="quick-receipt-title">
+            <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.Bolt" /><div><h2 id="quick-receipt-title">Recepción rápida</h2><p>La orden y el primer renglón pendiente se preparan al cargar.</p></div></header>
+            <MudForm @ref="receiptForm"><div class="receipt-panel-body">
+                <div class="receipt-path" aria-label="Proceso de recepción"><span class="@(selectedOrden is null ? "" : "ready")">1 · Orden</span><span class="@(selectedDetalle is null ? "" : "ready")">2 · Bien</span><span>3 · Cantidad y confirmación</span></div>
+                <div class="receipt-fields">
+                    <MudAutocomplete T="OrdenCompraResponse" Value="@selectedOrden" ValueChanged="SelectOrden" SearchFunc="SearchOrdersAsync" ToStringFunc="@(x => x is null ? string.Empty : $"{x.NumeroOrdenCompra} · {x.ProveedorNombre}")" Label="Orden de compra" Variant="Variant.Outlined" Margin="Margin.Dense" DebounceInterval="300" MinCharacters="0" MaxItems="20" Disabled="@(saving || contextRefreshing)" Clearable="false" />
+                    <MudAutocomplete T="OrdenCompraDetalleResponse" Value="@selectedDetalle" ValueChanged="SelectDetalle" SearchFunc="SearchDetailsAsync" ToStringFunc="@(x => x is null ? string.Empty : $"{x.TipoBienCodigoClave} · {x.TipoBienDescripcion}")" Label="Buscar bien o código" Variant="Variant.Outlined" Margin="Margin.Dense" DebounceInterval="300" MinCharacters="0" MaxItems="20" Disabled="@(selectedOrden is null || saving || detailLoading || contextRefreshing)" Clearable="false" />
                 </div>
-
-                <GenericDataGrid TItem="OrdenCompraDetalleResponse"
-                              @ref="detalleTable"
-                              Title="Renglones por recibir"
-                              SearchPlaceholder="Buscar bien..."
-                              ShowExportButton="false"
-                              ServerDataFunc="LoadDetalleData"
-                              ExportFunc="() => Task.CompletedTask"
-                              SearchString="@detalleSearch"
-                              SearchStringChanged="(s) => detalleSearch = s"
-                              OnSearch="OnDetalleSearch">
-            <Columns>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
-                    <CellTemplate Context="cell">
-                        <MudTooltip Text="Registrar entrada">
-                        <MudIconButton Icon="@Icons.Material.Filled.AddBox"
-                        Color="Color.Success"
-                        Size="Size.Small"
-                        Disabled="@(cell.Item.CantidadPendiente.GetValueOrDefault() <= 0)"
-                        OnClick="@(() => RegistrarEntrada(cell.Item))" />
-                        </MudTooltip>
-                        <MudTooltip Text="Ver entradas">
-                        <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectDetalle(cell.Item))" />
-                        </MudTooltip>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
-                    <CellTemplate Context="cell">
-                        <div class="main-cell">@TextOrDash(cell.Item.TipoBienDescripcion)</div>
-                        <span>@TextOrDash(cell.Item.TipoBienCodigoClave)</span>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Solicitada" Identifier="__column_2" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @Qty(cell.Item.CantidadSolicitada)
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Recibida" Identifier="__column_3" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @Qty(cell.Item.CantidadRecibida)
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Pendiente" Identifier="__column_4" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Size="Size.Small" Color="@(cell.Item.CantidadPendiente.GetValueOrDefault() <= 0 ? Color.Success : Color.Warning)">
-                        @Qty(cell.Item.CantidadPendiente ?? 0m)
-                        </MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Precio" Identifier="__column_5" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @Money(cell.Item.PrecioUnitario)
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-        </GenericDataGrid>
-
-                <GenericDataGrid TItem="AlmacenResponse"
-                              @ref="entradasTable"
-                              Title="Entradas del renglon"
-                              SearchPlaceholder="Buscar entrada..."
-                              ShowExportButton="false"
-                              ServerDataFunc="LoadEntradasData"
-                              ExportFunc="() => Task.CompletedTask"
-                              SearchString="@entradasSearch"
-                              SearchStringChanged="(s) => entradasSearch = s"
-                              OnSearch="OnEntradasSearch">
-            <Columns>
-                <TemplateColumn T="AlmacenResponse" Title="Clave" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
-                    <CellTemplate Context="cell">
-                        @TextOrDash(cell.Item.Clave)
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="AlmacenResponse" Title="Cantidad" Identifier="__column_1" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @Qty(cell.Item.Cantidad)
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="AlmacenResponse" Title="Costo" Identifier="__column_2" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @Money(cell.Item.Costo ?? 0m)
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="AlmacenResponse" Title="Fecha" Identifier="__column_3" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @cell.Item.FechaEntrada.ToString("dd/MM/yyyy")
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="AlmacenResponse" Title="Documento" Identifier="__column_4" Sortable="false" Filterable="false">
-                    <CellTemplate Context="cell">
-                        @TextOrDash(cell.Item.Factura)
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-        </GenericDataGrid>
+                <div class="receipt-selected" aria-live="polite" aria-busy="@detailLoading">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
+                    <div class="receipt-selected-name"><span>Bien seleccionado</span><strong>@(selectedDetalle?.TipoBienDescripcion ?? (detailLoading ? "Cargando renglones…" : "Sin renglón seleccionado"))</strong><small>@selectedDetalle?.TipoBienCodigoClave</small></div>
+                    <dl><div><dt>Solicitada</dt><dd>@(selectedDetalle is null ? "—" : Qty(selectedDetalle.CantidadSolicitada))</dd></div><div><dt>Recibida</dt><dd>@(selectedDetalle is null ? "—" : Qty(selectedDetalle.CantidadRecibida))</dd></div><div><dt>Pendiente</dt><dd>@(selectedDetalle is null ? "—" : Qty(Pending(selectedDetalle)))</dd></div></dl>
+                </div>
+                <div class="receipt-fields">
+                    <MudNumericField T="decimal?" @ref="quantityField" @bind-Value="receiptQuantity" Label="Cantidad a recibir" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Format="0.####" Culture="@CultureInfo.InvariantCulture" Validation="@(new Func<decimal?, string?>(ValidateReceiptQuantity))" Disabled="@(!CanReceive)" Required="true" />
+                    <MudDatePicker @bind-Date="receiptDate" Label="Fecha de entrada" Variant="Variant.Outlined" Margin="Margin.Dense" DateFormat="dd/MM/yyyy" Culture="@NumberCulture" Editable="true" Required="true" Disabled="@(saving || contextRefreshing)" />
+                </div>
+                @if (!CanCreate)
+                {
+                    <MudAlert Dense="true" Severity="Severity.Info">Tu perfil permite consultar las recepciones.</MudAlert>
+                }
+                @if (!string.IsNullOrWhiteSpace(saveError))
+                {
+                    <MudAlert Dense="true" Severity="Severity.Warning">@saveError</MudAlert>
+                }
+                <div class="receipt-actions">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" Disabled="@(!CanReceive || mustRefresh)" OnClick="ConfirmReceiptAsync">@(saving ? "Registrando…" : "Confirmar recepción")</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(saving || contextRefreshing)" OnClick="ResetCapture">Limpiar</MudButton>
+                    <MudButton Variant="Variant.Text" Disabled="@(!CanReceive)" OnClick="OpenCompleteFormAsync">Más datos de la entrada</MudButton>
+                </div>
+                <p class="receipt-note">La entrada toma el bien, la unidad y el costo de la orden. Puedes agregar factura, ubicación o lote en “Más datos de la entrada”.</p>
+            </div></MudForm>
+        </section>
+        <section class="receipt-panel priority-panel" aria-labelledby="priority-title">
+            <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.Layers" /><div><h2 id="priority-title">Órdenes para recibir</h2><p>Fechas de entrega próximas en la página actual.</p></div></header>
+            <div class="receipt-panel-body priority-list">
+                @foreach (var order in PriorityOrders)
+                {
+                    <button type="button" class="priority-order @(selectedOrden?.PkidOrdenCompra == order.PkidOrdenCompra ? "selected" : "")" disabled="@(saving || contextRefreshing)" @onclick="() => SelectOrden(order)" aria-pressed="@(selectedOrden?.PkidOrdenCompra == order.PkidOrdenCompra)">
+                        <MudIcon Icon="@Icons.Material.Filled.LocalShipping" />
+                        <span><strong>@order.NumeroOrdenCompra</strong><small>@order.ProveedorNombre</small><em>@DeliveryLabel(order)</em></span>
+                        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
+                    </button>
+                }
+                @if (Elements.Count == 0)
+                {
+                    <p class="receipt-empty">No hay órdenes autorizadas en este contexto. Revisa empresa, ejercicio o búsqueda.</p>
+                }
+                <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ExpandMore" OnClick="ToggleOrders">@(showOrders ? "Ocultar listado" : $"Ver listado de órdenes ({TotalCount:N0})")</MudButton>
             </div>
-        </div>
-    </MudContainer>
-</AccessVerification>
+        </section>
+    </div>
 
-@code {
-    private GenericDataGrid<OrdenCompraResponse> table = null!;
-    private GenericDataGrid<OrdenCompraDetalleResponse> detalleTable = null!;
-    private GenericDataGrid<AlmacenResponse> entradasTable = null!;
-    private OrdenCompraResponse? selectedOrden;
-    private OrdenCompraDetalleResponse? selectedDetalle;
-    private string detalleSearch = string.Empty;
-    private string entradasSearch = string.Empty;
-    private List<OrdenCompraDetalleResponse> detalles = new();
-    private List<AlmacenResponse> entradas = new();
-    private int detalleTotal;
-    private int entradasTotal;
-    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
-
-    protected override string ModuleName => "Almacen";
-    protected override string SubModuleName => "Recepcion_Pedidos";
-    protected override Type CreateDialogType => typeof(AlmacenDialog);
-    protected override Type EditDialogType => typeof(AlmacenDialog);
-    protected override Type DeleteDialogType => typeof(DeleteDialog<OrdenCompraResponse>);
-
-    protected override string GetDefaultSortLabel() => "FechaOrdenCompra";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await AnioStateService.InitializeAsync();
-        await SucursalStateService.InitializeAsync();
-        AnioStateService.OnAnioChanged += OnAnioChanged;
-        SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
-    }
-
-    protected override async Task<TableData<OrdenCompraResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
-    {
-        CurrentPage = Math.Max(1, state.Page + 1);
-        PageSize = state.PageSize;
-        SortLabel = state.SortLabel ?? GetDefaultSortLabel();
-        SortDirection = state.SortDirection;
-        var filters = new Dictionary<string, object>();
-        filters["FkidEstatusOrdenCompraOrco"] = 2;
-        if (SucursalStateService.EmpresaId.HasValue && SucursalStateService.EmpresaId.Value > 0)
-        {
-            filters["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value;
-        }
-        if (AnioStateService.AnioId.HasValue && AnioStateService.AnioId.Value > 0)
-        {
-            filters["FkidAnioSis"] = AnioStateService.AnioId.Value;
-        }
-
-        var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
-        Elements = response?.Items?.ToList() ?? new List<OrdenCompraResponse>();
-        TotalCount = response?.Success == true ? response.TotalCount : 0;
-        selectedOrden ??= Elements.FirstOrDefault();
-        return new TableData<OrdenCompraResponse> { Items = Elements, TotalItems = TotalCount };
-    }
-
-    private async Task<TableData<OrdenCompraDetalleResponse>> LoadDetalleData(TableState state, CancellationToken cancellationToken)
-    {
-        if (selectedOrden == null)
-        {
-            return new TableData<OrdenCompraDetalleResponse> { Items = new List<OrdenCompraDetalleResponse>(), TotalItems = 0 };
-        }
-
-        var response = await OrdenDetalleService.GetAllPaginadoAsync(
-            Math.Max(1, state.Page + 1),
-            state.PageSize,
-            detalleSearch,
-            state.SortLabel ?? "TipoBienDescripcion",
-            state.SortDirection,
-            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = selectedOrden.PkidOrdenCompra });
-        detalles = response?.Items?.ToList() ?? new List<OrdenCompraDetalleResponse>();
-        detalleTotal = response?.Success == true ? response.TotalCount : 0;
-        selectedDetalle ??= detalles.FirstOrDefault();
-        return new TableData<OrdenCompraDetalleResponse> { Items = detalles, TotalItems = detalleTotal };
-    }
-
-    private async Task<TableData<AlmacenResponse>> LoadEntradasData(TableState state, CancellationToken cancellationToken)
-    {
-        if (selectedDetalle == null)
-        {
-            return new TableData<AlmacenResponse> { Items = new List<AlmacenResponse>(), TotalItems = 0 };
-        }
-
-        var response = await AlmacenService.GetAllPaginadoAsync(
-            Math.Max(1, state.Page + 1),
-            state.PageSize,
-            entradasSearch,
-            "FechaEntrada",
-            SortDirection.Descending,
-            new Dictionary<string, object>
+    <section class="receipt-panel receipt-lines">
+        <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.ViewList" /><div><h2>Renglones de la orden seleccionada</h2><p>@OrderLabel · @(selectedOrden?.ProveedorNombre ?? "Sin proveedor seleccionado")</p></div>
+            @if (selectedOrden is not null)
             {
-                ["FkidDetalleOrdenCompraOrco"] = selectedDetalle.PkidOrdenCompraDetalle,
-                ["FkidAnioSis"] = AnioStateService.AnioId
-            });
-        entradas = response?.Items?.ToList() ?? new List<AlmacenResponse>();
-        entradasTotal = response?.Success == true ? response.TotalCount : 0;
-        return new TableData<AlmacenResponse> { Items = entradas, TotalItems = entradasTotal };
-    }
+                <DocumentSupportButton Modulo="Almacen" SubModulo="Recepcion_Pedidos" Controlador="OrdenCompra" EntidadId="@selectedOrden.PkidOrdenCompra" FkidEmpresaSis="@selectedOrden.FkidEmpresaSis" RegistroTitulo="@OrderLabel" RegistroDescripcion="@selectedOrden.ProveedorNombre" />
+            }
+        </header>
+        <GenericDataGrid TItem="OrdenCompraDetalleResponse" @ref="detalleTable" Title="Bienes por recibir" FillAvailableHeight="false" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="OnDetalleSearch" SearchPlaceholder="Buscar clave o descripción…" PageSize="5" PageSizeOptions="new[] { 5, 10, 20, 50 }">
+            <Columns>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion"><CellTemplate><strong>@context.Item.TipoBienCodigoClave</strong><div>@context.Item.TipoBienDescripcion</div></CellTemplate></TemplateColumn>
+                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadSolicitada" Title="Solicitada" />
+                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadRecibida" Title="Recibida" />
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Pendiente" Sortable="false"><CellTemplate><MudChip T="string" Color="@(Pending(context.Item) > 0 ? Color.Warning : Color.Success)" Size="Size.Small">@Qty(Pending(context.Item))</MudChip></CellTemplate></TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Avance" Sortable="false"><CellTemplate><div class="receipt-progress"><MudProgressLinear Value="@Progress(context.Item)" Color="Color.Success" Rounded="true" /><span>@Progress(context.Item).ToString("0")%</span></div></CellTemplate></TemplateColumn>
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acción" Sortable="false" Filterable="false" Hideable="false" Resizable="false"><CellTemplate>
+                    <MudButton Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined" Disabled="@(!CanCreate || saving || detailLoading || Pending(context.Item) <= 0)" OnClick="() => PrepareReceiptAsync(context.Item)">@(Pending(context.Item) <= 0 ? "Recibido" : "Recibir")</MudButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" aria-label="Consultar entradas del renglón" Disabled="@saving" OnClick="() => ShowHistoryAsync(context.Item)" />
+                </CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
+    </section>
 
-    private async Task SelectOrden(OrdenCompraResponse item)
+    <div class="receipt-orders" hidden="@(!showOrders)">
+        <GenericDataGrid TItem="OrdenCompraResponse" @ref="table" Title="Órdenes de compra autorizadas" FillAvailableHeight="false" ServerDataFunc="LoadServerData" SearchString="@SearchString" SearchStringChanged="s => SearchString = s" OnSearch="OnSearch" SearchPlaceholder="Buscar orden o proveedor…" ShowExportButton="@CanExport" ExportFunc="ExportToExcel" PageSize="10">
+            <Columns>
+                <TemplateColumn T="OrdenCompraResponse" Title="Seleccionar" Sortable="false" Hideable="false"><CellTemplate><MudButton Size="Size.Small" Disabled="@saving" OnClick="() => SelectOrden(context.Item)">Abrir orden</MudButton></CellTemplate></TemplateColumn>
+                <PropertyColumn T="OrdenCompraResponse" TProperty="string" Property="x => x.NumeroOrdenCompra" Title="Orden" />
+                <PropertyColumn T="OrdenCompraResponse" TProperty="string" Property="x => x.ProveedorNombre" Title="Proveedor" />
+                <TemplateColumn T="OrdenCompraResponse" Title="Entrega" Sortable="false"><CellTemplate>@DeliveryLabel(context.Item)</CellTemplate></TemplateColumn>
+                <TemplateColumn T="OrdenCompraResponse" Title="Estado" Sortable="false"><CellTemplate>@context.Item.EstatusDescripcion</CellTemplate></TemplateColumn>
+            </Columns>
+        </GenericDataGrid>
+    </div>
+    @if (showHistory)
     {
-        selectedOrden = item;
-        selectedDetalle = null;
-        await detalleTable.ReloadData();
-        await entradasTable.ReloadData();
+        <section class="receipt-panel receipt-history">
+            <header class="receipt-panel-heading"><div><h2>Entradas del renglón</h2><p>@selectedDetalle?.TipoBienDescripcion</p></div><MudIconButton Icon="@Icons.Material.Filled.Close" aria-label="Cerrar historial" OnClick="() => showHistory = false" /></header>
+            <GenericDataGrid TItem="AlmacenResponse" @ref="entradasTable" Title="Entradas registradas" FillAvailableHeight="false" ServerDataFunc="LoadEntradasData" SearchString="@entradasSearch" SearchStringChanged="s => entradasSearch = s" OnSearch="OnEntradasSearch">
+                <Columns><PropertyColumn T="AlmacenResponse" TProperty="string" Property="x => x.Clave" Title="Clave" /><PropertyColumn T="AlmacenResponse" TProperty="decimal" Property="x => x.Cantidad" Title="Cantidad" /><TemplateColumn T="AlmacenResponse" Title="Fecha" Sortable="false"><CellTemplate>@context.Item.FechaEntrada.ToString("dd/MM/yyyy")</CellTemplate></TemplateColumn><PropertyColumn T="AlmacenResponse" TProperty="string" Property="x => x.AreaNombre" Title="Ubicación" /></Columns>
+            </GenericDataGrid>
+        </section>
     }
-
-    private async Task SelectDetalle(OrdenCompraDetalleResponse item)
-    {
-        selectedDetalle = item;
-        await entradasTable.ReloadData();
-    }
-
-    private async Task RegistrarEntrada(OrdenCompraDetalleResponse detail)
-    {
-        var pendiente = detail.CantidadPendiente.GetValueOrDefault();
-        var parameters = new DialogParameters
-        {
-            ["OrdenDetalleId"] = detail.PkidOrdenCompraDetalle,
-            ["TipoBienId"] = detail.FkidTipoBienAlma,
-            ["TipoBienText"] = BuildClaveText(detail.TipoBienCodigoClave, detail.TipoBienDescripcion),
-            ["UnidadId"] = detail.FkidUnidadesAlma,
-            ["UnidadText"] = detail.UnidadMedida,
-            ["CantidadSugerida"] = pendiente > 0 ? pendiente : detail.CantidadSolicitada,
-            ["CostoSugerido"] = detail.PrecioUnitario
-        };
-
-        var dialog = await DialogService.ShowAsync<AlmacenDialog>("Registrar entrada", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
-        var result = await dialog.Result;
-        if (result is { Canceled: false })
-        {
-            selectedDetalle = detail;
-            await RefreshAll();
-        }
-    }
-
-    private async Task RefreshAll()
-    {
-        await table.ReloadData();
-        await detalleTable.ReloadData();
-        await entradasTable.ReloadData();
-    }
-
-    private async Task OnDetalleSearch()
-    {
-        await Task.Delay(250);
-        await detalleTable.ReloadData();
-    }
-
-    private async Task OnEntradasSearch()
-    {
-        await Task.Delay(250);
-        await entradasTable.ReloadData();
-    }
-
-    protected override Task ReloadData() => RefreshAll();
-
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<OrdenCompraResponse> items)
-    {
-        return items.Select(x => new
-        {
-            x.NumeroOrdenCompra,
-            Proveedor = x.ProveedorNombre,
-            Fecha = x.FechaOrdenCompra.ToString("dd/MM/yyyy"),
-            x.Subtotal,
-            x.Iva,
-            x.Total,
-            Estatus = x.EstatusDescripcion
-        });
-    }
-
-    private async void OnEmpresaChanged(int empresaId) => await RefreshAll();
-    private void OnAnioChanged(int? anioId) => _ = InvokeAsync(async () =>
-    {
-        selectedOrden = null;
-        selectedDetalle = null;
-        await RefreshAll();
-    });
-
-    public void Dispose()
-    {
-        SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
-        AnioStateService.OnAnioChanged -= OnAnioChanged;
-        SearchCts?.Cancel();
-        SearchCts?.Dispose();
-    }
-
-    private static string StatusStyle(OrdenCompraResponse item)
-    {
-        var color = string.IsNullOrWhiteSpace(item.EstatusColor) ? "#E8F1FF" : item.EstatusColor;
-        return $"background:{color}; color:#101828;";
-    }
-
-    private static string Money(decimal value) => value.ToString("$ #,##0.00 MXN", NumberCulture);
-    private static string Qty(decimal value) => value.ToString("#,##0.####", CultureInfo.InvariantCulture);
-    private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
-    private static string BuildClaveText(string? clave, string? descripcion) => $"{clave} - {descripcion}".Trim(' ', '-');
-}
+</div>
+</AccessVerification>
