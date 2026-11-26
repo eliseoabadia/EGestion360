@@ -65,6 +65,8 @@ public partial class GenericDataGrid<TItem>
     [Parameter] public Func<TItem, string>? SearchTextFunc { get; set; }
     [Parameter] public Func<Task>? ExportFunc { get; set; }
     [Parameter] public EventCallback<TItem> OnRowDoubleClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+    [Parameter] public Func<TItem, int, string>? RowClassFunc { get; set; }
 
     private MudDataGrid<TItem>? dataGridRef;
     private bool isLoading;
@@ -83,6 +85,8 @@ public partial class GenericDataGrid<TItem>
 
     private async Task HandleRowClickAsync(DataGridRowClickEventArgs<TItem> args)
     {
+        if (args.Item is not null && args.MouseEventArgs.Detail == 1 && OnRowClick.HasDelegate)
+            await OnRowClick.InvokeAsync(args.Item);
         if (args.MouseEventArgs.Detail != 2 || !OnRowDoubleClick.HasDelegate || args.Item is null)
         {
             return;

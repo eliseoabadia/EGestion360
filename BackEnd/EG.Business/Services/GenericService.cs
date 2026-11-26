@@ -675,12 +675,16 @@ namespace EG.Business.Services
             return value.Equals(Activator.CreateInstance(targetType));
         }
 
-        public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest _params)
+        public virtual Task<PagedResult<TResponse>> GetAllPaginadoAsync(PagedRequest request)
+            => GetPagedCoreAsync(request, null);
+
+        private async Task<PagedResult<TResponse>> GetPagedCoreAsync(PagedRequest _params, Expression<Func<TEntity, bool>>? scope)
         {
             try
             {
                 NormalizePaging(_params);
                 var query = GetQueryWithIncludes();
+                if (scope is not null) query = query.Where(scope);
                 var searchTerm = ResolveSearchTerm(_params);
 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -844,37 +848,10 @@ namespace EG.Business.Services
             return JsonSerializer.Deserialize(jsonElement.GetRawText(), underlyingType);
         }
 
-        public virtual async Task<PagedResult<TResponse>> GetAllPaginadoAsync(
+        public virtual Task<PagedResult<TResponse>> GetAllPaginadoAsync(
             PagedRequest _params,
             Expression<Func<TEntity, bool>> whereCondition)
-        {
-            NormalizePaging(_params);
-            var query = GetQueryWithIncludes(whereCondition);
-            var searchTerm = ResolveSearchTerm(_params);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = ApplyFilterWithRelations(query, searchTerm);
-            }
-
-            query = ApplyOrdering(query, _params.SortLabel, _params.SortDirection);
-
-            var totalCount = await query.CountAsync();
-
-            var pagedQuery = query
-                .Skip((_params.Page - 1) * _params.PageSize)
-                .Take(_params.PageSize);
-
-            var entities = await pagedQuery.ToListAsync();
-            var mapped = entities.Adapt<IList<TResponse>>();
-
-            return new PagedResult<TResponse>
-            {
-                Items = mapped,
-                TotalCount = totalCount,
-                Success = true
-            };
-        }
+            => GetPagedCoreAsync(_params, whereCondition);
 
         private static void NormalizePaging(PagedRequest request)
         {

@@ -12,17 +12,29 @@
 @inherits BaseCrudPage<OrcoContratoResponse, OrcoContratoResponse>
 @inject SucursalStateService SucursalStateService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
+    <MudContainer MaxWidth="MaxWidth.False" Class="operation-page contratos-dashboard">
         <PageHeader Title="Contrato Administrativo"
                     Subtitle="Datos administrativos vinculados a ordenes de compra"
                     Icon="@Icons.Material.Filled.AssignmentTurnedIn"
-                    CanCreate="@CanCreate"
+                    CanCreate="@CanCreate" ShowCreateButton="false"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
+<OperationActionPanel Title="Contratos administrativos" Description="Revisa proveedor, vigencia e importe antes de autorizar el registro." Icon="@Icons.Material.Filled.Description">
+                <Actions>
+                @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateItem">Nuevo contrato</MudButton> }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>Crea el contrato y completa sus datos administrativos.</li>
+                <li>Adjunta el soporte documental al registro correspondiente.</li>
+                <li>Autorizar conserva las validaciones y confirmación del proceso. Los registros bloqueados permanecen disponibles para consulta.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
         <MudGrid Spacing="2" Class="mb-2">
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card metric-primary" Elevation="0">
@@ -51,6 +63,8 @@
         </MudGrid>
 
         <GenericDataGrid TItem="OrcoContratoResponse"
+                                      EmptyTitle="Sin contratos administrativos"
+                                      EmptyMessage="Revisa empresa y búsqueda. Usa Nuevo contrato para comenzar la captura."
                       @ref="table"
                       Title="Compromisos registrados"
                       FillAvailableHeight="false"
@@ -73,14 +87,12 @@
                         RegistroTitulo="@TextOrDash(cell.Item.Numero)"
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.ProveedorNombre)} | {TextOrDash(cell.Item.Descripcion)}")"
                         CanManage="@(!IsLocked(cell.Item))" />
-                        <MudTooltip Text="Autorizar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Verified"
                         Visible="@CanUpdate"
                         Disabled="@(!CanAuthorizeItem(cell.Item))"
                         Color="Color.Success"
                         Size="Size.Small"
-                        OnClick="@(() => Autorizar(cell.Item))" />
-                        </MudTooltip>
+                        OnClick="@(() => Autorizar(cell.Item))" >Autorizar contrato</MudButton>
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
@@ -139,17 +151,10 @@
     </MudContainer>
 </AccessVerification>
 
-<style>
-    .contratos-dashboard { min-height: 100%; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow: visible; }
-    .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
-    .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
-    .metric-card strong { color: #111827; font-size: 1.15rem; line-height: 1.4; overflow-wrap: anywhere; }
-    .metric-primary { border-left: 4px solid #0f766e; }
-    .main-cell { font-weight: 700; color: #111827; }
-    .main-cell + span, .mud-table-cell span { color: #6b7280; font-size: .78rem; }
-</style>
+
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<OrcoContratoResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private string _currencySymbol = "$";
@@ -165,6 +170,7 @@
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await SucursalStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override async Task CreateItem()

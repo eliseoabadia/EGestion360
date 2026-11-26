@@ -12,10 +12,10 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<DetalleSolicitudSalidaResponse> DetalleService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column suministro-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="operation-page px-3 d-flex flex-column suministro-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Suministros de salida"
                     Subtitle="Seguimiento de bienes entregados y pendientes por solicitud"
                     Icon="@Icons.Material.Filled.LocalShipping"
@@ -29,9 +29,20 @@
             <div><span>Entidad</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong></div>
         </div>
 
+        <OperationActionPanel Title="Consulta y registra las entregas" Description="La primera solicitud de esta página se abre al cargar. Revisa cantidades autorizadas, entregadas y pendientes." Icon="@Icons.Material.Filled.LocalShipping">
+                <HelpContent>
+                <ol>
+                <li>Pulsa cualquier fila para cargar sus bienes. La solicitud elegida queda resaltada.</li>
+                <li>Registrar entrega abre la captura del bien con la solicitud ya seleccionada.</li>
+                <li>La autorización y el estado de la solicitud determinan si puedes registrar entregas; los saldos se validan al guardar.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
         <div class="split-shell">
             <div class="master-panel">
-                <GenericDataGrid TItem="SolicitudSalidaResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="SolicitudSalidaResponse"
+                                      EmptyTitle="Sin solicitudes en este contexto"
+                                      EmptyMessage="Revisa empresa, ejercicio y filtros. En Suministros sólo se muestran las solicitudes autorizadas." OnRowClick="SelectSolicitud" RowClassFunc="SolicitudRowClass"
                               @ref="table"
                               Title="Solicitudes para suministro"
                               SearchPlaceholder="Buscar por folio, solicitante o area..."
@@ -44,12 +55,7 @@
             <Columns>
                 <TemplateColumn T="SolicitudSalidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectSolicitud(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectSolicitud(cell.Item))">Ver entregas</MudButton>
                         @if (cell.Item.FkidPolizaConta is > 0)
                         {
                             <ReportOpenButton ReportName="Almacen.Suministros_Salida.Poliza"
@@ -106,7 +112,9 @@
                         <strong>@(selectedSolicitud == null ? "Selecciona una solicitud" : selectedSolicitud.Folio)</strong>
                     </div>
                 </div>
-                <GenericDataGrid TItem="DetalleSolicitudSalidaResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="DetalleSolicitudSalidaResponse"
+                                      EmptyTitle="Sin bienes en la solicitud"
+                                      EmptyMessage="Revisa la solicitud seleccionada y la búsqueda del detalle." @key="selectedSolicitud?.PkidSolicitudSalida"
                               @ref="detailTable"
                               Title="Detalle de entrega"
                               SearchPlaceholder="Buscar bien..."
@@ -119,14 +127,7 @@
             <Columns>
                 <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Actualizar entrega">
-                        <MudIconButton Icon="@Icons.Material.Filled.EditNote"
-                        Visible="@CanAuthorize"
-                        Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))"
-                        Color="Color.Primary"
-                        Size="Size.Small"
-                        OnClick="@(() => EditarDetalle(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.EditNote" Visible="@CanAuthorize" Disabled="@(selectedSolicitud == null || !CanWork(selectedSolicitud))" OnClick="@(() => EditarDetalle(cell.Item))">Registrar entrega</MudButton>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="DetalleSolicitudSalidaResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
@@ -160,6 +161,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<SolicitudSalidaResponse> table = null!;
     private GenericDataGrid<DetalleSolicitudSalidaResponse> detailTable = null!;
     private SolicitudSalidaResponse? selectedSolicitud;
@@ -182,6 +184,7 @@
         await SucursalStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<SolicitudSalidaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -204,9 +207,8 @@
         var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
         Elements = response?.Items?.ToList() ?? new List<SolicitudSalidaResponse>();
         TotalCount = response?.Success == true ? response.TotalCount : 0;
-        selectedSolicitud = selectedSolicitud != null && Elements.Any(x => x.PkidSolicitudSalida == selectedSolicitud.PkidSolicitudSalida)
-            ? selectedSolicitud
-            : Elements.FirstOrDefault();
+        selectedSolicitud = Elements.FirstOrDefault(x => x.PkidSolicitudSalida == selectedSolicitud?.PkidSolicitudSalida) ?? Elements.FirstOrDefault();
+        await InvokeAsync(StateHasChanged);
         return new TableData<SolicitudSalidaResponse> { Items = Elements, TotalItems = TotalCount };
     }
 
@@ -217,22 +219,29 @@
             return new TableData<DetalleSolicitudSalidaResponse> { Items = new List<DetalleSolicitudSalidaResponse>(), TotalItems = 0 };
         }
 
+        var solicitudId = selectedSolicitud.PkidSolicitudSalida;
         var response = await DetalleService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detailSearch,
             state.SortLabel ?? "TipoBienDescripcion",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidSolicitudSalidaAlma"] = selectedSolicitud.PkidSolicitudSalida });
+            new Dictionary<string, object> { ["FkidSolicitudSalidaAlma"] = solicitudId });
+        if (cancellationToken.IsCancellationRequested || selectedSolicitud?.PkidSolicitudSalida != solicitudId) return new() { Items = [], TotalItems = 0 };
+        if (response?.Success != true) throw new InvalidOperationException("No se pudieron consultar los bienes de la solicitud.");
         detailElements = response?.Items?.ToList() ?? new List<DetalleSolicitudSalidaResponse>();
         detailTotal = response?.Success == true ? response.TotalCount : 0;
         return new TableData<DetalleSolicitudSalidaResponse> { Items = detailElements, TotalItems = detailTotal };
     }
 
+    private string SolicitudRowClass(SolicitudSalidaResponse item, int _) => selectedSolicitud?.PkidSolicitudSalida == item.PkidSolicitudSalida ? "operation-selectable-row is-selected" : "operation-selectable-row";
+
     private async Task SelectSolicitud(SolicitudSalidaResponse item)
     {
+        if (selectedSolicitud?.PkidSolicitudSalida == item.PkidSolicitudSalida) return;
         selectedSolicitud = item;
-        await detailTable.ReloadData();
+        detailSearch = string.Empty;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task EditarDetalle(DetalleSolicitudSalidaResponse detail)

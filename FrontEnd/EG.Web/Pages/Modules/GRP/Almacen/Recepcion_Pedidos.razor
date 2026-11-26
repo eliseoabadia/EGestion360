@@ -13,6 +13,7 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenDetalleService
 @inject IGenericCrudService<AlmacenResponse> AlmacenService
+@inject EG.Web.Auth.AuthenticationProviderJWT ReceiptAuth
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
 <div class="recepcion-page">
@@ -80,9 +81,18 @@
                         <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
                     </button>
                 }
-                @if (Elements.Count == 0)
+                @if (ordersReady && Elements.Count == 0)
                 {
-                    <p class="receipt-empty">No hay órdenes autorizadas en este contexto. Revisa empresa, ejercicio o búsqueda.</p>
+                    <div class="receipt-empty-guide" role="note">
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentTurnedIn" Color="Color.Primary" />
+                        <strong>No hay órdenes autorizadas para recibir</strong>
+                        <p>Confirma la empresa y el ejercicio del encabezado. Si son correctos, Compras debe preparar y autorizar la orden.</p>
+                        @if (ReceiptAuth.HasPermission("Adquisiciones", "OrdenCompra", "view") || ReceiptAuth.HasPermission("Adquisiciones", "OrdenCompra", "view-menu"))
+                        {
+                            <MudButton Href="/Adquisiciones/Orden_Compra" Color="Color.Primary" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ShoppingCart">Abrir órdenes de compra</MudButton>
+                        }
+                        <MudButton Color="Color.Primary" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" Disabled="@contextRefreshing" OnClick="RefreshAll">Volver a consultar</MudButton>
+                    </div>
                 }
                 <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ExpandMore" OnClick="ToggleOrders">@(showOrders ? "Ocultar listado" : $"Ver listado de órdenes ({TotalCount:N0})")</MudButton>
             </div>

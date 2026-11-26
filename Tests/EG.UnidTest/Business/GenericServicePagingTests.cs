@@ -176,6 +176,28 @@ public sealed class GenericServicePagingTests
         Assert.Equal(320, result[^1].Id);
     }
 
+    [Fact]
+    public async Task ScopedPagingAppliesAdditionalFiltersBeforeCountAndDoesNotLeakItsScope()
+    {
+        var service = CreateService([
+            new() { Id = 1, Nombre = "Primero", FkidEmpresaSis = 7, Activo = true },
+            new() { Id = 2, Nombre = "Segundo", FkidEmpresaSis = 7, Activo = true },
+            new() { Id = 3, Nombre = "Otra empresa", FkidEmpresaSis = 8, Activo = true },
+            new() { Id = 4, Nombre = "Inactivo", FkidEmpresaSis = 7, Activo = false }
+        ], new FixedUserContext(1, 7));
+        var result = await service.GetAllPaginadoAsync(new()
+        {
+            Page = 1, PageSize = 1, SortLabel = "Id", SortDirection = "Ascending",
+            AdditionalFilters = new() { ["Id"] = 2 }
+        }, row => row.Id >= 2);
+        Assert.True(result.Success);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(2, Assert.Single(result.Items).Id);
+        var unscoped = await service.GetAllPaginadoAsync(new() { Page = 1, PageSize = 10, SortLabel = "Id", SortDirection = "Ascending" });
+        Assert.Equal(2, unscoped.TotalCount);
+        Assert.DoesNotContain(unscoped.Items, item => item.FkidEmpresaSis != 7);
+    }
+
     private static GenericService<CatalogEntity, CatalogDto, CatalogResponse> CreateService(
         IEnumerable<CatalogEntity> entities,
         IUserContextService? userContext = null)

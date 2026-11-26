@@ -1,0 +1,25 @@
+.operation-page { min-width: 0; min-height: 0; height: 100%; overflow-y: auto; }
+.operation-page .operation-record-header { flex-wrap: wrap; gap: 8px; }
+.operation-page .selected-header { flex-wrap: wrap; gap: 8px; }
+.operation-page .selected-title, .operation-page .selected-copy { min-width: 0; overflow-wrap: anywhere; }
+.operation-page .operation-related-grid { flex: 0 0 auto; align-items: flex-start; }
+.operation-page .split-shell { flex: 0 0 auto; overflow: visible; align-items: start; }
+.operation-page .master-panel, .operation-page .detail-panel { overflow: visible; min-width: 0; }
+.operation-page .operation-selectable-row { cursor: pointer; }
+.operation-page .operation-selectable-row.is-selected { background: var(--mud-palette-primary-hover); }
+.operation-page .operation-selectable-row.is-selected td:first-child { box-shadow: inset 3px 0 var(--mud-palette-primary); }
+.operation-page.contratos-dashboard { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.operation-page.contratos-dashboard .metric-card { min-height: 76px; border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: var(--mud-palette-surface); }
+.operation-page.contratos-dashboard .metric-card span { color: var(--mud-palette-text-secondary); font-size: .78rem; font-weight: 600; text-transform: uppercase; }
+.operation-page.contratos-dashboard .metric-card strong { color: var(--mud-palette-text-primary); font-size: 1.15rem; line-height: 1.4; overflow-wrap: anywhere; }
+.operation-page.contratos-dashboard .metric-primary { border-left: 4px solid var(--mud-palette-primary); }
+.operation-page.contratos-dashboard .main-cell { font-weight: 700; color: var(--mud-palette-text-primary); }
+.operation-page.contratos-dashboard .main-cell + span, .operation-page.contratos-dashboard .mud-table-cell > span:not([class]) { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+@media(max-width:600px) {
+    .operation-page .mud-table-cell[data-label="Acciones"] { display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 6px; }
+    .operation-page .mud-table-cell[data-label="Acciones"]::before { flex: 0 0 100%; text-align: left; }
+    .operation-page .mud-table-cell[data-label="Acciones"] .mud-button-root { max-width: 100%; white-space: normal; }
+    .operation-page .selected-title { flex: 1 1 calc(100% - 56px); }
+    .operation-page .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .operation-page .summary-strip strong { overflow-wrap: anywhere; }
+}

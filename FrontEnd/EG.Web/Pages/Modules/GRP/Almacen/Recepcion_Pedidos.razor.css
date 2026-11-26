@@ -51,6 +51,8 @@
 .priority-order:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 3px; }
 .priority-order:disabled { cursor: wait; opacity: .65; }
 .receipt-empty { font-size: .85rem; color: var(--mud-palette-text-secondary); margin: 0; line-height: 1.5; }
+.receipt-empty-guide { display: grid; gap: 10px; padding: 16px; border: 1px dashed var(--mud-palette-lines-default); border-radius: 10px; background: var(--mud-palette-background); }
+.receipt-empty-guide p { margin: 0; font-size: .85rem; color: var(--mud-palette-text-secondary); line-height: 1.5; }
 .receipt-lines, .receipt-orders, .receipt-history { flex: 0 0 auto; min-width: 0; }
 .receipt-orders[hidden] { display: none; }
 .receipt-lines ::deep .eg-generic-data-grid, .receipt-history ::deep .eg-generic-data-grid { border: 0; border-radius: 0 0 12px 12px !important; box-shadow: none; }

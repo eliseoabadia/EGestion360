@@ -6,6 +6,7 @@ using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace EG.Application.Services.Adquisicion
 {
@@ -33,6 +34,28 @@ namespace EG.Application.Services.Adquisicion
             _cotizacionService = cotizacionService;
             _context = context;
             _userContext = userContext;
+        }
+
+        public override Task<PagedResult<RequisicionDetalleResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            if (request.AdditionalFilters?.TryGetValue("FkidPartidaConta", out var raw) != true)
+                return base.GetAllPaginadoAsync(request);
+            if (!int.TryParse(raw?.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var partidaId) || partidaId <= 0)
+                return Task.FromResult(Failure<RequisicionDetalleResponse>("Selecciona una partida válida.", "INVALID_DATA"));
+
+            var filters = new Dictionary<string, object>(request.AdditionalFilters);
+            filters.Remove("FkidPartidaConta");
+            var scopedRequest = new PagedRequest
+            {
+                Page = request.Page, PageSize = request.PageSize, Filtro = request.Filtro,
+                SearchString = request.SearchString, SortLabel = request.SortLabel,
+                SortDirection = request.SortDirection, AdditionalFilters = filters
+            };
+            var tiposDePartida = _context.TipoBiens.AsNoTracking()
+                .Where(tipo => tipo.FkidPartidaConta == partidaId)
+                .Select(tipo => tipo.PkidTipoBien);
+            return _serviceView.GetAllPaginadoAsync(scopedRequest,
+                detalle => tiposDePartida.Contains(detalle.FkidTipoBienAlma));
         }
 
         public override async Task<PagedResult<RequisicionDetalleResponse>> CreateAsync(

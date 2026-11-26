@@ -1,173 +1,110 @@
 (function () {
-    const storageKey = "egestion360.sidebar.width";
+    const storageKey = 'egestion360.sidebar.width';
     const defaultWidth = 320;
-    const fallbackMin = 260;
-    const fallbackMax = 420;
     let disposeCurrent = null;
-
-    function getRoot() {
-        return document.querySelector(".layout-root");
+    function readVariable(root, name, fallback) {
+        const value = Number.parseInt(getComputedStyle(root).getPropertyValue(name), 10);
+        return Number.isFinite(value) ? value : fallback;
     }
-
-    function readPixelVariable(root, name, fallback) {
-        const value = getComputedStyle(root).getPropertyValue(name).trim();
-        const parsed = Number.parseInt(value, 10);
-        return Number.isFinite(parsed) ? parsed : fallback;
+    function persist(width) {
+        try { localStorage.setItem(storageKey, String(Math.round(width))); }
+        catch (error) { console.debug('No se pudo guardar el ancho del menú.', error); }
     }
-
-    function clamp(value, min, max) {
-        return Math.min(Math.max(value, min), max);
-    }
-
-    function setWidth(root, value, persist) {
-        const min = readPixelVariable(root, "--eg-sidebar-min-width", fallbackMin);
-        const max = readPixelVariable(root, "--eg-sidebar-max-width", fallbackMax);
-        const width = clamp(Math.round(value), min, max);
-
-        root.style.setProperty("--eg-sidebar-width", `${width}px`);
-
-        if (persist) {
-            localStorage.setItem(storageKey, String(width));
-        }
-
-        return width;
-    }
-
-    function getCurrentWidth(root, sidebar) {
-        const measured = sidebar.getBoundingClientRect().width;
-        if (Number.isFinite(measured) && measured > 0) {
-            return measured;
-        }
-
-        return readPixelVariable(root, "--eg-sidebar-width", defaultWidth);
-    }
-
-    function applyStoredWidth(root) {
-        const stored = Number.parseInt(localStorage.getItem(storageKey) || "", 10);
-
-        if (Number.isFinite(stored)) {
-            setWidth(root, stored, false);
-            return;
-        }
-
-        setWidth(root, defaultWidth, false);
-    }
-
     function initialize() {
-        if (disposeCurrent) {
-            disposeCurrent();
-        }
-
-        const root = getRoot();
-        const sidebar = root?.querySelector(".sidebar-container");
-        const handle = root?.querySelector(".sidebar-resize-handle");
-
-        if (!root || !sidebar || !handle) {
-            return;
-        }
-
-        applyStoredWidth(root);
-
-        let activePointerId = null;
-        let startX = 0;
-        let startWidth = 0;
-
+        disposeCurrent?.();
+        const root = document.querySelector('.layout-root');
+        const sidebar = root?.querySelector('.sidebar-container');
+        const handle = root?.querySelector('.sidebar-resize-handle');
+        if (!root || !sidebar || !handle) return;
+        root.classList.remove('sidebar-resizing');
+        const min = readVariable(root, '--eg-sidebar-min-width', 260);
+        const max = readVariable(root, '--eg-sidebar-max-width', 420);
+        const setWidth = value => {
+            const width = Math.min(Math.max(Math.round(value), min), max);
+            root.style.setProperty('--eg-sidebar-width', `${width}px`);
+            return width;
+        };
+        try {
+            const stored = Number.parseInt(localStorage.getItem(storageKey), 10);
+            setWidth(Number.isFinite(stored) ? stored : defaultWidth);
+        } catch (error) { setWidth(defaultWidth); console.debug('No se pudo leer el ancho del menú.', error); }
+        let pointer = null, startX = 0, startWidth = 0, nextX = 0, frame = 0, dragging = false;
+        const canResize = () => !sidebar.classList.contains('collapsed') && window.innerWidth >= 960;
+        const flushWidth = () => {
+            frame = 0;
+            if (pointer !== null && dragging) setWidth(startWidth + nextX - startX);
+        };
         const stopResize = () => {
-            if (activePointerId === null) {
-                return;
-            }
-
-            activePointerId = null;
-            root.classList.remove("sidebar-resizing");
-            localStorage.setItem(storageKey, String(Math.round(getCurrentWidth(root, sidebar))));
+            const id = pointer;
+            if (frame) { cancelAnimationFrame(frame); frame = 0; }
+            if (id !== null && dragging) setWidth(startWidth + nextX - startX);
+            pointer = null;
+            const shouldPersist = dragging;
+            dragging = false;
+            // Limpiar siempre, incluso tras blur, perdida de captura o reinicializacion.
+            root.classList.remove('sidebar-resizing');
+            if (id !== null && handle.hasPointerCapture?.(id)) handle.releasePointerCapture(id);
+            if (shouldPersist) persist(sidebar.getBoundingClientRect().width);
         };
-
-        const onPointerMove = (event) => {
-            if (activePointerId !== event.pointerId) {
-                return;
-            }
-
-            setWidth(root, startWidth + event.clientX - startX, false);
-        };
-
-        const onPointerUp = (event) => {
-            if (activePointerId !== event.pointerId) {
-                return;
-            }
-
+        const onDown = event => {
+            if (event.button !== 0 || !canResize()) return;
             stopResize();
-        };
-
-        const onPointerDown = (event) => {
-            if (event.button !== 0 || sidebar.classList.contains("collapsed")) {
-                return;
-            }
-
             event.preventDefault();
-            activePointerId = event.pointerId;
-            startX = event.clientX;
-            startWidth = getCurrentWidth(root, sidebar);
-            root.classList.add("sidebar-resizing");
-            handle.setPointerCapture?.(event.pointerId);
+            pointer = event.pointerId;
+            startX = nextX = event.clientX;
+            startWidth = sidebar.getBoundingClientRect().width;
+            handle.setPointerCapture?.(pointer);
         };
-
-        const onKeyDown = (event) => {
-            if (sidebar.classList.contains("collapsed")) {
-                return;
-            }
-
-            const current = getCurrentWidth(root, sidebar);
-            let next = null;
-
-            if (event.key === "ArrowLeft") {
-                next = current - (event.shiftKey ? 32 : 12);
-            } else if (event.key === "ArrowRight") {
-                next = current + (event.shiftKey ? 32 : 12);
-            } else if (event.key === "Home") {
-                next = readPixelVariable(root, "--eg-sidebar-min-width", fallbackMin);
-            } else if (event.key === "End") {
-                next = readPixelVariable(root, "--eg-sidebar-max-width", fallbackMax);
-            }
-
-            if (next === null) {
-                return;
-            }
-
+        const onMove = event => {
+            if (pointer !== event.pointerId) return;
+            if ((event.buttons & 1) === 0 || !canResize()) { stopResize(); return; }
+            nextX = event.clientX;
+            if (!dragging && Math.abs(nextX - startX) < 3) return;
+            dragging = true;
+            root.classList.add('sidebar-resizing');
+            if (!frame) frame = requestAnimationFrame(flushWidth);
+        };
+        const onUp = event => { if (pointer === event.pointerId) stopResize(); };
+        const onVisibility = () => { if (document.hidden) stopResize(); };
+        const onEscape = event => { if (event.key === 'Escape') stopResize(); };
+        const onKeys = event => {
+            if (!canResize()) return;
+            const current = sidebar.getBoundingClientRect().width;
+            const step = event.shiftKey ? 32 : 12;
+            const values = { ArrowLeft: current - step, ArrowRight: current + step, Home: min, End: max };
+            if (!Object.hasOwn(values, event.key)) return;
             event.preventDefault();
-            setWidth(root, next, true);
+            persist(setWidth(values[event.key]));
         };
-
-        const onDoubleClick = () => {
-            if (!sidebar.classList.contains("collapsed")) {
-                setWidth(root, defaultWidth, true);
-            }
-        };
-
-        handle.addEventListener("pointerdown", onPointerDown);
-        handle.addEventListener("keydown", onKeyDown);
-        handle.addEventListener("dblclick", onDoubleClick);
-        window.addEventListener("pointermove", onPointerMove);
-        window.addEventListener("pointerup", onPointerUp);
-        window.addEventListener("pointercancel", stopResize);
-
+        const onDoubleClick = () => { if (canResize()) persist(setWidth(defaultWidth)); };
+        handle.addEventListener('pointerdown', onDown);
+        handle.addEventListener('lostpointercapture', stopResize);
+        handle.addEventListener('keydown', onKeys);
+        handle.addEventListener('dblclick', onDoubleClick);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+        window.addEventListener('blur', stopResize);
+        window.addEventListener('pagehide', stopResize);
+        window.addEventListener('resize', stopResize);
+        window.addEventListener('keydown', onEscape);
+        document.addEventListener('visibilitychange', onVisibility);
         disposeCurrent = () => {
             stopResize();
-            handle.removeEventListener("pointerdown", onPointerDown);
-            handle.removeEventListener("keydown", onKeyDown);
-            handle.removeEventListener("dblclick", onDoubleClick);
-            window.removeEventListener("pointermove", onPointerMove);
-            window.removeEventListener("pointerup", onPointerUp);
-            window.removeEventListener("pointercancel", stopResize);
+            handle.removeEventListener('pointerdown', onDown);
+            handle.removeEventListener('lostpointercapture', stopResize);
+            handle.removeEventListener('keydown', onKeys);
+            handle.removeEventListener('dblclick', onDoubleClick);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+            window.removeEventListener('blur', stopResize);
+            window.removeEventListener('pagehide', stopResize);
+            window.removeEventListener('resize', stopResize);
+            window.removeEventListener('keydown', onEscape);
+            document.removeEventListener('visibilitychange', onVisibility);
             disposeCurrent = null;
         };
     }
-
-    window.egestionSidebarResize = {
-        initialize,
-        dispose: function () {
-            if (disposeCurrent) {
-                disposeCurrent();
-            }
-        }
-    };
+    window.egestionSidebarResize = { initialize, dispose() { disposeCurrent?.(); } };
 })();

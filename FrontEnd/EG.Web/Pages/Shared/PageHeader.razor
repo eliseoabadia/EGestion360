@@ -21,7 +21,13 @@
             @if (ShowCreateButton)
             {
                 <MudTooltip Text="@CreateTooltip">
-                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                    @if (!string.IsNullOrWhiteSpace(CreateText))
+                    {
+                        <MudButton StartIcon="@Icons.Material.Filled.Add" Visible="@CanCreate" OnClick="HandleCreate" Disabled="@IsBusy" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">@CreateText</MudButton>
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
                                    Visible="@CanCreate"
                                    OnClick="HandleCreate"
                                    Disabled="@IsBusy"
@@ -29,6 +35,7 @@
                                    Variant="Variant.Filled"
                                    Size="Size.Small"
                                    aria-label="@CreateTooltip" />
+                    }
                 </MudTooltip>
             }
             @if (ShowRefreshButton)
@@ -56,6 +63,7 @@
     [Parameter] public bool ShowCreateButton { get; set; } = true;
     [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public string CreateTooltip { get; set; } = "Nuevo";
+    [Parameter] public string? CreateText { get; set; }
     [Parameter] public bool CanCreate { get; set; } = true;
     [Parameter] public EventCallback OnCreate { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }

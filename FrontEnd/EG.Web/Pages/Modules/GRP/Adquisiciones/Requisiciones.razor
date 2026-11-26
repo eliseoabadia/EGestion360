@@ -257,6 +257,32 @@
                                         OnAction="ExecuteDiagnosisAsync"
                                         OnNotify="NotifyDiagnosisOwnerAsync" />
 
+                <section class="requisition-workbench-heading" aria-label="Partidas y bienes de la requisición">
+                    <span class="requisition-workbench-icon"><MudIcon Icon="@Icons.Material.Filled.Inventory2" /></span>
+                    <div class="requisition-workbench-copy">
+                        <strong>@(SelectedPartida is null ? "Partidas y bienes" : $"Partida {SelectedPartida.PartidaClave} · {SelectedPartida.PartidaDescripcion}")</strong>
+                        <p>La primera partida se abre automáticamente. Pulsa otra fila para ver sus bienes.</p>
+                    </div>
+                    <div class="requisition-workbench-actions">
+                        @if (CanCreate && !IsSelectedLocked)
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddShoppingCart" Disabled="@(SelectedPartida is null)" OnClick="AddDetalle">Agregar bien</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddPartida">Agregar partida</MudButton>
+                        }
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.HelpOutline" OnClick="() => showCaptureHelp = !showCaptureHelp" aria-expanded="@showCaptureHelp">Guía rápida</MudButton>
+                    </div>
+                </section>
+                @if (showCaptureHelp)
+                {
+                    <div class="requisition-capture-help" role="note">
+                        <strong>Cómo continuar</strong>
+                        <span>1. La partida seleccionada aparece resaltada y sus bienes se muestran a la derecha.</span>
+                        <span>2. Para capturar, usa “Agregar bien”; la requisición y partida ya van seleccionadas.</span>
+                        <span>3. El asistente superior indica el siguiente paso y quién puede resolverlo.</span>
+                        @if (IsSelectedLocked) { <span>Esta requisición ya avanzó en el flujo: la captura está bloqueada. Puedes consultar sus partidas y bienes.</span> }
+                    </div>
+                }
+
                 <MudGrid Spacing="2" Class="requisition-related-grid">
                     <MudItem xs="12" lg="5" Class="d-flex flex-column requisition-related-item">
                         <GenericDataGrid TItem="RequisicionPartidaResponse"
@@ -269,8 +295,10 @@
                                       EmptyMessage="Agrega una partida para comenzar a capturar bienes o servicios."
                                       SearchPlaceholder="Buscar partida..."
                                       ShowSearch="false"
+                                      OnRowClick="SelectPartida"
+                                      RowClassFunc="PartidaRowClass"
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                                      ShowAddButton="false"
                                       PageSize="5"
                                       ServerDataFunc="LoadPartidasServerData"
                                       SearchString="@partidaSearchString"
@@ -280,7 +308,7 @@
             <Columns>
                 <TemplateColumn T="RequisicionPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <ProgressiveActions Actions="@BuildPartidaActions(cell.Item)" Compact="true" />
+                        <ProgressiveActions Actions="@BuildPartidaActions(cell.Item)" Compact="false" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionPartidaResponse" Title="Clave" Identifier="PartidaClave" PropertyName="PartidaClave" SortBy="x => x.PartidaClave">
@@ -316,9 +344,9 @@
                                       EmptyTitle="@DetalleEmptyTitle"
                                       EmptyMessage="@DetalleEmptyMessage"
                                       SearchPlaceholder="Buscar bien o servicio..."
-                                      ShowSearch="false"
+                                      ShowSearch="true"
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && SelectedPartida != null && !IsSelectedLocked)"
+                                      ShowAddButton="false"
                                       AddButtonTooltip="Agregar bien a la requisicion"
                                       AddButtonIcon="@Icons.Material.Filled.AddShoppingCart"
                                       PageSize="5"
@@ -375,6 +403,8 @@
     private string detalleSearchString = string.Empty;
     private bool openingRequisicion;
     private int? loadedRequisicionId;
+    private bool showCaptureHelp, pendingDetalleReload, disposed;
+    private int detailSelectionVersion, routeLoadVersion, partidaLoadVersion;
     private string DetalleTableTitle => SelectedPartida == null
         ? "Detalle de la partida"
         : $"Partida {SelectedPartida.PartidaClave}";
@@ -400,6 +430,16 @@
         await base.OnInitializedAsync();
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!disposed && pendingDetalleReload && detalleTable is not null)
+        {
+            pendingDetalleReload = false;
+            await ReloadDetalles();
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -708,11 +748,14 @@
 
     private async Task LoadRequisicionFromRouteAsync(int id)
     {
+        var version = ++routeLoadVersion;
+        detailSelectionVersion++;
         openingRequisicion = true;
 
         try
         {
             var response = await Service.GetByIdAsync(id);
+            if (disposed || version != routeLoadVersion) return;
             if (response?.Success == true && response.Data != null)
             {
                 SelectedRequisicion = response.Data;
@@ -727,6 +770,7 @@
         }
         catch (Exception ex)
         {
+            if (disposed || version != routeLoadVersion) return;
             AppLoggerFactory.CreateLogger("Requisiciones")
                 .LogError(ex, "No se pudo cargar la requisición {RequisicionId} desde la ruta.", id);
             Snackbar.Add("No fue posible cargar el detalle de la requisición.", Severity.Error);
@@ -735,7 +779,7 @@
         }
         finally
         {
-            openingRequisicion = false;
+            if (version == routeLoadVersion) openingRequisicion = false;
         }
     }
 
@@ -746,7 +790,10 @@
             return;
         }
 
-        var response = await Service.GetByIdAsync(SelectedRequisicion.PkidRequisicion);
+        var id = SelectedRequisicion.PkidRequisicion;
+        var version = routeLoadVersion;
+        var response = await Service.GetByIdAsync(id);
+        if (disposed || version != routeLoadVersion || SelectedRequisicion?.PkidRequisicion != id) return;
         if (response?.Success == true && response.Data != null)
         {
             SelectedRequisicion = response.Data;
@@ -764,6 +811,8 @@
 
     private void ResetRequisicionSelection()
     {
+        routeLoadVersion++; detailSelectionVersion++; partidaLoadVersion++;
+        pendingDetalleReload = false;
         SelectedRequisicion = null;
         SelectedPartida = null;
         loadedRequisicionId = null;
@@ -815,18 +864,29 @@
             return new TableData<RequisicionPartidaResponse> { Items = new List<RequisicionPartidaResponse>(), TotalItems = 0 };
         }
 
+        var requisicionId = SelectedRequisicion.PkidRequisicion;
+        var version = ++partidaLoadVersion;
         var response = await PartidaService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             partidaSearchString,
             state.SortLabel ?? "PartidaClave",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
 
-        if (SelectedPartida != null && response?.Items?.Any(x => x.PkidRequisicionPartida == SelectedPartida.PkidRequisicionPartida) != true)
+        if (disposed || cancellationToken.IsCancellationRequested || version != partidaLoadVersion || SelectedRequisicion?.PkidRequisicion != requisicionId)
+            return new() { Items = [], TotalItems = 0 };
+        if (response?.Success != true) throw new InvalidOperationException("No se pudieron consultar las partidas de la requisición.");
+        var next = response.Items.FirstOrDefault(x => x.PkidRequisicionPartida == SelectedPartida?.PkidRequisicionPartida)
+            ?? response.Items.FirstOrDefault();
+        var selectionChanged = next?.PkidRequisicionPartida != SelectedPartida?.PkidRequisicionPartida;
+        SelectedPartida = next;
+        if (selectionChanged)
         {
-            SelectedPartida = null;
-            await ReloadDetalles();
+            detailSelectionVersion++;
+            detalleSearchString = string.Empty;
+            pendingDetalleReload = true;
+            await InvokeAsync(StateHasChanged);
         }
 
         return new TableData<RequisicionPartidaResponse>
@@ -843,13 +903,20 @@
             return new TableData<RequisicionDetalleResponse> { Items = new List<RequisicionDetalleResponse>(), TotalItems = 0 };
         }
 
+        var requisicionId = SelectedRequisicion.PkidRequisicion;
+        var partidaId = SelectedPartida.FkidPartidaConta;
+        var version = detailSelectionVersion;
         var response = await DetalleService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detalleSearchString,
             state.SortLabel ?? "TipoBienCodigoClave",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = SelectedRequisicion.PkidRequisicion });
+            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId, ["FkidPartidaConta"] = partidaId });
+
+        if (disposed || cancellationToken.IsCancellationRequested || version != detailSelectionVersion || SelectedRequisicion?.PkidRequisicion != requisicionId)
+            return new() { Items = [], TotalItems = 0 };
+        if (response?.Success != true) throw new InvalidOperationException("No se pudieron consultar los bienes de la partida.");
 
         return new TableData<RequisicionDetalleResponse>
         {
@@ -892,11 +959,16 @@
 
     private async Task SelectPartida(RequisicionPartidaResponse partida)
     {
+        if (disposed || partida.FkidRequisicionOrco != SelectedRequisicion?.PkidRequisicion || IsSelectedPartida(partida)) return;
+        detailSelectionVersion++;
         SelectedPartida = partida;
         detalleSearchString = string.Empty;
         await ReloadDetalles();
         StateHasChanged();
     }
+
+    private string PartidaRowClass(RequisicionPartidaResponse partida, int _) =>
+        IsSelectedPartida(partida) ? "requisition-partida-row is-selected" : "requisition-partida-row";
 
     private async Task EditPartida(int id)
     {
@@ -1626,7 +1698,7 @@
             new()
             {
                 Id = "select",
-                Label = IsSelectedPartida(partida) ? "Partida seleccionada" : "Seleccionar partida",
+                Label = IsSelectedPartida(partida) ? "Seleccionada" : "Ver bienes",
                 Icon = IsSelectedPartida(partida) ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.OpenInFull,
                 Color = IsSelectedPartida(partida) ? Color.Success : Color.Info,
                 Order = 10,
@@ -1950,6 +2022,7 @@
 
     public void Dispose()
     {
+        disposed = true; routeLoadVersion++; detailSelectionVersion++; partidaLoadVersion++;
         AnioStateService.OnAnioChanged -= OnAnioChanged;
     }
 }

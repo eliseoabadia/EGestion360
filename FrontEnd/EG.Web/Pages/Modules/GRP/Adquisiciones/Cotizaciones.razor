@@ -17,17 +17,17 @@
 @inject IJSRuntime JS
 @inherits BaseCrudPage<CotizacionResponse, CotizacionResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column cotizacion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page px-3 d-flex flex-column cotizacion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedCotizacion == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Cotizacion"
                             Subtitle="Solicitudes y respuestas de proveedores por requisicion"
                             Icon="@Icons.Material.Filled.ListAlt"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nueva cotización"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
@@ -41,13 +41,15 @@
                         <strong>@Elements.Count(x => x.Activo).ToString("N0", NumberCulture) activas</strong>
                     </div>
                     <div>
-                        <span class="summary-label">Total cotizado</span>
+                        <span class="summary-label">Total cotizado en esta página</span>
                         <strong>@Money(Elements.Sum(x => x.TotalCotizado))</strong>
                     </div>
                 </div>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="CotizacionResponse"
+                                      EmptyTitle="Sin cotizaciones"
+                                      EmptyMessage="Verifica empresa, ejercicio y búsqueda. Para iniciar, usa Nueva cotización si tu perfil permite crear."
                                   @ref="table"
                                   Title="Cotizaciones registradas"
                                   FillAvailableHeight="false"
@@ -64,12 +66,7 @@
                 <TemplateColumn T="CotizacionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <div class="row-actions">
-                        <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectCotizacion(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectCotizacion(cell.Item))">Abrir cotización</MudButton>
                         <DocumentSupportButton Modulo="Adquisiciones"
                         SubModulo="Cotizacion"
                         Controlador="Cotizacion"
@@ -152,7 +149,7 @@
         }
         else
         {
-            <div class="d-flex flex-column detail-layout" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div class="d-flex flex-column detail-layout" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="selected-header">
                     <div class="selected-title">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
@@ -189,42 +186,10 @@
                                            EntidadId="@SelectedCotizacion.PkidCotizacion"
                                            RegistroTitulo="@($"{TextOrDash(SelectedCotizacion.ProveedorNombre)} - Cotizacion {SelectedCotizacion.PkidCotizacion}")"
                                            RegistroDescripcion="@TextOrDash(SelectedCotizacion.RequisicionDescripcion)" />
-                    <MudTooltip Text="Captura rapida de bienes">
-                        <MudIconButton Icon="@Icons.Material.Filled.PostAdd"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       OnClick="AddDetalle"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="@SendTooltip(SelectedCotizacion)">
-                        <MudIconButton Icon="@Icons.Material.Filled.Email"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Disabled="@(_sendingCotizacionEmail || SelectedCotizacion.TotalDetalles <= 0 || !SelectedCotizacion.PuedeEnviar)"
-                                       OnClick="SendCotizacionCorreo"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    @if (SelectedCotizacion.PuedeRechazar)
-                    {
-                        <MudTooltip Text="Rechazar el envío y habilitar un nuevo intento">
-                            <MudIconButton Icon="@Icons.Material.Filled.Undo"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           Disabled="@_sendingCotizacionEmail"
-                                           OnClick="RejectCotizacionCorreo"
-                                           Class="ml-1" />
-                        </MudTooltip>
-                    }
-                    <MudTooltip Text="Recibir montos cotizados">
-                        <MudIconButton Icon="@Icons.Material.Filled.AttachMoney"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanUpdate"
-                                       Disabled="@(SelectedCotizacion.TotalDetalles <= 0)"
-                                       OnClick="OpenRecepcionCotizacion"
-                                       Class="ml-1" />
-                    </MudTooltip>
+
+
+
+
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
@@ -233,6 +198,24 @@
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
+
+
+                <OperationActionPanel Title="Prepara y recibe la cotización" Description="Los bienes se cargan al abrir. Captura varios conceptos juntos y registra la respuesta del proveedor." Icon="@Icons.Material.Filled.RequestQuote">
+                <Actions>
+                @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PostAdd" OnClick="AddDetalle">Capturar bienes</MudButton> }
+                @if (CanUpdate) { <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.AttachMoney" Disabled="@(SelectedCotizacion.TotalDetalles <= 0)" OnClick="OpenRecepcionCotizacion">Recibir precios</MudButton> }
+                @if (CanAuthorize) { <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Email" Disabled="@(_sendingCotizacionEmail || SelectedCotizacion.TotalDetalles <= 0 || !SelectedCotizacion.PuedeEnviar)" OnClick="SendCotizacionCorreo">Enviar al proveedor</MudButton> }
+                @if (CanAuthorize && SelectedCotizacion.PuedeRechazar) { <MudButton Variant="Variant.Text" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Undo" Disabled="@_sendingCotizacionEmail" OnClick="RejectCotizacionCorreo">Rechazar envío</MudButton> }
+                <ModuleShortcut Module="Adquisiciones" SubModule="requisicion" Href="@($"/Adquisiciones/Requisicion/{SelectedCotizacion.FkidRequisicionOrco}")" Text="Ver requisición" />
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>Usa Capturar bienes para seleccionar varios conceptos de la requisición en una sola captura.</li>
+                <li>Enviar al proveedor envía el correo de solicitud. El estado del envío indica si puedes volver a enviarlo.</li>
+                <li>Al recibir la respuesta, usa Recibir precios para capturar los montos; puedes buscar y editar un bien en la tabla.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
 
                 <MudPaper Elevation="1" Class="summary-panel">
                     <MudGrid Spacing="2">
@@ -275,14 +258,16 @@
                     </MudGrid>
                 </MudPaper>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="CotizacionDetalleResponse"
+                                      EmptyTitle="Sin bienes cotizados"
+                                      EmptyMessage="Usa Capturar bienes para agregar los conceptos de la requisición, o revisa la búsqueda." @key="SelectedCotizacion.PkidCotizacion"
                                   @ref="detalleTable"
                                   Title="Bienes cotizados"
                                   FillAvailableHeight="false"
                                   SearchPlaceholder="Buscar bien, clave o unidad..."
                                   ShowExportButton="false"
-                                  ShowAddButton="@CanCreate"
+                                  ShowAddButton="false"
                                   AddButtonTooltip="Captura rapida de bienes"
                                   AddButtonIcon="@Icons.Material.Filled.PostAdd"
                                   PageSize="10"
@@ -441,6 +426,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<CotizacionResponse> table = null!;
     private GenericDataGrid<CotizacionDetalleResponse> detalleTable = null!;
     private CotizacionResponse? SelectedCotizacion;
@@ -462,6 +448,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     public void Dispose()
@@ -718,6 +705,7 @@
 
     private async Task SendCotizacionCorreo()
     {
+        if (!CanAuthorize || _sendingCotizacionEmail) return;
         if (SelectedCotizacion == null)
         {
             Snackbar.Add("Selecciona una cotizacion primero.", Severity.Warning);
@@ -751,6 +739,7 @@
 
     private async Task RejectCotizacionCorreo()
     {
+        if (!CanAuthorize || _sendingCotizacionEmail) return;
         if (SelectedCotizacion == null)
         {
             return;
@@ -892,7 +881,9 @@
             return;
         }
 
-        var response = await Service.GetByIdAsync(SelectedCotizacion.PkidCotizacion);
+        var selectedId = SelectedCotizacion.PkidCotizacion;
+        var response = await Service.GetByIdAsync(selectedId);
+        if (SelectedCotizacion?.PkidCotizacion != selectedId) return;
         if (response?.Success == true && response.Data != null)
         {
             SelectedCotizacion = response.Data;

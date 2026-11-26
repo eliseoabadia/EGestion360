@@ -13,14 +13,14 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<DetalleSolicitudSalidaResponse> DetalleService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column salida-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="operation-page px-3 d-flex flex-column salida-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Solicitudes de salida"
                     Subtitle="Solicitud, autorizacion y trazabilidad de bienes de almacen"
                     Icon="@Icons.Material.Filled.AssignmentTurnedIn"
-                    CanCreate="@CanCreate"
+                    CanCreate="@CanCreate" CreateText="Nueva solicitud"
                     OnCreate="CreateItem"
                     OnRefresh="RefreshAll" />
 
@@ -43,9 +43,24 @@
             </div>
         </div>
 
+<OperationActionPanel Title="Prepara la salida de almacén" Description="La primera solicitud de esta página se prepara al cargar. Pulsa otra fila para ver sus bienes." Icon="@Icons.Material.Filled.LocalShipping">
+                <Actions>
+                @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@(selectedSolicitud is null || !CanWork(selectedSolicitud))" OnClick="AgregarDetalle">Agregar bien</MudButton> } @if (CanAuthorize) { <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Disabled="@(selectedSolicitud is null || !CanWork(selectedSolicitud))" OnClick="@(() => AutorizarSolicitud(selectedSolicitud!))">Autorizar solicitud</MudButton> }
+                <ModuleShortcut Module="Almacen" SubModule="Suministros_Salida" Href="/Almacen/Suministros_Salida" Text="Suministros de salida" />
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>La solicitud seleccionada aparece resaltada; verifica folio, solicitante y área.</li>
+                <li>Captura los bienes y cantidades con Agregar bien. Autorizar solicitud conserva la confirmación y las validaciones existentes.</li>
+                <li>Las entregas se registran en Almacén › Suministros de salida, según el permiso del responsable.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
         <div class="split-shell">
             <div class="master-panel">
-                <GenericDataGrid TItem="SolicitudSalidaResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="SolicitudSalidaResponse"
+                                      EmptyTitle="Sin solicitudes en este contexto"
+                                      EmptyMessage="Revisa empresa, ejercicio y filtros. En Suministros sólo se muestran las solicitudes autorizadas." OnRowClick="SelectSolicitud" RowClassFunc="SolicitudRowClass"
                               @ref="table"
                               Title="Solicitudes"
                               SearchPlaceholder="Buscar por folio, solicitante, area o justificacion..."
@@ -65,12 +80,7 @@
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@TextOrDash(cell.Item.Folio)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Solicitante)" />
-                        <MudTooltip Text="Ver bienes">
-                        <MudIconButton Icon="@Icons.Material.Filled.ListAlt"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectSolicitud(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectSolicitud(cell.Item))">Ver bienes</MudButton>
                         <MudTooltip Text="Autorizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Verified"
                         Visible="@CanAuthorize"
@@ -141,16 +151,12 @@
                         <span>Detalle</span>
                         <strong>@(selectedSolicitud == null ? "Selecciona una solicitud" : selectedSolicitud.Folio)</strong>
                     </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.Add"
-                               Disabled="@(selectedSolicitud == null || !CanCreate || !CanWork(selectedSolicitud))"
-                               OnClick="AgregarDetalle">
-                        Agregar bien
-                    </MudButton>
+
                 </div>
 
-                <GenericDataGrid TItem="DetalleSolicitudSalidaResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="DetalleSolicitudSalidaResponse"
+                                      EmptyTitle="Sin bienes en la solicitud"
+                                      EmptyMessage="Revisa la solicitud seleccionada y la búsqueda del detalle." @key="selectedSolicitud?.PkidSolicitudSalida"
                               @ref="detailTable"
                               Title="Bienes solicitados"
                               SearchPlaceholder="Buscar bien, clave o observaciones..."
@@ -223,6 +229,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<SolicitudSalidaResponse> table = null!;
     private GenericDataGrid<DetalleSolicitudSalidaResponse> detailTable = null!;
     private SolicitudSalidaResponse? selectedSolicitud;
@@ -246,6 +253,7 @@
         await SucursalStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<SolicitudSalidaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -270,9 +278,8 @@
             var response = await Service.GetAllPaginadoAsync(CurrentPage, PageSize, SearchString, SortLabel, SortDirection, filters);
             Elements = response?.Items?.ToList() ?? new List<SolicitudSalidaResponse>();
             TotalCount = response?.Success == true ? response.TotalCount : 0;
-            selectedSolicitud = selectedSolicitud != null && Elements.Any(x => x.PkidSolicitudSalida == selectedSolicitud.PkidSolicitudSalida)
-                ? selectedSolicitud
-                : Elements.FirstOrDefault();
+            selectedSolicitud = Elements.FirstOrDefault(x => x.PkidSolicitudSalida == selectedSolicitud?.PkidSolicitudSalida) ?? Elements.FirstOrDefault();
+        await InvokeAsync(StateHasChanged);
             return new TableData<SolicitudSalidaResponse> { Items = Elements, TotalItems = TotalCount };
         }
         finally
@@ -290,23 +297,30 @@
             return new TableData<DetalleSolicitudSalidaResponse> { Items = detailElements, TotalItems = detailTotal };
         }
 
+        var solicitudId = selectedSolicitud.PkidSolicitudSalida;
         var response = await DetalleService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detailSearch,
             state.SortLabel ?? "TipoBienDescripcion",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidSolicitudSalidaAlma"] = selectedSolicitud.PkidSolicitudSalida });
+            new Dictionary<string, object> { ["FkidSolicitudSalidaAlma"] = solicitudId });
 
+        if (cancellationToken.IsCancellationRequested || selectedSolicitud?.PkidSolicitudSalida != solicitudId) return new() { Items = [], TotalItems = 0 };
+        if (response?.Success != true) throw new InvalidOperationException("No se pudieron consultar los bienes de la solicitud.");
         detailElements = response?.Items?.ToList() ?? new List<DetalleSolicitudSalidaResponse>();
         detailTotal = response?.Success == true ? response.TotalCount : 0;
         return new TableData<DetalleSolicitudSalidaResponse> { Items = detailElements, TotalItems = detailTotal };
     }
 
+    private string SolicitudRowClass(SolicitudSalidaResponse item, int _) => selectedSolicitud?.PkidSolicitudSalida == item.PkidSolicitudSalida ? "operation-selectable-row is-selected" : "operation-selectable-row";
+
     private async Task SelectSolicitud(SolicitudSalidaResponse item)
     {
+        if (selectedSolicitud?.PkidSolicitudSalida == item.PkidSolicitudSalida) return;
         selectedSolicitud = item;
-        await detailTable.ReloadData();
+        detailSearch = string.Empty;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task AgregarDetalle()

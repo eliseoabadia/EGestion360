@@ -15,23 +15,25 @@
 @inject HttpClient Http
 @inherits BaseCrudPage<PaaaResponse, PaaaResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3" MaxWidth="MaxWidth.False" Style="height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
+    <MudContainer Class="operation-page px-3" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: auto;">
         @if (SelectedPaaa == null)
         {
             @* ─── LISTADO DE PROGRAMAS ANUALES ─── *@
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Programa Anual de Adquisiciones"
                             Subtitle="Selecciona un programa para administrar sus partidas y bienes"
                             Icon="@Icons.Material.Filled.CalendarMonth"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nuevo programa"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="PaaaResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="PaaaResponse"
+                                      EmptyTitle="Sin programas anuales"
+                                      EmptyMessage="Verifica empresa, ejercicio y búsqueda. Usa Nuevo programa para iniciar."
                                   @ref="table"
                                   Title="Programas Anuales"
                                   SearchPlaceholder="Buscar por descripción, área o responsable..."
@@ -44,12 +46,7 @@
             <Columns>
                 <TemplateColumn T="PaaaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Ver detalle del programa">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectPaaa(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectPaaa(cell.Item))">Abrir programa</MudButton>
                         <ReportOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                         EntityId="@cell.Item.PkidPaaas"
                         Title="@($"Reporte PAAA {cell.Item.PkidPaaas}")"
@@ -133,7 +130,7 @@
         else
         {
             @* ─── CONTENEDOR FLEX QUE LLENA EL ESPACIO RESTANTE ─── *@
-            <div Class="d-flex flex-column paaa-detail-page" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div Class="d-flex flex-column paaa-detail-page" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
                 @* ─── ENCABEZADO DEL PAAA SELECCIONADO ─── *@
                 <MudPaper Elevation="1" Class="paaa-selected-header">
                     <div class="paaa-header-main">
@@ -186,17 +183,26 @@
                                                Visible="@(CanUpdate && !SelectedPaaa.BloqueadoPorEstudioMercado)"
                                                OnClick="@(() => EditItem(SelectedPaaa.PkidPaaas))" />
                             </MudTooltip>
-                            <MudTooltip Text="Agregar partida">
-                                <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
-                                               Color="Color.Success"
-                                               Size="Size.Small"
-                                               Disabled="@SelectedPaaa.BloqueadoPorEstudioMercado"
-                                               OnClick="AddPartida" />
-                            </MudTooltip>
+
                         </div>
                     </div>
                 </MudPaper>
 
+                <OperationActionPanel Title="Partidas y bienes del programa" Description="La primera partida se abre automáticamente. Pulsa otra fila para consultar sus bienes." Icon="@Icons.Material.Filled.CalendarMonth">
+                <Actions>
+                @if (CanCreate) {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddShoppingCart" Disabled="@(SelectedPartida is null || SelectedPaaa.BloqueadoPorEstudioMercado)" OnClick="AddBien">Agregar bien</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@SelectedPaaa.BloqueadoPorEstudioMercado" OnClick="AddPartida">Agregar partida</MudButton>
+                }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>La partida resaltada determina los bienes del panel derecho. También puedes abrirla con Ver bienes.</li>
+                <li>Agrega bienes a la partida elegida; el programa y la partida ya se pasan al formulario.</li>
+                <li>Si existe un estudio de mercado, la captura permanece bloqueada y puedes seguir consultando.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
                 @* ─── TARJETA DE INFORMACIÓN GENERAL (compacta) ─── *@
                 <MudPaper Elevation="0" Class="paaa-summary-panel">
                     <div class="paaa-summary-content">
@@ -240,15 +246,17 @@
                 </MudPaper>
 
                 @* ─── CUERPO MAESTRO-DETALLE: OCUPA EL RESTO ─── *@
-                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
+                <MudGrid Spacing="2" Class="operation-related-grid" Style="overflow: visible; min-height: 0;">
                     @* ─── PANEL IZQUIERDO: LISTA DE PARTIDAS ─── *@
                     <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericDataGrid TItem="PaaaspartidumResponse"
+                        <GenericDataGrid FillAvailableHeight="false" TItem="PaaaspartidumResponse"
+                                      EmptyTitle="Sin partidas del programa"
+                                      EmptyMessage="Agrega una partida para distribuir el programa y comenzar la captura de bienes." @key="SelectedPaaa.PkidPaaas" OnRowClick="SelectPartida" RowClassFunc="PartidaRowClass"
                                       @ref="partidaTable"
                                       Title="Partidas"
                                       SearchPlaceholder="Buscar partida..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && !SelectedPaaa.BloqueadoPorEstudioMercado)"
+                                      ShowAddButton="false"
                                       PageSize="5"
                                       ServerDataFunc="LoadPartidasServerData"
                                       SearchString="@partidaSearchString"
@@ -298,12 +306,14 @@
 
                         @* ─── PANEL DERECHO: DETALLE DE BIENES ─── *@
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericDataGrid TItem="PaaasdetalleResponse"
+                        <GenericDataGrid FillAvailableHeight="false" TItem="PaaasdetalleResponse"
+                                      EmptyTitle="Sin bienes en esta partida"
+                                      EmptyMessage="Usa Agregar bien para capturar en la partida seleccionada, o revisa la búsqueda." @key="SelectedPartida?.PkidPaaaspartida"
                                       @ref="bienTable"
                                       Title="@BienesTableTitle"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && SelectedPartida != null && !SelectedPaaa.BloqueadoPorEstudioMercado)"
+                                      ShowAddButton="false"
                                       PageSize="5"
                                       ServerDataFunc="LoadBienesServerData"
                                       SearchString="@bienSearchString"
@@ -506,6 +516,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<PaaaResponse> table = null!;
     private GenericDataGrid<PaaaspartidumResponse>? partidaTable;
     private GenericDataGrid<PaaasdetalleResponse>? bienTable;
@@ -605,6 +616,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadEmpresaId();
+        contextReady = true;
     }
 
     private void OnAnioChanged(int? anioId)
@@ -803,15 +815,16 @@
         await ReloadBienes();
     }
 
-    private async Task SelectPaaa(PaaaResponse item)
+    private Task SelectPaaa(PaaaResponse item)
     {
         partidaSearchString = string.Empty;
         bienSearchString = string.Empty;
         SelectedPartida = null;
         bienes = null;
         SelectedPaaa = item;
-        await LoadPartidas();
+        partidas = null;
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task RefreshSelectedPaaa()
@@ -819,7 +832,9 @@
         if (SelectedPaaa == null) return;
         try
         {
-            var response = await Service.GetByIdAsync(SelectedPaaa.PkidPaaas);
+            var selectedId = SelectedPaaa.PkidPaaas;
+            var response = await Service.GetByIdAsync(selectedId);
+            if (SelectedPaaa?.PkidPaaas != selectedId) return;
             if (response?.Success == true && response.Data != null)
                 SelectedPaaa = response.Data;
         }
@@ -836,24 +851,27 @@
 
     private async Task<TableData<PaaaspartidumResponse>> LoadPartidasServerData(TableState state, CancellationToken cancellationToken)
     {
+        var programaId = SelectedPaaa?.PkidPaaas;
         var source = await GetPartidasAsync(cancellationToken);
+        if (cancellationToken.IsCancellationRequested || SelectedPaaa?.PkidPaaas != programaId) return new() { Items = [], TotalItems = 0 };
         partidas = source;
-
-        if (SelectedPartida != null && !source.Any(x => x.PkidPaaaspartida == SelectedPartida.PkidPaaaspartida))
+        var page = ToTableData(SortPartidas(FilterPartidas(source), state.SortLabel, state.SortDirection), state);
+        var next = page.Items.FirstOrDefault(x => x.PkidPaaaspartida == SelectedPartida?.PkidPaaaspartida) ?? page.Items.FirstOrDefault();
+        if (next?.PkidPaaaspartida != SelectedPartida?.PkidPaaaspartida)
         {
-            SelectedPartida = null;
-            bienes = new List<PaaasdetalleResponse>();
+            SelectedPartida = next;
+            bienes = null;
+            bienSearchString = string.Empty;
+            await InvokeAsync(StateHasChanged);
         }
-
-        var query = FilterPartidas(source);
-        query = SortPartidas(query, state.SortLabel, state.SortDirection);
-
-        return ToTableData(query, state);
+        return page;
     }
 
     private async Task<TableData<PaaasdetalleResponse>> LoadBienesServerData(TableState state, CancellationToken cancellationToken)
     {
+        var partidaId = SelectedPartida?.PkidPaaaspartida;
         var source = await GetBienesAsync(cancellationToken);
+        if (cancellationToken.IsCancellationRequested || SelectedPartida?.PkidPaaaspartida != partidaId) return new() { Items = [], TotalItems = 0 };
         bienes = source;
 
         var query = FilterBienes(source);
@@ -881,13 +899,18 @@
         StateHasChanged();
     }
 
-    private async Task SelectPartida(PaaaspartidumResponse partida)
+    private Task SelectPartida(PaaaspartidumResponse partida)
     {
+        if (IsSelectedPartida(partida)) return Task.CompletedTask;
         SelectedPartida = partida;
         bienSearchString = string.Empty;
-        await ReloadBienes();
+        bienes = null;
         StateHasChanged();
+        return Task.CompletedTask;
     }
+
+    private string PartidaRowClass(PaaaspartidumResponse partida, int _) =>
+        IsSelectedPartida(partida) ? "operation-selectable-row is-selected" : "operation-selectable-row";
 
     private async Task LoadBienes()
     {

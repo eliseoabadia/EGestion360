@@ -1199,11 +1199,11 @@
     .sidebar-resize-handle {
         position: relative;
         z-index: 5;
-        width: 12px;
-        flex: 0 0 12px;
+        width: 6px;
+        flex: 0 0 6px;
         align-self: stretch;
-        margin-left: -6px;
-        margin-right: -6px;
+        margin-left: -3px;
+        margin-right: -3px;
         padding: 0;
         border: 0;
         background: transparent;
@@ -1219,6 +1219,7 @@
         border-radius: 999px;
         transform: translateX(-50%);
         transition: background-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+        pointer-events: none;
     }
 
     .sidebar-resize-handle::before {

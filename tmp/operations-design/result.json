@@ -1,0 +1,372 @@
+{
+  "checks": [
+    {
+      "screen": "cotizacion",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/cotizaciondetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidCotizacionOrco\":201}}"
+        }
+      ]
+    },
+    {
+      "screen": "orden",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/ordencompradetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":5,\"filtro\":\"\",\"sortLabel\":\"TipoBienCodigoClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidOrdenCompraOrco\":101}}"
+        },
+        {
+          "path": "/api/ordencomprapartida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":5,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidOrdenCompraOrco\":101}}"
+        }
+      ]
+    },
+    {
+      "screen": "suficiencia",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/solicitudsuficienciadetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSuficienciaPres\":401}}"
+        }
+      ]
+    },
+    {
+      "screen": "programa",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/paaa/301/partidas",
+          "method": "GET",
+          "body": null
+        },
+        {
+          "path": "/api/paaa/partida/1/detalles",
+          "method": "GET",
+          "body": null
+        },
+        {
+          "path": "/api/paaa/partida/2/detalles",
+          "method": "GET",
+          "body": null
+        }
+      ]
+    },
+    {
+      "screen": "solicitud-salida",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":701}}"
+        },
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":702}}"
+        }
+      ]
+    },
+    {
+      "screen": "suministro",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":701}}"
+        },
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":702}}"
+        }
+      ]
+    },
+    {
+      "screen": "resguardo",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":8,\"filtro\":\"\",\"sortLabel\":\"FechaAsignacion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidResguardoAlma\":501}}"
+        }
+      ]
+    },
+    {
+      "screen": "inventario",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/inventariodetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":8,\"filtro\":\"\",\"sortLabel\":\"BienClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidInventarioAlma\":601}}"
+        }
+      ]
+    },
+    {
+      "screen": "autorizacion",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/autorizacionsuficienciadetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidAutorizacionSuficienciaPres\":801}}"
+        }
+      ]
+    },
+    {
+      "screen": "compromiso",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "contrato",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "baja",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "cotizacion",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/cotizaciondetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidCotizacionOrco\":201}}"
+        }
+      ]
+    },
+    {
+      "screen": "orden",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/ordencompradetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":5,\"filtro\":\"\",\"sortLabel\":\"TipoBienCodigoClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidOrdenCompraOrco\":101}}"
+        },
+        {
+          "path": "/api/ordencomprapartida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":5,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidOrdenCompraOrco\":101}}"
+        }
+      ]
+    },
+    {
+      "screen": "suficiencia",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/solicitudsuficienciadetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSuficienciaPres\":401}}"
+        }
+      ]
+    },
+    {
+      "screen": "programa",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/paaa/301/partidas",
+          "method": "GET",
+          "body": null
+        },
+        {
+          "path": "/api/paaa/partida/1/detalles",
+          "method": "GET",
+          "body": null
+        },
+        {
+          "path": "/api/paaa/partida/2/detalles",
+          "method": "GET",
+          "body": null
+        }
+      ]
+    },
+    {
+      "screen": "solicitud-salida",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":701}}"
+        },
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":702}}"
+        }
+      ]
+    },
+    {
+      "screen": "suministro",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":701}}"
+        },
+        {
+          "path": "/api/detallesolicitudsalida/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"TipoBienDescripcion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidSolicitudSalidaAlma\":702}}"
+        }
+      ]
+    },
+    {
+      "screen": "resguardo",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":8,\"filtro\":\"\",\"sortLabel\":\"FechaAsignacion\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidResguardoAlma\":501}}"
+        }
+      ]
+    },
+    {
+      "screen": "inventario",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/inventariodetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":8,\"filtro\":\"\",\"sortLabel\":\"BienClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidInventarioAlma\":601}}"
+        }
+      ]
+    },
+    {
+      "screen": "autorizacion",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/autorizacionsuficienciadetalle/getallpaginado",
+          "method": "POST",
+          "body": "{\"page\":1,\"pageSize\":10,\"filtro\":\"\",\"sortLabel\":\"PartidaClave\",\"sortDirection\":\"Ascending\",\"searchString\":\"\",\"additionalFilters\":{\"FkidAutorizacionSuficienciaPres\":801}}"
+        }
+      ]
+    },
+    {
+      "screen": "compromiso",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "contrato",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "baja",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": []
+    },
+    {
+      "screen": "cotizacion-read-only",
+      "mutationsHidden": true,
+      "shortcutHidden": true
+    },
+    {
+      "screen": "cotizacion-empty",
+      "createActionVisible": true
+    },
+    {
+      "screen": "stock-delayed",
+      "staleResponseIgnored": true
+    },
+    {
+      "screen": "stock-retry",
+      "recovered": true
+    }
+  ],
+  "errors": []
+}

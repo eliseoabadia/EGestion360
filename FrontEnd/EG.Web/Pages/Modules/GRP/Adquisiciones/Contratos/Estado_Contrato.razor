@@ -13,17 +13,29 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
+    <MudContainer MaxWidth="MaxWidth.False" Class="operation-page contratos-dashboard">
         <PageHeader Title="Registro de Compromiso"
                     Subtitle="Contrato presupuestal desde suficiencia autorizada y generacion de poliza"
                     Icon="@Icons.Material.Filled.FactCheck"
-                    CanCreate="@CanCreate"
+                    CanCreate="@CanCreate" ShowCreateButton="false"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
+<OperationActionPanel Title="Del presupuesto al compromiso" Description="Revisa proveedor, importe y estatus. Las acciones disponibles dependen del estado del contrato." Icon="@Icons.Material.Filled.FactCheck">
+                <Actions>
+                @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateItem">Nuevo compromiso</MudButton> }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>El registro de compromiso utiliza la suficiencia autorizada del proceso.</li>
+                <li>Revisa los datos y documentos antes de autorizar el contrato; el flujo conserva su confirmación.</li>
+                <li>La liberación de remanente y cierre sólo se habilita cuando las reglas del contrato lo permiten.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
         <MudGrid Spacing="2" Class="mb-2">
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card metric-primary" Elevation="0">
@@ -39,7 +51,7 @@
             </MudItem>
             <MudItem xs="12" md="3">
                 <MudPaper Class="metric-card" Elevation="0">
-                    <span>Bloqueados</span>
+                    <span>Bloqueados en página</span>
                     <strong>@Elements.Count(x => x.EstaAutorizado).ToString("N0", NumberCulture)</strong>
                 </MudPaper>
             </MudItem>
@@ -52,6 +64,8 @@
         </MudGrid>
 
         <GenericDataGrid TItem="EstadoContratoResponse"
+                                      EmptyTitle="Sin compromisos registrados"
+                                      EmptyMessage="Revisa empresa, ejercicio y búsqueda. Nuevo compromiso permite partir de una suficiencia autorizada."
                       @ref="table"
                       Title="Estados de contrato"
                       FillAvailableHeight="false"
@@ -74,14 +88,12 @@
                         RegistroTitulo="@TextOrDash(cell.Item.NumeroContrato)"
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.ProveedorNombre)} | {TextOrDash(cell.Item.Descripcion)}")"
                         CanManage="@(!IsLocked(cell.Item))" />
-                        <MudTooltip Text="Autorizar contrato">
-                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Verified"
                         Visible="@CanAuthorize"
                         Disabled="@(!CanAuthorizeItem(cell.Item))"
                         Color="Color.Success"
                         Size="Size.Small"
-                        OnClick="@(() => Autorizar(cell.Item))" />
-                        </MudTooltip>
+                        OnClick="@(() => Autorizar(cell.Item))" >Autorizar contrato</MudButton>
                         <MudTooltip Text="Liberar remanente y cerrar">
                         <MudIconButton Icon="@Icons.Material.Filled.PriceCheck"
                         Visible="@CanAuthorize"
@@ -147,17 +159,10 @@
     </MudContainer>
 </AccessVerification>
 
-<style>
-    .contratos-dashboard { min-height: 100%; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow: visible; }
-    .metric-card { min-height: 76px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; background: #ffffff; }
-    .metric-card span { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; }
-    .metric-card strong { color: #111827; font-size: 1.15rem; line-height: 1.4; overflow-wrap: anywhere; }
-    .metric-primary { border-left: 4px solid #7c3aed; }
-    .main-cell { font-weight: 700; color: #111827; }
-    .main-cell + span, .mud-table-cell span { color: #6b7280; font-size: .78rem; }
-</style>
+
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<EstadoContratoResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private const string CurrencySymbol = "$";
@@ -175,6 +180,7 @@
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override async Task CreateItem()

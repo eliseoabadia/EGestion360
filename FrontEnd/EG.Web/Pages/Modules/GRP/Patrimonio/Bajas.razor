@@ -16,18 +16,30 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<EstatusBajaResponse> EstatusBajaService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column bajas-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
-        <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+    <MudContainer Class="operation-page px-3 d-flex flex-column bajas-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+        <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
             <PageHeader Title="Bajas"
                         Subtitle="Bajas patrimoniales con soporte documental y trazabilidad"
                         Icon="@Icons.Material.Filled.RemoveCircleOutline"
-                        CanCreate="@CanCreate"
+                        CanCreate="@CanCreate" ShowCreateButton="false"
                         OnCreate="CreateItem"
                         OnRefresh="() => table.ReloadData()" />
 
+<OperationActionPanel Title="Revisa y aplica la baja" Description="Consulta el bien, motivo y estatus antes de aplicar la baja patrimonial." Icon="@Icons.Material.Filled.RemoveCircleOutline">
+                <Actions>
+                @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateItem">Nueva solicitud de baja</MudButton> }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>Crea la solicitud e identifica el bien y el motivo.</li>
+                <li>Agrega el soporte documental desde el botón del registro.</li>
+                <li>Aplicar baja solicita confirmación y requiere permiso. El estado final bloquea los cambios del registro.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
             <div class="summary-strip">
                 <div>
                     <span class="summary-label">Valor visible</span>
@@ -38,7 +50,7 @@
                     <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
                 </div>
                 <div>
-                    <span class="summary-label">En proceso</span>
+                    <span class="summary-label">En proceso en página</span>
                     <strong>@Elements.Count(x => !IsFinal(x)).ToString("N0", NumberCulture)</strong>
                 </div>
                 <div>
@@ -51,8 +63,10 @@
                 Año presupuestal: @(AnioStateService.AnioClave?.ToString() ?? "No seleccionado")
             </MudChip>
 
-            <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                <GenericDataGrid TItem="BajaResponse"
+            <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                <GenericDataGrid FillAvailableHeight="false" TItem="BajaResponse"
+                                      EmptyTitle="Sin solicitudes de baja"
+                                      EmptyMessage="Revisa empresa, ejercicio y búsqueda. Usa Nueva solicitud de baja para registrar el bien y motivo."
                               @ref="table"
                               Title="Solicitudes de baja"
                               SearchPlaceholder="Buscar por folio, bien, serie, factura, tipo o motivo..."
@@ -72,14 +86,12 @@
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@TextOrDash(cell.Item.Folio)"
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.BienClave)} | {TextOrDash(cell.Item.BienDescripcion)}")" />
-                        <MudTooltip Text="Aplicar baja">
-                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CheckCircle"
                         Visible="@CanAuthorize"
                         Disabled="@IsFinal(cell.Item)"
                         Color="Color.Success"
                         Size="Size.Small"
-                        OnClick="@(() => AplicarBaja(cell.Item))" />
-                        </MudTooltip>
+                        OnClick="@(() => AplicarBaja(cell.Item))" >Aplicar baja</MudButton>
                         @if (cell.Item.FkidPolizaConta is > 0)
                         {
                             <ReportOpenButton ReportName="Patrimonio.Bajas.Poliza"
@@ -203,7 +215,7 @@
         line-height: 1.15;
     }
 
-    .bajas-page td span {
+    .bajas-page td > span:not([class]) {
         display: block;
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -223,6 +235,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<BajaResponse> table = null!;
 
     protected override string ModuleName => "Patrimonio";
@@ -231,7 +244,7 @@
     protected override Type EditDialogType => typeof(BajaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<BajaResponse>);
 
-    private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
+    private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     protected override string GetDefaultSortLabel() => "FechaSolicitud";
 
@@ -242,6 +255,7 @@
         await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<BajaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -570,7 +584,7 @@
         string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string Money(decimal value) =>
-        value.ToString("C2", NumberCulture);
+        value.ToString("$0.00", NumberCulture);
 
     private static string DateOrDash(DateTime? value) =>
         value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "-";

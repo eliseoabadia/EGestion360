@@ -21,17 +21,17 @@
 @inject IGenericCrudService<OrdenCompraDetalleResponse> DetalleService
 @inject IGenericCrudService<OrdenCompraPartidaResponse> PartidaService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column orden-compra-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page px-3 d-flex flex-column orden-compra-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedOrden == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Ordenes de Compra"
                             Subtitle="Captura, revisa y autoriza ordenes de compra por proveedor"
                             Icon="@Icons.Material.Filled.Article"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nueva orden"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
@@ -49,13 +49,15 @@
                         <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
                     </div>
                     <div>
-                        <span class="summary-label">Autorizadas</span>
+                        <span class="summary-label">Autorizadas en esta página</span>
                         <strong>@Elements.Count(x => x.EstaAutorizada).ToString("N0", NumberCulture)</strong>
                     </div>
                 </div>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="OrdenCompraResponse"
+                                      EmptyTitle="Sin órdenes de compra"
+                                      EmptyMessage="Verifica empresa, ejercicio y búsqueda. Usa Nueva orden para iniciar la captura."
                                   @ref="table"
                                   Title="Lista de ordenes de compra"
                                   FillAvailableHeight="false"
@@ -71,12 +73,7 @@
             <Columns>
                 <TemplateColumn T="OrdenCompraResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectOrden(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectOrden(cell.Item))">Abrir orden</MudButton>
                         <DocumentSupportButton Modulo="Adquisiciones"
                         SubModulo="OrdenCompra"
                         Controlador="OrdenCompra"
@@ -161,8 +158,8 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+            <div Class="d-flex flex-column" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background: transparent; flex-shrink: 0;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
                                    Size="Size.Medium"
@@ -176,15 +173,7 @@
                     <MudChip T="string" Size="Size.Small" Style="@GetStatusStyle(SelectedOrden)">
                         @TextOrDash(SelectedOrden.EstatusDescripcion)
                     </MudChip>
-                    <MudTooltip Text="Autorizar orden">
-                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanAuthorize"
-                                       Disabled="@(!CanAuthorizeItem(SelectedOrden))"
-                                       OnClick="@(() => AutorizarOrden(SelectedOrden))"
-                                       Class="ml-2" />
-                    </MudTooltip>
+
                     <MudTooltip Text="Editar orden">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
@@ -194,25 +183,29 @@
                                        OnClick="@(() => EditItem(SelectedOrden.PkidOrdenCompra))"
                                        Class="ml-1" />
                     </MudTooltip>
-                    <MudTooltip Text="Agregar partida">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       Disabled="@IsSelectedLocked"
-                                       OnClick="AddPartida"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="Agregar detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.AddShoppingCart"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       Disabled="@IsSelectedLocked"
-                                       OnClick="AddDetalle"
-                                       Class="ml-1" />
-                    </MudTooltip>
+
+
                 </MudPaper>
+
+
+                <OperationActionPanel Title="Revisa y completa la orden" Description="@(IsSelectedLocked ? "Orden bloqueada para cambios: consulta los bienes y partidas." : "Bienes, importes y partidas se cargan juntos. Revisa el contenido antes de autorizar.")" Icon="@Icons.Material.Filled.ShoppingCart">
+                <Actions>
+                @if (CanCreate) {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddShoppingCart" Disabled="@IsSelectedLocked" OnClick="AddDetalle">Agregar bien</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlaylistAdd" Disabled="@IsSelectedLocked" OnClick="AddPartida">Agregar partida</MudButton>
+                }
+                @if (CanAuthorize) { <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Disabled="@(!CanAuthorizeItem(SelectedOrden))" OnClick="@(() => AutorizarOrden(SelectedOrden))">Autorizar orden</MudButton> }
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" OnClick="ReloadData">Actualizar</MudButton>
+                @if (SelectedOrden.EstaAutorizada) { <ModuleShortcut Module="Almacen" SubModule="Recepcion_Pedidos" Href="/Almacen/Recepcion_Pedidos" Text="Recepción de pedidos" Icon="@Icons.Material.Filled.LocalShipping" /> }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>Comprueba proveedor, moneda, fecha e importe; los bienes y las partidas aparecen debajo.</li>
+                <li>Agrega o corrige bienes y partidas mientras la orden permita cambios. La autorización conserva su confirmación y validaciones.</li>
+                <li>Después de autorizar, la recepción se realiza en Almacén › Recepción de pedidos. Los permisos de ese módulo siguen aplicando.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
 
                 <MudCard Elevation="1" Style="flex-shrink: 0;">
                     <MudCardContent Style="padding: 8px 12px;">
@@ -262,15 +255,17 @@
                     </MudCardContent>
                 </MudCard>
 
-                <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
+                <MudGrid Spacing="2" Class="operation-related-grid" Style="overflow: visible; min-height: 0;">
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
                         <GenericDataGrid TItem="OrdenCompraDetalleResponse"
+                                      EmptyTitle="Sin bienes en la orden"
+                                      EmptyMessage="Agrega los bienes antes de autorizar, o revisa la búsqueda del detalle." @key="SelectedOrden.PkidOrdenCompra"
                                       @ref="detalleTable"
                                       Title="Detalles"
                                       FillAvailableHeight="false"
                                       SearchPlaceholder="Buscar bien o servicio..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                                      ShowAddButton="false"
                                       PageSize="5"
                                       ServerDataFunc="LoadDetallesServerData"
                                       SearchString="@detalleSearchString"
@@ -330,12 +325,14 @@
 
                     <MudItem xs="12" lg="5" Class="d-flex flex-column" Style="min-height: 0;">
                         <GenericDataGrid TItem="OrdenCompraPartidaResponse"
+                                      EmptyTitle="Sin partidas en la orden"
+                                      EmptyMessage="Agrega la distribución presupuestal mientras la orden permita cambios." @key="SelectedOrden.PkidOrdenCompra"
                                       @ref="partidaTable"
                                       Title="Partidas presupuestales"
                                       FillAvailableHeight="false"
                                       SearchPlaceholder="Buscar partida..."
                                       ShowExportButton="false"
-                                      ShowAddButton="@(CanCreate && !IsSelectedLocked)"
+                                      ShowAddButton="false"
                                       PageSize="5"
                                       ServerDataFunc="LoadPartidasServerData"
                                       SearchString="@partidaSearchString"
@@ -419,7 +416,7 @@
         line-height: 1.15;
     }
 
-    .orden-compra-page td span,
+    .orden-compra-page td > span:not([class]),
     .orden-compra-page .selected-title span {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -442,6 +439,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<OrdenCompraResponse> table = null!;
     private GenericDataGrid<OrdenCompraDetalleResponse>? detalleTable;
     private GenericDataGrid<OrdenCompraPartidaResponse>? partidaTable;
@@ -470,6 +468,7 @@
         await LoadCurrencyAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<OrdenCompraResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -719,7 +718,9 @@
             return;
         }
 
-        var response = await Service.GetByIdAsync(SelectedOrden.PkidOrdenCompra);
+        var selectedId = SelectedOrden.PkidOrdenCompra;
+        var response = await Service.GetByIdAsync(selectedId);
+        if (SelectedOrden?.PkidOrdenCompra != selectedId) return;
         if (response?.Success == true && response.Data != null)
         {
             SelectedOrden = response.Data;

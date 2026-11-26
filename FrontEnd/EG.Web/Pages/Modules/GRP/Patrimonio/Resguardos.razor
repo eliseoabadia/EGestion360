@@ -16,17 +16,17 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page px-3 d-flex flex-column resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedResguardo == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Resguardos"
                             Subtitle="Administracion de responsables, areas y bienes bajo custodia"
                             Icon="@Icons.Material.Filled.AssignmentInd"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nuevo resguardo"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
@@ -49,8 +49,10 @@
                     </div>
                 </div>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="ResguardoResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoResponse"
+                                      EmptyTitle="Sin resguardos"
+                                      EmptyMessage="Revisa empresa, ejercicio y búsqueda. Usa Nuevo resguardo para asignar bienes a un responsable."
                                   @ref="table"
                                   Title="Listado de resguardos"
                                   SearchPlaceholder="Buscar por folio, responsable o area..."
@@ -63,12 +65,7 @@
             <Columns>
                 <TemplateColumn T="ResguardoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Ver bienes">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
-                        Color="Color.Info"
-                        Size="Size.Small"
-                        OnClick="@(() => SelectResguardo(cell.Item))" />
-                        </MudTooltip>
+                        <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectResguardo(cell.Item))">Abrir resguardo</MudButton>
                         <DocumentSupportButton Modulo="Patrimonio"
                         SubModulo="Resguardos"
                         Controlador="Resguardo"
@@ -145,8 +142,8 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+            <div Class="d-flex flex-column" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background: transparent; flex-shrink: 0;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
                                    Size="Size.Medium"
@@ -160,17 +157,6 @@
                     <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
                         @(SelectedResguardo.TotalBienes ?? 0) bienes
                     </MudChip>
-                    @if (CanUpdate)
-                    {
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Success"
-                                   Size="Size.Small"
-                                   StartIcon="@Icons.Material.Filled.AddCircle"
-                                   OnClick="OpenAgregarBienDialog"
-                                   Class="ml-2">
-                            Agregar bien
-                        </MudButton>
-                    }
                     <MudTooltip Text="Editar resguardo">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
@@ -188,6 +174,18 @@
                                            RegistroDescripcion="@($"{TextOrDash(SelectedResguardo.PersonaNombre)} | {TextOrDash(SelectedResguardo.AreaNombre)}")" />
                 </MudPaper>
 
+<OperationActionPanel Title="Consulta y captura de resguardo" Description="Los bienes asignados y el responsable se muestran al abrir el resguardo." Icon="@Icons.Material.Filled.Inventory2">
+                <Actions>
+                @if (CanUpdate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddCircle" OnClick="OpenAgregarBienDialog">Agregar bien</MudButton> }
+                </Actions>
+                <HelpContent>
+                <ol>
+                <li>Comprueba la persona responsable y el área antes de asignar bienes.</li>
+                <li>Agregar bien abre la selección con el resguardo ya indicado.</li>
+                <li>La tabla permite consultar y retirar asignaciones con los permisos existentes.</li>
+                </ol>
+                </HelpContent>
+                </OperationActionPanel>
                 <MudCard Elevation="1" Style="flex-shrink: 0;">
                     <MudCardContent Style="padding: 10px 12px;">
                         <MudGrid Spacing="1">
@@ -219,12 +217,14 @@
                     </MudCardContent>
                 </MudCard>
 
-                <GenericDataGrid TItem="ResguardoDetalleResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoDetalleResponse"
+                                      EmptyTitle="Sin bienes resguardados"
+                                      EmptyMessage="Usa Agregar bien para asignar un bien al responsable, según tus permisos." @key="SelectedResguardo.PkidResguardo"
                               @ref="detalleTable"
                               Title="Bienes bajo resguardo"
                               SearchPlaceholder="Buscar bien, clave o serie..."
                               ShowExportButton="false"
-                              ShowAddButton="@CanUpdate"
+                              ShowAddButton="false"
                               AddButtonTooltip="Agregar bien"
                               AddButtonIcon="@Icons.Material.Filled.AddCircle"
                               PageSize="8"
@@ -309,7 +309,7 @@
         line-height: 1.15;
     }
 
-    .resguardos-page td span,
+    .resguardos-page td > span:not([class]),
     .resguardos-page .selected-title span {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -332,6 +332,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<ResguardoResponse> table = null!;
     private GenericDataGrid<ResguardoDetalleResponse>? detalleTable;
     private ResguardoResponse? SelectedResguardo;
@@ -354,6 +355,7 @@
         await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<ResguardoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -566,7 +568,9 @@
             return;
         }
 
-        var response = await Service.GetByIdAsync(SelectedResguardo.PkidResguardo);
+        var selectedId = SelectedResguardo.PkidResguardo;
+        var response = await Service.GetByIdAsync(selectedId);
+        if (SelectedResguardo?.PkidResguardo != selectedId) return;
         if (response?.Success == true && response.Data != null)
         {
             SelectedResguardo = response.Data;

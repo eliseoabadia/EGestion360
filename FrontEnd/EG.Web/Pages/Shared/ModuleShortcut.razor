@@ -1,0 +1,16 @@
+@using EG.Web.Auth
+@using MudBlazor
+@inject AuthenticationProviderJWT Auth
+
+@if (Auth.HasPermission(Module, SubModule, "view") || Auth.HasPermission(Module, SubModule, "view-menu"))
+{
+    <MudButton Href="@Href" Color="Color.Primary" Variant="Variant.Outlined" StartIcon="@Icon">@Text</MudButton>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Module { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string SubModule { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.ArrowForward;
+}
