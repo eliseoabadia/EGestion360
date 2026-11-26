@@ -1,14 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Globalization;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 
 namespace EG.Web.Services
 {
-    public class AuthService(AuthenticationStateProvider authenticationStateProvider, IJSRuntime js)
+    public class AuthService(AuthenticationStateProvider authenticationStateProvider)
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider = authenticationStateProvider;
-        private readonly IJSRuntime _js = js;
 
         public async Task<bool> IsAuthenticatedAsync()
         {
@@ -40,48 +38,19 @@ namespace EG.Web.Services
 
         public async Task<int> GetUserIdAsync()
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity?.IsAuthenticated != true) return 0;
 
-            // Buscar múltiples claves comunes en JWT para el id de usuario
-            var possibleKeys = new[] { "UserId", "userId", ClaimTypes.NameIdentifier, "sub", "nameid", "id", "pkIdUsuario", "PkIdUsuario" };
-
-            var claim = user.Claims.FirstOrDefault(c => possibleKeys.Any(k => string.Equals(c.Type, k, StringComparison.OrdinalIgnoreCase)));
-            if (claim != null)
+            string[] keys = [ClaimTypes.NameIdentifier, "sub", "nameid", "UserId", "id", "pkIdUsuario"];
+            foreach (var key in keys)
             {
-                // Intentos de parseo directo
-                if (int.TryParse(claim.Value, out int userIdInt))
-                {
-                    return userIdInt;
-                }
-
-                if (long.TryParse(claim.Value, out long userIdLong) && userIdLong <= int.MaxValue)
-                {
-                    return (int)userIdLong;
-                }
-
-                // Extraer primer bloque de dígitos si la claim contiene números mezclados
-                var m = Regex.Match(claim.Value ?? string.Empty, @"\d+");
-                if (m.Success && int.TryParse(m.Value, out int numeric))
-                {
-                    return numeric;
-                }
+                var claim = user.Claims.FirstOrDefault(item => string.Equals(item.Type, key, StringComparison.OrdinalIgnoreCase));
+                if (claim == null) continue;
+                return int.TryParse(claim.Value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0
+                    ? id
+                    : 0;
             }
-
-            // Fallback: intentar leer userId desde localStorage (si está guardado por tu login flow)
-            try
-            {
-                var stored = await _js.InvokeAsync<string>("localStorage.getItem", "userId");
-                if (!string.IsNullOrEmpty(stored) && int.TryParse(stored, out int storedId))
-                {
-                    return storedId;
-                }
-            }
-            catch
-            {
-                // No hacemos nada: devuelve 0 al final
-            }
-
             return 0;
         }
 

@@ -146,12 +146,19 @@
 .eg-generic-data-grid ::deep .mud-table-head .mud-table-cell {
     padding: 11px 14px;
     border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-primary) 20%, var(--mud-palette-lines-default));
-    color: var(--mud-palette-text-secondary);
+    color: var(--mud-palette-text-primary);
     font-size: .68rem;
     font-weight: 800;
     letter-spacing: .055em;
     text-transform: uppercase;
     white-space: nowrap;
+}
+
+.eg-generic-data-grid ::deep .mud-table-head .column-header,
+.eg-generic-data-grid ::deep .mud-table-head .column-title,
+.eg-generic-data-grid ::deep .mud-table-head .sortable-column-header,
+.eg-generic-data-grid ::deep .mud-table-head .mud-table-sort-label {
+    color: var(--mud-palette-text-primary) !important;
 }
 
 .eg-generic-data-grid ::deep .mud-table-body .mud-table-cell {

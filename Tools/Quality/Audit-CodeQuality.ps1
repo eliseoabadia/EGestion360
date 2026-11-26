@@ -139,8 +139,12 @@ try {
         $violations | Format-Table -AutoSize | Out-Host
     }
 
-    if ($FailOnViolations -and $violations.Count -gt 0) {
-        exit 1
+    if ($FailOnViolations) {
+        if ($violations.Count -gt 0) {
+            exit 1
+        }
+
+        exit 0
     }
 }
 finally {

@@ -44,6 +44,7 @@ namespace EG.Application.Services.Adquisicion
         protected virtual int CreateAction => 1;
         protected virtual int UpdateAction => 2;
         protected virtual int DeleteAction => 3;
+        protected virtual Task ValidateUpdateAsync(int id, TResponse response, CancellationToken cancellationToken) => Task.CompletedTask;
 
         public override async Task<PagedResult<TResponse>> CreateAsync(TResponse response, int usuarioActual)
         {
@@ -116,6 +117,7 @@ namespace EG.Application.Services.Adquisicion
                 {
                     if (action == UpdateAction && id.HasValue)
                     {
+                        await ValidateUpdateAsync(id.Value, response, cancellationToken);
                         await EnsureCurrentRowVersionAsync(id.Value, response, cancellationToken);
                     }
 

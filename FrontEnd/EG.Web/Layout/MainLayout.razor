@@ -693,19 +693,24 @@
 
     private async Task RefreshHeaderCompanyNameAsync()
     {
+        var requestedCompanyId = SucursalStateService.EmpresaId;
         var fallback = FirstText(SucursalStateService.EmpresaNombreCorto, SucursalStateService.EmpresaNombre, GetHeaderCompanyName());
         _headerCompanyName = fallback;
 
-        if (SucursalStateService.EmpresaId is not > 0)
+        if (requestedCompanyId is not > 0)
         {
             return;
         }
 
         try
         {
-            var response = await EmpresaService.GetByIdAsync(SucursalStateService.EmpresaId.Value);
+            var response = await EmpresaService.GetByIdAsync(requestedCompanyId.Value);
+            if (SucursalStateService.EmpresaId != requestedCompanyId || response?.Success != true)
+            {
+                return;
+            }
             var empresa = response?.Data ?? response?.Items?.FirstOrDefault();
-            if (empresa == null)
+            if (empresa == null || empresa.PkidEmpresa != requestedCompanyId)
             {
                 return;
             }
@@ -717,7 +722,10 @@
         }
         catch
         {
-            _headerCompanyName = fallback;
+            if (SucursalStateService.EmpresaId == requestedCompanyId)
+            {
+                _headerCompanyName = fallback;
+            }
         }
     }
 

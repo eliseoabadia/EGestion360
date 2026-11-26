@@ -53,7 +53,7 @@
                 </MudItem>
                 <MudItem xs="12">
                     <CrudFormSection Title="Distribución mensual">
-                        <BudgetMonthlyGrid GetAmount="index => GetMonth(index)" OnAmountChanged="OnMonthChanged" Disabled="@saving" />
+                        <BudgetMonthlyGrid GetAmount="index => GetMonth(index)" OnAmountChanged="OnMonthChanged" Disabled="@saving" AmountValidation="ValidateIncomeAmount" />
                     </CrudFormSection>
                 </MudItem>
                 <MudItem xs="12">

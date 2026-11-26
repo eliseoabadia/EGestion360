@@ -1,6 +1,7 @@
 ﻿@typeparam TItem
 @using System.Globalization
 @using MudBlazor
+@using EG.Web.Models.Forms
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
@@ -365,6 +366,7 @@
     private readonly string tableElementId = $"eg-generic-table-{Guid.NewGuid():N}";
     private readonly HashSet<int> hiddenAutoColumnIndexes = new();
     private readonly HashSet<int> hiddenControlColumnIndexes = new();
+    private readonly LatestGridRequest<TableData<TItem>> loadRequests = new();
     private List<AutoColumnOption> autoColumnOptions = new();
     private string autoColumnSignature = string.Empty;
     private bool columnEnhancementsInitialized;
@@ -474,43 +476,73 @@
 
     private async Task<TableData<TItem>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
+        if (disposed)
+        {
+            return new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+        }
+
         isLoading = true;
+        var request = loadRequests.Begin();
 
         try
         {
-            if (ServerDataFunc != null)
+            if (ServerDataFunc is null)
             {
-                var tableData = await ServerDataFunc(state, cancellationToken);
+                if (loadRequests.IsCurrent(request))
+                {
+                    lastLoadError = "La tabla no tiene configurada una fuente de datos.";
+                    Logger.LogError("GenericTable {TableId} no tiene ServerDataFunc. Title={Title}", tableElementId, Title);
+                    loadedTotalCount = 0;
+                }
+
+                return await loadRequests.ResolveAsync(request, new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 });
+            }
+
+            var tableData = await ServerDataFunc(state, cancellationToken);
+            if (loadRequests.IsCurrent(request) && !cancellationToken.IsCancellationRequested)
+            {
                 loadedTotalCount = tableData.TotalItems;
                 appliedSearchString = submittedSearchString;
                 lastLoadError = null;
-                return tableData;
             }
 
-            loadedTotalCount = 0;
-            appliedSearchString = submittedSearchString;
-            lastLoadError = "La tabla no tiene configurada una fuente de datos.";
-            Logger.LogError("GenericTable {TableId} no tiene ServerDataFunc. Title={Title}", tableElementId, Title);
-            Snackbar.Add(lastLoadError, Severity.Error);
-            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+            return await loadRequests.ResolveAsync(request, tableData);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || disposed)
         {
             Logger.LogDebug("Se cancelo una carga anterior de la tabla {TableId}.", tableElementId);
-            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+            if (disposed)
+            {
+                return new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+            }
+
+            return await loadRequests.ResolveAsync(request, new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 });
         }
         catch (Exception ex)
         {
+            if (disposed)
+            {
+                return new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 };
+            }
+
+            if (!loadRequests.IsCurrent(request))
+            {
+                return await loadRequests.ResolveAsync(request, new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 });
+            }
+
             lastLoadError = "No fue posible cargar la informacion. Revisa tu conexion e intenta nuevamente.";
             loadedTotalCount = 0;
             Logger.LogError(ex, "Error al cargar GenericTable {TableId}. Title={Title}", tableElementId, Title);
             Snackbar.Add(lastLoadError, Severity.Error);
-            return new TableData<TItem> { Items = new List<TItem>(), TotalItems = 0 };
+            return await loadRequests.ResolveAsync(request, new TableData<TItem> { Items = Array.Empty<TItem>(), TotalItems = 0 });
         }
         finally
         {
-            isLoading = false;
-            await InvokeAsync(StateHasChanged);
+            if (loadRequests.IsCurrent(request))
+            {
+                isLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -994,6 +1026,7 @@
     {
         disposed = true;
         searchDebounceVersion++;
+        loadRequests.Dispose();
     }
 
     private sealed record AutoColumnOption(int Index, string Label);

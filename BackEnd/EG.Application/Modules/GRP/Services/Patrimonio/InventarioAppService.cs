@@ -2,6 +2,7 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.Interfaces;
@@ -288,6 +289,12 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<InventarioResponse>?> NormalizeAndValidateAsync(InventarioResponse response, bool isCreate)
         {
+            var fechaInventarioValidation = RequiredDateRules.Validate(response.FechaInventario, "inventario");
+            if (fechaInventarioValidation != null)
+            {
+                return Failure<InventarioResponse>(fechaInventarioValidation, "VALIDATION");
+            }
+
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<InventarioResponse>("Debe existir una empresa seleccionada.");
@@ -346,7 +353,7 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<InventarioResponse>("El estatus final solo se asigna mediante la autorizacion del inventario.", "INVALID_TRANSITION");
             }
 
-            response.FechaInventario = response.FechaInventario == default ? DateTime.Today : response.FechaInventario.Date;
+            response.FechaInventario = response.FechaInventario.Date;
             if (response.FechaInventario.Year != calendario.Anio ||
                 response.FechaInventario.Date < calendario.FechaInicio.ToDateTime(TimeOnly.MinValue) ||
                 response.FechaInventario.Date > calendario.FechaFin.ToDateTime(TimeOnly.MinValue))

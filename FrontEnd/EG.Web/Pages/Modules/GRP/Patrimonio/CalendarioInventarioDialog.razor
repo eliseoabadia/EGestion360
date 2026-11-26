@@ -1,4 +1,5 @@
 @using EG.Common.GenericModel
+@using EG.Common.Modules
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -151,8 +152,8 @@
         if (response?.Success == true && response.Data != null)
         {
             item = response.Data;
-            _fechaInicio = item.FechaInicio == default ? DateTime.Today : item.FechaInicio;
-            _fechaFin = item.FechaFin == default ? DateTime.Today : item.FechaFin;
+            _fechaInicio = item.FechaInicio == default ? null : item.FechaInicio;
+            _fechaFin = item.FechaFin == default ? null : item.FechaFin;
             _selectedArea = item.FkidAreaSis.HasValue
                 ? new LookupItem { Id = item.FkidAreaSis.Value, Text = TextOrId(item.AreaNombre, item.FkidAreaSis.Value) }
                 : null;
@@ -186,9 +187,11 @@
             return;
         }
 
-        if (!_fechaInicio.HasValue || !_fechaFin.HasValue)
+        var startDateValidation = RequiredDateRules.Validate(_fechaInicio, "inicio");
+        var endDateValidation = RequiredDateRules.Validate(_fechaFin, "fin");
+        if (startDateValidation != null || endDateValidation != null)
         {
-            Snackbar.Add("Debe capturar fechas validas.", Severity.Warning);
+            Snackbar.Add(startDateValidation ?? endDateValidation!, Severity.Warning);
             return;
         }
 

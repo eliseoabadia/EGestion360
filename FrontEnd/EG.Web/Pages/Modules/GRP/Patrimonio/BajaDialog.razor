@@ -1,5 +1,6 @@
 @using System.Globalization
 @using EG.Common.GenericModel
+@using EG.Common.Modules
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -212,7 +213,7 @@
         if (response?.Success == true && response.Data != null)
         {
             item = response.Data;
-            _fechaSolicitud = item.FechaSolicitud == default ? DateTime.Today : item.FechaSolicitud;
+            _fechaSolicitud = item.FechaSolicitud == default ? null : item.FechaSolicitud;
             _fechaReferencia = item.FechaReferencia;
             _selectedBien = new LookupItem
             {
@@ -232,6 +233,13 @@
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var dateValidation = RequiredDateRules.Validate(_fechaSolicitud, "solicitud");
+        if (dateValidation != null)
+        {
+            Snackbar.Add(dateValidation, Severity.Warning);
             return;
         }
 
@@ -264,7 +272,7 @@
         item.FkidAnioSis = AnioId;
         item.FkidBienAlma = BienId > 0 ? BienId : _selectedBien!.Id;
         item.FkidTipoBajaAlma = _selectedTipoBaja.Id;
-        item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
+        item.FechaSolicitud = _fechaSolicitud!.Value.Date;
         item.FechaReferencia = _fechaReferencia;
         item.FkidAreaSis = AreaId;
         item.Cantidad ??= 1m;

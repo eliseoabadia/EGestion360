@@ -28,6 +28,13 @@ public partial class ResetPassword
         {
             _reset.Token = Uri.UnescapeDataString(fragment[7..]);
             _hasToken = true;
+
+            // Keep the bearer token only in component memory, not in the address bar or history.
+            var sanitizedUri = new UriBuilder(new Uri(Navigation.Uri))
+            {
+                Fragment = string.Empty
+            };
+            Navigation.NavigateTo(sanitizedUri.Uri.AbsoluteUri, replace: true);
         }
         _ready = true;
     }

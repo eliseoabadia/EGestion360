@@ -1,4 +1,5 @@
 @using EG.Common.GenericModel
+@using EG.Common.Modules
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -152,7 +153,7 @@
         if (response?.Success == true && response.Data != null)
         {
             item = response.Data;
-            _fechaInventario = item.FechaInventario == default ? DateTime.Today : item.FechaInventario;
+            _fechaInventario = item.FechaInventario == default ? null : item.FechaInventario;
             _selectedCalendario = item.FkidCalendarioInventarioAlma.HasValue
                 ? new LookupItem { Id = item.FkidCalendarioInventarioAlma.Value, Text = BuildClaveText(item.CalendarioFolio, item.AreaNombre) }
                 : null;
@@ -165,6 +166,13 @@
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var dateValidation = RequiredDateRules.Validate(_fechaInventario, "inventario");
+        if (dateValidation != null)
+        {
+            Snackbar.Add(dateValidation, Severity.Warning);
             return;
         }
 
@@ -190,7 +198,7 @@
         item.FkidEmpresaSis = empresaId.Value;
         item.FkidCalendarioInventarioAlma = _selectedCalendario.Id;
         item.FkidEstatusInventarioAlma = _selectedEstatus.Id;
-        item.FechaInventario = _fechaInventario?.Date ?? DateTime.Today;
+        item.FechaInventario = _fechaInventario!.Value.Date;
         item.Responsable ??= string.Empty;
         item.Observaciones ??= string.Empty;
 

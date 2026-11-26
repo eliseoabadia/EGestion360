@@ -137,6 +137,8 @@
                 <MudDatePicker Margin="Margin.Dense" @bind-Date="item.FechaAdq"
                                Label="Fecha adquisicion"
                                Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="La fecha de adquisición es requerida"
                                ReadOnly="@Id.HasValue" />
             </MudItem>
 

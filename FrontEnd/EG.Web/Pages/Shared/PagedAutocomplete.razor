@@ -35,9 +35,7 @@
                  Virtualize="@Virtualize"
                  MaxItems="@((int?)null)">
     <ItemTemplate Context="item">
-        <MudTooltip Text="@item.Text">
-            <span class="eg-paged-autocomplete-option">@item.Text</span>
-        </MudTooltip>
+        <span class="eg-paged-autocomplete-option" title="@item.Text">@item.Text</span>
     </ItemTemplate>
     <ProgressIndicatorTemplate>
         <MudProgressCircular Size="Size.Small"
@@ -123,7 +121,9 @@
     private ElementReference _sentinel;
     private DotNetObjectReference<PagedAutocomplete>? _dotNetObjectReference;
     private readonly List<LookupItem> _cache = new();
+    private readonly HashSet<int> _cachedIds = new();
     private List<LookupItem>? _localItems;
+    private List<LookupItem>? _filteredLocalItems;
     private string _currentFilter = string.Empty;
     private int _currentPage;
     private int _totalCount;
@@ -192,16 +192,20 @@
             }
             else
             {
-                var allItems = await GetLocalItemsAsync(ct);
-                var filtered = string.IsNullOrWhiteSpace(_currentFilter)
-                    ? allItems
-                    : allItems.Where(item => item.Text.Contains(_currentFilter, StringComparison.OrdinalIgnoreCase));
+                if (_filteredLocalItems == null)
+                {
+                    var allItems = await GetLocalItemsAsync(ct);
+                    _filteredLocalItems = string.IsNullOrWhiteSpace(_currentFilter)
+                        ? allItems
+                        : allItems
+                            .Where(item => item.Text.Contains(_currentFilter, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+                }
 
-                var filteredList = filtered.ToList();
                 result = new ComboLookupResult
                 {
-                    Items = filteredList.Skip((nextPage - 1) * PageSize).Take(PageSize),
-                    TotalCount = filteredList.Count
+                    Items = _filteredLocalItems.Skip((nextPage - 1) * PageSize).Take(PageSize),
+                    TotalCount = _filteredLocalItems.Count
                 };
             }
 
@@ -210,7 +214,7 @@
 
             foreach (var item in result.Items.Where(item => !string.IsNullOrWhiteSpace(item.Text)))
             {
-                if (_cache.All(existing => existing.Id != item.Id))
+                if (_cachedIds.Add(item.Id))
                     _cache.Add(item);
             }
 
@@ -295,6 +299,8 @@
         _totalCount = 0;
         _hasMore = true;
         _cache.Clear();
+        _cachedIds.Clear();
+        _filteredLocalItems = null;
         _observerPending = false;
         _loadErrorMessage = null;
     }

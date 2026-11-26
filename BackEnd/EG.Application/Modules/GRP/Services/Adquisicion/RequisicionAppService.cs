@@ -3,6 +3,7 @@ using EG.Application.Interfaces.Adquisicion;
 using EG.Business.Services;
 using EG.Common.Exceptions;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.Interfaces;
@@ -290,14 +291,12 @@ namespace EG.Application.Services.Adquisicion
             if (!response.Importe.HasValue || response.Importe.Value <= 0)
                 throw new ArgumentException("El importe de la requisicion debe ser mayor a cero.");
 
-            if (!response.FechaRequiereInicio.HasValue || !response.FechaRequiereFin.HasValue)
-                throw new ArgumentException("Las fechas de inicio y fin de suministro son requeridas.");
-            if (response.FechaRequisicion.Date > response.FechaRequiereInicio.Value.Date)
-                throw new ArgumentException("La fecha de requisicion no puede ser posterior al inicio de suministro.");
-            if (response.FechaRequisicion.Date > response.FechaRequiereFin.Value.Date)
-                throw new ArgumentException("La fecha de requisicion no puede ser posterior al fin de suministro.");
-            if (response.FechaRequiereInicio.Value.Date > response.FechaRequiereFin.Value.Date)
-                throw new ArgumentException("La fecha de inicio de suministro no puede ser posterior a la fecha fin.");
+            var dateValidation = RequisitionDateRules.Validate(
+                response.FechaRequisicion,
+                response.FechaRequiereInicio,
+                response.FechaRequiereFin);
+            if (dateValidation != null)
+                throw new ArgumentException(dateValidation);
 
             var areaSolicitanteValido = await _context.PersonaAreas.AsNoTracking().AnyAsync(x =>
                 x.FkidPersonaNom == response.FkidPersonaNom &&

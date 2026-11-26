@@ -3,6 +3,7 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.Interfaces;
@@ -329,6 +330,12 @@ namespace EG.Application.Services.Patrimonio
         {
             response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
 
+            var requestDateValidation = RequiredDateRules.Validate(response.FechaSolicitud, "solicitud");
+            if (requestDateValidation != null)
+            {
+                return Failure<BajaResponse>(requestDateValidation, "VALIDATION");
+            }
+
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<BajaResponse>("Debe existir una empresa seleccionada.");
@@ -372,7 +379,7 @@ namespace EG.Application.Services.Patrimonio
             }
 
             var fechaBajaValidacion = response.FechaBaja?.Date
-                ?? (response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date);
+                ?? response.FechaSolicitud.Date;
             if (response.FechaReferencia.HasValue && fechaBajaValidacion > response.FechaReferencia.Value.Date)
             {
                 return Failure<BajaResponse>("La fecha de referencia debe ser mayor o igual a la fecha de baja.");
@@ -390,7 +397,7 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<BajaResponse>("El bien debe estar contabilizado antes de iniciar su baja patrimonial.", "NOT_ACCOUNTED");
             }
 
-            var fechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date;
+            var fechaSolicitud = response.FechaSolicitud.Date;
             if (fechaSolicitud.Year != anio.Clave || (response.FechaBaja.HasValue && response.FechaBaja.Value.Year != anio.Clave))
             {
                 return Failure<BajaResponse>("Las fechas de la baja deben pertenecer al año presupuestal seleccionado.", "YEAR_MISMATCH");
@@ -421,7 +428,7 @@ namespace EG.Application.Services.Patrimonio
             response.FkidAreaSis ??= bien.FkidAreaSis;
             response.FkidEstadoBienAnteriorAlma ??= bien.FkidEstadoBienAlma;
             response.FkidEstadoBienDestinoAlma ??= tipoBaja.FkidEstadoBienDestinoAlma;
-            response.FechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date;
+            response.FechaSolicitud = response.FechaSolicitud.Date;
             response.Motivo = response.Motivo.Trim();
             response.Referencia ??= string.Empty;
             response.Destinatario ??= string.Empty;
@@ -538,7 +545,7 @@ namespace EG.Application.Services.Patrimonio
                 StoredProcedureExecutor.Param("@FKIdTipoBaja_ALMA", response.FkidTipoBajaAlma),
                 StoredProcedureExecutor.Param("@FKIdEstatusBaja_ALMA", response.FkidEstatusBajaAlma),
                 StoredProcedureExecutor.Param("@FKIdEstadoBienDestino_ALMA", response.FkidEstadoBienDestinoAlma),
-                StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud.Date),
+                StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud.Date),
                 StoredProcedureExecutor.Param("@FechaBaja", response.FechaBaja?.Date),
                 StoredProcedureExecutor.Param("@Referencia", response.Referencia),
                 StoredProcedureExecutor.Param("@FechaReferencia", response.FechaReferencia?.Date),

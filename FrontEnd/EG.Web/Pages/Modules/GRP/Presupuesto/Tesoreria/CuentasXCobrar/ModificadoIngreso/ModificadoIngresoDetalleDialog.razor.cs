@@ -1,4 +1,5 @@
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.Web.Helpers;
 using EG.Web.Models;
@@ -33,10 +34,17 @@ public partial class ModificadoIngresoDetalleDialog : IDisposable
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
     private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
     private string TipoTexto => TipoMovimientoId == 3 ? "Aumento de ingresos" : "Reducción de ingresos";
-    private decimal CapturedTotal => BudgetCaptureUi.Months.Sum(month => GetMonth(month.Index));
-    private decimal ResultadoEstimado => TipoMovimientoId == 3 ? (_selectedDisponible?.Total ?? 0m) + CapturedTotal : Math.Max(0m, (_selectedDisponible?.Total ?? 0m) - CapturedTotal);
+    private decimal? CapturedTotal => IncomeAmountRules.TrySum(
+        BudgetCaptureUi.Months.Select(month => GetMonth(month.Index)), out var total) ? total : null;
+    private decimal? ResultadoEstimado => CapturedTotal is decimal total
+        ? TipoMovimientoId == 3 ? (_selectedDisponible?.Total ?? 0m) + total : Math.Max(0m, (_selectedDisponible?.Total ?? 0m) - total)
+        : null;
     private bool CanSave => load.IsReady && availableLoad.IsReady && !saving;
-    private string Money(decimal amount) => $"{CurrencySymbol}{amount.ToString("0.00", BudgetCaptureUi.NumberCulture)}";
+    private string Money(decimal? amount) => amount.HasValue
+        ? $"{CurrencySymbol}{amount.Value.ToString("0.00", BudgetCaptureUi.NumberCulture)}"
+        : "Revisa los importes";
+
+    private static string? ValidateIncomeAmount(decimal? amount) => IncomeAmountRules.ValidateMonth(amount);
 
     protected override Task OnParametersSetAsync() => LoadAsync();
 
@@ -136,14 +144,14 @@ public partial class ModificadoIngresoDetalleDialog : IDisposable
                 Snackbar.Add("Selecciona un ingreso y espera la consulta de su disponibilidad.", Severity.Warning);
                 return;
             }
-            if (CapturedTotal <= 0)
+            if (!CapturedTotal.HasValue)
             {
-                Snackbar.Add("Solicita un importe para al menos un mes.", Severity.Warning);
+                Snackbar.Add("Revisa los importes mensuales y su total antes de guardar.", Severity.Warning);
                 return;
             }
-            if (BudgetCaptureUi.Months.Any(month => BudgetCaptureUi.ValidateAmount(GetMonth(month.Index)) != null))
+            if (CapturedTotal.Value <= 0)
             {
-                Snackbar.Add("Los importes mensuales no pueden ser negativos.", Severity.Warning);
+                Snackbar.Add("Solicita un importe para al menos un mes.", Severity.Warning);
                 return;
             }
             if (BudgetCaptureUi.Months.Any(month => month.Index < _fecha!.Value.Month && GetMonth(month.Index) > 0m))

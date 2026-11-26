@@ -59,8 +59,8 @@ namespace EG.Application.Services.PresupuestoModificado
             var companyFailure = ValidateEmpresaContext<IngreAdecuacionResponse>();
             if (companyFailure != null) return companyFailure;
 
-            response.Autorizado = false;
-            response.FkidAccionAdecuacionMasterPres ??= 1;
+            if (response.Fecha == default) return Failure<IngreAdecuacionResponse>("Captura una fecha valida.");
+            IncomeCaptureRules.PrepareCreate(response);
             response.Justificacion = response.Justificacion?.Trim();
             return await base.CreateAsync(response, usuarioActual);
         }
@@ -73,11 +73,25 @@ namespace EG.Application.Services.PresupuestoModificado
             var companyFailure = ValidateEmpresaContext<IngreAdecuacionResponse>();
             if (companyFailure != null) return companyFailure;
 
-            if (await IsLockedAsync(id))
-                return Failure<IngreAdecuacionResponse>("La adecuacion esta en autorizacion o ya fue autorizada y no puede modificarse.");
-
+            var current = await GetByIdAsync(id);
+            if (!current.Success || current.Data == null)
+                return Failure<IngreAdecuacionResponse>("No se encontro la adecuacion.", "NOT_FOUND");
+            var validation = IncomeCaptureRules.ValidateUpdate(response, current.Data);
+            if (validation != null) return Failure<IngreAdecuacionResponse>(validation);
+            IncomeCaptureRules.PreserveServerState(response, current.Data);
             response.Justificacion = response.Justificacion?.Trim();
             return await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        protected override async Task ValidateUpdateAsync(int id, IngreAdecuacionResponse response, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var current = await GetByIdAsync(id);
+            if (!current.Success || current.Data == null)
+                throw new UserVisibleException("No se encontro la adecuacion.", "NOT_FOUND");
+            var validation = IncomeCaptureRules.ValidateUpdate(response, current.Data);
+            if (validation != null) throw new UserVisibleException(validation, "VALIDATION");
+            IncomeCaptureRules.PreserveServerState(response, current.Data);
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -432,6 +446,8 @@ namespace EG.Application.Services.PresupuestoModificado
             IngreAdecuacionDetalleResponse response,
             int usuarioActual)
         {
+            var captureError = IncomeCaptureRules.ValidateDetailCapture(response);
+            if (captureError != null) return Failure<IngreAdecuacionDetalleResponse>(captureError);
             var validation = await ValidateMutationAsync(response.FkidIngreAdecuacionPres);
             return validation ?? await base.CreateAsync(response, usuarioActual);
         }
@@ -441,8 +457,27 @@ namespace EG.Application.Services.PresupuestoModificado
             IngreAdecuacionDetalleResponse response,
             int usuarioActual)
         {
-            var validation = await ValidateMutationAsync(response.FkidIngreAdecuacionPres);
+            var validation = await ValidateUpdateRequestAsync(id, response);
             return validation ?? await base.UpdateAsync(id, response, usuarioActual);
+        }
+
+        private async Task<PagedResult<IngreAdecuacionDetalleResponse>?> ValidateUpdateRequestAsync(int id, IngreAdecuacionDetalleResponse response)
+        {
+            var current = await GetByIdAsync(id);
+            if (!current.Success || current.Data == null)
+                return Failure<IngreAdecuacionDetalleResponse>("No se encontro el movimiento.", "NOT_FOUND");
+            if (current.Data.FkidIngreAdecuacionPres != response.FkidIngreAdecuacionPres)
+                return Failure<IngreAdecuacionDetalleResponse>("No se permite mover el detalle a otra adecuacion.");
+            var captureError = IncomeCaptureRules.ValidateDetailCapture(response);
+            if (captureError != null) return Failure<IngreAdecuacionDetalleResponse>(captureError);
+            return await ValidateMutationAsync(response.FkidIngreAdecuacionPres);
+        }
+
+        protected override async Task ValidateUpdateAsync(int id, IngreAdecuacionDetalleResponse response, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var validation = await ValidateUpdateRequestAsync(id, response);
+            if (validation != null) throw new UserVisibleException(validation.Message, validation.Code);
         }
 
         public override async Task<PagedResult<bool>> DeleteAsync(int id)
@@ -525,18 +560,18 @@ namespace EG.Application.Services.PresupuestoModificado
                 StoredProcedureExecutor.Param("@Fecha", response?.Fecha.ToDateTime(TimeOnly.MinValue)),
                 StoredProcedureExecutor.Param("@FKIdIngreAdecuacion_PRES", response?.FkidIngreAdecuacionPres),
                 StoredProcedureExecutor.Param("@FKIdTipoMovimiento_PRES", response?.FkidTipoMovimientoPres),
-                StoredProcedureExecutor.Param("@Enero", Math.Abs(response?.Enero ?? 0m)),
-                StoredProcedureExecutor.Param("@Febrero", Math.Abs(response?.Febrero ?? 0m)),
-                StoredProcedureExecutor.Param("@Marzo", Math.Abs(response?.Marzo ?? 0m)),
-                StoredProcedureExecutor.Param("@Abril", Math.Abs(response?.Abril ?? 0m)),
-                StoredProcedureExecutor.Param("@Mayo", Math.Abs(response?.Mayo ?? 0m)),
-                StoredProcedureExecutor.Param("@Junio", Math.Abs(response?.Junio ?? 0m)),
-                StoredProcedureExecutor.Param("@Julio", Math.Abs(response?.Julio ?? 0m)),
-                StoredProcedureExecutor.Param("@Agosto", Math.Abs(response?.Agosto ?? 0m)),
-                StoredProcedureExecutor.Param("@Septiembre", Math.Abs(response?.Septiembre ?? 0m)),
-                StoredProcedureExecutor.Param("@Octubre", Math.Abs(response?.Octubre ?? 0m)),
-                StoredProcedureExecutor.Param("@Noviembre", Math.Abs(response?.Noviembre ?? 0m)),
-                StoredProcedureExecutor.Param("@Diciembre", Math.Abs(response?.Diciembre ?? 0m)),
+                StoredProcedureExecutor.Param("@Enero", response?.Enero ?? 0m),
+                StoredProcedureExecutor.Param("@Febrero", response?.Febrero ?? 0m),
+                StoredProcedureExecutor.Param("@Marzo", response?.Marzo ?? 0m),
+                StoredProcedureExecutor.Param("@Abril", response?.Abril ?? 0m),
+                StoredProcedureExecutor.Param("@Mayo", response?.Mayo ?? 0m),
+                StoredProcedureExecutor.Param("@Junio", response?.Junio ?? 0m),
+                StoredProcedureExecutor.Param("@Julio", response?.Julio ?? 0m),
+                StoredProcedureExecutor.Param("@Agosto", response?.Agosto ?? 0m),
+                StoredProcedureExecutor.Param("@Septiembre", response?.Septiembre ?? 0m),
+                StoredProcedureExecutor.Param("@Octubre", response?.Octubre ?? 0m),
+                StoredProcedureExecutor.Param("@Noviembre", response?.Noviembre ?? 0m),
+                StoredProcedureExecutor.Param("@Diciembre", response?.Diciembre ?? 0m),
                 StoredProcedureExecutor.Param("@IdC", id ?? response?.PkidIngreAdecuacionDetalle),
                 StoredProcedureExecutor.Param("@IdUser", usuarioActual)
             ];

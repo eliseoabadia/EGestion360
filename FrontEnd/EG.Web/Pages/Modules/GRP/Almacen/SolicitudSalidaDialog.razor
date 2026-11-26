@@ -1,5 +1,6 @@
 @using System.Globalization
 @using EG.Common.GenericModel
+@using EG.Common.Modules
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Domain.DTOs.Responses.General
 @using EG.Web.Contracts
@@ -116,7 +117,6 @@
     private SolicitudSalidaResponse item = new()
     {
         Activo = true,
-        FechaSolicitud = DateTime.Today,
         Solicitante = string.Empty,
         Justificacion = string.Empty,
         Observaciones = string.Empty
@@ -148,7 +148,7 @@
         if (response?.Success == true && response.Data != null)
         {
             item = response.Data;
-            _fechaSolicitud = item.FechaSolicitud == default ? DateTime.Today : item.FechaSolicitud;
+            _fechaSolicitud = item.FechaSolicitud == default ? null : item.FechaSolicitud;
             _fechaRequerida = item.FechaRequerida;
             _selectedAreaSolicita = item.FkidAreaSolicitaSis.HasValue
                 ? new LookupItem { Id = item.FkidAreaSolicitaSis.Value, Text = item.AreaSolicitaNombre }
@@ -164,6 +164,13 @@
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        var dateValidation = RequiredDateRules.Validate(_fechaSolicitud, "solicitud");
+        if (dateValidation != null)
+        {
+            Snackbar.Add(dateValidation, Severity.Warning);
             return;
         }
 
@@ -189,7 +196,7 @@
         item.FkidAnioSis = AnioStateService.AnioId.Value;
         item.FkidAreaSolicitaSis = _selectedAreaSolicita.Id;
         item.FkidAreaEntregaSis = _selectedAreaEntrega.Id;
-        item.FechaSolicitud = _fechaSolicitud ?? DateTime.Today;
+        item.FechaSolicitud = _fechaSolicitud!.Value;
         item.FechaRequerida = _fechaRequerida;
         item.Solicitante ??= string.Empty;
         item.Justificacion ??= string.Empty;

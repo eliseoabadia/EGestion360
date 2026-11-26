@@ -18,6 +18,28 @@ public sealed class PasswordResetAppServiceTests
     private static readonly PasswordResetAccount Account = new("id", "account@example.com", "stamp", "version");
 
     [Fact]
+    public async Task NullForgotPasswordRequestReturnsValidationWithoutLookingUpAccounts()
+    {
+        var repository = new Repository { Account = Account };
+        var result = await Create(repository, new Mail()).RequestAsync(null, default);
+
+        Assert.False(result.Success);
+        Assert.Equal("INVALID_RESET", result.Code);
+        Assert.Equal(0, repository.Lookups);
+    }
+
+    [Fact]
+    public async Task NullResetPasswordRequestReturnsValidationWithoutUpdatingAccount()
+    {
+        var repository = new Repository { Account = Account };
+        var result = await Create(repository, new Mail()).ResetAsync(null, default);
+
+        Assert.False(result.Success);
+        Assert.Equal("INVALID_RESET", result.Code);
+        Assert.Equal(0, repository.Updates);
+    }
+
+    [Fact]
     public async Task KnownAndUnknownAccountsReceiveTheSamePublicResponse()
     {
         var repository = new Repository { Account = Account };

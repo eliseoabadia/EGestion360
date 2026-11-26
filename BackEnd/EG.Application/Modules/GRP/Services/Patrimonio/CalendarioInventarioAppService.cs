@@ -2,6 +2,7 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.Interfaces;
@@ -235,6 +236,18 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<CalendarioInventarioResponse>?> NormalizeAndValidateAsync(CalendarioInventarioResponse response, bool isCreate)
         {
+            var startDateValidation = RequiredDateRules.Validate(response.FechaInicio, "inicio");
+            if (startDateValidation != null)
+            {
+                return Failure<CalendarioInventarioResponse>(startDateValidation, "VALIDATION");
+            }
+
+            var endDateValidation = RequiredDateRules.Validate(response.FechaFin, "fin");
+            if (endDateValidation != null)
+            {
+                return Failure<CalendarioInventarioResponse>(endDateValidation, "VALIDATION");
+            }
+
             if (response.FkidEmpresaSis <= 0)
             {
                 return Failure<CalendarioInventarioResponse>("Debe existir una empresa seleccionada.");
@@ -255,9 +268,8 @@ namespace EG.Application.Services.Patrimonio
                 return Failure<CalendarioInventarioResponse>("La descripcion del calendario es requerida.");
             }
 
-            response.FechaInicio = response.FechaInicio == default ? DateTime.Today : response.FechaInicio.Date;
-            response.FechaFin = response.FechaFin == default ? response.FechaInicio : response.FechaFin.Date;
-            response.Anio = response.Anio <= 0 ? response.FechaInicio.Year : response.Anio;
+            response.FechaInicio = response.FechaInicio.Date;
+            response.FechaFin = response.FechaFin.Date;
 
             if (response.FechaFin < response.FechaInicio)
             {

@@ -155,7 +155,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public string? EstatusAdecuacionDescripcion { get; set; }
         public string? EstatusAdecuacionColor { get; set; }
         public string? Justificacion { get; set; }
-        public DateOnly Fecha { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+        public DateOnly Fecha { get; set; }
         public int? FkidPolizaConta { get; set; }
         public string? ClavePoliza { get; set; }
         public int FkidEmpresaSis { get; set; }
@@ -200,7 +200,7 @@ namespace EG.Domain.DTOs.Responses.PresupuestoModificado
         public int FkidTipoMovimientoPres { get; set; }
         public string? TipoMovimientoDescripcion { get; set; }
         public string? Justificacion { get; set; }
-        public DateOnly Fecha { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+        public DateOnly Fecha { get; set; }
         public decimal Enero { get; set; }
         public decimal Febrero { get; set; }
         public decimal Marzo { get; set; }

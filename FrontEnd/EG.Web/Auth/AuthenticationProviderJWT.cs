@@ -1,5 +1,6 @@
 using EG.Common.GenericModel;
 using EG.Web.Helpers;
+using EG.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
@@ -26,22 +27,38 @@ namespace EG.Web.Auth
         private bool _dbPermissionsRefreshAttempted;
         private string? _activeToken;
         private AuthenticationState? _activeAuthenticationState;
+        private bool sessionCleared;
+        private int sessionVersion;
+        private readonly SemaphoreSlim sessionStorageGate = new(1, 1);
+        private readonly SucursalStateService _branchState;
+        private readonly AnioPresupuestalStateService _yearState;
+        private readonly TimeProvider _clock;
 
         public AuthenticationProviderJWT(
             IJSRuntime js,
             HttpClient httpClient,
-            ILogger<AuthenticationProviderJWT> logger)
+            ILogger<AuthenticationProviderJWT> logger,
+            SucursalStateService branchState,
+            AnioPresupuestalStateService yearState,
+            TimeProvider? clock = null)
         {
             _js = js;
             _httpClient = httpClient;
             _logger = logger;
+            _branchState = branchState;
+            _yearState = yearState;
+            _clock = clock ?? TimeProvider.System;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
+            if (sessionCleared) return ANONYMOUS;
+            var version = sessionVersion;
             var token = await _js.GetFromLocalStorage(TOKEN_KEY);
+            if (version != sessionVersion || sessionCleared) return _activeAuthenticationState ?? ANONYMOUS;
             if (string.IsNullOrWhiteSpace(token))
             {
+                await ClearStoredSessionAsync();
                 return ANONYMOUS;
             }
 
@@ -55,6 +72,11 @@ namespace EG.Web.Auth
             if (_activeAuthenticationState != null &&
                 string.Equals(_activeToken, normalizedToken, StringComparison.Ordinal))
             {
+                if (IsTokenExpired(_activeAuthenticationState.User.Claims))
+                {
+                    await LogoutAsync();
+                    return ANONYMOUS;
+                }
                 return _activeAuthenticationState;
             }
 
@@ -68,8 +90,10 @@ namespace EG.Web.Auth
             }
 
             var jwtClaims = authState.User.Claims.ToList();
-            await LoadPersistedDbPermissions();
-            await EnsureDbPermissionsLoadedAsync(jwtClaims);
+            await LoadPersistedDbPermissions(version);
+            if (version != sessionVersion || sessionCleared) return _activeAuthenticationState ?? ANONYMOUS;
+            await EnsureDbPermissionsLoadedAsync(jwtClaims, version);
+            if (version != sessionVersion || sessionCleared) return _activeAuthenticationState ?? ANONYMOUS;
 
             SetActiveAuthenticationState(normalizedToken, authState);
             return authState;
@@ -77,11 +101,21 @@ namespace EG.Web.Auth
 
         public async Task LoginAsync(string token)
         {
+            var version = ++sessionVersion;
+            sessionCleared = true;
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            _activeToken = null;
+            _activeAuthenticationState = null;
             var normalized = NormalizeToken(token);
             _permissions.Clear();
             _dbPermissionsRefreshAttempted = false;
-            await _js.RemoveItem(DB_CLAIMS_KEY);
-            await _js.SetInLocalStorage(TOKEN_KEY, normalized);
+            await _branchState.ClearSucursalAsync();
+            if (version != sessionVersion) return;
+            await _yearState.ClearAnioAsync();
+            if (version != sessionVersion) return;
+            await WriteSessionAsync(version, () => _js.RemoveItem(DB_CLAIMS_KEY));
+            await WriteSessionAsync(version, () => _js.SetInLocalStorage(TOKEN_KEY, normalized));
+            if (version != sessionVersion) return;
 
             var authState = BuildAuthenticationState(normalized);
             if (authState == null)
@@ -108,8 +142,10 @@ namespace EG.Web.Auth
 
         public async Task LogoutAsync()
         {
+            var closingVersion = sessionVersion + 1;
             await ClearStoredSessionAsync();
-            NotifyAuthenticationStateChanged(Task.FromResult(ANONYMOUS));
+            if (sessionVersion == closingVersion)
+                NotifyAuthenticationStateChanged(Task.FromResult(ANONYMOUS));
         }
 
         /// <summary>
@@ -117,14 +153,18 @@ namespace EG.Web.Auth
         /// y los añade al almacén en memoria.
         /// Llamar después del login exitoso.
         /// </summary>
-        public async Task LoadClaimsFromDbAsync(List<ClaimItemModel> claimsFromDb)
+        public async Task<bool> LoadClaimsFromDbAsync(List<ClaimItemModel> claimsFromDb, string expectedToken)
         {
+            if (sessionCleared || string.IsNullOrWhiteSpace(expectedToken) ||
+                !string.Equals(_activeToken, NormalizeToken(expectedToken), StringComparison.Ordinal)) return false;
+            var version = sessionVersion;
             claimsFromDb ??= new List<ClaimItemModel>();
             _permissions.Clear();
 
             // Guardar en localStorage para persistencia
             var json = JsonSerializer.Serialize(claimsFromDb);
-            await _js.SetInLocalStorage(DB_CLAIMS_KEY, json);
+            await WriteSessionAsync(version, () => _js.SetInLocalStorage(DB_CLAIMS_KEY, json));
+            if (version != sessionVersion || sessionCleared) return false;
 
             // Cargar en memoria (fusionando)
             foreach (var item in claimsFromDb)
@@ -132,12 +172,15 @@ namespace EG.Web.Auth
 
             // Opcional: notificar cambio de estado si quieres que los componentes se actualicen
             NotifyAuthenticationStateChanged(Task.FromResult(_activeAuthenticationState ?? ANONYMOUS));
+            return true;
         }
 
         #region Métodos públicos de permisos
 
         public bool HasPermission(string group, string subGroup, string action)
         {
+            if (sessionCleared || (_activeAuthenticationState != null && IsTokenExpired(_activeAuthenticationState.User.Claims)))
+                return false;
             if (string.IsNullOrWhiteSpace(group) || string.IsNullOrWhiteSpace(action))
                 return false;
 
@@ -186,14 +229,15 @@ namespace EG.Web.Auth
 
         public int? GetUserId()
         {
-            var state = GetAuthenticationStateAsync().GetAwaiter().GetResult();
-            var user = state.User;
-            var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)
-                          ?? user.FindFirst("sub")
-                          ?? user.FindFirst("nameid")
-                          ?? user.FindFirst("id")
-                          ?? user.FindFirst("Id");
-            return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+            if (sessionCleared || _activeAuthenticationState == null || IsTokenExpired(_activeAuthenticationState.User.Claims))
+                return null;
+            return GetUserIdFromClaims(_activeAuthenticationState.User.Claims);
+        }
+
+        public async Task<int?> GetUserIdAsync()
+        {
+            var state = await GetAuthenticationStateAsync();
+            return GetUserIdFromClaims(state.User.Claims);
         }
 
         #endregion
@@ -268,31 +312,64 @@ namespace EG.Web.Auth
             }
         }
 
-        private static bool IsTokenExpired(IEnumerable<Claim> claims)
+        private bool IsTokenExpired(IEnumerable<Claim> claims)
         {
             var expClaim = claims.FirstOrDefault(claim =>
                 string.Equals(claim.Type, "exp", StringComparison.OrdinalIgnoreCase));
 
-            if (expClaim == null || !long.TryParse(expClaim.Value, out var unixSeconds))
+            if (expClaim == null || !long.TryParse(expClaim.Value, out var unixSeconds) ||
+                unixSeconds < -62135596800L || unixSeconds > 253402300799L)
             {
-                return false;
+                return true;
             }
 
             var expiration = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
-            return expiration <= DateTimeOffset.UtcNow.AddSeconds(30);
+            return expiration <= _clock.GetUtcNow().AddSeconds(30);
         }
 
         private async Task ClearStoredSessionAsync()
         {
+            var version = ++sessionVersion;
+            sessionCleared = true;
             _httpClient.DefaultRequestHeaders.Authorization = null;
-            await _js.RemoveItem(TOKEN_KEY);
-            await _js.RemoveItem(DB_CLAIMS_KEY);
-            await _js.RemoveItem(USER_ID_KEY);
-            await _js.RemoveItem(USER_NAME_KEY);
             _permissions.Clear();
             _dbPermissionsRefreshAttempted = false;
             _activeToken = null;
             _activeAuthenticationState = null;
+
+            foreach (var clear in new Func<Task>[]
+            {
+                () => WriteSessionAsync(version, () => _js.RemoveItem(TOKEN_KEY)),
+                () => WriteSessionAsync(version, () => _js.RemoveItem(DB_CLAIMS_KEY)),
+                () => WriteSessionAsync(version, () => _js.RemoveItem(USER_ID_KEY)),
+                () => WriteSessionAsync(version, () => _js.RemoveItem(USER_NAME_KEY)),
+                () => _branchState.ClearSucursalAsync(),
+                () => _yearState.ClearAnioAsync()
+            })
+            {
+                if (version != sessionVersion) return;
+                try
+                {
+                    await clear();
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning("No se pudo completar una limpieza local de sesión. Tipo: {ErrorType}", exception.GetType().Name);
+                }
+            }
+        }
+
+        private async Task WriteSessionAsync(int version, Func<ValueTask<object>> write)
+        {
+            await sessionStorageGate.WaitAsync();
+            try
+            {
+                if (version == sessionVersion) await write();
+            }
+            finally
+            {
+                sessionStorageGate.Release();
+            }
         }
 
         private AuthenticationState? BuildAuthenticationState(string normalizedToken)
@@ -314,6 +391,7 @@ namespace EG.Web.Auth
 
         private void SetActiveAuthenticationState(string normalizedToken, AuthenticationState authState)
         {
+            sessionCleared = false;
             _activeToken = normalizedToken;
             _activeAuthenticationState = authState;
         }
@@ -352,11 +430,12 @@ namespace EG.Web.Auth
             }
         }
 
-        private async Task LoadPersistedDbPermissions()
+        private async Task LoadPersistedDbPermissions(int version)
         {
             try
             {
                 var json = await _js.GetFromLocalStorage(DB_CLAIMS_KEY);
+                if (version != sessionVersion || sessionCleared) return;
                 if (string.IsNullOrWhiteSpace(json)) return;
 
                 var dbClaims = JsonSerializer.Deserialize<List<ClaimItemModel>>(json);
@@ -371,7 +450,7 @@ namespace EG.Web.Auth
             }
         }
 
-        private async Task EnsureDbPermissionsLoadedAsync(IEnumerable<Claim> jwtClaims)
+        private async Task EnsureDbPermissionsLoadedAsync(IEnumerable<Claim> jwtClaims, int version)
         {
             if (_dbPermissionsRefreshAttempted)
             {
@@ -390,13 +469,15 @@ namespace EG.Web.Auth
             {
                 var claims = await _httpClient.GetFromJsonAsync<List<ClaimItemModel>>($"api/Navigate/claims/{userId.Value}")
                              ?? new List<ClaimItemModel>();
+                if (version != sessionVersion || sessionCleared) return;
 
                 if (claims.Count == 0)
                 {
                     return;
                 }
 
-                await _js.SetInLocalStorage(DB_CLAIMS_KEY, JsonSerializer.Serialize(claims));
+                await WriteSessionAsync(version, () => _js.SetInLocalStorage(DB_CLAIMS_KEY, JsonSerializer.Serialize(claims)));
+                if (version != sessionVersion || sessionCleared) return;
                 foreach (var item in claims)
                 {
                     AddPermissionEntry(item.Group, item.SubGroup, item.Values);

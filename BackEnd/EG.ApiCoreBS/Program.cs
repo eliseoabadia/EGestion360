@@ -40,17 +40,24 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
     var databaseConnection = builder.Configuration.GetConnectionString(Constants.BD_CON);
+    var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
+    var missingConfiguration = new List<string>();
     if (string.IsNullOrWhiteSpace(databaseConnection))
     {
-        throw new InvalidOperationException(
-            $"Falta la cadena de conexión '{Constants.BD_CON}'. Configúrala con User Secrets en desarrollo o con variables de entorno en el servidor.");
+        missingConfiguration.Add($"ConnectionStrings:{Constants.BD_CON}");
     }
 
-    var key = builder.Configuration["JsonWebTokenKeys:IssuerSigningKey"];
     if (string.IsNullOrWhiteSpace(key) || Encoding.UTF8.GetByteCount(key) < 32)
     {
+        missingConfiguration.Add("JsonWebTokenKeys:IssuerSigningKey (mínimo 32 bytes UTF-8)");
+    }
+
+    if (missingConfiguration.Count > 0)
+    {
         throw new InvalidOperationException(
-            "JsonWebTokenKeys:IssuerSigningKey debe configurarse fuera de los archivos del repositorio y contener al menos 32 bytes UTF-8.");
+            $"No se puede iniciar la API porque falta configuración obligatoria: {string.Join("; ", missingConfiguration)}. " +
+            "En Development, configúrala con User Secrets; en servidores, usa variables de entorno. " +
+            "Consulta Docs/Seguridad/Secretos-y-configuracion.md.");
     }
 
     TypeAdapterConfig.GlobalSettings.Scan(typeof(EmpresaMappingProfile).Assembly);

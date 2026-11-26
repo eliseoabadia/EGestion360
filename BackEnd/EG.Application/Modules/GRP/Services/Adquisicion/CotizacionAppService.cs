@@ -4,6 +4,7 @@ using EG.Application.Interfaces.Adquisicion;
 using EG.Application.Interfaces.General;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.Adquisicion;
@@ -86,7 +87,7 @@ namespace EG.Application.Services.Adquisicion
                     StoredProcedureExecutor.Param("@Action", 1),
                     StoredProcedureExecutor.Param("@FKIdRequisicion_ORCO", response.FkidRequisicionOrco),
                     StoredProcedureExecutor.Param("@FKIdProveedor_SIS", response.FkidProveedorSis),
-                    StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud == default ? now.Date : response.FechaSolicitud),
+                    StoredProcedureExecutor.Param("@FechaSolicitud", response.FechaSolicitud.Date),
                     StoredProcedureExecutor.Param("@FechaProveedorCotiza", response.FechaProveedorCotiza),
                     StoredProcedureExecutor.Param("@FechaProveedorCompromiso", response.FechaProveedorCompromiso),
                     StoredProcedureExecutor.Param("@Comentarios", response.Comentarios),
@@ -452,6 +453,12 @@ namespace EG.Application.Services.Adquisicion
                 return Failure<CotizacionResponse>("La cotizacion no contiene datos.");
             }
 
+            var requestDateValidation = RequiredDateRules.Validate(response.FechaSolicitud, "solicitud");
+            if (requestDateValidation != null)
+            {
+                return Failure<CotizacionResponse>(requestDateValidation, "VALIDATION");
+            }
+
             if (response.FkidRequisicionOrco <= 0)
             {
                 return Failure<CotizacionResponse>("Debe seleccionar una requisicion.");
@@ -531,7 +538,7 @@ namespace EG.Application.Services.Adquisicion
 
             response.Servicio = requisicion.Servicio;
             response.FkidAnioSis = requisicion.FkidAnioSis;
-            response.FechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud;
+            response.FechaSolicitud = response.FechaSolicitud.Date;
             response.FlDocumento ??= string.Empty;
             response.Entrega ??= string.Empty;
             response.Vigencia ??= string.Empty;

@@ -88,8 +88,14 @@ namespace EG.Web.Services
             AnioId = null;
             AnioClave = null;
             AnioDescripcion = string.Empty;
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", ANIO_KEY);
-            OnAnioChanged?.Invoke(null);
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", ANIO_KEY);
+            }
+            finally
+            {
+                OnAnioChanged?.Invoke(null);
+            }
         }
 
         private static int? TryParseClave(string text)

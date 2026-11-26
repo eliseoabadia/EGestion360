@@ -6,6 +6,7 @@
 @using EG.Domain.DTOs.Responses.Presupuestales
 @using EG.Domain.DTOs.Responses.PresupuestoModificado
 @using EG.Web.Contracts
+@using EG.Common.Modules
 @using EG.Web.Models
 @using EG.Web.Pages.Shared
 @using EG.Web.Services
@@ -338,6 +339,7 @@
     private string? _solicitanteWarning;
     private bool _requesterAreasLoaded;
     private bool _hasRequesterAreas;
+    private List<UsuarioAreaResponse>? _requesterAreaCache;
 
     private string dialogTitle => Id.HasValue ? "Editar Requisicion" : "Nueva Requisicion";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -363,7 +365,7 @@
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
-                _fechaRequisicion = item.FechaRequisicion;
+                _fechaRequisicion = item.FechaRequisicion == default ? null : item.FechaRequisicion;
                 _fechaRequiereInicio = item.FechaRequiereInicio;
                 _fechaRequiereFin = item.FechaRequiereFin;
                 _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, item.FkidPersonaNom) };
@@ -445,6 +447,16 @@
             return;
         }
 
+        var dateValidation = RequisitionDateRules.Validate(
+            _fechaRequisicion,
+            _fechaRequiereInicio,
+            _fechaRequiereFin);
+        if (dateValidation != null)
+        {
+            Snackbar.Add(dateValidation, Severity.Warning);
+            return;
+        }
+
         item.FkidEmpresaSis = empresaId.Value;
         if (!AnioStateService.AnioId.HasValue || AnioStateService.AnioId.Value <= 0)
         {
@@ -462,7 +474,7 @@
         item.FkidDigitoIdentificadorPres = _selectedDigito?.Id;
         item.FkidDestinoGastoPres = _selectedDestino?.Id;
         item.FkidEgresoAutorizadoPres = _selectedDisponible.PkidEgresoAutorizado;
-        item.FechaRequisicion = _fechaRequisicion ?? DateTime.Today;
+        item.FechaRequisicion = _fechaRequisicion!.Value;
         item.FechaRequiereInicio = _fechaRequiereInicio;
         item.FechaRequiereFin = _fechaRequiereFin;
         item.Observaciones ??= string.Empty;
@@ -495,8 +507,7 @@
         if (_selectedArea == null)
             return new ComboLookupResult();
 
-        var response = await AreaService.GetAllAsync();
-        var items = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+        var items = (await GetRequesterAreasAsync())
             .Where(x => x.Activo && x.PkidArea == _selectedArea.Id && x.PkidPersona > 0 && x.EsSolicitante)
             .Where(x => string.IsNullOrWhiteSpace(filter) ||
                         $"{x.PersonaNombre} {x.PersonaPaterno} {x.PersonaMaterno}".Contains(filter, StringComparison.OrdinalIgnoreCase))
@@ -513,8 +524,7 @@
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await AreaService.GetAllAsync();
-        var requesterAreas = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+        var requesterAreas = (await GetRequesterAreasAsync())
             .Where(x => x.Activo)
             .Where(x => x.EsSolicitante)
             .GroupBy(x => x.PkidArea)
@@ -532,10 +542,27 @@
 
     private async Task RefreshRequesterAvailabilityAsync()
     {
-        var response = await AreaService.GetAllAsync();
-        _hasRequesterAreas = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+        var requesterAreas = await GetRequesterAreasAsync();
+        _hasRequesterAreas = requesterAreas
             .Any(x => x.Activo && x.EsSolicitante && x.PkidArea > 0 && x.PkidPersona > 0);
         _requesterAreasLoaded = true;
+    }
+
+    private async Task<List<UsuarioAreaResponse>> GetRequesterAreasAsync()
+    {
+        if (_requesterAreaCache != null)
+        {
+            return _requesterAreaCache;
+        }
+
+        var response = await AreaService.GetAllAsync();
+        if (response?.Success != true)
+        {
+            return response?.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+        }
+
+        _requesterAreaCache = response.Items?.ToList() ?? new List<UsuarioAreaResponse>();
+        return _requesterAreaCache;
     }
 
     private void OpenUserConfiguration()
@@ -618,8 +645,8 @@
         if (_selectedArea == null || _selectedPersona == null)
             return;
 
-        var response = await AreaService.GetAllAsync();
-        var assignmentIsValid = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>()).Any(x =>
+        var requesterAreas = await GetRequesterAreasAsync();
+        var assignmentIsValid = requesterAreas.Any(x =>
             x.Activo &&
             x.EsSolicitante &&
             x.PkidArea == _selectedArea.Id &&

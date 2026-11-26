@@ -2,6 +2,7 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Web.Contracts
+@using EG.Web.Models.Forms
 @using EG.Web.Pages.Modules.PBR.Shared
 @using EG.Web.Services
 @using MudBlazor
@@ -14,7 +15,7 @@
 
 <MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="PBR"
-                Subtitle="@($"Tablero ejecutivo de planeación basada en resultados - {anio}")"
+                Subtitle="@(anio.HasValue ? $"Tablero ejecutivo de planeación basada en resultados - {anio}" : "Selecciona un ejercicio presupuestal")"
                 Icon="@Icons.Material.Filled.InsertChart"
                 ShowCreateButton="false"
                 OnRefresh="LoadDashboardAsync" />
@@ -27,6 +28,14 @@
             <MudPaper Elevation="0" Class="pa-8 text-center">
                 <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
                 <MudText Class="mt-3" Color="Color.Secondary">Cargando tablero...</MudText>
+            </MudPaper>
+        }
+        else if (!anio.HasValue)
+        {
+            <MudPaper Elevation="0" Class="pa-6">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    Selecciona un ejercicio presupuestal en el encabezado para consultar el tablero.
+                </MudAlert>
             </MudPaper>
         }
         else if (dashboard is null)
@@ -255,22 +264,29 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private PbrDashboardResponse? dashboard;
     private bool loading;
-    private int anio = DateTime.Now.Year;
+    private int? anio;
 
     protected override async Task OnInitializedAsync()
     {
         await AnioState.InitializeAsync();
-        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        anio = AnioState.AnioClave;
         AnioState.OnAnioChanged += OnAnioChanged;
         await LoadDashboardAsync();
     }
 
     private async Task LoadDashboardAsync()
     {
+        if (!PbrFiscalYearContext.TryGetSelectedYear(anio, out var selectedYear))
+        {
+            dashboard = null;
+            loading = false;
+            return;
+        }
+
         loading = true;
         try
         {
-            dashboard = await DashboardService.GetAsync(anio);
+            dashboard = await DashboardService.GetAsync(selectedYear);
         }
         catch (Exception ex)
         {
@@ -284,7 +300,7 @@
 
     private async void OnAnioChanged(int? _)
     {
-        anio = AnioState.AnioClave ?? DateTime.Now.Year;
+        anio = AnioState.AnioClave;
         await LoadDashboardAsync();
         await InvokeAsync(StateHasChanged);
     }

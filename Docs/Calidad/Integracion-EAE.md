@@ -2,7 +2,7 @@
 
 Fecha: 23 de noviembre de 2026. Proyecto: EGestion360.
 
-Actualización: 24 de noviembre de 2026. Las secciones 1–7 documentan la revisión inicial; las continuaciones al final registran los formularios comprobados en navegador y los cambios posteriores en tableros. El resultado actualizado es 247 pruebas correctas y 349 vistas que todavía contienen código dentro del Razor.
+Actualización: 25 de noviembre de 2026. Las secciones 1–7 documentan la revisión inicial; las continuaciones al final registran los formularios comprobados en navegador y los cambios posteriores en tableros. El resultado más reciente es 345 pruebas correctas y 346 vistas que todavía contienen código dentro del Razor.
 
 ## 1. Diagnóstico general
 
@@ -181,3 +181,181 @@ Pendiente: que el titular capture la contraseña de aplicación localmente y con
 SucursalStateService limpia la selección y el encabezado X-Empresa-Id al restaurar almacenamiento ausente, inválido o sin empresa válida. La limpieza elimina inmediatamente el encabezado incluso si falla borrar el almacenamiento; notifica el cambio en finally. Seleccionar una sucursal sin empresa retira el encabezado anterior. Las restauraciones pendientes no pueden reemplazar una selección más reciente y la lectura de empresa rechaza identificadores no positivos.
 
 Se agregaron ocho casos de regresión con el mismo servicio usado por el frontend: almacenamiento ausente/inválido, limpieza ante fallo del navegador y cambio a sucursal sin empresa. Suite: 247 pruebas correctas. Esto protege el contexto enviado por el cliente; no sustituye la autorización y el aislamiento de datos en servidor ni certifica una prueba con usuarios reales. UAT y su correo se dejan para el despliegue solicitado por el usuario.
+## Continuación: actualización del nombre de empresa
+
+Se comprobaron los consumidores de SetEmpresaInfoAsync: encabezado principal y sincronización tras editar una empresa. Este método ahora sólo actualiza información descriptiva de la empresa ya activa; no puede cambiar empresa ni recuperar una sesión limpiada. El encabezado descarta respuestas cuyo identificador ya no coincide con la selección y exige una respuesta satisfactoria con la empresa solicitada. El fallback tras error también respeta esa selección.
+
+Tres pruebas nuevas verifican una respuesta de otra empresa, una respuesta recibida después de limpiar la sesión y la actualización válida conservando la sucursal. Suite: 250 pruebas correctas; auditoría sin infracciones. No se presenta esta prueba del servicio como recorrido de navegador ni comprobación de aislamiento SQL. Se conserva la configuración de UAT para el despliegue solicitado.
+## Continuación: selector de sucursal
+
+SelectSucursalDialog separa la coordinación en code-behind, bloquea las opciones durante el guardado y muestra progreso, ausencia de opciones y error recuperable. Verifica que la opción pertenezca a la lista y contenga sucursal y empresa válidas; la autorización real permanece en el servidor. El diálogo sólo cierra tras completar el guardado y libera su bloqueo en finally.
+
+SetSucursalAsync limpia la selección en memoria y el encabezado si falla guardar en el navegador; notifica el contexto vacío. No publica notificaciones tardías si otra selección ya reemplazó la operación. Una prueba de regresión verifica el fallo con empresa anterior y confirma que no queda el encabezado de la selección parcial. Suite: 251 pruebas correctas. El almacenamiento de dos claves del navegador no es una transacción; no se afirma atomicidad entre claves ni aceptación visual del nuevo selector. Sigue pendiente su recorrido interactivo en navegador.
+## Continuación: guardados concurrentes del contexto
+
+Las escrituras de selección, actualización descriptiva y limpieza comparten una exclusión asíncrona. Cada escritura usa la misma instantánea de sucursal y empresa; las operaciones superadas se descartan antes de comenzar. Si una escritura ya comenzó, la selección vigente se escribe después, evitando que el guardado anterior termine sobrescribiéndola. La restauración inicial espera también ese guardado y respeta la versión de selección.
+
+GetEmpresaIdAsync utiliza el estado validado de sucursal y sólo lo inicializa si hace falta. No restaura por separado la clave antigua de empresa; eso evitaba la limpieza tras un fallo del navegador. Se mantienen firmas y claves existentes para los consumidores.
+
+Cuatro regresiones con operaciones demoradas o almacenamiento simulado cubren dos selecciones superpuestas, limpieza durante guardado, clave aislada de empresa y consulta tras fallo de limpieza. Suite: 255 pruebas correctas; auditoría sin infracciones. La coordinación es por instancia del servicio, no entre pestañas diferentes. No convierte las dos claves de localStorage en una transacción ni permite garantizar persistencia si el navegador rechaza las escrituras. No sustituye la validación de alcance del servidor. La revisión interactiva del selector sigue pendiente.
+## Continuación: limpieza de sesión y cambio de usuario
+
+AuthenticationProviderJWT limpia primero permisos, autorización y estado autenticado en memoria. Intenta independientemente retirar token, permisos persistidos, identificador y nombre de usuario, sucursal/empresa y ejercicio; un fallo no impide intentar las demás limpiezas. El proveedor conserva el estado anónimo en esa instancia tras cerrar sesión aunque no pueda retirar una clave del navegador. Al iniciar un nuevo acceso retira el contexto anterior antes de activar el nuevo token. AnioPresupuestalStateService notifica la limpieza en finally aun si falla el almacenamiento.
+
+Tres pruebas nuevas compilan las mismas clases usadas por el frontend: cierre de sesión con almacenamiento fallido, notificación de limpieza de ejercicio y nuevo acceso que retira empresa y ejercicio anteriores. Suite: 258 pruebas correctas, sin fallos ni omisiones; auditoría sin infracciones y comprobación de espacios correcta. Esto no revoca tokens en servidor y no garantiza retirar claves si el navegador rechaza operaciones; tampoco es prueba de aislamiento de SQL ni recorrido autenticado en navegador. El despliegue y la prueba SMTP de UAT continúan fuera de esta ejecución por indicación del usuario.
+## Continuación: respuestas de sesión fuera de contexto
+
+El proveedor de autenticación identifica la versión de sesión al iniciar lecturas de token y permisos. Antes de aplicar sus resultados o activar un token comprueba que la sesión siga vigente. También descarta pasos de inicio, limpieza y notificación que otra operación haya reemplazado. Las escrituras de token y permisos y sus eliminaciones se ordenan con exclusión asíncrona por instancia para que una escritura pendiente no termine después de la limpieza final.
+
+Tres pruebas adicionales demoran explícitamente la lectura del token, la lectura de permisos persistidos y la escritura de permisos. Tras cerrar sesión, verifican que no se restaure autenticación, permiso ni encabezado; la escritura pendiente queda eliminada. Suite completa: 261 correctas, cero fallos u omisiones; auditoría sin infracciones y diff sin errores de espacios. Son pruebas del proveedor real con almacenamiento simulado, no de revocación JWT del servidor ni de sincronización entre pestañas. El recorrido interactivo sigue pendiente y UAT permanece reservado para el despliegue.
+## Continuación: permisos vinculados al acceso que los solicitó
+
+LoadClaimsFromDbAsync requiere el token con el que el inicio de sesión solicitó los permisos y comprueba que siga siendo el activo antes de modificar memoria o almacenamiento. Devuelve explícitamente si aplicó los permisos. El componente Login utiliza ese resultado para detener el flujo anterior si cambió la sesión, en lugar de continuar con las sucursales de la solicitud reemplazada.
+
+Una regresión inicia dos cuentas consecutivas, aplica los permisos de la vigente y entrega después los permisos de la cuenta anterior: confirma que éstos se rechazan y se conservan token, permisos y almacenamiento actuales. Suite: 262 correctas; auditoría sin infracciones y diff sin errores de espacios. Esta comprobación usa el proveedor frontend real con almacenamiento simulado; no equivale a validar firmas JWT ni permisos de servidor. Permanece pendiente el recorrido visual con cuentas del entorno. Sin despliegue, commits, subidas o respaldos.
+## Continuación: vigencia del estado autenticado en memoria
+
+El proveedor vuelve a comprobar la expiración antes de devolver una sesión cacheada. HasPermission y la lectura síncrona del identificador rechazan una sesión vencida. Si el token falta en el navegador, se limpia el estado anterior. Se conserva el margen previo existente de 30 segundos; una expiración ausente, inválida o fuera del rango DateTimeOffset ya no puede activar una sesión.
+
+GetUserId no espera operaciones JS ni tareas asíncronas: sólo utiliza el estado vigente cargado. Se agregó GetUserIdAsync para quien necesite inicializarlo. No había consumidores del método síncrono en el inventario revisado. El reloj del proveedor puede suministrarse como TimeProvider en pruebas y conserva TimeProvider.System por defecto.
+
+Seis regresiones comprueban vencimiento con reloj controlado sin esperas, expiración ausente/no numérica/fuera de rango y retirada del token del navegador. Suite: 268 pruebas correctas; auditoría sin infracciones y diff sin errores de espacios. La comprobación se realiza cuando se consulta el estado o los permisos; no se agregó un temporizador ni revocación de servidor. La prueba no equivale a un recorrido autenticado en navegador ni certificación global de seguridad. Sin despliegue, commits, subidas o respaldos.
+## Continuación: organización y ciclo de vida del acceso
+
+Login.razor conserva presentación y bindings; la lógica se trasladó a Login.razor.cs. El bloqueo de doble envío empieza antes de sincronizar credenciales del navegador y validar MudForm, dentro del mismo try/finally. Antes quedaba una ventana de reentrada durante esos awaits. Al disponer la pantalla se evita suscribir el tema tras inicialización tardía, se detienen resultados de acceso y sucursales y se evita navegación posterior. Se admite un resultado nulo de diálogo como cancelación.
+
+El inventario actualizado registra 347 vistas con código dentro de Razor; sigue siendo una señal de organización, no una medición de rendimiento. La suite de reglas y sesión permanece en 268 correctas; la extracción de Login y sus guardas no tienen nueva prueba interactiva. Auditoría sin infracciones y diff sin errores de espacios. La revisión visual de Login, selector y tableros sigue pendiente; las pruebas de formularios de adecuación documentadas antes no se presentan como evidencia de estas pantallas.
+## Continuación: cargas de la tabla compartida
+
+GenericDataGrid ahora coordina las respuestas mediante LatestGridRequest: una carga superada devuelve el resultado de la vigente en vez de reemplazarlo con filas anteriores. Sólo la petición vigente actualiza contador, error y progreso. Un fallo de una petición antigua no muestra un aviso sobre la consulta nueva. La coordinación libera los consumidores que esperan al disponer la tabla y cubre cadenas de más de dos cargas. Las búsquedas permanecen disponibles mientras se lee información; siguen bloqueadas durante una acción como exportar. Se conservan las firmas de los parámetros públicos y los callbacks de búsqueda existentes.
+
+Se revisó la implementación oficial correspondiente a MudBlazor 9.6.0 para comprobar la aplicación de resultados de ServerData y su cancelación: https://raw.githubusercontent.com/MudBlazor/MudBlazor/v9.6.0/src/MudBlazor/Components/DataGrid/MudDataGrid.razor.cs. No se cambió de versión ni se copió el componente del proveedor.
+
+El Razor compartido conserva markup y bindings; su coordinación pasó a GenericDataGrid.razor.cs. El inventario registra 188 consumidores directos de tablas compartidas y 346 vistas con código inline. Esto expresa alcance potencial del componente y organización, sin afirmar revisión manual o mejora medida de todas esas pantallas.
+
+Cuatro regresiones prueban respuesta anterior tras la nueva, tres cargas superpuestas, carga vigente completada antes de la anterior y disposición con esperas pendientes. Suite: 272 correctas. Auditoría sin infracciones y diff sin errores de espacios. Son pruebas del coordinador usado por la tabla; todavía falta verificar interactivamente búsquedas, paginación, ordenación y errores en pantallas consumidoras. No se afirma reducción del tiempo de SQL ni cancelación física de servicios que ignoran el token. Sin commits, subidas, respaldos ni despliegue.
+## Continuación: identidad autenticada compartida
+
+Se contrastó el emisor TokenService: genera NameIdentifier y sub con el identificador real del usuario. AuthService obtiene el identificador sólo de una identidad autenticada, con prioridad explícita de claims conocidos, formato entero completo positivo y rango Int32. Se retiran la extracción de dígitos de texto y la lectura alternativa de userId desde localStorage. El constructor ya no depende de JS; se comprobaron los consumidores locales y el registro por DI.
+
+DynamicMenu utiliza exclusivamente AuthService para resolver usuario. Se eliminan su parseo JWT duplicado, la búsqueda de dígitos, las lecturas directas de token/userId y sus helpers sin consumidores. Una identidad inválida conserva el manejo de error existente del menú en vez de consultar otro usuario.
+
+Doce casos añadidos comprueban números válidos, valores mezclados, cero, negativos, rangos, identidad anónima, prioridad de claim canónico y alias compatibles. Suite: 284 correctas; auditoría sin infracciones y comprobación de espacios correcta. No se cambió la autorización del servidor: el cliente representa identidad y no sustituye el alcance autenticado de la API. Sigue pendiente el recorrido de menú y acceso con cuentas reales en navegador. Sin despliegue, commits, subidas ni respaldos.
+## Continuación: ciclo de vida del menú compartido
+
+DynamicMenu separa markup y coordinación en su code-behind y escucha los cambios de autenticación. Al cambiar sesión limpia opciones, caché, índices de búsqueda y expansión antes de cargar el menú vigente. Las respuestas y errores se aplican sólo mientras siga vigente su generación de carga; la identidad recibida se comprueba antes de guardarse en el componente. Al disponer el menú se invalidan las consultas y se retiran las suscripciones de autenticación y navegación, además de cancelar la búsqueda pendiente.
+
+Se conservan las rutas, los parámetros públicos y la construcción de opciones existentes. La disposición también evita publicar la búsqueda o solicitar renders finales de navegación cuando el componente ya fue retirado. Se reutiliza EditorRequestState, que cuenta con las pruebas de respuestas antiguas y disposición documentadas en los formularios; no se presenta esto como una prueba funcional de los eventos del menú.
+
+Compilación completa y auditoría configurada satisfactorias, sin errores de espacios en el diff. No hay nuevas pruebas de componente en esta continuación; la última suite sigue en 284 correctas. El inventario mantiene 374 vistas y 346 vistas con código inline dentro del alcance del escáner. La aceptación interactiva de cambio de cuenta, búsqueda y navegación sigue pendiente. UAT queda reservado para el despliegue; no se hicieron commits, subidas o respaldos.
+## Continuación: revisión interactiva de la tabla compartida
+
+Se ejecutó GenericDataGrid compilado con las hojas de estilo reales en un host local temporal de Blazor Server. El host sólo generó filas simuladas; no usó API de negocio, SQL, SMTP ni UAT. Se revisó en Chrome mediante controles nativos de Windows, sin introducir credenciales.
+
+| Caso | Observación |
+|---|---|
+| Dos consultas con respuesta en orden inverso | La anterior esperó dos segundos e ignoró deliberadamente la cancelación. Al terminar ambas, todas las filas visibles conservaron VIGENTE, consulta 3, y el contador mostró 32. |
+| Fallo de lectura | Aparecieron el mensaje controlado y el botón Intentar nuevamente, sin conservar las filas como si fueran una lectura satisfactoria. |
+| Reintento | Recuperó 10 filas de la consulta 5 y el contador 32; la tabla volvió a ser operable. |
+| Página siguiente | Se observaron filas 11–20 y el rango 11–20 de 32. |
+| Tema claro | Filas, barra de búsqueda, contador y paginación visibles. |
+| Tema oscuro | Se detectó bajo contraste en los títulos ordenables. Se ajustó su color con la variable de texto primario del tema y se volvió a revisar: Id y Descripción quedaron visibles. |
+
+El cambio persistente está en GenericDataGrid.razor.css: el texto del encabezado y sus etiquetas ordenables usa la paleta activa. Frontend compilado sin errores ni advertencias; auditoría sin infracciones y diff sin errores de espacios. La suite previa permanece en 284 pruebas; no se añadieron pruebas que sólo repliquen CSS.
+
+Las capturas se mostraron durante la revisión, sin guardar copias del proyecto. El host se detuvo y su carpeta temporal se eliminó tras verificar que estaba dentro del workspace. Esta revisión confirma los casos anteriores en escritorio con servicios simulados; no certifica las 188 pantallas consumidoras, tamaños móviles, el resto de funciones de columnas ni el recorrido de WebAssembly autenticado. La aceptación del selector, Login y tableros completos conserva sus pendientes anteriores.
+## Continuación: captura y autorización de adecuaciones de ingresos
+
+Se siguió el recorrido de los controllers, servicios y las definiciones finales de los procedimientos en el script fuente, sin ejecutarlos. La captura ordinaria compartía DTO y parámetros de procedimiento con el workflow; permitía enviar Autorizado, acción y fechas de solicitud/autorización. IncomeCaptureRules fuerza alta sin autorizar, acción inicial y fechas de workflow vacías. En edición conserva desde el registro persistido el estado, acción, fechas, clave, ejercicio, póliza, estatus, activo y auditoría de creación. El texto de justificación sigue siendo editable. Cambiar ejercicio o póliza se rechaza, siguiendo la regla ya presente en el procedimiento SQL.
+
+El detalle no puede trasladarse de una adecuación a otra en una edición: se consulta el registro actual antes de validar su padre. Esto evita elegir un padre desbloqueado para intentar modificar un detalle de un proceso bloqueado. La autorización efectiva de acciones continúa en los endpoints existentes.
+
+StoredProcedureCrudAppService incorpora un punto de validación virtual antes de ejecutar el procedimiento de actualización, dentro de la transacción serializable existente. Sólo los servicios de ingresos modificados añaden validación ahí; los demás conservan el comportamiento predeterminado. Cabecera y detalle repiten la comprobación del estado y relaciones antes de escribir, reutilizando las mismas reglas. No se crearon nuevas conexiones ni se alteraron procedimientos o modelos generados.
+
+Ocho regresiones verifican alta sin autorización, conservación de campos de control frente a payload alterado, rechazo de cabecera bloqueada, cambio de ejercicio, traslado de detalle y comprobaciones inmediatamente anteriores al procedimiento. Los casos de rechazo usan los servicios reales con lecturas sustituidas y sin conexión de escritura; las pruebas del punto transaccional comprueban su validación, no bloqueos ni rollback reales de SQL Server. Suite: 292 correctas; solución completa sin errores ni advertencias; auditoría y diff correctos.
+
+**Limitación de alcance confirmada:** los modelos persistidos IngreAdecuacion, su detalle y la vista VwIngresoAdecuacion carecen de una clave de empresa. Exigir empresa activa no equivale a filtrar esos datos; el filtro genérico sólo se aplica si encuentra la propiedad correspondiente. No se infirió la empresa por creador, ejercicio o póliza, porque tampoco establece una relación inequívoca en el esquema revisado. La separación por empresa requiere preparar el vínculo persistente, el tratamiento de los registros existentes y las vistas/procedimientos antes de declararla cubierta. Este pendiente impide certificar aislamiento por empresa de ingresos.
+
+También siguen pendientes las pruebas concurrentes y transaccionales contra SQL Server de pruebas y la aceptación del workflow completo. Las correcciones de captura descritas no certifican las demás transiciones o bajas ante concurrencia. Sin despliegue, cambios de instancia, commits, subidas ni respaldos.
+## Continuación: importes de movimientos de ingresos
+
+Se contrastaron los parámetros y la variable de total del procedimiento fuente PRES.sp_MantenimientoAdecuacionDisminucionIngreso: utilizan decimal(18,2), exigen magnitudes no negativas, total positivo y tipos 3/4. El servicio convertía los doce importes con Math.Abs antes de enviarlos, ocultando entradas negativas frente a esa regla.
+
+IncomeCaptureRules valida el contrato antes de persistir: referencias positivas, fecha explícitamente no predeterminada, movimiento de ingresos permitido, cada mes no negativo, rango decimal(18,2), máximo dos decimales y total positivo dentro del mismo rango del procedimiento. No redondea, no cambia signos y no suma valores fuera de rango. El detalle usa esa regla en alta, edición y en el punto de revalidación transaccional; los parámetros conservan los importes recibidos.
+
+Veinticinco regresiones adicionales cubren negativos en los doce meses, importe cero, centavo, importe habitual, milésima, límite exacto, exceso del límite, extremos decimal, exceso de total y tipos de movimiento válidos/ajenos. Los negativos se prueban contra el servicio real sin conexión de persistencia, comprobando rechazo controlado y conservación del valor. Suite: 317 correctas; auditoría sin infracciones y diff sin errores de espacios.
+
+No se cambiaron precisión de BD ni procedimientos, y no se ejecutaron scripts. Esta continuación verifica servidor y reglas; no incorpora nueva prueba visual ni viaje completo contra SQL. El rechazo de Fecha predeterminada no detecta una propiedad omitida mientras el DTO conserve su inicialización histórica a hoy: ese caso no se presenta como resuelto. Permanecen los pendientes de separación por empresa y aceptación SQL documentados antes. Sin despliegues, commits, subidas o respaldos.
+### Cierre adicional: fecha omitida en el contrato de ingresos
+
+La limitación de fecha omitida indicada en la continuación anterior se corrigió después de comprobar sus consumidores. Se retiró la inicialización automática a hoy sólo de IngreAdecuacionResponse y su detalle. Los dos formularios ya establecen explícitamente su fecha inicial al abrir una captura nueva, por lo que mantienen ese comportamiento visible.
+
+El servidor rechaza Fecha predeterminada al crear y editar cabecera, incluida la revalidación previa al procedimiento. El detalle utiliza su validación de captura. Dos pruebas deserializan JSON real sin Fecha y verifican que el servicio devuelve VALIDATION antes de cualquier persistencia, sin sustituirla por hoy. La suite actualizada es de 319 pruebas correctas. Esto cierra la omisión de fecha en esos dos contratos; no establece una regla nueva de pertenencia al año calendario para ingresos ni modifica las fechas históricas de otros módulos.
+
+## Continuación: validación compartida de importes en la captura
+
+La regla de ingresos comparte ahora el límite decimal(18,2), el rechazo de negativos y la escala máxima de dos decimales entre la validación del servidor y la captura mensual. La suma de pantalla se invalida completa si un mes excede las reglas o si el acumulado supera el límite; no presenta ni guarda un total parcial.
+
+Cinco pruebas cubren límite, escala, suma fuera de rango e importes vacíos/cero. Suite completa: 324 pruebas correctas; auditoría de calidad sin infracciones y `git diff --check` sin errores de espacios. No se completó una nueva comprobación visual de navegador en esta continuación. El primer intento de compilación en el entorno restringido produjo MSB4216/MSB4027 al iniciar el host MSBuild x64 de WebAssembly; con permiso para ejecutar el host, la solución completa compiló con cero advertencias y errores. Sin cambios en BD, despliegues, commits, subidas ni respaldos.
+
+### Revisión del enlace de restablecimiento
+
+Al leer el token desde el fragmento de la URL, el portal ahora reemplaza la entrada actual del historial por la misma dirección sin el token. El token permanece sólo en memoria del componente para completar la solicitud. La recuperación conserva el token de un solo uso, vencimiento, respuestas que no enumeran cuentas y limitación de intentos existentes. La solución completa compiló con el SDK 10.0.404: cero advertencias y errores; suite: 324 correctas; auditoría de calidad: cero infracciones. El recorrido de correo no se ejecutó en UAT.
+
+### Solicitudes de recuperación nulas
+
+Como la API desactiva el filtro automático de ModelState, los servicios de recuperación ahora aceptan explícitamente un cuerpo nulo y devuelven una validación controlada antes de consultar cuentas o modificar contraseñas. Dos pruebas cubren esos caminos; suite actual: 326 correctas. Se corrigió además el código de salida de `Audit-CodeQuality.ps1`: con `-FailOnViolations`, cero infracciones produce ahora salida 0 de forma consistente. Auditoría: cero infracciones; diff sin errores de espacios.
+
+Intenté comprobar la pantalla en navegador con el frontend local iniciado, pero el navegador no pudo alcanzar `localhost:5419`; cerré la pestaña y detuve el servidor temporal. La vista no se considera revisada visualmente. No se envió una solicitud de recuperación ni se contactó SMTP/UAT.
+
+## Continuación: consultas de adecuaciones de egreso
+
+Se verificó el origen del listado sin paginación: `GenericService.GetQueryWithIncludes` ya añade los filtros de empresa, ejercicio y activo a la consulta EF para las vistas que contienen esas propiedades. Se retiró el segundo recorrido `Where` en memoria del servicio de egresos y se conserva la validación del contexto antes de delegar la consulta. El alcance continúa aplicándose en SQL mediante el servicio genérico.
+
+La compilación completa posterior a la revisión PBR fue correcta; se repetirá tras esta corrección. No corrige adecuaciones de ingreso, cuyo esquema no contiene una empresa asociable de forma inequívoca. No se cambió la BD ni se ejecutó SQL.
+
+## Continuación: ejercicio fiscal en editores PBR
+
+El diálogo CRUD compartido ya no sustituye el ejercicio faltante por el año del navegador ni actualiza la fecha de creación del servidor desde el cliente. Conserva el ejercicio del registro si no hay uno seleccionado y bloquea el guardado de entidades anuales cuando no existe un ejercicio válido. La regla se aplica a anteproyectos, presupuestos por programa y partidas que usan el editor genérico; las entidades sin propiedad `Anio` no requieren ese contexto.
+
+Seis pruebas cubren ausencia de año, conservación de registros, aplicación intencional del contexto, propiedad nullable y entidad no anual. Suite: 332 correctas. Compilación completa: cero advertencias y errores; auditoría y diff sin infracciones. No hubo recorrido visual porque el navegador disponible no alcanzó el servidor local.
+
+## Continuación: fechas de requisición y suministro
+
+La captura de requisiciones ya no convierte una fecha vacía a la fecha del equipo al guardar. La regla compartida entre formulario y servicio exige fecha de requisición y rango de suministro, compara días calendario y rechaza fecha de solicitud posterior al inicio, así como un inicio posterior al fin. El servicio vuelve a validar al recibir la solicitud, aunque se omita la pantalla.
+
+Cinco casos de prueba cubren campos requeridos, fechas posteriores al inicio, rango invertido y fechas del mismo día. Suite completa: 338 pruebas correctas. Compilación de solución: cero advertencias y errores; auditoría de calidad: cero infracciones; diff sin errores de espacios. No se modificaron procedimientos ni esquema SQL; no se hizo despliegue, commit, subida ni respaldo.
+
+## Continuación: ejercicio explícito en tableros PBR
+
+Los tableros PBR y Mi Tablero dejaron de tomar el año del reloj cuando no hay selección presupuestal. Ahora solicitan seleccionar el ejercicio, limpian los datos visibles si se quita la selección y no llaman al servicio con un año inválido. Cuatro casos verifican selección ausente, cero, año negativo y año positivo. Suite: 342 pruebas correctas. La solución compila sin advertencias ni errores y la auditoría no reporta infracciones. Pendiente revisión visual en navegador.
+
+## Continuación: fecha requerida en solicitudes de salida de almacén
+
+La pantalla de solicitud de salida conserva la validación de empresa, área y ejercicio y ahora rechaza una fecha de solicitud vacía sin reemplazarla por el día actual. El servicio aplica la misma regla al cuerpo recibido directamente y sólo genera folio y fecha persistida después de validarla. La comprobación del año calendario del registro contra el ejercicio seleccionado se mantiene.
+
+Tres pruebas cubren fecha nula, fecha predeterminada y fecha explícita válida. La misma regla protege el calendario de inventarios de patrimonio: la pantalla no sustituye una fecha de edición faltante y el servicio rechaza payloads sin fecha antes de validar su rango contra el calendario. Suite: 345 correctas. Compilación completa: cero advertencias y errores; auditoría: cero infracciones; diff: sin errores de espacios. No se alteró la base de datos ni los procedimientos de almacén/patrimonio.
+
+## Continuación: calendario patrimonial y solicitudes de baja
+
+El servicio de calendarios ya no deduce fecha de inicio ni fecha fin de valores vacíos; exige ambas antes de aplicar las reglas existentes de rango, año y traslape por área. En bajas patrimoniales, fecha de solicitud es obligatoria en pantalla y API; las fechas de referencia y baja siguen opcionales según el flujo existente y se conserva la validación de fecha de referencia respecto a la baja.
+
+Suite: 345 correctas. Compilación completa sin advertencias ni errores; auditoría de calidad sin infracciones; diff sin errores de espacios. No se ejecutó SQL ni se cambió el esquema. Pendiente revisión visual de estas pantallas.
+
+## Continuación: fecha de cotización y fecha de adquisición patrimonial
+
+La fecha de solicitud de cotización ahora se rechaza si llega vacía o predeterminada por API y se envía al procedimiento sólo después de validarse. Los campos opcionales de fecha comprometida y cotización conservan su comportamiento actual. El alta de bienes exige una fecha de adquisición antes de llamar al procedimiento; el formulario la marca como requerida y el servidor normaliza la fecha validada al día calendario.
+
+Suite: 345 correctas; compilación completa sin advertencias ni errores. Estos cambios reutilizan la regla de fecha requerida probada anteriormente. No se modificó SQL ni se ejecutó el procedimiento. Pendiente la aceptación visual y funcional de pantallas con datos reales.
+
+## Continuación: arranque local y flujo de licenciamiento
+
+La API validaba configuración obligatoria en dos pasos, por lo que cada reinicio mostraba sólo la primera clave ausente. Ahora enumera conexión y firma JWT en un mismo diagnóstico. Las transacciones explícitas de inicialización/importación/cambio de licencias se ejecutan dentro de la estrategia de reintentos SQL Server. Se corrigieron los alias de `InstallationStateRow` y se quitaron terminadores de sentencias SQL que EF agregaba dentro de consultas componibles.
+
+Se configuró User Secrets local con autenticación Windows a la base `GestionEmpresarial` y una clave JWT aleatoria; los valores permanecen fuera del repositorio. API `http://localhost:5198/api/Navigate/ping` y portal `http://localhost:5242/` respondieron HTTP 200 en la comprobación. La compilación completa terminó sin advertencias ni errores. El arranque inicial verificó/creó los objetos de licenciamiento y envío workflow de la base local. No se hicieron commits ni respaldos.
+
+## Continuación: lecturas y filtrados reutilizados en catálogos
+
+El diálogo de requisición reutiliza durante su vida una sola lectura de áreas/personas solicitantes para disponibilidad, búsqueda de persona, selección de área y comprobación del registro editado; la autorización definitiva al guardar permanece en el servidor. El autocompletado compartido conserva un conjunto de IDs para deduplicar elementos de forma constante, en vez de recorrer todos los elementos ya cargados por cada resultado. En catálogos locales calcula la lista filtrada una vez por término y pagina esa misma lista. Cada opción muestra el texto completo con el atributo `title` y no crea un `MudTooltip` adicional por fila, manteniendo la presentación compacta de las listas.
+
+Compilación completa: cero advertencias y errores. No se añadieron pruebas ni se ejecutó SQL para estos cambios de interfaz.

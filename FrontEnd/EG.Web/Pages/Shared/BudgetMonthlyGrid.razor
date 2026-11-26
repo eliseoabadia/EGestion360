@@ -7,7 +7,7 @@
             <MudNumericField T="decimal?" Value="@GetAmount(month.Index)"
                              ValueChanged="value => OnAmountChanged.InvokeAsync(new BudgetMonthChange(month.Index, value))"
                              Label="@month.Label" Margin="Margin.Dense" Variant="Variant.Outlined"
-                             Immediate="true" DebounceInterval="250" Validation="@(new Func<decimal?, string?>(BudgetCaptureUi.ValidateAmount))"
+                             Immediate="true" DebounceInterval="250" Validation="@(new Func<decimal?, string?>(ValidateAmount))"
                              Format="0.00" Culture="@BudgetCaptureUi.NumberCulture" Disabled="@Disabled" />
         </div>
     }

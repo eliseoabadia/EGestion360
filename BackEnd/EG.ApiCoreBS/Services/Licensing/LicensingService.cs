@@ -34,10 +34,13 @@ public sealed class LicensingService : ILicensingService
 
     public async Task EnsureInitializedAsync(CancellationToken cancellationToken = default)
     {
-        await using (var transaction = await _context.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken))
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+
             var existing = await LoadInstallationRowForUpdateAsync(cancellationToken);
             if (existing is null)
             {
@@ -70,7 +73,7 @@ public sealed class LicensingService : ILicensingService
             }
 
             await transaction.CommitAsync(cancellationToken);
-        }
+        });
 
         await LoadRuntimeAsync(cancellationToken);
     }
@@ -115,148 +118,153 @@ public sealed class LicensingService : ILicensingService
         var currentRuntime = _runtime.GetRuntimeSnapshot();
         ValidatePayload(verification.Payload, currentRuntime, requireNewSerial: true);
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
-
-        var row = await LoadInstallationRowForUpdateAsync(cancellationToken)
-            ?? throw new LicenseOperationException("LIC_INSTALLATION_MISSING", "No existe el estado de instalación.");
-        var protectedState = ValidateProtectedState(row);
-
-        if (verification.Payload.Serial <= protectedState.Serial)
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            throw new LicenseOperationException(
-                "LIC_SERIAL_REPLAYED",
-                "La licencia no es más reciente que la ya aceptada.");
-        }
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
 
-        var previousModules = await LoadCurrentModuleCodesAsync(protectedState.Serial, cancellationToken);
+            var row = await LoadInstallationRowForUpdateAsync(cancellationToken)
+                ?? throw new LicenseOperationException("LIC_INSTALLATION_MISSING", "No existe el estado de instalación.");
+            var protectedState = ValidateProtectedState(row);
 
-        await ExecuteAsync(
-            """
-            UPDATE [LIC].[LicenciaImportada]
-               SET [Resultado] = 'SUSTITUIDA'
-             WHERE [InstalacionId] = @InstalacionId
-               AND [Resultado] = 'ACEPTADA';
-            """,
-            cancellationToken,
-            new SqlParameter("@InstalacionId", protectedState.InstallationId));
+            if (verification.Payload.Serial <= protectedState.Serial)
+            {
+                throw new LicenseOperationException(
+                    "LIC_SERIAL_REPLAYED",
+                    "La licencia no es más reciente que la ya aceptada.");
+            }
 
-        var envelopeHash = SHA256.HashData(Encoding.UTF8.GetBytes(verification.CompactToken));
-        await ExecuteAsync(
-            """
-            INSERT INTO [LIC].[LicenciaImportada]
-                ([LicenciaId], [InstalacionId], [Serial], [VersionFormato], [KeyId],
-                 [SobreFirmado], [HuellaSobre], [EmitidaUtc], [Resultado], [ImportadaPor])
-            VALUES
-                (@LicenciaId, @InstalacionId, @Serial, @VersionFormato, @KeyId,
-                 @SobreFirmado, @HuellaSobre, @EmitidaUtc, 'ACEPTADA', @ImportadaPor);
-            """,
-            cancellationToken,
-            new SqlParameter("@LicenciaId", verification.Payload.LicenseId),
-            new SqlParameter("@InstalacionId", verification.Payload.InstallationId),
-            new SqlParameter("@Serial", verification.Payload.Serial),
-            new SqlParameter("@VersionFormato", verification.Payload.FormatVersion),
-            new SqlParameter("@KeyId", verification.KeyId),
-            new SqlParameter("@SobreFirmado", verification.CompactToken),
-            new SqlParameter("@HuellaSobre", envelopeHash),
-            new SqlParameter("@EmitidaUtc", verification.Payload.IssuedAtUtc.UtcDateTime),
-            new SqlParameter("@ImportadaPor", operatorUserId));
+            var previousModules = await LoadCurrentModuleCodesAsync(protectedState.Serial, cancellationToken);
 
-        var importedLicenseId = await _context.Database
-            .SqlQueryRaw<long>(
-                """
-                SELECT [PkidLicenciaImportada] AS [Value]
-                FROM [LIC].[LicenciaImportada]
-                WHERE [LicenciaId] = @LicenciaId;
-                """,
-                new SqlParameter("@LicenciaId", verification.Payload.LicenseId))
-            .SingleAsync(cancellationToken);
-
-        foreach (var module in verification.Payload.Modules)
-        {
-            var canonicalCode = LicenseModuleCodes.Find(module.Code)!.Code;
             await ExecuteAsync(
                 """
-                INSERT INTO [LIC].[LicenciaModulo]
-                    ([FkidLicenciaImportada], [CodigoModulo], [InicioUtc], [FinUtc])
+                UPDATE [LIC].[LicenciaImportada]
+                   SET [Resultado] = 'SUSTITUIDA'
+                 WHERE [InstalacionId] = @InstalacionId
+                   AND [Resultado] = 'ACEPTADA';
+                """,
+                cancellationToken,
+                new SqlParameter("@InstalacionId", protectedState.InstallationId));
+
+            var envelopeHash = SHA256.HashData(Encoding.UTF8.GetBytes(verification.CompactToken));
+            await ExecuteAsync(
+                """
+                INSERT INTO [LIC].[LicenciaImportada]
+                    ([LicenciaId], [InstalacionId], [Serial], [VersionFormato], [KeyId],
+                     [SobreFirmado], [HuellaSobre], [EmitidaUtc], [Resultado], [ImportadaPor])
                 VALUES
-                    (@LicenciaId, @CodigoModulo, @InicioUtc, @FinUtc);
+                    (@LicenciaId, @InstalacionId, @Serial, @VersionFormato, @KeyId,
+                     @SobreFirmado, @HuellaSobre, @EmitidaUtc, 'ACEPTADA', @ImportadaPor);
                 """,
                 cancellationToken,
-                new SqlParameter("@LicenciaId", importedLicenseId),
-                new SqlParameter("@CodigoModulo", canonicalCode),
-                new SqlParameter("@InicioUtc", module.StartsAtUtc.UtcDateTime),
-                new SqlParameter("@FinUtc", module.EndsAtUtc?.UtcDateTime ?? (object)DBNull.Value));
-        }
+                new SqlParameter("@LicenciaId", verification.Payload.LicenseId),
+                new SqlParameter("@InstalacionId", verification.Payload.InstallationId),
+                new SqlParameter("@Serial", verification.Payload.Serial),
+                new SqlParameter("@VersionFormato", verification.Payload.FormatVersion),
+                new SqlParameter("@KeyId", verification.KeyId),
+                new SqlParameter("@SobreFirmado", verification.CompactToken),
+                new SqlParameter("@HuellaSobre", envelopeHash),
+                new SqlParameter("@EmitidaUtc", verification.Payload.IssuedAtUtc.UtcDateTime),
+                new SqlParameter("@ImportadaPor", operatorUserId));
 
-        var grantedCodes = verification.Payload.Modules
-            .Select(module => LicenseModuleCodes.Find(module.Code)!.Code)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var importedLicenseId = await _context.Database
+                .SqlQueryRaw<long>(
+                    """
+                    SELECT [PkidLicenciaImportada] AS [Value]
+                    FROM [LIC].[LicenciaImportada]
+                    WHERE [LicenciaId] = @LicenciaId
+                    """,
+                    new SqlParameter("@LicenciaId", verification.Payload.LicenseId))
+                .SingleAsync(cancellationToken);
 
-        foreach (var module in LicenseModuleCodes.All)
-        {
-            var isGranted = grantedCodes.Contains(module.Code);
-            var wasPreviouslyGranted = previousModules.Contains(module.Code);
-            var enableNewGrant = isGranted && !wasPreviouslyGranted;
+            foreach (var module in verification.Payload.Modules)
+            {
+                var canonicalCode = LicenseModuleCodes.Find(module.Code)!.Code;
+                await ExecuteAsync(
+                    """
+                    INSERT INTO [LIC].[LicenciaModulo]
+                        ([FkidLicenciaImportada], [CodigoModulo], [InicioUtc], [FinUtc])
+                    VALUES
+                        (@LicenciaId, @CodigoModulo, @InicioUtc, @FinUtc);
+                    """,
+                    cancellationToken,
+                    new SqlParameter("@LicenciaId", importedLicenseId),
+                    new SqlParameter("@CodigoModulo", canonicalCode),
+                    new SqlParameter("@InicioUtc", module.StartsAtUtc.UtcDateTime),
+                    new SqlParameter("@FinUtc", module.EndsAtUtc?.UtcDateTime ?? (object)DBNull.Value));
+            }
+
+            var grantedCodes = verification.Payload.Modules
+                .Select(module => LicenseModuleCodes.Find(module.Code)!.Code)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var module in LicenseModuleCodes.All)
+            {
+                var isGranted = grantedCodes.Contains(module.Code);
+                var wasPreviouslyGranted = previousModules.Contains(module.Code);
+                var enableNewGrant = isGranted && !wasPreviouslyGranted;
+
+                await ExecuteAsync(
+                    """
+                    UPDATE [LIC].[ConfiguracionModulo]
+                       SET [ActivoOperativo] = CASE
+                               WHEN @Concedido = 0 THEN 0
+                               WHEN @ConcesionNueva = 1 THEN 1
+                               ELSE [ActivoOperativo]
+                           END,
+                           [Motivo] = CASE
+                               WHEN @Concedido = 0 THEN N'No incluido en la licencia vigente'
+                               WHEN @ConcesionNueva = 1 THEN NULL
+                               ELSE [Motivo]
+                           END,
+                           [ActualizadoPor] = @Usuario,
+                           [ActualizadoUtc] = SYSUTCDATETIME()
+                     WHERE [CodigoModulo] = @CodigoModulo;
+                    """,
+                    cancellationToken,
+                    new SqlParameter("@Concedido", isGranted),
+                    new SqlParameter("@ConcesionNueva", enableNewGrant),
+                    new SqlParameter("@Usuario", operatorUserId),
+                    new SqlParameter("@CodigoModulo", module.Code));
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var nextProtectedState = protectedState with
+            {
+                Serial = verification.Payload.Serial,
+                LastObservedUtc = now
+            };
+            var nextSeal = _protector.Protect(nextProtectedState);
 
             await ExecuteAsync(
                 """
-                UPDATE [LIC].[ConfiguracionModulo]
-                   SET [ActivoOperativo] = CASE
-                           WHEN @Concedido = 0 THEN 0
-                           WHEN @ConcesionNueva = 1 THEN 1
-                           ELSE [ActivoOperativo]
-                       END,
-                       [Motivo] = CASE
-                           WHEN @Concedido = 0 THEN N'No incluido en la licencia vigente'
-                           WHEN @ConcesionNueva = 1 THEN NULL
-                           ELSE [Motivo]
-                       END,
-                       [ActualizadoPor] = @Usuario,
-                       [ActualizadoUtc] = SYSUTCDATETIME()
-                 WHERE [CodigoModulo] = @CodigoModulo;
+                UPDATE [LIC].[EstadoInstalacion]
+                   SET [SerialMinimoAceptado] = @Serial,
+                       [UltimaHoraConfiableUtc] = @UltimaHora,
+                       [EstadoReloj] = 'VALIDO',
+                       [SelloProtegidoMaquina] = @Sello,
+                       [ModificadoUtc] = SYSUTCDATETIME()
+                 WHERE [PkidEstado] = 1;
                 """,
                 cancellationToken,
-                new SqlParameter("@Concedido", isGranted),
-                new SqlParameter("@ConcesionNueva", enableNewGrant),
-                new SqlParameter("@Usuario", operatorUserId),
-                new SqlParameter("@CodigoModulo", module.Code));
-        }
+                new SqlParameter("@Serial", nextProtectedState.Serial),
+                new SqlParameter("@UltimaHora", nextProtectedState.LastObservedUtc.UtcDateTime),
+                new SqlParameter("@Sello", nextSeal));
 
-        var now = DateTimeOffset.UtcNow;
-        var nextProtectedState = protectedState with
-        {
-            Serial = verification.Payload.Serial,
-            LastObservedUtc = now
-        };
-        var nextSeal = _protector.Protect(nextProtectedState);
+            await InsertEventAsync(
+                importedLicenseId,
+                "IMPORTACION_ACEPTADA",
+                null,
+                $"Licencia serial {verification.Payload.Serial} aceptada.",
+                operatorUserId.ToString(),
+                "WEB",
+                cancellationToken);
 
-        await ExecuteAsync(
-            """
-            UPDATE [LIC].[EstadoInstalacion]
-               SET [SerialMinimoAceptado] = @Serial,
-                   [UltimaHoraConfiableUtc] = @UltimaHora,
-                   [EstadoReloj] = 'VALIDO',
-                   [SelloProtegidoMaquina] = @Sello,
-                   [ModificadoUtc] = SYSUTCDATETIME()
-             WHERE [PkidEstado] = 1;
-            """,
-            cancellationToken,
-            new SqlParameter("@Serial", nextProtectedState.Serial),
-            new SqlParameter("@UltimaHora", nextProtectedState.LastObservedUtc.UtcDateTime),
-            new SqlParameter("@Sello", nextSeal));
+            await transaction.CommitAsync(cancellationToken);
+        });
 
-        await InsertEventAsync(
-            importedLicenseId,
-            "IMPORTACION_ACEPTADA",
-            null,
-            $"Licencia serial {verification.Payload.Serial} aceptada.",
-            operatorUserId.ToString(),
-            "WEB",
-            cancellationToken);
-
-        await transaction.CommitAsync(cancellationToken);
         await LoadRuntimeAsync(cancellationToken);
 
         _logger.LogInformation(
@@ -289,35 +297,40 @@ public sealed class LicensingService : ILicensingService
             ? null
             : reason.Trim()[..Math.Min(reason.Trim().Length, 300)];
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
 
-        await ExecuteAsync(
-            """
-            UPDATE [LIC].[ConfiguracionModulo]
-               SET [ActivoOperativo] = @Activo,
-                   [Motivo] = @Motivo,
-                   [ActualizadoPor] = @Usuario,
-                   [ActualizadoUtc] = SYSUTCDATETIME()
-             WHERE [CodigoModulo] = @CodigoModulo;
-            """,
-            cancellationToken,
-            new SqlParameter("@Activo", active),
-            new SqlParameter("@Motivo", safeReason ?? (object)DBNull.Value),
-            new SqlParameter("@Usuario", operatorUserId),
-            new SqlParameter("@CodigoModulo", definition.Code));
+            await ExecuteAsync(
+                """
+                UPDATE [LIC].[ConfiguracionModulo]
+                   SET [ActivoOperativo] = @Activo,
+                       [Motivo] = @Motivo,
+                       [ActualizadoPor] = @Usuario,
+                       [ActualizadoUtc] = SYSUTCDATETIME()
+                 WHERE [CodigoModulo] = @CodigoModulo;
+                """,
+                cancellationToken,
+                new SqlParameter("@Activo", active),
+                new SqlParameter("@Motivo", safeReason ?? (object)DBNull.Value),
+                new SqlParameter("@Usuario", operatorUserId),
+                new SqlParameter("@CodigoModulo", definition.Code));
 
-        await InsertEventAsync(
-            null,
-            active ? "MODULO_ENCENDIDO" : "MODULO_APAGADO",
-            definition.Code,
-            safeReason,
-            operatorUserId.ToString(),
-            "WEB",
-            cancellationToken);
+            await InsertEventAsync(
+                null,
+                active ? "MODULO_ENCENDIDO" : "MODULO_APAGADO",
+                definition.Code,
+                safeReason,
+                operatorUserId.ToString(),
+                "WEB",
+                cancellationToken);
 
-        await transaction.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        });
+
         await LoadRuntimeAsync(cancellationToken);
 
         return _runtime.GetSnapshot();
@@ -426,7 +439,7 @@ public sealed class LicensingService : ILicensingService
                 FROM [LIC].[LicenciaImportada]
                 WHERE [InstalacionId] = @InstalacionId
                   AND [Serial] = @Serial
-                  AND [Resultado] = 'ACEPTADA';
+                  AND [Resultado] = 'ACEPTADA'
                 """,
                 new SqlParameter("@InstalacionId", protectedState.InstallationId),
                 new SqlParameter("@Serial", protectedState.Serial))
@@ -546,10 +559,10 @@ public sealed class LicensingService : ILicensingService
         await _context.Database
             .SqlQueryRaw<InstallationStateRow>(
                 """
-                SELECT [InstalacionId], [HuellaInstalacion], [SerialMinimoAceptado],
+                SELECT [InstalacionId] AS [InstallationId], [HuellaInstalacion], [SerialMinimoAceptado],
                        [UltimaHoraConfiableUtc], [EstadoReloj], [SelloProtegidoMaquina]
                 FROM [LIC].[EstadoInstalacion]
-                WHERE [PkidEstado] = 1;
+                WHERE [PkidEstado] = 1
                 """)
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -557,10 +570,10 @@ public sealed class LicensingService : ILicensingService
         await _context.Database
             .SqlQueryRaw<InstallationStateRow>(
                 """
-                SELECT [InstalacionId], [HuellaInstalacion], [SerialMinimoAceptado],
+                SELECT [InstalacionId] AS [InstallationId], [HuellaInstalacion], [SerialMinimoAceptado],
                        [UltimaHoraConfiableUtc], [EstadoReloj], [SelloProtegidoMaquina]
                 FROM [LIC].[EstadoInstalacion] WITH (UPDLOCK, HOLDLOCK)
-                WHERE [PkidEstado] = 1;
+                WHERE [PkidEstado] = 1
                 """)
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -579,7 +592,7 @@ public sealed class LicensingService : ILicensingService
                 INNER JOIN [LIC].[LicenciaImportada] license
                     ON license.[PkidLicenciaImportada] = module.[FkidLicenciaImportada]
                 WHERE license.[InstalacionId] = @InstalacionId
-                  AND license.[Serial] = @Serial;
+                  AND license.[Serial] = @Serial
                 """,
                 new SqlParameter("@InstalacionId", _runtime.GetRuntimeSnapshot().InstallationId),
                 new SqlParameter("@Serial", serial))
@@ -594,7 +607,7 @@ public sealed class LicensingService : ILicensingService
             .SqlQueryRaw<ModuleConfigurationRow>(
                 """
                 SELECT [CodigoModulo], [ActivoOperativo]
-                FROM [LIC].[ConfiguracionModulo];
+                FROM [LIC].[ConfiguracionModulo]
                 """)
             .ToListAsync(cancellationToken);
 

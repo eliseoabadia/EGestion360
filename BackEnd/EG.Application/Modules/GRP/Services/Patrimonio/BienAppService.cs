@@ -3,6 +3,7 @@ using EG.Application.Interfaces.Patrimonio;
 using EG.Application.Services.Adquisicion;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Domain.Interfaces;
@@ -412,6 +413,14 @@ namespace EG.Application.Services.Patrimonio
 
         private async Task<PagedResult<BienResponse>?> NormalizeAndValidateAsync(BienResponse response, bool isCreate)
         {
+            var acquisitionDateValidation = RequiredDateRules.Validate(response.FechaAdq, "adquisición");
+            if (acquisitionDateValidation != null)
+            {
+                return Failure<BienResponse>(acquisitionDateValidation, "VALIDATION");
+            }
+
+            response.FechaAdq = response.FechaAdq!.Value.Date;
+
             if (response.FkidTipoBienAlma <= 0)
             {
                 return Failure<BienResponse>("Debe seleccionar el tipo de bien.");

@@ -22,9 +22,9 @@ public sealed class PasswordResetAppService(
     IConfiguration configuration,
     ILogger<PasswordResetAppService> logger) : IPasswordResetAppService
 {
-    public async Task<PagedResult<bool>> RequestAsync(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    public async Task<PagedResult<bool>> RequestAsync(ForgotPasswordRequest? request, CancellationToken cancellationToken)
     {
-        if (!Validator.TryValidateObject(request, new ValidationContext(request), [], true))
+        if (request is null || !Validator.TryValidateObject(request, new ValidationContext(request), [], true))
         {
             return Result(false, "Captura un correo electrónico válido.");
         }
@@ -86,9 +86,9 @@ public sealed class PasswordResetAppService(
         return frontend;
     }
 
-    public async Task<PagedResult<bool>> ResetAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
+    public async Task<PagedResult<bool>> ResetAsync(ResetPasswordRequest? request, CancellationToken cancellationToken)
     {
-        if (!Validator.TryValidateObject(request, new ValidationContext(request), [], true) ||
+        if (request is null || !Validator.TryValidateObject(request, new ValidationContext(request), [], true) ||
             string.IsNullOrWhiteSpace(request.NewPassword))
         {
             return Result(false, "Revisa la nueva contraseña y su confirmación.");

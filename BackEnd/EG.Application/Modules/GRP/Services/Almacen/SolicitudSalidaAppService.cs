@@ -1,6 +1,7 @@
 using EG.Application.Interfaces.Almacen;
 using EG.Business.Services;
 using EG.Common.GenericModel;
+using EG.Common.Modules;
 using EG.Domain.DTOs.Requests.Almacen;
 using EG.Domain.DTOs.Responses.Almacen;
 using EG.Domain.Interfaces;
@@ -318,7 +319,12 @@ namespace EG.Application.Services.Almacen
                 return Failure<SolicitudSalidaResponse>("Debe capturar la justificacion.");
             }
 
-            response.FechaSolicitud = response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud;
+            var fechaSolicitudValidation = RequiredDateRules.Validate(response.FechaSolicitud, "solicitud");
+            if (fechaSolicitudValidation != null)
+            {
+                return Failure<SolicitudSalidaResponse>(fechaSolicitudValidation, "VALIDATION");
+            }
+
             if (response.FechaSolicitud.Year != anio.Clave)
             {
                 return Failure<SolicitudSalidaResponse>("La fecha de solicitud debe pertenecer al ejercicio presupuestal seleccionado.");
@@ -357,7 +363,7 @@ namespace EG.Application.Services.Almacen
 
         private async Task<string> BuildFolioAsync(SolicitudSalidaResponse response)
         {
-            var year = response.FechaSolicitud == default ? DateTime.Today.Year : response.FechaSolicitud.Year;
+            var year = response.FechaSolicitud.Year;
             var next = await _context.SolicitudSalida.CountAsync(x =>
                 x.FkidEmpresaSis == response.FkidEmpresaSis &&
                 x.FkidAnioSis == response.FkidAnioSis) + 1;
@@ -382,7 +388,7 @@ namespace EG.Application.Services.Almacen
             entity.FkidAreaEntregaSis = response.FkidAreaEntregaSis;
             entity.FkidEstatusSolicitudSalidaAlma = response.FkidEstatusSolicitudSalidaAlma;
             entity.Folio = response.Folio ?? string.Empty;
-            entity.FechaSolicitud = DateOnly.FromDateTime(response.FechaSolicitud == default ? DateTime.Today : response.FechaSolicitud);
+            entity.FechaSolicitud = DateOnly.FromDateTime(response.FechaSolicitud);
             entity.FechaRequerida = response.FechaRequerida.HasValue ? DateOnly.FromDateTime(response.FechaRequerida.Value) : null;
             entity.Solicitante = response.Solicitante ?? string.Empty;
             entity.Justificacion = response.Justificacion ?? string.Empty;

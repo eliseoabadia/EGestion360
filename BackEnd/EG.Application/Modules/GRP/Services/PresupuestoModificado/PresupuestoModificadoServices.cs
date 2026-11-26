@@ -41,15 +41,12 @@ public class EgreAdecuacionAppService(
 
     public override async Task<PagedResult<EgreAdecuacionResponse>> GetAllAsync()
     {
-        var (scope, failure) = await TryGetScopeAsync<EgreAdecuacionResponse>();
+        var (_, failure) = await TryGetScopeAsync<EgreAdecuacionResponse>();
         if (failure != null) return failure;
 
-        var result = await base.GetAllAsync();
-        result.Items = result.Items
-            .Where(x => x.FkidEmpresaSis == scope!.Value.EmpresaId && x.FkidAnioSis == scope.Value.AnioId)
-            .ToList();
-        result.TotalCount = result.Items.Count;
-        return result;
+        // GenericService ya aplica empresa, ejercicio y activo como filtros SQL.
+        // No vuelvas a recorrer los resultados en memoria.
+        return await base.GetAllAsync();
     }
 
     public override async Task<PagedResult<EgreAdecuacionResponse>> GetByIdAsync(int id)
