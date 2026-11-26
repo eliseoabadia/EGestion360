@@ -1,4 +1,4 @@
-using EG.Business.Interfaces;
+using EG.Application.Interfaces.General;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Seguridad;
 using EG.Domain.DTOs.Responses.Seguridad;
@@ -10,7 +10,7 @@ namespace EG.ApiCoreBS.Controllers.Modules.GRP.Administracion.Seguridad;
 [ApiController]
 [Authorize(Policy = "Seguridad|Bitacora|view")]
 [Route("api/[controller]")]
-public sealed class BitacoraController(IBitacoraService service) : ControllerBase
+public sealed class BitacoraController(IBitacoraAppService service) : ControllerBase
 {
     [HttpPost("GetAllPaginado")]
     public async Task<ActionResult<PagedResult<BitacoraResponse>>> GetAllPaginado([FromBody] BitacoraRequest request)

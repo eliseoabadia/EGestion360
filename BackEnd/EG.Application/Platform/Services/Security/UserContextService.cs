@@ -1,18 +1,15 @@
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using EG.Domain.Interfaces;
-using EG.Infraestructure.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace EG.ApiCoreBS.Services
+namespace EG.Application.Services.Security
 {
     public class UserContextService : IUserContextService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRequestContext _requestContext;
         private readonly ILogger<UserContextService> _logger;
-        private readonly EGestionContext _context;
+        private readonly IUserContextQueries _queries;
         private const string EmpresaHeader = "X-Empresa-Id";
         private const string AnioPresupuestalHeader = "X-Anio-Presupuestal-Id";
         private static readonly string[] CandidateClaimTypes = new[]
@@ -26,18 +23,18 @@ namespace EG.ApiCoreBS.Services
         };
 
         public UserContextService(
-            IHttpContextAccessor httpContextAccessor,
+            IUserRequestContext requestContext,
             ILogger<UserContextService> logger,
-            EGestionContext context)
+            IUserContextQueries queries)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _requestContext = requestContext;
             _logger = logger;
-            _context = context;
+            _queries = queries;
         }
 
         public ClaimsPrincipal? GetUserPrincipal()
         {
-            return _httpContextAccessor.HttpContext?.User;
+            return _requestContext.User;
         }
 
         public int? TryGetCurrentUserId()
@@ -108,12 +105,8 @@ namespace EG.ApiCoreBS.Services
 
         private int? TryGetSelectedEmpresaIdFromHeader()
         {
-            var headers = _httpContextAccessor.HttpContext?.Request?.Headers;
-            if (headers == null)
-                return null;
-
-            return headers.TryGetValue(EmpresaHeader, out var value) &&
-                   int.TryParse(value.FirstOrDefault(), out var empresaId) &&
+            var value = _requestContext.GetHeader(EmpresaHeader);
+            return int.TryParse(value, out var empresaId) &&
                    empresaId > 0
                 ? empresaId
                 : null;
@@ -127,24 +120,7 @@ namespace EG.ApiCoreBS.Services
 
             try
             {
-                var empresaPrincipal = _context.Usuarios
-                    .AsNoTracking()
-                    .Any(x =>
-                        x.PkIdUsuario == usuarioId.Value &&
-                        x.Activo &&
-                        x.FkidEmpresaSis == empresaId);
-
-                if (empresaPrincipal)
-                    return true;
-
-                return _context.UsuarioSucursals
-                    .AsNoTracking()
-                    .Include(x => x.FkidSucursalSisNavigation)
-                    .Any(x =>
-                        x.FkidUsuarioSis == usuarioId.Value &&
-                        x.Activo &&
-                        x.FkidSucursalSisNavigation.Activo &&
-                        x.FkidSucursalSisNavigation.FkidEmpresaSis == empresaId);
+                return _queries.CanAccessEmpresa(usuarioId.Value, empresaId);
             }
             catch (Exception ex)
             {
@@ -163,10 +139,8 @@ namespace EG.ApiCoreBS.Services
 
         public int? TryGetCurrentAnioPresupuestalId()
         {
-            var headers = _httpContextAccessor.HttpContext?.Request?.Headers;
-            if (headers == null ||
-                !headers.TryGetValue(AnioPresupuestalHeader, out var value) ||
-                !int.TryParse(value.FirstOrDefault(), out var anioId) ||
+            var value = _requestContext.GetHeader(AnioPresupuestalHeader);
+            if (!int.TryParse(value, out var anioId) ||
                 anioId <= 0)
             {
                 return null;
@@ -174,9 +148,7 @@ namespace EG.ApiCoreBS.Services
 
             try
             {
-                return _context.Anios
-                    .AsNoTracking()
-                    .Any(x => x.PkidAnio == anioId && x.Activo)
+                return _queries.IsActiveAnio(anioId)
                     ? anioId
                     : null;
             }

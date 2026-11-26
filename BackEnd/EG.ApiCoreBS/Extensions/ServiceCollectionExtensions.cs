@@ -114,6 +114,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IPaaaPersistence, PaaaPersistence>();
             services.AddScoped<IPaaaService, PaaaService>();
             services.AddScoped<IPaaaAppService, PaaaAppService>();
+            services.AddScoped<ICatalogLookupService, CatalogLookupService>();
             services.AddScoped<ICatalogLookupAppService, CatalogLookupAppService>();
             services.AddScoped<IRhIncidenciaQueries, RhIncidenciaQueries>();
             services.AddScoped<INominaRhIncidenciaListadoAppService, NominaRhIncidenciaListadoAppService>();
@@ -353,7 +354,9 @@ namespace EG.ApiCoreBS.Extensions
 
             // Business services
             services.AddHttpContextAccessor();
-            services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IUserRequestContext, HttpUserRequestContext>();
+            services.AddScoped<IUserContextQueries, EG.Business.Services.Security.UserContextQueries>();
+            services.AddScoped<IUserContextService, EG.Application.Services.Security.UserContextService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
@@ -362,6 +365,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IBitacoraService, BitacoraService>();
+            services.AddScoped<IBitacoraAppService, BitacoraAppService>();
 
             // Catalog services - Clave programa
             services.AddScoped<IGfService, GfService>();

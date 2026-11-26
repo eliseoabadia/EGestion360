@@ -3,7 +3,6 @@ using EG.Application.Interfaces.Contabilidad;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses;
 using EG.Domain.DTOs.Responses.Contabilidad;
-using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

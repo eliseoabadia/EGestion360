@@ -3,7 +3,6 @@ using Mapster;
 using EG.ApiCoreBS.Services;
 using EG.Domain.Interfaces;
 using EG.Application.Interfaces.Contabilidad;
-using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests;
 using EG.Domain.DTOs.Requests.Contabilidad;

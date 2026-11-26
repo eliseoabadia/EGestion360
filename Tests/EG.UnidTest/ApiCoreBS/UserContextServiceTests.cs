@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EG.ApiCoreBS.Services;
+using EG.Application.Services.Security;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,6 @@ public sealed class UserContextServiceTests
         var options = new DbContextOptionsBuilder<EGestionContext>().Options;
         var context = new EGestionContext(options);
 
-        return new UserContextService(accessor, NullLogger<UserContextService>.Instance, context);
+        return new UserContextService(new HttpUserRequestContext(accessor), NullLogger<UserContextService>.Instance, new EG.Business.Services.Security.UserContextQueries(context));
     }
 }
