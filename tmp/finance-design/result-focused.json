@@ -1,0 +1,1770 @@
+{
+  "origin": "http://localhost:5242",
+  "checks": [
+    {
+      "screen": "Bienes",
+      "route": "/Patrimonio/Bienes",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/bien/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "PkidBien",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Bienes",
+            "Controlador": "Bien",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Bienes",
+            "Controlador": "Bien",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaAsignacion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidBienAlma": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "Firma_Resguardos",
+      "route": "/Patrimonio/Firma_Resguardos",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/resguardo/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "FechaResguardo",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEmpresaSis": 1
+            }
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Firma_Resguardos",
+            "Controlador": "Resguardo",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Firma_Resguardos",
+            "Controlador": "Resguardo",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 8,
+            "filtro": "",
+            "sortLabel": "BienClave",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidResguardoAlma": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "Presupuestos",
+      "route": "/PBR/Presupuestos",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrpresupuestoprograma/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "PBR",
+            "SubModulo": "Presupuestos",
+            "Controlador": "PbrPresupuestoPrograma",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": null,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrpartidagasto/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPresupuestoProgramaPbr": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "MatrizIndicadores",
+      "route": "/PBR/MatrizIndicadores",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrmirnivel/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "PBR",
+            "SubModulo": "MIR",
+            "Controlador": "PbrMirNivel",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": null,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrindicador/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidMirNivelPbr": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "employee-detail-tabs",
+      "theme": "Oscuro",
+      "sections": [
+        "Contratos",
+        "Expedientes",
+        "Dependientes",
+        "Incidencias",
+        "Pensiones"
+      ]
+    },
+    {
+      "screen": "Empleados",
+      "route": "/nomina/empleados",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/nomrhempleado/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "NombreCompleto",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/nomrhcontrato/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaInicio",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhexpediente/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaExpedicion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Nomina",
+            "SubModulo": "Empleados",
+            "Controlador": "Expediente",
+            "Servicio": "NomRhExpediente",
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/nomrhdependiente/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "Nombre",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhincidencia/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhpension/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaInicio",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "egreso-Ampliaciones",
+      "route": "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/egreadecuacion/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidAnioSis": 1,
+              "FkidTipoAdecuacionPres": 3
+            }
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidEgreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres__in": [
+                1,
+                2
+              ]
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta__in": [
+                1,
+                2
+              ]
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 2,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/egreadecuacion/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidEgreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres": 1
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta": 1
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres": 1,
+              "FkidTipoMovimientoPres": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "ingreso-AumentosPresupuestoIngreso",
+      "route": "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Aumentos_Presupuesto_Ingreso",
+      "theme": "Oscuro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/ingreadecuacion/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidAnioSis": 1,
+              "FkidTipoAdecuacionPres": 3
+            }
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Aumento_Presupuesto",
+            "Controlador": "IngreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/ingreadecuacion/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/ingreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidIngreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidIngreAdecuacionPres": 1
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta": 1
+            }
+          }
+        },
+        {
+          "path": "/api/ingreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidIngreAdecuacionPres": 1,
+              "FkidTipoMovimientoPres": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "Bienes",
+      "route": "/Patrimonio/Bienes",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/bien/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "PkidBien",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Bienes",
+            "Controlador": "Bien",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Bienes",
+            "Controlador": "Bien",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaAsignacion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidBienAlma": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "Firma_Resguardos",
+      "route": "/Patrimonio/Firma_Resguardos",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/resguardo/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "FechaResguardo",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEmpresaSis": 1
+            }
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Firma_Resguardos",
+            "Controlador": "Resguardo",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Patrimonio",
+            "SubModulo": "Firma_Resguardos",
+            "Controlador": "Resguardo",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/resguardodetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 8,
+            "filtro": "",
+            "sortLabel": "BienClave",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidResguardoAlma": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "Presupuestos",
+      "route": "/PBR/Presupuestos",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrpresupuestoprograma/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "PBR",
+            "SubModulo": "Presupuestos",
+            "Controlador": "PbrPresupuestoPrograma",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": null,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrpartidagasto/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPresupuestoProgramaPbr": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "MatrizIndicadores",
+      "route": "/PBR/MatrizIndicadores",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrmirnivel/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "PBR",
+            "SubModulo": "MIR",
+            "Controlador": "PbrMirNivel",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": null,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/pbrindicador/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "ProgramaDescripcion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidMirNivelPbr": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "employee-detail-tabs",
+      "theme": "Claro",
+      "sections": [
+        "Contratos",
+        "Expedientes",
+        "Dependientes",
+        "Incidencias",
+        "Pensiones"
+      ]
+    },
+    {
+      "screen": "Empleados",
+      "route": "/nomina/empleados",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/nomrhempleado/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "NombreCompleto",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/nomrhcontrato/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaInicio",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhexpediente/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaExpedicion",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Nomina",
+            "SubModulo": "Empleados",
+            "Controlador": "Expediente",
+            "Servicio": "NomRhExpediente",
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/nomrhdependiente/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "Nombre",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhincidencia/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        },
+        {
+          "path": "/api/nomrhpension/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 5,
+            "filtro": "",
+            "sortLabel": "FechaInicio",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "PersonaId": 1,
+              "EmpresaId": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "egreso-Ampliaciones",
+      "route": "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/egreadecuacion/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidAnioSis": 1,
+              "FkidTipoAdecuacionPres": 3
+            }
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidEgreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres__in": [
+                1,
+                2
+              ]
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta__in": [
+                1,
+                2
+              ]
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 2,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/egreadecuacion/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidEgreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres": 1
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta": 1
+            }
+          }
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Ampliaciones",
+            "Controlador": "EgreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/egreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidEgreAdecuacionPres": 1,
+              "FkidTipoMovimientoPres": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "screen": "ingreso-AumentosPresupuestoIngreso",
+      "route": "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Aumentos_Presupuesto_Ingreso",
+      "theme": "Claro",
+      "desktop": true,
+      "tablet": true,
+      "mobile": true,
+      "requests": [
+        {
+          "path": "/api/navigate/claims/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/navigate/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/notificacion/resumen",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/empresa/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/usuario/42",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/anios/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 100,
+            "filtro": "",
+            "sortLabel": "Clave",
+            "sortDirection": "Descending",
+            "searchString": "",
+            "additionalFilters": {}
+          }
+        },
+        {
+          "path": "/api/ingreadecuacion/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidAnioSis": 1,
+              "FkidTipoAdecuacionPres": 3
+            }
+          }
+        },
+        {
+          "path": "/api/navigate/version",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/soportedocumental/resumen",
+          "method": "POST",
+          "input": {
+            "Modulo": "Presupuesto_Modificado",
+            "SubModulo": "Aumento_Presupuesto",
+            "Controlador": "IngreAdecuacion",
+            "Servicio": null,
+            "EntidadId": 1,
+            "FkidEmpresaSis": 1,
+            "IncluirInactivos": false
+          }
+        },
+        {
+          "path": "/api/ingreadecuacion/1",
+          "method": "GET",
+          "input": null
+        },
+        {
+          "path": "/api/ingreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidIngreAdecuacionDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidIngreAdecuacionPres": 1
+            }
+          }
+        },
+        {
+          "path": "/api/polizadetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 250,
+            "filtro": "",
+            "sortLabel": "PkidPolizaDetalle",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidPolizaConta": 1
+            }
+          }
+        },
+        {
+          "path": "/api/ingreadecuaciondetalle/getallpaginado",
+          "method": "POST",
+          "input": {
+            "page": 1,
+            "pageSize": 10,
+            "filtro": "",
+            "sortLabel": "Fecha",
+            "sortDirection": "Ascending",
+            "searchString": "",
+            "additionalFilters": {
+              "FkidIngreAdecuacionPres": 1,
+              "FkidTipoMovimientoPres": 3
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

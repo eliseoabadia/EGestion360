@@ -11,7 +11,7 @@
 @inject AuthenticationProviderJWT PageAuthProvider
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column rh-empleados-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="operation-page px-2 d-flex flex-column rh-empleados-page" MaxWidth="MaxWidth.False">
         @if (selectedEmployee is null)
         {
             <PageHeader Title="Recursos Humanos"
@@ -21,7 +21,7 @@
                         OnCreate="CreateItem"
                         OnRefresh="ReloadAllAsync" />
 
-            <GenericDataGrid TItem="NominaRhEmpleadoResponse"
+            <GenericDataGrid FillAvailableHeight="false" TItem="NominaRhEmpleadoResponse"
                           @ref="table"
                           Title="Empleados activos"
                           SearchPlaceholder="Buscar empleado, nombre, RFC, CURP o puesto..."
@@ -39,10 +39,10 @@
                         <CellTemplate Context="cell">
                         <div class="rh-action-buttons" @onclick:stopPropagation="true">
                             <MudTooltip Text="Ver detalle del empleado">
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
                                                Color="Color.Info"
                                                Size="Size.Small"
-                                               OnClick="@(() => OpenEmployeeDetails(cell.Item))" />
+                                               OnClick="@(() => OpenEmployeeDetails(cell.Item))" >Abrir expediente</MudButton>
                             </MudTooltip>
                             <MudTooltip Text="Editar empleado">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"

@@ -1,4 +1,4 @@
-﻿@page "/nomina/procesos"
+@page "/nomina/procesos"
 @page "/nom/calcnomina"
 @page "/nom/cierraperiodo"
 @page "/nom/calcaguinaldo"
@@ -19,7 +19,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100vh;">
+    <MudContainer Class="operation-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height: 100vh;">
         <PageHeader Title="Procesos de Nómina"
                     Subtitle="Ejecución controlada de cálculo y transición presupuestal"
                     Icon="@Icons.Material.Filled.Payments"
@@ -104,7 +104,7 @@
             }
             else
             {
-                <GenericDataGrid TItem="NominaProcesoResponse" @key="history.FirstOrDefault()"
+                <GenericDataGrid FillAvailableHeight="false" TItem="NominaProcesoResponse" @key="history.FirstOrDefault()"
                                  Items="history"
                                  ShowToolbar="false"
                                  EnableColumnOptions="false"

@@ -1,4 +1,4 @@
-﻿@page "/PBR/Anteproyectos"
+@page "/PBR/Anteproyectos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -17,7 +17,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
-<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer MaxWidth="MaxWidth.False" Class="operation-page px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="Anteproyectos PBR"
                 Subtitle="Solicitud, autorizacion y seguimiento del anteproyecto"
                 Icon="@Icons.Material.Filled.AssignmentTurnedIn"
@@ -27,8 +27,8 @@
 
     <PbrTopNavigation />
 
-    <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-        <GenericDataGrid TItem="PbrAnteproyectoResponse"
+    <div style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+        <GenericDataGrid FillAvailableHeight="false" TItem="PbrAnteproyectoResponse"
                       @ref="table"
                       Title="Anteproyectos"
                       SearchPlaceholder="Buscar por programa, estatus o justificacion..."

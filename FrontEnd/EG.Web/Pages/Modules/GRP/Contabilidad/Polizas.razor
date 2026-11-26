@@ -1,4 +1,4 @@
-﻿@page "/Contabilidad/Polizas"
+@page "/Contabilidad/Polizas"
 @using System.Globalization
 @using System.Net.Http.Json
 @using EG.Dommain.DTOs.Responses
@@ -17,17 +17,17 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject HttpClient Http
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedPoliza == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Pólizas"
                             Subtitle="Administración contable de pólizas y movimientos"
                             Icon="@Icons.Material.Filled.Description"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nueva póliza"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()">
                     <AdditionalButtons>
@@ -41,8 +41,8 @@
                     </AdditionalButtons>
                 </PageHeader>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="PolizaResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="PolizaResponse"
                                   @ref="table"
                                   Title="Pólizas contables"
                                   SearchPlaceholder="Buscar por clave, nombre o tipo..."
@@ -57,10 +57,10 @@
                             <TemplateColumn T="PolizaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
                                 <CellTemplate>
                                 <MudTooltip Text="Ver detalle">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                                    <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull"
                                                    Color="Color.Info"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => SelectPoliza(context.Item))" />
+                                                   OnClick="@(() => SelectPoliza(context.Item))" >Abrir póliza</MudButton>
                                 </MudTooltip>
                                 <DocumentSupportButton Modulo="Contabilidad"
                                                        SubModulo="Polizas"
@@ -164,8 +164,8 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
+            <div Class="d-flex flex-column" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background: transparent; flex-shrink: 0;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
                                    Size="Size.Medium"
@@ -195,25 +195,8 @@
                                            EntidadId="@SelectedPoliza.PkidPoliza"
                                            RegistroTitulo="@TextOrDash(SelectedPoliza.ClavePoliza)"
                                            RegistroDescripcion="@TextOrDash(SelectedPoliza.NombrePoliza)" />
-                    <MudTooltip Text="@FirmaTooltip(SelectedPoliza)">
-                        <MudIconButton Icon="@Icons.Material.Filled.Send"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Disabled="@(!CanUpdate || _preparingFirmaPolizaId == SelectedPoliza.PkidPoliza || !SelectedPoliza.PuedeEnviarFirma)"
-                                       OnClick="@(() => PrepararPolizaParaFirma(SelectedPoliza, true))"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    @if (CanUpdate && SelectedPoliza.PuedeRechazarFirma)
-                    {
-                        <MudTooltip Text="Rechazar envío y habilitar un nuevo intento">
-                            <MudIconButton Icon="@Icons.Material.Filled.Undo"
-                                           Color="Color.Warning"
-                                           Size="Size.Small"
-                                           Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza)"
-                                           OnClick="@(() => RechazarEnvioFirma(SelectedPoliza))"
-                                           Class="ml-1" />
-                        </MudTooltip>
-                    }
+
+
                     <ReportOpenButton ReportName="@PolizaReportName"
                                       EntityId="@SelectedPoliza.PkidPoliza"
                                       Title="@($"Reporte poliza {SelectedPoliza.ClavePoliza}")"
@@ -233,14 +216,7 @@
                                        OnClick="EditSelectedPoliza"
                                        Class="ml-2" />
                     </MudTooltip>
-                    <MudTooltip Text="Agregar movimiento">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       OnClick="AddDetalle"
-                                       Class="ml-1" />
-                    </MudTooltip>
+
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
@@ -249,6 +225,32 @@
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
+                <OperationActionPanel Title="Movimientos y balance de la póliza" Description="Revisa debe, haber y diferencia junto con los movimientos. Las acciones conservan los permisos del proceso." Icon="@Icons.Material.Filled.AccountBalance">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.PlaylistAdd"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddDetalle"
+                                        >Agregar movimiento</MudButton>
+                        <MudButton Variant="Variant.Filled" Visible="@CanUpdate" StartIcon="@Icons.Material.Filled.Send"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Disabled="@(!CanUpdate || _preparingFirmaPolizaId == SelectedPoliza.PkidPoliza || !SelectedPoliza.PuedeEnviarFirma)"
+                                       OnClick="@(() => PrepararPolizaParaFirma(SelectedPoliza, true))"
+                                        >Enviar a firma</MudButton>
+                        <MudButton Variant="Variant.Filled" Visible="@(CanUpdate && SelectedPoliza.PuedeRechazarFirma)" StartIcon="@Icons.Material.Filled.Undo"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           Disabled="@(_preparingFirmaPolizaId == SelectedPoliza.PkidPoliza)"
+                                           OnClick="@(() => RechazarEnvioFirma(SelectedPoliza))"
+                                            >Rechazar envío</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Los movimientos se cargan al abrir; busca por cuenta o concepto para localizar uno.</li><li>Revisa debe, haber y diferencia antes de continuar. Agregar movimiento abre la captura con esta póliza seleccionada.</li><li>Enviar a firma y rechazar envío conservan las validaciones y el estado del flujo de firma.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
 
                 <MudPaper Elevation="1" Class="pa-3" Style="flex-shrink: 0; border-radius: 8px;">
                     <MudGrid Spacing="2">
@@ -285,8 +287,8 @@
                     </MudGrid>
                 </MudPaper>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="PolizaDetalleResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="PolizaDetalleResponse" @key="SelectedPoliza.PkidPoliza"
                                   @ref="detalleTable"
                                   Title="Movimientos contables"
                                   SearchPlaceholder="Buscar por cuenta, concepto o tipo..."
@@ -355,6 +357,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<PolizaResponse> table = null!;
     private GenericDataGrid<PolizaDetalleResponse> detalleTable = null!;
     private PolizaResponse? SelectedPoliza;
@@ -376,6 +379,7 @@
     {
         await base.OnInitializedAsync();
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<PolizaResponse> items)

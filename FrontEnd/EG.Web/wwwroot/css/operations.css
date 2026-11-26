@@ -3,6 +3,11 @@
 .operation-page .selected-header { flex-wrap: wrap; gap: 8px; }
 .operation-page .selected-title, .operation-page .selected-copy { min-width: 0; overflow-wrap: anywhere; }
 .operation-page .operation-related-grid { flex: 0 0 auto; align-items: flex-start; }
+.finance-detail-flow { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0; gap: 12px; }
+.finance-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; }
+.finance-metrics article { display: grid; gap: 5px; padding: 12px 14px; border: 1px solid var(--mud-palette-lines-default); border-radius: 10px; background: var(--mud-palette-surface); }
+.finance-metrics span { font-size: .76rem; color: var(--mud-palette-text-secondary); }
+.finance-metrics strong { color: var(--mud-palette-text-primary); overflow-wrap: anywhere; font-size: 1.12rem; }
 .operation-page .split-shell { flex: 0 0 auto; overflow: visible; align-items: start; }
 .operation-page .master-panel, .operation-page .detail-panel { overflow: visible; min-width: 0; }
 .operation-page .operation-selectable-row { cursor: pointer; }
@@ -22,4 +27,39 @@
     .operation-page .selected-title { flex: 1 1 calc(100% - 56px); }
     .operation-page .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .operation-page .summary-strip strong { overflow-wrap: anywhere; }
+}
+.finance-operation-page :is(.mod-hero-main, .hero-copy) > div {
+    min-width: 0;
+}
+
+.finance-operation-page :is(.mod-hero-main, .hero-copy) {
+    max-width: 100%;
+}
+
+.finance-operation-page :is(.mod-title, .mod-subtitle, .hero-title, .hero-subtitle) {
+    overflow-wrap: anywhere;
+}
+
+.finance-operation-page :is(.mod-hero, .income-hero) {
+    background: linear-gradient(135deg, var(--mud-palette-primary-hover), var(--mud-palette-surface));
+    color: var(--mud-palette-text-primary);
+}
+
+.finance-operation-page :is(.mod-title, .hero-title),
+.finance-operation-page :is(.mod-kpi, .income-kpi, .mod-summary, .income-summary) strong {
+    color: var(--mud-palette-text-primary);
+}
+
+.finance-operation-page :is(.mod-subtitle, .hero-subtitle) {
+    color: var(--mud-palette-text-secondary);
+}
+
+.finance-operation-page :is(.mod-eyebrow, .hero-eyebrow) {
+    color: var(--mud-palette-primary);
+}
+
+.finance-operation-page :is(.mod-back, .hero-button) {
+    background: var(--mud-palette-primary-hover);
+    border-color: var(--mud-palette-lines-default);
+    color: var(--mud-palette-text-primary);
 }

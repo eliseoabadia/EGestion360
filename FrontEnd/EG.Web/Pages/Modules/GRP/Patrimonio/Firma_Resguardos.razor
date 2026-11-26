@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Firma_Resguardos"
+@page "/Patrimonio/Firma_Resguardos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -16,13 +16,13 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column firma-resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page operation-page finance-guided-page px-3 d-flex flex-column firma-resguardos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedResguardo == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Firma Resguardos"
                             Subtitle="Revision y formalizacion documental de resguardos"
                             Icon="@Icons.Material.Filled.Draw"
@@ -53,8 +53,8 @@
                     Adjunta el resguardo firmado desde soporte documental. La pantalla mantiene a la vista responsable, bienes y valor total.
                 </MudAlert>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="ResguardoResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoResponse"
                                   @ref="table"
                                   Title="Resguardos para firma"
                                   SearchPlaceholder="Buscar folio, responsable o area..."
@@ -68,10 +68,10 @@
                 <TemplateColumn T="ResguardoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Revisar para firma">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectResguardo(cell.Item))" />
+                        OnClick="@(() => SelectResguardo(cell.Item))" >Revisar resguardo</MudButton>
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Patrimonio"
                         SubModulo="Firma_Resguardos"
@@ -135,7 +135,7 @@
         }
         else
         {
-            <div Class="d-flex flex-column" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div Class="d-flex flex-column" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                                    Color="Color.Primary"
@@ -194,7 +194,7 @@
                     </MudCardContent>
                 </MudCard>
 
-                <GenericDataGrid TItem="ResguardoDetalleResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoDetalleResponse" @key="SelectedResguardo.PkidResguardo"
                               @ref="detalleTable"
                               Title="Bienes a firmar"
                               SearchPlaceholder="Buscar bien, clave o serie..."
@@ -270,7 +270,7 @@
         line-height: 1.15;
     }
 
-    .firma-resguardos-page td span,
+    .firma-resguardos-page td > span:not([class]),
     .firma-resguardos-page .selected-title span {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -293,6 +293,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<ResguardoResponse> table = null!;
     private GenericDataGrid<ResguardoDetalleResponse>? detalleTable;
     private ResguardoResponse? SelectedResguardo;
@@ -315,6 +316,7 @@
         await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<ResguardoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

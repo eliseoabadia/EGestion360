@@ -15,7 +15,7 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject ISnackbar Snackbar
 
-<MudContainer Class="px-3 d-flex flex-column cedula-diferencia-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer Class="operation-page px-3 d-flex flex-column cedula-diferencia-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="Cédula de diferencia"
                 Subtitle="Comparativo entre el último inventario histórico y el inventario activo"
                 Icon="@Icons.Material.Filled.FactCheck"
@@ -49,8 +49,8 @@
         </MudGrid>
     </MudPaper>
 
-    <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-        <GenericDataGrid TItem="CedulaDiferenciaResponse"
+    <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+        <GenericDataGrid FillAvailableHeight="false" TItem="CedulaDiferenciaResponse"
                          @ref="table"
                          Title="Diferencias de inventario"
                          SearchPlaceholder="Buscar tipo, clave, bien, tipo patrimonial o resguardante..."

@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Conteo_ciclico_anual"
+@page "/Almacen/Conteo_ciclico_anual"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
@@ -9,13 +9,13 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Conteo ciclico anual"
                     Subtitle="Vista anual de conteos y avance de inventario"
                     Icon="@Icons.Material.Filled.CalendarMonth"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="ConteoResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="ConteoResponse"
                       @ref="table"
                       Title="Conteos anuales"
                       SearchPlaceholder="Buscar por periodo, bien o estatus..."

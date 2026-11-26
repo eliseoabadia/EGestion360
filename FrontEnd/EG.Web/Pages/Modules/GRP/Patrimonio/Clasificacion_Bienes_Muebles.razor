@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Clasificacion_Bienes_Muebles"
+@page "/Patrimonio/Clasificacion_Bienes_Muebles"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -17,10 +17,10 @@
 @inject IGenericCrudService<OrdenCompraDetalleResponse> OrdenCompraDetalleService
 @inject IGenericCrudService<BienResponse> BienService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column clasificacion-bienes-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column clasificacion-bienes-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Clasificacion de Bienes Muebles"
                     Subtitle="Ordenes de compra, recepcion patrimonial y soporte documental"
                     Icon="@Icons.Material.Filled.Inventory"
@@ -74,7 +74,7 @@
 
         <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
             <MudItem xs="12" lg="@(SelectedOrden == null ? 12 : 7)" Class="d-flex flex-column" Style="min-height: 0;">
-                <GenericDataGrid TItem="ClasificacionBienesMueblesResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="ClasificacionBienesMueblesResponse" OnRowClick="SelectOrden" RowClassFunc="OrdenRowClass"
                               @ref="table"
                               Title="Ordenes de compra para clasificacion"
                               SearchPlaceholder="Buscar orden, requisicion, proveedor, justificacion o estado..."
@@ -90,10 +90,10 @@
                 <TemplateColumn T="ClasificacionBienesMueblesResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectOrden(cell.Item))" />
+                        OnClick="@(() => SelectOrden(cell.Item))" >Ver renglones</MudButton>
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Patrimonio"
                         @key="@($"clasificacion-doc-{cell.Item.PkidOrdenCompra}")"
@@ -207,7 +207,7 @@
                         </div>
                     </MudPaper>
 
-                    <GenericDataGrid TItem="OrdenCompraDetalleResponse"
+                    <GenericDataGrid FillAvailableHeight="false" TItem="OrdenCompraDetalleResponse" @key='("order-details", SelectedOrden?.PkidOrdenCompra)' OnRowClick="SelectDetalle" RowClassFunc="DetalleRowClass"
                                   @ref="detalleTable"
                                   Title="Detalle de orden"
                                   SearchPlaceholder="Buscar tipo, unidad u observaciones..."
@@ -222,10 +222,10 @@
                 <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Ver bienes generados">
-                        <MudIconButton Icon="@Icons.Material.Filled.Inventory2"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Inventory2"
                         Color="Color.Primary"
                         Size="Size.Small"
-                        OnClick="@(() => SelectDetalle(cell.Item))" />
+                        OnClick="@(() => SelectDetalle(cell.Item))" >Ver bienes</MudButton>
                         </MudTooltip>
                         <MudTooltip Text="Generar bienes desde este detalle">
                         <MudIconButton Icon="@Icons.Material.Filled.AutoAwesome"
@@ -269,7 +269,7 @@
             </Columns>
         </GenericDataGrid>
 
-                    <GenericDataGrid TItem="BienResponse"
+                    <GenericDataGrid FillAvailableHeight="false" TItem="BienResponse" @key='("assets", SelectedDetalle?.PkidOrdenCompraDetalle)'
                                   @ref="bienesTable"
                                   Title="@BienesTitle"
                                   SearchPlaceholder="Buscar clave, descripcion, serie o factura..."
@@ -344,7 +344,7 @@
     }
 
     .clasificacion-bienes-page .dashboard-strip span,
-    .clasificacion-bienes-page td span,
+    .clasificacion-bienes-page td > span:not([class]),
     .clasificacion-bienes-page .selected-heading span,
     .clasificacion-bienes-page .selected-metrics span,
     .clasificacion-bienes-page .progress-cell span {
@@ -411,6 +411,9 @@
 </style>
 
 @code {
+    private int selectionContext;
+    private bool disposed;
+    private bool contextReady;
     private GenericDataGrid<ClasificacionBienesMueblesResponse> table = null!;
     private GenericDataGrid<OrdenCompraDetalleResponse>? detalleTable;
     private GenericDataGrid<BienResponse>? bienesTable;
@@ -437,12 +440,14 @@
         await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<ClasificacionBienesMueblesResponse>> LoadServerData(
         TableState state,
         CancellationToken cancellationToken)
     {
+        var context = selectionContext;
         Loading = true;
 
         try
@@ -470,6 +475,7 @@
                 SortDirection,
                 filters);
 
+            if (disposed || cancellationToken.IsCancellationRequested || context != selectionContext) return new() { Items = [], TotalItems = 0 };
             if (response?.Success == true && response.Items != null)
             {
                 Elements = response.Items.ToList();
@@ -485,6 +491,12 @@
                 }
             }
 
+            var next = Elements.FirstOrDefault(row => row.PkidOrdenCompra == SelectedOrden?.PkidOrdenCompra) ?? Elements.FirstOrDefault();
+            if (next?.PkidOrdenCompra != SelectedOrden?.PkidOrdenCompra)
+            {
+                SelectedOrden = next; SelectedDetalle = null; detalleSearch = string.Empty; bienesSearch = string.Empty;
+                await InvokeAsync(StateHasChanged);
+            }
             return new TableData<ClasificacionBienesMueblesResponse> { Items = Elements, TotalItems = TotalCount };
         }
         catch (Exception ex)
@@ -511,14 +523,24 @@
             return new TableData<OrdenCompraDetalleResponse> { Items = new List<OrdenCompraDetalleResponse>(), TotalItems = 0 };
         }
 
+        var orderId = SelectedOrden.PkidOrdenCompra;
+        var context = selectionContext;
         var response = await OrdenCompraDetalleService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detalleSearch,
             state.SortLabel ?? "PkidOrdenCompraDetalle",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = SelectedOrden.PkidOrdenCompra });
+            new Dictionary<string, object> { ["FkidOrdenCompraOrco"] = orderId });
 
+        if (disposed || cancellationToken.IsCancellationRequested || context != selectionContext || SelectedOrden?.PkidOrdenCompra != orderId) return new() { Items = [], TotalItems = 0 };
+        if (response?.Success != true) throw new InvalidOperationException("No se pudieron consultar los renglones de la orden.");
+        var next = response.Items.FirstOrDefault(row => row.PkidOrdenCompraDetalle == SelectedDetalle?.PkidOrdenCompraDetalle) ?? response.Items.FirstOrDefault();
+        if (next?.PkidOrdenCompraDetalle != SelectedDetalle?.PkidOrdenCompraDetalle)
+        {
+            SelectedDetalle = next; bienesSearch = string.Empty;
+            await InvokeAsync(StateHasChanged);
+        }
         return new TableData<OrdenCompraDetalleResponse>
         {
             Items = response?.Items ?? new List<OrdenCompraDetalleResponse>(),
@@ -644,24 +666,20 @@
         });
     }
 
-    private async Task SelectOrden(ClasificacionBienesMueblesResponse item)
+    private Task SelectOrden(ClasificacionBienesMueblesResponse item)
     {
-        SelectedOrden = item;
-        SelectedDetalle = null;
-        detalleSearch = string.Empty;
-        bienesSearch = string.Empty;
-        await InvokeAsync(StateHasChanged);
-        await ReloadDetalles();
-        await ReloadBienes();
+        if (SelectedOrden?.PkidOrdenCompra == item.PkidOrdenCompra) return Task.CompletedTask;
+        SelectedOrden = item; SelectedDetalle = null; detalleSearch = string.Empty; bienesSearch = string.Empty;
+        return InvokeAsync(StateHasChanged);
     }
-
-    private async Task SelectDetalle(OrdenCompraDetalleResponse detalle)
+    private Task SelectDetalle(OrdenCompraDetalleResponse detalle)
     {
-        SelectedDetalle = detalle;
-        bienesSearch = string.Empty;
-        await InvokeAsync(StateHasChanged);
-        await ReloadBienes();
+        if (SelectedDetalle?.PkidOrdenCompraDetalle == detalle.PkidOrdenCompraDetalle) return Task.CompletedTask;
+        SelectedDetalle = detalle; bienesSearch = string.Empty;
+        return InvokeAsync(StateHasChanged);
     }
+    private string OrdenRowClass(ClasificacionBienesMueblesResponse row, int _) => SelectedOrden?.PkidOrdenCompra == row.PkidOrdenCompra ? "operation-selectable-row is-selected" : "operation-selectable-row";
+    private string DetalleRowClass(OrdenCompraDetalleResponse row, int _) => SelectedDetalle?.PkidOrdenCompraDetalle == row.PkidOrdenCompraDetalle ? "operation-selectable-row is-selected" : "operation-selectable-row";
 
     private async Task GenerarBienes(OrdenCompraDetalleResponse detalle)
     {
@@ -742,6 +760,7 @@
 
     private async void OnEmpresaChanged(int _)
     {
+        selectionContext++;
         SelectedOrden = null;
         SelectedDetalle = null;
         if (table != null)
@@ -752,6 +771,7 @@
 
     private async void OnAnioChanged(int? _)
     {
+        selectionContext++;
         SelectedOrden = null;
         SelectedDetalle = null;
         if (table != null)
@@ -795,6 +815,7 @@
 
     public void Dispose()
     {
+        disposed = true; selectionContext++;
         SucursalStateService.OnEmpresaChanged -= OnEmpresaChanged;
         AnioStateService.OnAnioChanged -= OnAnioChanged;
         SearchCts?.Cancel();

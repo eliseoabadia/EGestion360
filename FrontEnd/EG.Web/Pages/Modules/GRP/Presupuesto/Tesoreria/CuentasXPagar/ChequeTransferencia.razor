@@ -13,18 +13,18 @@
 @inject IGenericCrudService<ChequePartidaResponse> PartidaService
 @inject SucursalStateService SucursalStateService
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-height:100%;overflow:visible;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="min-min-width:0;overflow:visible;">
         @if (SelectedCheque == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;">
                 <PageHeader Title="Elaboracion de Cheques o Transferencias"
                             Subtitle="Cheques y transferencias desde CLC autorizada"
                             Icon="@Icons.Material.Filled.Payments"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nuevo pago"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
-                <div Style="flex-grow:1;overflow:visible;min-height:0;">
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="ChequeResponse" @ref="table" Title="Cheques y transferencias"
                                   FillAvailableHeight="false"
                                   ShowDetailHint="false"
@@ -37,7 +37,7 @@
                                   OnSearch="OnSearch">
                         <Columns>
                             <TemplateColumn Resizable="false" T="ChequeResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(context.Item))" />
+                                <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectCheque(context.Item))" >Abrir pago</MudButton>
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="@SubModuleName"
                                                        Controlador="Cheque"
@@ -69,28 +69,36 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;gap:8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2"><MudText Typo="Typo.h6" Style="font-weight:700">@SelectedCheque.NumeroCheque</MudText><MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedCheque.NumClc - @SelectedCheque.Concepto</MudText></div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedCheque.Estatus)">@TextOrDash(SelectedCheque.EstatusDescripcion)</MudChip>
-                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida" Class="ml-2" />
-                    <MudTooltip Text="Regresar hasta solicitud de suficiencia y generar pólizas de reversión">
-                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+
+
+                </MudPaper>
+                <OperationActionPanel Title="Partidas del cheque o transferencia" Description="Consulta beneficiario, importe y distribución antes de continuar con el pago." Icon="@Icons.Material.Filled.Payments">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedCheque)" Color="Color.Success" Size="Size.Small" OnClick="AddPartida"  >Agregar partida</MudButton>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.Undo"
                                        Visible="@(CanUpdate && IsLocked(SelectedCheque))"
                                        Disabled="@(returningChequeId.HasValue)"
                                        Color="Color.Warning"
                                        Size="Size.Small"
                                        OnClick="@(() => RegresarASolicitud(SelectedCheque))"
-                                       Class="ml-2" />
-                    </MudTooltip>
-                </MudPaper>
+                                        >Regresar a solicitud</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Las partidas se cargan al abrir el pago.</li><li>Agregar partida utiliza el cheque o transferencia seleccionado y respeta el bloqueo del proceso.</li><li>Regresar a solicitud conserva la confirmación y las validaciones existentes; revisa su efecto antes de aceptar.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
                 <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
                     <MudGrid><MudItem xs="4"><MudText Typo="Typo.caption">Importe</MudText><MudText Typo="Typo.body2" Style="font-weight:700">@Money(SelectedCheque.ImporteTotal)</MudText></MudItem><MudItem xs="8"><MudText Typo="Typo.caption">Poliza</MudText><MudText Typo="Typo.body2">@TextOrDash(SelectedCheque.ClavePoliza)</MudText></MudItem></MudGrid>
                 </MudPaper>
-                <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericDataGrid TItem="ChequePartidaResponse" @ref="partidaTable" Title="Partidas pagadas"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid TItem="ChequePartidaResponse" @key="SelectedCheque.PkidCheque" @ref="partidaTable" Title="Partidas pagadas"
                                   FillAvailableHeight="false"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadPartidas"
@@ -112,6 +120,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<ChequeResponse> table = null!;
     private GenericDataGrid<ChequePartidaResponse> partidaTable = null!;
     private ChequeResponse? SelectedCheque;
@@ -133,6 +142,7 @@
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await SucursalStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<ChequeResponse> items) => items.Select(x => new { x.NumeroCheque, x.NumClc, x.NumeroContrato, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.ImporteTotal, x.EstatusDescripcion });

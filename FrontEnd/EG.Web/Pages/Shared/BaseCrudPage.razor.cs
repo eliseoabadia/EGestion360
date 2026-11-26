@@ -113,6 +113,27 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         }
     }
 
+    protected async Task<List<TDetail>?> ReadRelatedRecordsAsync<TDetail>(
+        Func<int, int, Task<EG.Web.Models.ApiResponse<TDetail>>> fetchPage,
+        Func<TDetail, int> getId)
+    {
+        var route = NavigationManager.Uri;
+        try
+        {
+            return await EG.Web.Models.PresupuestoModificado.BudgetPageReader.ReadAllAsync(
+                fetchPage, getId, () => NavigationManager.Uri == route);
+        }
+        catch (OperationCanceledException) when (NavigationManager.Uri != route)
+        {
+            return null;
+        }
+        catch (Exception exception)
+        {
+            NotifyUnexpectedError(exception, "consultar el detalle completo", "No se pudo consultar el detalle completo. Actualiza e intenta nuevamente.");
+            return null;
+        }
+    }
+
     protected async Task<TResult> RunExclusiveAsync<TResult>(
         Func<Task<TResult>> operation,
         TResult busyResult,

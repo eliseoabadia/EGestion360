@@ -1,4 +1,4 @@
-﻿@page "/Contabilidad/Cierre_Mensual"
+@page "/Contabilidad/Cierre_Mensual"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Dommain.DTOs.Responses
@@ -11,10 +11,10 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column cierre-mensual-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column cierre-mensual-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Cierre Mensual"
                     Subtitle="Control operativo de polizas, movimientos y saldos contables"
                     Icon="@Icons.Material.Filled.EventAvailable"
@@ -136,8 +136,8 @@
             </section>
         </div>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="CierreMensualResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="CierreMensualResponse"
                           @ref="table"
                           Title="Saldos mensuales por cuenta"
                           SearchPlaceholder="Buscar cuenta o descripcion..."
@@ -263,7 +263,7 @@
     .period-copy small,
     .check-row span,
     .metric-line,
-    .cierre-mensual-page td span {
+    .cierre-mensual-page td > span:not([class]) {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
     }
@@ -404,6 +404,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<CierreMensualResponse> table = null!;
     private CierreMensualResponse? _estado;
     private bool _estadoLoading = true;
@@ -445,6 +446,7 @@
     {
         await LoadCurrencyAsync();
         await LoadEstadoAsync();
+        contextReady = true;
     }
 
     protected override async Task ReloadData()

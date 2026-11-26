@@ -1,4 +1,4 @@
-﻿@page "/rh/incidencia"
+@page "/rh/incidencia"
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -37,7 +37,7 @@
 		</div>
 
 		<div class="eg-table-shell">
-			<GenericDataGrid TItem="VwRhIncidenciaResponse"
+			<GenericDataGrid FillAvailableHeight="false" TItem="VwRhIncidenciaResponse"
 						  @ref="table"
 						  Title="Incidencias de nómina"
 						  SearchPlaceholder="Buscar empleado, tipo de incidencia, periodo..."

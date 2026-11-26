@@ -1,4 +1,4 @@
-﻿@page "/rh/justificacion"
+@page "/rh/justificacion"
 @using EG.Domain.DTOs.Responses.Nomina
 @using EG.Web.Contracts
 @using EG.Web.Models
@@ -36,7 +36,7 @@
 		</div>
 
 		<div class="eg-table-shell">
-			<GenericDataGrid TItem="VwRhIncidenciaResponse"
+			<GenericDataGrid FillAvailableHeight="false" TItem="VwRhIncidenciaResponse"
 						  @ref="table"
 						  Title="Incidencias para justificar"
 						  SearchPlaceholder="Buscar empleado, tipo de incidencia, justificación..."

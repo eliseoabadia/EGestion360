@@ -76,7 +76,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column nomina-operaciones-page" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="operation-page px-2 d-flex flex-column nomina-operaciones-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="@CurrentItem.Title"
                     Subtitle="@CurrentItem.Subtitle"
                     Icon="@CurrentItem.Icon"
@@ -107,7 +107,7 @@
             </div>
         }
 
-        <GenericDataGrid TItem="NominaOperacionResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="NominaOperacionResponse"
                       @ref="table"
                       @key="TableKey"
                       Title="@($"Lista de {CurrentItem.Title}")"

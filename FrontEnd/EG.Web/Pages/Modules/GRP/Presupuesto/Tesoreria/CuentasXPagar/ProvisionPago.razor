@@ -17,19 +17,19 @@
 @inject IGenericCrudService<CLCFacturaResponse> FacturaService
 @inject SucursalStateService SucursalStateService
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
         @if (SelectedClc == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;">
                 <PageHeader Title="@HeaderTitle"
                             Subtitle="CLC, calendario presupuestal y facturas asociadas"
                             Icon="@Icons.Material.Filled.RequestQuote"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nueva CLC"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
-                <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericDataGrid TItem="CLCResponse" @ref="table" Title="@TableTitle"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="CLCResponse" @ref="table" Title="@TableTitle"
                                   SearchPlaceholder="Buscar CLC, contrato, proveedor o poliza..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -39,7 +39,7 @@
                                   OnSearch="OnSearch">
                         <Columns>
                             <TemplateColumn Resizable="false" T="CLCResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(context.Item))" />
+                                <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectClc(context.Item))" >Abrir CLC</MudButton>
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="@SubModuleName"
                                                        Controlador="CLC"
@@ -64,8 +64,8 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;gap:8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
                         <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedClc.NumClc</MudText>
@@ -73,14 +73,25 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedClc.Estatus)">@TextOrDash(SelectedClc.EstatusDescripcion)</MudChip>
-                    <MudIconButton Icon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@(!CanGenerateCheque(SelectedClc))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))" Class="ml-2" />
-                    <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" />
-                    <MudIconButton Icon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura" Class="ml-1" />
-                </MudPaper>
 
-                <MudGrid Spacing="2" Style="min-height:0;flex-grow:1;overflow:visible;">
-                    <MudItem xs="12" lg="7" Style="height:100%;overflow:visible;">
-                        <GenericDataGrid TItem="CLCDetalleResponse" @ref="detalleTable" Title="Detalle presupuestal"
+
+
+                </MudPaper>
+                <OperationActionPanel Title="Calendario y facturas de la CLC" Description="El detalle presupuestal y las facturas se muestran juntos. Revisa su distribución antes de preparar el pago." Icon="@Icons.Material.Filled.RequestQuote">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle"  >Agregar partida</MudButton>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.PostAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedClc)" Color="Color.Primary" Size="Size.Small" OnClick="AddFactura"  >Asociar factura</MudButton>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.Payments" Visible="@CanAuthorize" Disabled="@(!CanGenerateCheque(SelectedClc))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateCheque(SelectedClc))"  >Preparar cheque o transferencia</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Las partidas y facturas asociadas se consultan al abrir la CLC.</li><li>Agrega partidas o asocia facturas mientras el estatus permita cambios.</li><li>Preparar cheque o transferencia abre el siguiente paso con los datos del proceso; verifica el contenido antes de guardar.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
+
+                <MudGrid Spacing="2" Style="min-height:0;flex:0 0 auto;overflow:visible;">
+                    <MudItem xs="12" lg="7" Style="min-width:0;overflow:visible;">
+                        <GenericDataGrid FillAvailableHeight="false" TItem="CLCDetalleResponse" @key="SelectedClc.PkidClc" @ref="detalleTable" Title="Detalle presupuestal"
                                       SearchPlaceholder="Buscar partida..."
                                       ServerDataFunc="LoadDetalles"
                                       SearchString="@detalleSearch"
@@ -94,8 +105,8 @@
                             </Columns>
                         </GenericDataGrid>
                     </MudItem>
-                    <MudItem xs="12" lg="5" Style="height:100%;overflow:visible;">
-                        <GenericDataGrid TItem="CLCFacturaResponse" @ref="facturaTable" Title="Facturas en CLC"
+                    <MudItem xs="12" lg="5" Style="min-width:0;overflow:visible;">
+                        <GenericDataGrid FillAvailableHeight="false" TItem="CLCFacturaResponse" @key="SelectedClc.PkidClc" @ref="facturaTable" Title="Facturas en CLC"
                                       SearchPlaceholder="Buscar factura..."
                                       ServerDataFunc="LoadFacturas"
                                       SearchString="@facturaSearch"
@@ -116,6 +127,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<CLCResponse> table = null!;
     private GenericDataGrid<CLCDetalleResponse> detalleTable = null!;
     private GenericDataGrid<CLCFacturaResponse> facturaTable = null!;
@@ -141,6 +153,7 @@
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await SucursalStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<CLCResponse> items) => items.Select(x => new { x.NumClc, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaSolicitud.ToString("dd/MM/yyyy"), x.ImporteTotal, x.EstatusDescripcion });
@@ -188,7 +201,10 @@
     }
     private async Task DeleteFactura(int id) { await FacturaService.DeleteAsync(id); await ReloadFacturas(); }
 
-    private async Task GenerateCheque(CLCResponse clc)
+    private async Task GenerateCheque(CLCResponse clc) =>
+        await RunExclusiveAsync(() => PrepareGenerateChequeAsync(clc));
+
+    private async Task PrepareGenerateChequeAsync(CLCResponse clc)
     {
         if (!CanAuthorize)
         {
@@ -196,8 +212,10 @@
             return;
         }
 
-        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidClcPres"] = clc.PkidClc });
-        var details = detailsResponse?.Items?.ToList() ?? new List<CLCDetalleResponse>();
+        var details = await ReadRelatedRecordsAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty, "PkidClcdetalle", SortDirection.Ascending, new() { ["FkidClcPres"] = clc.PkidClc }),
+            row => row.PkidClcdetalle);
+        if (details is null) return;
         if (details.Count == 0)
         {
             Snackbar.Add("La CLC no tiene detalle para generar cheque o transferencia.", Severity.Warning);

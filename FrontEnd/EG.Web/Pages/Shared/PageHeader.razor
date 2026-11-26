@@ -1,4 +1,6 @@
-﻿@using MudBlazor
+@using EG.Web.Models.Guidance
+@inject NavigationManager Navigation
+@using MudBlazor
 
 <section class="eg-page-header mb-4">
     <div class="eg-page-header-copy">
@@ -21,9 +23,9 @@
             @if (ShowCreateButton)
             {
                 <MudTooltip Text="@CreateTooltip">
-                    @if (!string.IsNullOrWhiteSpace(CreateText))
+                    @if (!string.IsNullOrWhiteSpace(EffectiveCreateText))
                     {
-                        <MudButton StartIcon="@Icons.Material.Filled.Add" Visible="@CanCreate" OnClick="HandleCreate" Disabled="@IsBusy" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">@CreateText</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.Add" Visible="@CanCreate" OnClick="HandleCreate" Disabled="@IsBusy" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">@EffectiveCreateText</MudButton>
                     }
                     else
                     {
@@ -55,6 +57,19 @@
     }
 </section>
 
+@if (guidance is not null)
+{
+    <OperationActionPanel Title="@guidance.Title" Description="@guidance.Description" Icon="@Icons.Material.Filled.Info">
+        <Actions>
+            @foreach (var link in guidance.Links ?? Array.Empty<ModuleGuidanceLink>())
+            {
+                <ModuleShortcut Module="@link.Module" SubModule="@link.SubModule" Href="@link.Href" Text="@link.Text" />
+            }
+        </Actions>
+        <HelpContent><ol>@foreach (var step in guidance.Steps) { <li>@step</li> }</ol></HelpContent>
+    </OperationActionPanel>
+}
+
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Subtitle { get; set; } = string.Empty;
@@ -63,13 +78,20 @@
     [Parameter] public bool ShowCreateButton { get; set; } = true;
     [Parameter] public bool ShowRefreshButton { get; set; } = true;
     [Parameter] public string CreateTooltip { get; set; } = "Nuevo";
-    [Parameter] public string? CreateText { get; set; }
+    [Parameter] public string? CreateText { get; set; } = "Nuevo";
     [Parameter] public bool CanCreate { get; set; } = true;
     [Parameter] public EventCallback OnCreate { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }
     [Parameter] public RenderFragment? AdditionalButtons { get; set; }
 
     private bool actionInProgress;
+    private ScreenGuidance? guidance;
+    private string? EffectiveCreateText => CreateText == "Nuevo" ? guidance?.CreateText ?? CreateText : CreateText;
+    protected override void OnParametersSet()
+    {
+        var route = Uri.UnescapeDataString(Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0]);
+        guidance = ScreenGuidanceCatalog.Find(route);
+    }
     private bool IsBusy => actionInProgress;
     private bool HasActions => ShowCreateButton || ShowRefreshButton || AdditionalButtons is not null;
 

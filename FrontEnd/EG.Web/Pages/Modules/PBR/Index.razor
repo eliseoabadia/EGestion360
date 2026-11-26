@@ -13,7 +13,7 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer MaxWidth="MaxWidth.False" Class="operation-page px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="PBR"
                 Subtitle="@(anio.HasValue ? $"Tablero ejecutivo de planeación basada en resultados - {anio}" : "Selecciona un ejercicio presupuestal")"
                 Icon="@Icons.Material.Filled.InsertChart"
@@ -138,7 +138,7 @@
                         </MudGrid>
 
                         <div class="pbr-table-wrap pbr-sticky-table">
-                            <GenericDataGrid TItem="PbrSemaforoIndicadorResponse"
+                            <GenericDataGrid FillAvailableHeight="false" TItem="PbrSemaforoIndicadorResponse"
                                              @key="dashboard.Semaforo"
                                              Items="@dashboard.Semaforo"
                                              ShowToolbar="false"
@@ -208,7 +208,7 @@
                         </MudStack>
 
                         <div class="pbr-table-wrap pbr-sticky-table">
-                            <GenericDataGrid TItem="PbrTopPresupuestoResponse"
+                            <GenericDataGrid FillAvailableHeight="false" TItem="PbrTopPresupuestoResponse"
                                              @key="dashboard.TopPresupuestos"
                                              Items="@dashboard.TopPresupuestos"
                                              ShowToolbar="false"

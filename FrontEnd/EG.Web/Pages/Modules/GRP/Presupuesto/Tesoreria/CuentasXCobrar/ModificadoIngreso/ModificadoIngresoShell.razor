@@ -21,12 +21,12 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     @if (OperationInProgress)
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="Procesando acción presupuestal" />
     }
-    <MudContainer Class="px-3 d-flex flex-column income-mod-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column income-mod-page" MaxWidth="MaxWidth.False">
         @if (Selected == null)
         {
             <PageHeader Title="@Title"
@@ -34,7 +34,8 @@
                         Icon="@Icons.Material.Filled.CurrencyExchange"
                         CanCreate="@(CanCreate && HasCompany)"
                         OnCreate="CreateItem"
-                        OnRefresh="ReloadData" />
+                        OnRefresh="ReloadData"  CreateText="Nueva modificación"/>
+            <OperationActionPanel Title="Captura y autorización del ingreso" Description="Consulta aumentos, reducciones y póliza sin salir del tablero de la modificación." Icon="@Icons.Material.Filled.CurrencyExchange"><HelpContent><ol><li>Abre una modificación para ver el calendario y sus movimientos.</li><li>Solicitar, autorizar y rechazar conservan sus confirmaciones, permisos y validaciones.</li><li>Los totales del listado corresponden a la página visible. Abre el registro para revisar su distribución completa.</li></ol></HelpContent></OperationActionPanel>
 
             @if (!HasCompany)
             {
@@ -51,7 +52,7 @@
             </section>
 
             <div class="income-table-wrap">
-                <GenericDataGrid TItem="IngreAdecuacionResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="IngreAdecuacionResponse"
                               @ref="table" @key="contextVersion"
                               Title="@Title"
                               SearchPlaceholder="Buscar clave, justificacion o poliza..."
@@ -63,7 +64,7 @@
                               OnSearch="OnSearch">
                     <Columns>
                         <TemplateColumn T="IngreAdecuacionResponse" Title="Acciones" Resizable="false" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
-                            <MudTooltip Text="Abrir tablero"><MudIconButton Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(context.Item))" /></MudTooltip>
+                            <MudTooltip Text="Abrir tablero"><MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Dashboard" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(context.Item))" >Abrir modificación</MudButton></MudTooltip>
                             <MudTooltip Text="@RequestTooltip(context.Item)"><MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(context.Item))" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(context.Item, "enviar-solicitud"))" /></MudTooltip>
                             <MudTooltip Text="Autorizar"><MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(context.Item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(context.Item, "autorizar"))" /></MudTooltip>
                             <MudTooltip Text="Rechazar y reabrir"><MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@(CanAuthorize && IsRequestSent(context.Item))" Disabled="@context.Item.Autorizado" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(context.Item, "rechazar"))" /></MudTooltip>
@@ -121,8 +122,8 @@
                 </MudPaper>
 
                 <MudGrid Spacing="2" Class="income-kpis">
-                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Aumentos</span><strong class="positive">@Money(AumentosTotal)</strong><small>Tipo de movimiento 3</small></MudPaper></MudItem>
-                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Reducciones</span><strong class="warning">@Money(ReduccionesTotal)</strong><small>Tipo de movimiento 4</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Aumentos</span><strong class="positive">@Money(AumentosTotal)</strong><small>Incrementos al ingreso</small></MudPaper></MudItem>
+                    <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Reducciones</span><strong class="warning">@Money(ReduccionesTotal)</strong><small>Disminuciones del ingreso</small></MudPaper></MudItem>
                     <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi primary"><span>Neto</span><strong>@Money(NetoTotal)</strong><small>Aumento menos reduccion</small></MudPaper></MudItem>
                     <MudItem xs="12" sm="6" md="3"><MudPaper Elevation="0" Class="income-kpi"><span>Poliza</span><strong>@TextOrDash(Selected.ClavePoliza)</strong><small>@BalanceText</small></MudPaper></MudItem>
                 </MudGrid>
@@ -144,7 +145,7 @@
                             </div>
                         </header>
                         <div class="board-scroll">
-                            <GenericDataGrid TItem="IngreAdecuacionDetalleResponse"
+                            <GenericDataGrid FillAvailableHeight="false" TItem="IngreAdecuacionDetalleResponse"
                                           @ref="detalleTable"
                                           Title="Movimientos"
                                           ShowExportButton="false"

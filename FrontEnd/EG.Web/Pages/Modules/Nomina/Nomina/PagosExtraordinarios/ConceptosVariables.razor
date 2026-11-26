@@ -13,7 +13,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column conceptos-variables-page" MaxWidth="MaxWidth.False">
+    <MudContainer Class="operation-page px-3 d-flex flex-column conceptos-variables-page" MaxWidth="MaxWidth.False">
         <PageHeader Title="Conceptos Variables"
                     Subtitle="Pagos extraordinarios por empleado"
                     Icon="@Icons.Material.Filled.Payments"
@@ -37,7 +37,7 @@
         </div>
 
         <div class="conceptos-table-shell">
-            <GenericDataGrid TItem="NomConceptoVariableResponse"
+            <GenericDataGrid FillAvailableHeight="false" TItem="NomConceptoVariableResponse"
                           @ref="table"
                           Title="Captura de conceptos variables"
                           SearchPlaceholder="Buscar empleado, concepto, periodo o referencia..."

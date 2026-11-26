@@ -7,14 +7,14 @@
 @inherits BaseCrudPage<CuentaBancariaResponse, CuentaBancariaResponse>
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="operation-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Cuenta Bancaria"
                     Subtitle="Cuentas bancarias para operacion de inversiones"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="CuentaBancariaResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="CuentaBancariaResponse"
                       @ref="table"
                       Title="Cuentas bancarias"
                       SearchPlaceholder="Buscar cuenta, banco o titular..."

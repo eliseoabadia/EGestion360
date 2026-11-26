@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Bienes"
+@page "/Patrimonio/Bienes"
 @page "/configuracion/almacen/Bien"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -17,13 +17,13 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<ResguardoDetalleResponse> ResguardoDetalleService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column bienes-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page operation-page finance-guided-page px-3 d-flex flex-column bienes-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedBien == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Bienes"
                             Subtitle="Inventario patrimonial, resguardos y soporte documental"
                             Icon="@Icons.Material.Filled.Inventory2"
@@ -64,8 +64,8 @@
                     </MudChip>
                 </div>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="BienResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="BienResponse"
                                   @ref="table"
                                   Title="Inventario patrimonial"
                                   SearchPlaceholder="Buscar por clave, descripcion, tipo, serie, factura o area..."
@@ -79,10 +79,10 @@
                 <TemplateColumn T="BienResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Ver ficha">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectBien(cell.Item))" />
+                        OnClick="@(() => SelectBien(cell.Item))" >Abrir bien</MudButton>
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Patrimonio"
                         @key="@($"bien-doc-{cell.Item.PkidBien}")"
@@ -170,7 +170,7 @@
         }
         else
         {
-            <div class="d-flex flex-column" style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div class="d-flex flex-column" style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background: transparent; flex-shrink: 0;">
                     <MudTooltip Text="Volver al listado">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
@@ -274,7 +274,7 @@
 
                 <MudGrid Spacing="2" Class="flex-grow-1" Style="overflow: hidden; min-height: 0;">
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">
-                        <GenericDataGrid TItem="ResguardoDetalleResponse"
+                        <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoDetalleResponse" @key="SelectedBien.PkidBien"
                                       @ref="resguardoDetalleTable"
                                       Title="Resguardo activo"
                                       SearchPlaceholder="Buscar responsable o folio..."
@@ -392,7 +392,7 @@
         flex-wrap: wrap;
     }
 
-    .bienes-page td span,
+    .bienes-page td > span:not([class]),
     .bienes-page .selected-title span,
     .bienes-page .detail-list span {
         color: var(--mud-palette-text-secondary);
@@ -430,6 +430,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<BienResponse> table = null!;
     private GenericDataGrid<ResguardoDetalleResponse>? resguardoDetalleTable;
     private BienResponse? SelectedBien;
@@ -450,6 +451,7 @@
         await base.OnInitializedAsync();
         await SucursalStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<BienResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

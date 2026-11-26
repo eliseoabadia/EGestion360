@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Calendario_Inventarios"
+@page "/Patrimonio/Calendario_Inventarios"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -15,11 +15,11 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column calendario-inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
-        <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column calendario-inventarios-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+        <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
             <PageHeader Title="Calendario de inventarios"
                         Subtitle="Periodos por area con cierre historico automatico"
                         Icon="@Icons.Material.Filled.EventNote"
@@ -46,8 +46,8 @@
                 </div>
             </div>
 
-            <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                <GenericDataGrid TItem="CalendarioInventarioResponse"
+            <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                <GenericDataGrid FillAvailableHeight="false" TItem="CalendarioInventarioResponse"
                               @ref="table"
                               Title="Periodos de inventario"
                               SearchPlaceholder="Buscar por folio, area, anio o descripcion..."
@@ -170,7 +170,7 @@
         line-height: 1.15;
     }
 
-    .calendario-inventarios-page td span {
+    .calendario-inventarios-page td > span:not([class]) {
         display: block;
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -190,6 +190,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<CalendarioInventarioResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
@@ -208,6 +209,7 @@
         await AnioStateService.InitializeAsync();
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         AnioStateService.OnAnioChanged += OnAnioChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<CalendarioInventarioResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

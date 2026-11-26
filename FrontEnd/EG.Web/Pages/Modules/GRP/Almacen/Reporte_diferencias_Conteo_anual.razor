@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Reporte_diferencias_Conteo_anual"
+@page "/Almacen/Reporte_diferencias_Conteo_anual"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
@@ -9,13 +9,13 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Reporte diferencias de conteo anual"
                     Subtitle="Diferencias anuales entre inventario teorico y conteo fisico"
                     Icon="@Icons.Material.Filled.Assessment"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="ConteoResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="ConteoResponse"
                       @ref="table"
                       Title="Diferencias anuales"
                       SearchPlaceholder="Buscar por periodo, bien o estado..."

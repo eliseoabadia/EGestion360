@@ -8,14 +8,14 @@
 @inherits BaseCrudPage<InstrumentoResponse, InstrumentoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="operation-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Instrumentos de Inversion"
                     Subtitle="Definicion de instrumentos financieros de inversion"
                     Icon="@Icons.Material.Filled.PieChart"
                     CanCreate="@CanCreate"
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="InstrumentoResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="InstrumentoResponse"
                       @ref="table"
                       Title="Instrumentos"
                       SearchPlaceholder="Buscar por nombre, tipo o intermediario..."

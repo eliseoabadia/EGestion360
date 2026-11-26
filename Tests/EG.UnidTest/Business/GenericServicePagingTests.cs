@@ -198,6 +198,28 @@ public sealed class GenericServicePagingTests
         Assert.DoesNotContain(unscoped.Items, item => item.FkidEmpresaSis != 7);
     }
 
+    [Theory]
+    [InlineData("[2,3,4]", 1)]
+    [InlineData("[]", 0)]
+    public async Task BatchedJsonFilterPreservesCompanyAndActiveScope(string json, int expectedCount)
+    {
+        var service = CreateService([
+            new() { Id = 1, Nombre = "Fuera del lote", FkidEmpresaSis = 7, Activo = true },
+            new() { Id = 2, Nombre = "Dentro del lote", FkidEmpresaSis = 7, Activo = true },
+            new() { Id = 3, Nombre = "Otra empresa", FkidEmpresaSis = 8, Activo = true },
+            new() { Id = 4, Nombre = "Inactivo", FkidEmpresaSis = 7, Activo = false }
+        ], new FixedUserContext(1, 7));
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        var result = await service.GetAllPaginadoAsync(new()
+        {
+            Page = 1, PageSize = 10,
+            AdditionalFilters = new() { ["Id__in"] = document.RootElement.Clone() }
+        });
+        Assert.True(result.Success);
+        Assert.Equal(expectedCount, result.TotalCount);
+        Assert.All(result.Items, item => Assert.Equal(2, item.Id));
+    }
+
     private static GenericService<CatalogEntity, CatalogDto, CatalogResponse> CreateService(
         IEnumerable<CatalogEntity> entities,
         IUserContextService? userContext = null)

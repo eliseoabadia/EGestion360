@@ -17,8 +17,8 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column depositos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column depositos-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Depositos CLC"
                     Subtitle="Registro, poliza y autorizacion de depositos"
                     Icon="@Icons.Material.Filled.Payments"
@@ -33,8 +33,8 @@
             <div><span>Moneda base</span><strong>@_currencyName (@_currencySymbol)</strong></div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="DepositoResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="DepositoResponse"
                           @ref="table"
                           Title="Depositos CLC"
                           SearchPlaceholder="Buscar referencia, aportante, programa, origen o poliza..."
@@ -70,7 +70,7 @@
     .depositos-summary strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.02rem; }
     .depositos-actions { min-width: 190px; white-space: nowrap; }
     .depositos-page .main-cell { font-weight: 700; line-height: 1.15; }
-    .depositos-page td span { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    .depositos-page td > span:not([class]) { color: var(--mud-palette-text-secondary); font-size: .78rem; }
     .month-spark { display: grid; grid-template-columns: repeat(12, 6px); align-items: end; gap: 3px; height: 32px; min-width: 105px; }
     .month-spark span { display: block; min-height: 4px; border-radius: 3px 3px 0 0; background: var(--eg-primary); }
     @@media (max-width: 900px) { .depositos-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -78,6 +78,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<DepositoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -97,6 +98,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<DepositoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

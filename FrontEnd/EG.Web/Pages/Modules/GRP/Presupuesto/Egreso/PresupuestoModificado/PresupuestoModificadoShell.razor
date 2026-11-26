@@ -18,12 +18,12 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject HttpClient Http
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
     @if (OperationInProgress)
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="Procesando acción presupuestal" />
     }
-    <MudContainer Class="px-3 d-flex flex-column mod-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column mod-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (Selected == null)
         {
             <PageHeader Title="@Title"
@@ -31,7 +31,8 @@
                         Icon="@Icons.Material.Filled.AccountBalance"
                         CanCreate="@CanCreate"
                         OnCreate="CreateItem"
-                        OnRefresh="() => table.ReloadData()" />
+                        OnRefresh="() => table.ReloadData()"  CreateText="Nueva modificación"/>
+            <OperationActionPanel Title="Captura y autorización del egreso" Description="Abre una adecuación para consultar movimientos y póliza en la misma vista." Icon="@Icons.Material.Filled.CurrencyExchange"><HelpContent><ol><li>Selecciona la adecuación para revisar ampliaciones, reducciones y distribución mensual.</li><li>Solicitar autorización envía el registro al responsable; autorizar y rechazar respetan los permisos y estados del flujo.</li><li>Revisa el balance de la póliza antes de continuar. Los movimientos autorizados mantienen su bloqueo.</li></ol></HelpContent></OperationActionPanel>
 
             <div class="mod-summary">
                 <div><span>Total de la página</span><strong>@Money(Elements.Sum(x => DetailTotalCache.GetValueOrDefault(x.PkidEgreAdecuacion)))</strong></div>
@@ -40,7 +41,7 @@
             </div>
 
             <div class="mod-table-wrap">
-                <GenericDataGrid TItem="EgreAdecuacionResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="EgreAdecuacionResponse"
                               @ref="table" @key="contextVersion"
                               Title="@Title"
                               SearchPlaceholder="Buscar clave, justificacion o poliza..."
@@ -53,7 +54,7 @@
             <Columns>
                 <TemplateColumn T="EgreAdecuacionResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(cell.Item))" />
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectItem(cell.Item))" >Abrir modificación</MudButton>
                         <MudIconButton Icon="@Icons.Material.Filled.Send" Disabled="@(!CanSendRequest(cell.Item))" Title="@RequestTooltip(cell.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => Workflow(cell.Item, "enviar-solicitud"))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Undo" Visible="@CanUpdate" Disabled="@(!CanCancelRequest(cell.Item))" Title="Cancelar solicitud y volver a captura" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Workflow(cell.Item, "cancelar-solicitud"))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Verified" Visible="@CanAuthorize" Disabled="@(!CanAuthorizeItem(cell.Item))" Title="@AuthorizeTooltip(cell.Item)" Size="Size.Small" Color="Color.Success" OnClick="@(() => Workflow(cell.Item, "autorizar"))" />
@@ -169,7 +170,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(1))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="aumentosTable" Title="Ampliaciones" ServerDataFunc="LoadAumentosData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                    <GenericDataGrid FillAvailableHeight="false" TItem="EgreAdecuacionDetalleResponse" @ref="aumentosTable" Title="Ampliaciones" ServerDataFunc="LoadAumentosData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
             <Columns>
                 <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -204,7 +205,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.RemoveCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Warning" OnClick="@(() => AddDetalle(2))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="reduccionesTable" Title="Reducciones" ServerDataFunc="LoadReduccionesData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                    <GenericDataGrid FillAvailableHeight="false" TItem="EgreAdecuacionDetalleResponse" @ref="reduccionesTable" Title="Reducciones" ServerDataFunc="LoadReduccionesData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
             <Columns>
                 <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
@@ -244,7 +245,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Visible="@CanCreate" Disabled="@SelectedLocked" Size="Size.Small" Color="Color.Success" OnClick="@(() => AddDetalle(DefaultMovimientoId))" />
                                 </div>
                                 <div class="board-scroll">
-                                    <GenericDataGrid TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
+                                    <GenericDataGrid FillAvailableHeight="false" TItem="EgreAdecuacionDetalleResponse" @ref="detalleTable" Title="Detalle" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="ReloadDetalle" ShowExportButton="false">
             <Columns>
                 <TemplateColumn T="EgreAdecuacionDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">

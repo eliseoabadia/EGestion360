@@ -1,4 +1,4 @@
-﻿@page "/Presupuesto/Egreso/Presupuesto_Autorizado"
+@page "/Presupuesto/Egreso/Presupuesto_Autorizado"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Presupuestales
@@ -18,10 +18,10 @@
 @inject HttpClient Http
 @inherits BaseCrudPage<EgresoAutorizadoResponse, EgresoAutorizadoResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column presupuesto-autorizado-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column presupuesto-autorizado-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Presupuesto Autorizado"
                     Subtitle="Egresos autorizados por programa, partida y area"
                     Icon="@Icons.Material.Filled.Verified"
@@ -57,8 +57,8 @@
             </div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="EgresoAutorizadoResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="EgresoAutorizadoResponse"
                           @ref="table"
                           Title="Partidas autorizadas"
                           SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
@@ -230,7 +230,7 @@
         cursor: zoom-in;
     }
 
-    .presupuesto-autorizado-page td span {
+    .presupuesto-autorizado-page td > span:not([class]) {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
     }
@@ -249,6 +249,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<EgresoAutorizadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -272,6 +273,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<EgresoAutorizadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

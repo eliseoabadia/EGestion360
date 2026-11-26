@@ -1,4 +1,4 @@
-﻿@page "/ALMAConteo"
+@page "/ALMAConteo"
 @page "/configuracion/almacen/Numero_Conteo"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
@@ -11,7 +11,7 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="operation-page finance-guided-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
 
         <PageHeader Title="Mis Períodos de Conteo"
                     Subtitle="Gestión y seguimiento de los conteos cíclicos de inventario"
@@ -31,7 +31,7 @@
             <!-- ========== TAB 1: CONTEOS ========== -->
             <MudTabPanel Text="Conteos" Icon="@Icons.Material.Filled.FactCheck" BadgeData="@TotalCount.ToString()" BadgeColor="Color.Primary">
 
-                <GenericDataGrid TItem="ConteoResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="ConteoResponse"
                               @ref="tableConteos"
                               Title="Lista de Conteos Cíclicos"
                               SearchPlaceholder="Buscar por descripción, tipo de bien, período..."
@@ -200,7 +200,7 @@
                     </MudAlert>
                 }
 
-                <GenericDataGrid TItem="ConteoDetalleEscaneoResponse"
+                <GenericDataGrid FillAvailableHeight="false" TItem="ConteoDetalleEscaneoResponse"
                               @ref="tableEscaneos"
                               Title="Escaneos de Bienes"
                               SearchPlaceholder="Buscar por código de barras, bien, persona..."

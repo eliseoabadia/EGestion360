@@ -37,16 +37,33 @@
                                  IdSelector="item => item.PkidContratoLaboral" NameSelector="item => item.NumeroContrato"
                                  ExportMapper="MapContratoExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
                                  OnChanged="OnChanged">
-                <Header>
-                    <MudTh>Contrato</MudTh><MudTh>Puesto</MudTh><MudTh>Contratacion</MudTh><MudTh>Departamento</MudTh>
-                    <MudTh>Inicio</MudTh><MudTh>Fin</MudTh><MudTh>Sueldo</MudTh><MudTh>Vigencia</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@item.NumeroContrato</MudTd><MudTd>@TextOrDash(item.PuestoNombre)</MudTd>
-                    <MudTd>@TextOrDash(item.TipoContratacionDescripcion)</MudTd><MudTd>@TextOrDash(item.DepartamentoNombre)</MudTd>
-                    <MudTd>@FormatDate(item.FechaInicio)</MudTd><MudTd>@FormatDate(item.FechaFin)</MudTd>
-                    <MudTd>@FormatMoney(item.SueldoMensual)</MudTd><MudTd>@TextOrDash(item.Vigencia)</MudTd>
-                </Row>
+
+                <Columns>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Contrato" Identifier="NumeroContrato" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@cell.Item.NumeroContrato</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Puesto" Identifier="PuestoNombre" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.PuestoNombre)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Contratacion" Identifier="TipoContratacionDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.TipoContratacionDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Departamento" Identifier="DepartamentoNombre" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.DepartamentoNombre)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Inicio" Identifier="FechaInicio" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.FechaInicio)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Fin" Identifier="FechaFin" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.FechaFin)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Sueldo" Identifier="SueldoMensual" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatMoney(cell.Item.SueldoMensual)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhContratoResponse" Title="Vigencia" Identifier="Vigencia" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.Vigencia)</CellTemplate>
+                    </TemplateColumn>
+                </Columns>
             </NominaRhDetailTable>
             break;
         case 1:
@@ -58,28 +75,39 @@
                                  IdSelector="item => item.PkidExpediente" NameSelector="item => item.NombreDocumento"
                                  ExportMapper="MapExpedienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
                                  OnChanged="OnChanged">
-                <Header>
-                    <MudTh>Documento</MudTh><MudTh>Tipo</MudTh><MudTh>Descripcion</MudTh><MudTh>Expedicion</MudTh>
-                    <MudTh>Renovacion</MudTh><MudTh>Referencia heredada</MudTh><MudTh>Control</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@item.NombreDocumento</MudTd><MudTd>@TextOrDash(item.TipoExpedienteDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.Descripcion)</MudTd><MudTd>@FormatDate(item.FechaExpedicion)</MudTd>
-                    <MudTd>@FormatDate(item.FechaRenovacion)</MudTd>
-                    <MudTd>
-                        @if (HasLegacyReference(item.Ruta))
+
+                <Columns>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Documento" Identifier="NombreDocumento" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@cell.Item.NombreDocumento</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Tipo" Identifier="TipoExpedienteDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.TipoExpedienteDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Descripcion" Identifier="Descripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.Descripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Expedicion" Identifier="FechaExpedicion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.FechaExpedicion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Renovacion" Identifier="FechaRenovacion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.FechaRenovacion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Referencia heredada" Identifier="Ruta" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@if (HasLegacyReference(cell.Item.Ruta))
                         {
-                            <MudLink Href="@item.Ruta" Target="_blank" Typo="Typo.caption">
+                            <MudLink Href="@cell.Item.Ruta" Target="_blank" Typo="Typo.caption">
                                 Abrir referencia
                             </MudLink>
                         }
                         else
                         {
                             <span>-</span>
-                        }
-                    </MudTd>
-                    <MudTd>@(item.NecesitaRenovacion == true ? "Renovable" : "Permanente")</MudTd>
-                </Row>
+                        }</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhExpedienteResponse" Title="Control" Identifier="NecesitaRenovacion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@(cell.Item.NecesitaRenovacion == true ? "Renovable" : "Permanente")</CellTemplate>
+                    </TemplateColumn>
+                </Columns>
                 <AdditionalActions Context="item">
                     <DocumentSupportButton Modulo="Nomina"
                                            SubModulo="Empleados"
@@ -102,11 +130,21 @@
                                  IdSelector="item => item.PkidDependiente" NameSelector="item => item.Nombre"
                                  ExportMapper="MapDependienteExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
                                  OnChanged="OnChanged">
-                <Header><MudTh>Nombre</MudTh><MudTh>Parentesco</MudTh><MudTh>Fecha de nacimiento</MudTh><MudTh>Creado</MudTh></Header>
-                <Row Context="item">
-                    <MudTd>@item.Nombre</MudTd><MudTd>@TextOrDash(item.ParentescoDescripcion)</MudTd>
-                    <MudTd>@FormatDate(item.FechaNacimiento)</MudTd><MudTd>@FormatDateTime(item.FechaCreacion)</MudTd>
-                </Row>
+
+                <Columns>
+                    <TemplateColumn T="NominaRhDependienteResponse" Title="Nombre" Identifier="Nombre" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@cell.Item.Nombre</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhDependienteResponse" Title="Parentesco" Identifier="ParentescoDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.ParentescoDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhDependienteResponse" Title="Fecha de nacimiento" Identifier="FechaNacimiento" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.FechaNacimiento)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhDependienteResponse" Title="Creado" Identifier="FechaCreacion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDateTime(cell.Item.FechaCreacion)</CellTemplate>
+                    </TemplateColumn>
+                </Columns>
             </NominaRhDetailTable>
             break;
         case 3:
@@ -118,16 +156,30 @@
                                  IdSelector="item => item.PkidIncidencia" NameSelector="item => item.ClaveNombre"
                                  ExportMapper="MapIncidenciaExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
                                  OnChanged="OnChanged">
-                <Header>
-                    <MudTh>Fecha</MudTh><MudTh>Tipo</MudTh><MudTh>Comentario</MudTh><MudTh>Justificacion</MudTh>
-                    <MudTh>Comentario de justificacion</MudTh><MudTh>Descuento</MudTh><MudTh>Periodo</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@FormatDate(item.Fecha)</MudTd><MudTd>@TextOrDash(item.TipoIncidenciaDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.Comentario)</MudTd><MudTd>@TextOrDash(item.TipoJustificacionDescripcion)</MudTd>
-                    <MudTd>@TextOrDash(item.ComentarioJustificacion)</MudTd><MudTd>@(item.AplicaDescuento == true ? "Si" : "No")</MudTd>
-                    <MudTd>@(item.FkidPeriodoQuincenalSis?.ToString() ?? "-")</MudTd>
-                </Row>
+
+                <Columns>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Fecha" Identifier="Fecha" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDate(cell.Item.Fecha)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Tipo" Identifier="TipoIncidenciaDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.TipoIncidenciaDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Comentario" Identifier="Comentario" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.Comentario)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Justificacion" Identifier="TipoJustificacionDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.TipoJustificacionDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Comentario de justificacion" Identifier="ComentarioJustificacion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.ComentarioJustificacion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Descuento" Identifier="AplicaDescuento" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@(cell.Item.AplicaDescuento == true ? "Si" : "No")</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhIncidenciaResponse" Title="Periodo" Identifier="FkidPeriodoQuincenalSis" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@(cell.Item.FkidPeriodoQuincenalSis?.ToString() ?? "-")</CellTemplate>
+                    </TemplateColumn>
+                </Columns>
             </NominaRhDetailTable>
             break;
         default:
@@ -139,16 +191,33 @@
                                  IdSelector="item => item.PkidPension" NameSelector="item => item.NombreBeneficiario"
                                  ExportMapper="MapPensionExport" CanCreate="@CanCreate" CanUpdate="@CanUpdate" CanDelete="@CanDelete" CanExport="@CanExport"
                                  OnChanged="OnChanged">
-                <Header>
-                    <MudTh>Beneficiario</MudTh><MudTh>Tipo</MudTh><MudTh>Porcentaje</MudTh><MudTh>Inicio</MudTh>
-                    <MudTh>Fin</MudTh><MudTh>Documento</MudTh><MudTh>Cuenta contable</MudTh><MudTh>Forma de pago</MudTh>
-                </Header>
-                <Row Context="item">
-                    <MudTd>@item.NombreBeneficiario</MudTd><MudTd>@TextOrDash(item.TipoPensionDescripcion)</MudTd>
-                    <MudTd>@FormatPercent(item.Porcentaje)</MudTd><MudTd>@FormatDateTime(item.FechaInicio)</MudTd>
-                    <MudTd>@FormatDateTime(item.FechaFin)</MudTd><MudTd>@TextOrDash(item.Documento)</MudTd>
-                    <MudTd>@TextOrDash(item.CuentaContableDescripcion)</MudTd><MudTd>@TextOrDash(item.FormaPago)</MudTd>
-                </Row>
+
+                <Columns>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Beneficiario" Identifier="NombreBeneficiario" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@cell.Item.NombreBeneficiario</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Tipo" Identifier="TipoPensionDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.TipoPensionDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Porcentaje" Identifier="Porcentaje" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatPercent(cell.Item.Porcentaje)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Inicio" Identifier="FechaInicio" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDateTime(cell.Item.FechaInicio)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Fin" Identifier="FechaFin" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@FormatDateTime(cell.Item.FechaFin)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Documento" Identifier="Documento" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.Documento)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Cuenta contable" Identifier="CuentaContableDescripcion" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.CuentaContableDescripcion)</CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn T="NominaRhPensionResponse" Title="Forma de pago" Identifier="FormaPago" Sortable="false" Filterable="false">
+                        <CellTemplate Context="cell">@TextOrDash(cell.Item.FormaPago)</CellTemplate>
+                    </TemplateColumn>
+                </Columns>
             </NominaRhDetailTable>
             break;
     }

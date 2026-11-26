@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Existencias_Registradas"
+@page "/Almacen/Existencias_Registradas"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Pages.Shared
@@ -11,10 +11,10 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column almacen-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column almacen-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Existencias registradas"
                     Subtitle="Consulta ejecutiva de saldos y valor disponible en almacen"
                     Icon="@Icons.Material.Filled.Warehouse"
@@ -41,7 +41,7 @@
         </div>
 
         <div Style="flex-grow: 1; min-height: 0;">
-            <GenericDataGrid TItem="AlmacenResponse"
+            <GenericDataGrid FillAvailableHeight="false" TItem="AlmacenResponse"
                           @ref="table"
                           Title="Existencias"
                           SearchPlaceholder="Buscar por clave, bien, area, factura o lote..."
@@ -121,7 +121,7 @@
     }
 
     .almacen-page .summary-strip span,
-    .almacen-page td span {
+    .almacen-page td > span:not([class]) {
         display: block;
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
@@ -135,6 +135,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<AlmacenResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("es-MX");
 
@@ -153,6 +154,7 @@
         await SucursalStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
+        contextReady = true;
     }
 
     protected override async Task<TableData<AlmacenResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

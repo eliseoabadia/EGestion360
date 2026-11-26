@@ -15,8 +15,8 @@
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column ingresos-recaudar-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column ingresos-recaudar-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ingresos por Recaudar"
                     Subtitle="Consulta del ingreso disponible por programa y origen"
                     Icon="@Icons.Material.Filled.RequestQuote"
@@ -30,8 +30,8 @@
             <div><span>Moneda base</span><strong>@_currencyName (@_currencySymbol)</strong></div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="IngreXEjerResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="IngreXEjerResponse"
                           @ref="table"
                           Title="Ingresos por recaudar"
                           SearchPlaceholder="Buscar origen, programa, area funcional o descripcion..."
@@ -73,7 +73,7 @@
     .recaudar-summary span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
     .recaudar-summary strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.02rem; }
     .ingresos-recaudar-page .main-cell { font-weight: 700; line-height: 1.15; }
-    .ingresos-recaudar-page td span { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    .ingresos-recaudar-page td > span:not([class]) { color: var(--mud-palette-text-secondary); font-size: .78rem; }
     .month-spark { display: grid; grid-template-columns: repeat(12, 6px); align-items: end; gap: 3px; height: 32px; min-width: 105px; }
     .month-spark span { display: block; min-height: 4px; border-radius: 3px 3px 0 0; background: var(--eg-primary); }
     .text-right { text-align: right; }
@@ -82,6 +82,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<IngreXEjerResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -101,6 +102,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<IngreXEjerResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

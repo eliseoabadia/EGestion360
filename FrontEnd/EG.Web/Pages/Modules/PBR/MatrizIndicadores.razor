@@ -1,4 +1,4 @@
-﻿@page "/PBR/MatrizIndicadores"
+@page "/PBR/MatrizIndicadores"
 @page "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Indicadores"
 @page "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Resumen_Narrativo"
 @using EG.Domain.DTOs.Responses.PBR
@@ -16,7 +16,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
-<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer MaxWidth="MaxWidth.False" Class="operation-page px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     @if (selected == null)
     {
         <PageHeader Title="MIR PBR"
@@ -28,8 +28,8 @@
 
         <PbrTopNavigation />
 
-        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericDataGrid TItem="PbrMirNivelResponse"
+        <div style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="PbrMirNivelResponse"
                           @ref="table"
                           Title="Niveles MIR"
                           SearchPlaceholder="Buscar por nivel, objetivo o programa..."
@@ -42,7 +42,7 @@
             <Columns>
                 <TemplateColumn T="PbrMirNivelResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <div Style="width: 140px; white-space: nowrap;">
+                        <div Style="display: flex; flex-wrap: wrap; gap: 6px;">
                         <DocumentSupportButton Modulo="PBR"
                         SubModulo="MIR"
                         Controlador="PbrMirNivel"
@@ -50,7 +50,7 @@
                         RegistroTitulo="@TextOrDash(cell.Item.Nivel)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Objetivo)" />
                         <MudTooltip Text="Ver indicadores">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectMir(cell.Item))" />
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectMir(cell.Item))" >Abrir nivel</MudButton>
                         </MudTooltip>
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenMirDialog(cell.Item.PkidMirNivel))" />
                         </div>
@@ -92,19 +92,19 @@
     {
         <PbrTopNavigation OnBack="BackToTable" />
 
-        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent;">
+        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent; flex-wrap: wrap; gap: 8px;">
             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
             <div class="ml-2">
                 <MudText Typo="Typo.h6" Style="font-weight: 700;">@TextOrDash(selected.Nivel)</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@TextOrDash(selected.Objetivo)</MudText>
             </div>
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" Size="Size.Small" OnClick="() => OpenIndicadorDialog(null)" />
-            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="() => indicadorTable.ReloadData()" />
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" Size="Size.Small" OnClick="() => OpenIndicadorDialog(null)">Agregar indicador</MudButton>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Refresh" Color="Color.Primary" Size="Size.Small" OnClick="() => indicadorTable.ReloadData()">Actualizar</MudButton>
         </MudPaper>
 
-        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericDataGrid TItem="PbrIndicadorResponse"
+        <div style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="PbrIndicadorResponse" @key="selected.PkidMirNivel"
                           @ref="indicadorTable"
                           Title="Indicadores"
                           SearchPlaceholder="Buscar por indicador, meta o frecuencia..."

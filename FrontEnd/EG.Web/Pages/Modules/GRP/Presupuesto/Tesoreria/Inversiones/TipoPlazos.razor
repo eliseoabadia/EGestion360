@@ -6,10 +6,10 @@
 @inherits BaseCrudPage<TipoPlazoResponse, TipoPlazoResponse>
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100vh;">
+    <MudContainer Class="operation-page px-2 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Tipo de Plazos" Subtitle="Catalogo de plazos para instrumentos de inversion"
                     Icon="@Icons.Material.Filled.Schedule" CanCreate="@CanCreate" OnCreate="CreateItem" OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="TipoPlazoResponse" @ref="table" Title="Tipos de plazo"
+        <GenericDataGrid FillAvailableHeight="false" TItem="TipoPlazoResponse" @ref="table" Title="Tipos de plazo"
                       SearchPlaceholder="Buscar descripcion..." ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel"
                       SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">

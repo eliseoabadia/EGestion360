@@ -1,4 +1,4 @@
-﻿@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
+@page "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.General
 @using EG.Domain.DTOs.Responses.Patrimonio
@@ -20,10 +20,10 @@
 @inject HttpClient Http
 @inherits BaseCrudPage<EgresoProyectadoResponse, EgresoProyectadoResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="min-height: 100%;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column anteproyecto-page" MaxWidth="MaxWidth.False" Style="min-height: 100%;">
         <PageHeader Title="Anteproyecto de Egresos"
                     Subtitle="Planeacion mensual por programa, partida y area"
                     Icon="@Icons.Material.Filled.StackedLineChart"
@@ -57,7 +57,7 @@
         </div>
 
         <div Style="flex: 1 1 auto; min-height: 420px; overflow: visible;">
-            <GenericDataGrid TItem="EgresoProyectadoResponse"
+            <GenericDataGrid FillAvailableHeight="false" TItem="EgresoProyectadoResponse"
                           @ref="table"
                           Title="Partidas del anteproyecto"
                           SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
@@ -221,7 +221,7 @@
         cursor: pointer;
     }
 
-    .anteproyecto-page td span {
+    .anteproyecto-page td > span:not([class]) {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
     }
@@ -244,6 +244,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<EgresoProyectadoResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -263,6 +264,7 @@
         await SucursalStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<EgresoProyectadoResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

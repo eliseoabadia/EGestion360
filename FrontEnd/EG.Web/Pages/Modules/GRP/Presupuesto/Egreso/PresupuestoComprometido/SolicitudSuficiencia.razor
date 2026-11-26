@@ -1,4 +1,4 @@
-﻿@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia"
+@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
@@ -18,10 +18,10 @@
 @inject EG.Web.Services.AuthService AuthService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column solicitud-suficiencia-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column solicitud-suficiencia-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedSolicitud == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;">
                 <PageHeader Title="Solicitud Suficiencia"
                             Subtitle="Solicitudes listas para autorizar presupuesto comprometido"
                             Icon="@Icons.Material.Filled.RuleFolder"
@@ -34,8 +34,8 @@
                     <div><span>Pendientes</span><strong>@Elements.Count(x => x.Estatus != 3).ToString("N0", NumberCulture)</strong></div>
                 </div>
 
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericDataGrid TItem="SolicitudSuficienciaResponse"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="SolicitudSuficienciaResponse"
                                   @ref="table"
                                   Title="Solicitudes de suficiencia"
                                   SearchPlaceholder="Buscar requisición, justificación o estatus..."
@@ -50,10 +50,10 @@
                 <TemplateColumn T="SolicitudSuficienciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectSolicitud(cell.Item))" />
+                        OnClick="@(() => SelectSolicitud(cell.Item))" >Abrir solicitud</MudButton>
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Presupuesto_Comprometido"
                         SubModulo="Solicitud_Suficiencia"
@@ -105,7 +105,7 @@
         }
         else
         {
-            <div class="d-flex flex-column detail-layout" Style="flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
+            <div class="d-flex flex-column detail-layout" Style="flex:0 0 auto;overflow:visible;min-height:0;gap:8px;">
                 <MudPaper Elevation="0" Class="selected-header">
                     <div class="selected-title">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Medium" OnClick="BackToTable" />
@@ -116,7 +116,7 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Color="@EstatusColor(SelectedSolicitud.Estatus)" Size="Size.Small">@TextOrDash(SelectedSolicitud.EstatusDescripcion)</MudChip>
-                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="ml-1">@Money(TotalSeleccionado)</MudChip>
+                    <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="ml-1">@Money(TotalSeleccionado) en página</MudChip>
                     <DocumentSupportButton Modulo="Presupuesto_Comprometido"
                                            SubModulo="Solicitud_Suficiencia"
                                            Controlador="SolicitudSuficiencia"
@@ -124,27 +124,34 @@
                                            FkidEmpresaSis="@SelectedSolicitud.FkidEmpresaSis"
                                            RegistroTitulo="@($"Solicitud {SelectedSolicitud.PkidSolicitudSuficiencia}")"
                                            RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
-                    <MudTooltip Text="Autorizar solicitud">
-                        <MudIconButton Icon="@Icons.Material.Filled.Verified"
+
+                    <MudTooltip Text="Actualizar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="RefreshSelectedAndDetails" Class="ml-1" />
+                    </MudTooltip>
+                </MudPaper>
+                <OperationActionPanel Title="Revisión presupuestal de la solicitud" Description="Consulta los conceptos de la requisición y su distribución antes de autorizar." Icon="@Icons.Material.Filled.RuleFolder">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.Verified"
                                        Color="Color.Success"
                                        Size="Size.Small"
                                        Visible="@CanAuthorize"
                                        Disabled="@IsAuthorized(SelectedSolicitud)"
                                        OnClick="@(() => AuthorizeSolicitud(SelectedSolicitud))"
-                                       Class="ml-2" />
-                    </MudTooltip>
-                    <MudTooltip Text="Actualizar">
-                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="RefreshSelectedAndDetails" Class="ml-1" />
-                    </MudTooltip>
-                </MudPaper>
+                                        >Autorizar solicitud</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Revisa la requisición y el detalle de bienes y partidas.</li><li>La autorización requiere el permiso y estado previstos por el proceso.</li><li>Los registros autorizados conservan sus restricciones; puedes seguir consultando el detalle.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
 
                 <MudPaper Elevation="1" Class="summary-panel">
                     <MudGrid Spacing="2">
                         <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Fecha requisición</MudText><MudText Typo="Typo.body2" Class="metric">@DateOrDash(SelectedSolicitud.FechaRequisicion)</MudText></MudItem>
                         <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Mes aplicado</MudText><MudText Typo="Typo.body2" Class="metric">@MesAplicado</MudText></MudItem>
-                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes</MudText><MudText Typo="Typo.body2" Class="metric">@SelectedDetalles.Count.ToString("N0", NumberCulture)</MudText></MudItem>
-                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Partidas</MudText><MudText Typo="Typo.body2" Class="metric">@PartidaResumenes.Count().ToString("N0", NumberCulture)</MudText></MudItem>
-                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Total solicitado</MudText><MudText Typo="Typo.body2" Class="metric">@Money(TotalSeleccionado)</MudText></MudItem>
+                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Bienes en página</MudText><MudText Typo="Typo.body2" Class="metric">@SelectedDetalles.Count.ToString("N0", NumberCulture)</MudText></MudItem>
+                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Partidas en página</MudText><MudText Typo="Typo.body2" Class="metric">@PartidaResumenes.Count().ToString("N0", NumberCulture)</MudText></MudItem>
+                        <MudItem xs="6" sm="3" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Total de esta página</MudText><MudText Typo="Typo.body2" Class="metric">@Money(TotalSeleccionado)</MudText></MudItem>
                         <MudItem xs="12" sm="9" md="2"><MudText Typo="Typo.caption" Color="Color.Tertiary">Creación</MudText><MudText Typo="Typo.body2" Class="metric">@DateTimeOrDash(SelectedSolicitud.FechaCreacion)</MudText></MudItem>
                     </MudGrid>
                 </MudPaper>
@@ -163,8 +170,8 @@
                     </div>
                 }
 
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericDataGrid TItem="SolicitudSuficienciaDetalleResponse"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="SolicitudSuficienciaDetalleResponse" @key="SelectedSolicitud.PkidSolicitudSuficiencia"
                                   @ref="detalleTable"
                                   Title="Detalle por bien y partida"
                                   SearchPlaceholder="Buscar partida o bien..."
@@ -372,12 +379,13 @@
         await dialog.Result;
     }
 
-    private async Task SelectSolicitud(SolicitudSuficienciaResponse item)
+    private Task SelectSolicitud(SolicitudSuficienciaResponse item)
     {
+        SelectedDetalles.Clear();
         SelectedSolicitud = item;
         detalleSearchString = string.Empty;
-        await LoadSelectedDetallesSummary();
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task RefreshSelectedAndDetails()
@@ -393,7 +401,6 @@
             SelectedSolicitud = response.Data;
         }
 
-        await LoadSelectedDetallesSummary();
         await ReloadDetalles();
     }
 
@@ -420,6 +427,7 @@
         }
 
         var details = await GetDetallesForSolicitud(solicitud.PkidSolicitudSuficiencia);
+        if (details is null) return;
         if (details.Count == 0)
         {
             Snackbar.Add("La solicitud no tiene detalle para autorizar.", Severity.Warning);
@@ -563,18 +571,10 @@
         return usuario?.Data?.IdPersona ?? userId.Value;
     }
 
-    private async Task<List<SolicitudSuficienciaDetalleResponse>> GetDetallesForSolicitud(int solicitudId)
-    {
-        var response = await DetalleService.GetAllPaginadoAsync(
-            1,
-            int.MaxValue,
-            string.Empty,
-            "PartidaClave",
-            SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = solicitudId });
-
-        return response?.Items?.ToList() ?? new List<SolicitudSuficienciaDetalleResponse>();
-    }
+    private Task<List<SolicitudSuficienciaDetalleResponse>?> GetDetallesForSolicitud(int solicitudId) =>
+        ReadRelatedRecordsAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty, "PkidSolicitudSuficienciaDetalle", SortDirection.Ascending,
+                new() { ["FkidSolicitudSuficienciaPres"] = solicitudId }), row => row.PkidSolicitudSuficienciaDetalle);
 
     private async Task<TableData<SolicitudSuficienciaDetalleResponse>> LoadDetallesServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -583,30 +583,23 @@
             return new TableData<SolicitudSuficienciaDetalleResponse> { Items = new List<SolicitudSuficienciaDetalleResponse>(), TotalItems = 0 };
         }
 
+        var solicitudId = SelectedSolicitud.PkidSolicitudSuficiencia;
         var response = await DetalleService.GetAllPaginadoAsync(
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detalleSearchString,
             state.SortLabel ?? "PartidaClave",
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = SelectedSolicitud.PkidSolicitudSuficiencia });
+            new Dictionary<string, object> { ["FkidSolicitudSuficienciaPres"] = solicitudId });
 
+        if (cancellationToken.IsCancellationRequested || SelectedSolicitud?.PkidSolicitudSuficiencia != solicitudId) return new() { Items = [], TotalItems = 0 };
+        SelectedDetalles = response?.Items?.ToList() ?? [];
+        await InvokeAsync(StateHasChanged);
         return new TableData<SolicitudSuficienciaDetalleResponse>
         {
             Items = response?.Items ?? new List<SolicitudSuficienciaDetalleResponse>(),
             TotalItems = response?.TotalCount ?? 0
         };
-    }
-
-    private async Task LoadSelectedDetallesSummary()
-    {
-        if (SelectedSolicitud == null)
-        {
-            SelectedDetalles.Clear();
-            return;
-        }
-
-        SelectedDetalles = await GetDetallesForSolicitud(SelectedSolicitud.PkidSolicitudSuficiencia);
     }
 
     private async Task ReloadDetalles()

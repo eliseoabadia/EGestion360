@@ -36,6 +36,7 @@ public partial class ModificadoIngresoShell
     private int contextVersion;
     private int listRequestVersion;
     private bool disposed;
+    private bool contextReady;
     private (int Type, int Movement, bool Both, string Permission)? parameterContext;
 
     protected override async Task OnParametersSetAsync()
@@ -95,6 +96,7 @@ public partial class ModificadoIngresoShell
         AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await LoadCurrencyAsync();
+        contextReady = !disposed;
     }
 
     protected override async Task<TableData<IngreAdecuacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

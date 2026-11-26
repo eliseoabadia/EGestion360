@@ -16,10 +16,10 @@
 @inject IJSRuntime JS
 @inherits BaseCrudPage<EgresoDisponibleResponse, EgresoDisponibleResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column presupuesto-disponible-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column presupuesto-disponible-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Presupuesto Disponible PEF"
                     Subtitle="Saldo disponible por programa, partida y area"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"
@@ -52,8 +52,8 @@
             </div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="EgresoDisponibleResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="EgresoDisponibleResponse"
                              @ref="table"
                              Title="Partidas disponibles"
                              SearchPlaceholder="Buscar programa, partida, area, fuente, destino, PY o descripcion..."
@@ -199,7 +199,7 @@
         cursor: zoom-in;
     }
 
-    .presupuesto-disponible-page td span {
+    .presupuesto-disponible-page td > span:not([class]) {
         color: var(--mud-palette-text-secondary);
         font-size: .78rem;
     }
@@ -234,6 +234,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<EgresoDisponibleResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -258,6 +259,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<EgresoDisponibleResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)

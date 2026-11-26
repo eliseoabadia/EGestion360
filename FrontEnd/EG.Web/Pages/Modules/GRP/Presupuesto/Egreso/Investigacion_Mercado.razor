@@ -1,4 +1,4 @@
-﻿@page "/Presupuesto/Egreso/Investigacion_Mercado"
+@page "/Presupuesto/Egreso/Investigacion_Mercado"
 @page "/Planeacion/Investigacion_Mercado"
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
@@ -17,17 +17,17 @@
 @inject IJSRuntime JS
 @inherits BaseCrudPage<EstudioMercadoResponse, EstudioMercadoResponse>
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column investigacion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column investigacion-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedEstudio == null)
         {
-            <div Style="display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; min-height: 0;">
+            <div Style="display: flex; flex-direction: column; flex: 0 0 auto; overflow: visible; min-height: 0;">
                 <PageHeader Title="Investigacion de Mercado"
                             Subtitle="Estudios de precios y bienes a investigar desde PAAAS"
                             Icon="@Icons.Material.Filled.LocalOffer"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nuevo estudio"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
@@ -42,8 +42,8 @@
                     </div>
                 </div>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="EstudioMercadoResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="EstudioMercadoResponse"
                                   @ref="table"
                                   Title="Estudios registrados"
                                   SearchPlaceholder="Buscar por nombre, descripcion o responsable..."
@@ -57,10 +57,10 @@
                 <TemplateColumn T="EstudioMercadoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
                         <MudTooltip Text="Ver detalle">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectEstudio(cell.Item))" />
+                        OnClick="@(() => SelectEstudio(cell.Item))" >Abrir estudio</MudButton>
                         </MudTooltip>
                         <DocumentSupportButton Modulo="Planeacion"
                         SubModulo="Investigacion_Mercado"
@@ -125,7 +125,7 @@
         }
         else
         {
-            <div class="d-flex flex-column detail-layout" Style="flex-grow: 1; overflow: hidden; min-height: 0; gap: 8px;">
+            <div class="d-flex flex-column detail-layout" Style="flex: 0 0 auto; overflow: visible; min-height: 0; gap: 8px;">
                 <MudPaper Elevation="0" Class="selected-header">
                     <div class="selected-title">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
@@ -157,22 +157,8 @@
                                            FkidEmpresaSis="@SelectedEstudio.FkidEmpresaSis"
                                            RegistroTitulo="@TextOrDash(SelectedEstudio.Nombre)"
                                            RegistroDescripcion="@TextOrDash(SelectedEstudio.Descripcion)" />
-                    <MudTooltip Text="Agregar bienes desde PAAAS">
-                        <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
-                                       Color="Color.Success"
-                                       Size="Size.Small"
-                                       Visible="@CanCreate"
-                                       OnClick="AddDetalle"
-                                       Class="ml-1" />
-                    </MudTooltip>
-                    <MudTooltip Text="Recibir cotizaciones">
-                        <MudIconButton Icon="@Icons.Material.Filled.AttachMoney"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Visible="@CanUpdate"
-                                       OnClick="OpenRecepcionCotizaciones"
-                                       Class="ml-1" />
-                    </MudTooltip>
+
+
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
@@ -181,6 +167,26 @@
                                        Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>
+                <OperationActionPanel Title="Bienes y respuestas del estudio" Description="Los bienes se cargan al abrir. Captura los conceptos y recibe las cotizaciones en el mismo flujo." Icon="@Icons.Material.Filled.PriceCheck">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Visible="@CanCreate"
+                                       OnClick="AddDetalle"
+                                        >Capturar bienes</MudButton>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.AttachMoney"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Visible="@CanUpdate"
+                                       OnClick="OpenRecepcionCotizaciones"
+                                        >Recibir cotizaciones</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Usa Capturar bienes para preparar los conceptos del estudio seleccionado.</li><li>Busca un bien en la tabla para revisar sus solicitudes y respuestas.</li><li>Recibir cotizaciones abre la captura de montos; los envíos por correo conservan su estado y permisos.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
 
                 <MudPaper Elevation="1" Class="summary-panel">
                     <MudGrid Spacing="2">
@@ -207,8 +213,8 @@
                     </MudGrid>
                 </MudPaper>
 
-                <div Style="flex-grow: 1; overflow: hidden; min-height: 0;">
-                    <GenericDataGrid TItem="EstudioMercadoDetalleResponse"
+                <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="EstudioMercadoDetalleResponse" @key="SelectedEstudio.PkidEstudioMercado"
                                   @ref="detalleTable"
                                   Title="Bienes a cotizar"
                                   SearchPlaceholder="Buscar por bien u observaciones..."
@@ -447,6 +453,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<EstudioMercadoResponse> table = null!;
     private GenericDataGrid<EstudioMercadoDetalleResponse> detalleTable = null!;
     private EstudioMercadoResponse? SelectedEstudio;
@@ -471,6 +478,7 @@
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadEmpresaId();
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     public void Dispose()

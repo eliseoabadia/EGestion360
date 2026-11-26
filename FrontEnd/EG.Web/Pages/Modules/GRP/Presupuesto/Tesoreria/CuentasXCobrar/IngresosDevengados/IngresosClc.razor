@@ -14,25 +14,14 @@
 @inject AnioPresupuestalStateService AnioStateService
 @inject IGenericCrudService<UsuarioResponse> UsuarioService
 @inject IJSRuntime JS
-@inject NavigationManager Navigation
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column ingresos-clc-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column ingresos-clc-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Ingresos (CLCs)"
                     Subtitle="Consulta consolidada de CLCs; la captura se realiza desde Depositos CLC"
                     Icon="@Icons.Material.Filled.Scale"
                     ShowCreateButton="false"
                     OnRefresh="ReloadData">
-            <AdditionalButtons>
-                <MudTooltip Text="Abrir captura de Depositos CLC">
-                    <MudIconButton Icon="@Icons.Material.Filled.AddCard"
-                                   Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   Size="Size.Small"
-                                   OnClick="OpenDepositosClc"
-                                   aria-label="Abrir captura de Depositos CLC" />
-                </MudTooltip>
-            </AdditionalButtons>
         </PageHeader>
 
         <section class="ingresos-clc-summary">
@@ -42,8 +31,8 @@
             <div><span>Polizas visibles</span><strong>@Elements.Where(x => x.FkIdPolizaConta.HasValue).Select(x => x.FkIdPolizaConta).Distinct().Count().ToString("N0", NumberCulture)</strong></div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="IngresoCLCFacturaResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="IngresoCLCFacturaResponse"
                           @ref="table"
                           Title="Ingresos (CLCs)"
                           SearchPlaceholder="Buscar CLC, factura, referencia, concepto o RFC..."
@@ -87,7 +76,7 @@
     .ingresos-clc-summary span { display: block; color: var(--mud-palette-text-secondary); font-size: .72rem; text-transform: uppercase; }
     .ingresos-clc-summary strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.02rem; }
     .ingresos-clc-page .main-cell { font-weight: 700; line-height: 1.15; }
-    .ingresos-clc-page td span { color: var(--mud-palette-text-secondary); font-size: .78rem; }
+    .ingresos-clc-page td > span:not([class]) { color: var(--mud-palette-text-secondary); font-size: .78rem; }
     .month-spark { display: grid; grid-template-columns: repeat(12, 6px); align-items: end; gap: 3px; height: 32px; min-width: 105px; }
     .month-spark span { display: block; min-height: 4px; border-radius: 3px 3px 0 0; background: var(--eg-primary); }
     .text-right { text-align: right; }
@@ -96,6 +85,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<IngresoCLCFacturaResponse> table = null!;
     private string _currencySymbol = "$";
     private string _currencyName = "Peso Mexicano";
@@ -115,6 +105,7 @@
         await AnioStateService.InitializeAsync();
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await LoadCurrencyAsync();
+        contextReady = true;
     }
 
     protected override async Task<TableData<IngresoCLCFacturaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -211,7 +202,6 @@
     });
 
     protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
-    private void OpenDepositosClc() => Navigation.NavigateTo("/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC");
 
     private Dictionary<string, object> BuildFilters() => new()
     {

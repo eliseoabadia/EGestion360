@@ -215,7 +215,10 @@
     }
     private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
 
-    private async Task GenerateContrato(AutorizacionSuficienciaResponse autorizacion)
+    private async Task GenerateContrato(AutorizacionSuficienciaResponse autorizacion) =>
+        await RunExclusiveAsync(() => PrepareGenerateContratoAsync(autorizacion));
+
+    private async Task PrepareGenerateContratoAsync(AutorizacionSuficienciaResponse autorizacion)
     {
         if (!CanAuthorize)
         {
@@ -223,8 +226,10 @@
             return;
         }
 
-        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidAutorizacionSuficienciaPres"] = autorizacion.PkidAutorizacionSuficiencia });
-        var details = detailsResponse?.Items?.ToList() ?? new List<AutorizacionSuficienciaDetalleResponse>();
+        var details = await ReadRelatedRecordsAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty, "PkidAutorizacionSuficienciaDetalle", SortDirection.Ascending, new() { ["FkidAutorizacionSuficienciaPres"] = autorizacion.PkidAutorizacionSuficiencia }),
+            row => row.PkidAutorizacionSuficienciaDetalle);
+        if (details is null) return;
         if (details.Count == 0)
         {
             Snackbar.Add("La autorizacion no tiene detalle para generar contrato.", Severity.Warning);

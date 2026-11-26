@@ -37,6 +37,7 @@ public partial class PresupuestoModificadoShell
     private int contextVersion;
     private int listRequestVersion;
     private bool disposed;
+    private bool contextReady;
     private (int Type, int Movement, bool Both, string Permission)? parameterContext;
 
     protected override async Task OnParametersSetAsync()
@@ -100,6 +101,7 @@ public partial class PresupuestoModificadoShell
         AnioStateService.OnAnioChanged += OnAnioChanged;
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await LoadCurrencyAsync();
+        contextReady = !disposed;
     }
 
     protected override async Task<TableData<EgreAdecuacionResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -242,33 +244,37 @@ public partial class PresupuestoModificadoShell
     }
     private async Task LoadTotalsAsync(IEnumerable<EgreAdecuacionResponse> items, Func<bool> isCurrent)
     {
-        var totals = new Dictionary<int, decimal>();
-        var balances = new Dictionary<int, (decimal Debe, decimal Haber, int Count)>();
-        foreach (var item in items)
+        var records = items.ToList();
+        if (records.Count == 0)
         {
-            var details = await BudgetPageReader.ReadAllAsync(
-                (page, size) => DetalleService.GetAllPaginadoAsync(
-                    page, size, string.Empty, nameof(EgreAdecuacionDetalleResponse.PkidEgreAdecuacionDetalle),
-                    SortDirection.Ascending, new() { [nameof(EgreAdecuacionDetalleResponse.FkidEgreAdecuacionPres)] = item.PkidEgreAdecuacion }),
-                row => row.PkidEgreAdecuacionDetalle, isCurrent);
-            totals[item.PkidEgreAdecuacion] = details.Sum(row => Math.Abs(row.Total ?? 0m));
-            var policy = item.FkidPolizaConta.HasValue
-                ? await BudgetPageReader.ReadAllAsync(
-                    (page, size) => PolizaDetalleService.GetAllPaginadoAsync(
-                        page, size, string.Empty, nameof(PolizaDetalleResponse.PkidPolizaDetalle),
-                        SortDirection.Ascending, new() { [nameof(PolizaDetalleResponse.FkidPolizaConta)] = item.FkidPolizaConta.Value }),
-                    row => row.PkidPolizaDetalle, isCurrent)
-                : [];
-            balances[item.PkidEgreAdecuacion] = (
-                policy.Sum(row => row.ImporteDebe ?? 0m),
-                policy.Sum(row => row.ImporteHaber ?? 0m),
-                policy.Count);
+            if (isCurrent()) { DetailTotalCache.Clear(); BalanceCache.Clear(); }
+            return;
         }
+        var ids = records.Select(row => row.PkidEgreAdecuacion).Distinct().ToArray();
+        var policyIds = records.Where(row => row.FkidPolizaConta.HasValue).Select(row => row.FkidPolizaConta!.Value).Distinct().ToArray();
+        var detailsTask = BudgetPageReader.ReadAllAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty,
+                nameof(EgreAdecuacionDetalleResponse.PkidEgreAdecuacionDetalle), SortDirection.Ascending,
+                new() { ["FkidEgreAdecuacionPres__in"] = ids }),
+            row => row.PkidEgreAdecuacionDetalle, isCurrent);
+        var policiesTask = policyIds.Length == 0
+            ? Task.FromResult(new List<PolizaDetalleResponse>())
+            : BudgetPageReader.ReadAllAsync(
+                (page, size) => PolizaDetalleService.GetAllPaginadoAsync(page, size, string.Empty,
+                    nameof(PolizaDetalleResponse.PkidPolizaDetalle), SortDirection.Ascending,
+                    new() { ["FkidPolizaConta__in"] = policyIds }),
+                row => row.PkidPolizaDetalle, isCurrent);
+        await Task.WhenAll(detailsTask, policiesTask);
         if (!isCurrent()) return;
-        DetailTotalCache.Clear();
-        BalanceCache.Clear();
-        foreach (var total in totals) DetailTotalCache.Add(total.Key, total.Value);
-        foreach (var balance in balances) BalanceCache.Add(balance.Key, balance.Value);
+        var details = (await detailsTask).ToLookup(row => row.FkidEgreAdecuacionPres);
+        var policies = (await policiesTask).ToLookup(row => row.FkidPolizaConta);
+        DetailTotalCache.Clear(); BalanceCache.Clear();
+        foreach (var record in records)
+        {
+            DetailTotalCache[record.PkidEgreAdecuacion] = details[record.PkidEgreAdecuacion].Sum(row => Math.Abs(row.Total ?? 0m));
+            var policy = record.FkidPolizaConta.HasValue ? policies[record.FkidPolizaConta.Value].ToList() : [];
+            BalanceCache[record.PkidEgreAdecuacion] = (policy.Sum(row => row.ImporteDebe ?? 0m), policy.Sum(row => row.ImporteHaber ?? 0m), policy.Count);
+        }
     }
     private async Task AddDetalle(int tipoMovimiento) => await OpenDetalle(null, tipoMovimiento);
     private async Task EditDetalle(int id, int tipoMovimiento) => await OpenDetalle(id, tipoMovimiento);

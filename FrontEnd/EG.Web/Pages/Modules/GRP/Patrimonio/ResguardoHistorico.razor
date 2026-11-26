@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Resguardo_Historico"
+@page "/Patrimonio/Resguardo_Historico"
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -10,15 +10,15 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 
-<MudContainer Class="px-3 d-flex flex-column resguardo-historico-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer Class="operation-page px-3 d-flex flex-column resguardo-historico-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
     <PageHeader Title="Resguardo Historico"
                 Subtitle="Movimientos de asignacion y liberacion de bienes"
                 Icon="@Icons.Material.Filled.History"
                 ShowCreateButton="false"
                 OnRefresh="ReloadData" />
 
-    <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-        <GenericDataGrid TItem="ResguardoMovimientoResponse"
+    <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+        <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoMovimientoResponse"
                       @ref="table"
                       Title="Movimientos de resguardo"
                       SearchPlaceholder="Buscar por bien, folio, responsable o movimiento..."

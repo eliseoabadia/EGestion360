@@ -6,7 +6,7 @@
 @inherits BaseCrudPage<VwClcfacturaImporteResponse, VwClcfacturaImporteResponse>
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column provision-pago-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column provision-pago-page" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Provision del Pago"
                     Subtitle="Importes devengados y saldo por factura"
                     Icon="@Icons.Material.Filled.RequestQuote"
@@ -32,8 +32,8 @@
             </div>
         </section>
 
-        <div Style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
-            <GenericDataGrid TItem="VwClcfacturaImporteResponse"
+        <div Style="flex: 0 0 auto; min-height: 0; overflow: visible;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="VwClcfacturaImporteResponse"
                           @ref="table"
                           Title="Provision del pago por factura"
                           SearchPlaceholder="Buscar factura, proveedor, poliza, contrato o concepto..."

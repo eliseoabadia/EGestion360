@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Conteo_ciclico"
+@page "/Almacen/Conteo_ciclico"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.ConteoCiclico
 @using EG.Web.Pages.Shared
@@ -9,13 +9,13 @@
 <AccessVerification IsInitialized="@IsInitialized"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-guided-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         <PageHeader Title="Conteo ciclico"
                     Subtitle="Seguimiento operativo de conteos activos"
                     Icon="@Icons.Material.Filled.FactCheck"
                     CanCreate="false"
                     OnRefresh="() => table.ReloadData()" />
-        <GenericDataGrid TItem="ConteoResponse"
+        <GenericDataGrid FillAvailableHeight="false" TItem="ConteoResponse"
                       @ref="table"
                       Title="Conteos"
                       SearchPlaceholder="Buscar por periodo, bien o estatus..."

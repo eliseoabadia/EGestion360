@@ -9,7 +9,12 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
-<GenericDataGrid TItem="TItem"
+@if (busy)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="Procesando expediente del empleado" />
+}
+
+<GenericDataGrid TItem="TItem" FillAvailableHeight="false"
               @ref="table"
               Title="@Title"
               SearchPlaceholder="@SearchPlaceholder"
@@ -22,7 +27,6 @@
               SearchString="@search"
               SearchStringChanged="value => search = value"
               OnSearch="SearchAsync"
-              Loading="@busy"
               PageSize="5"
               PageSizeOptions="@(new[] { 5, 10, 20 })"
               FixedHeader="false"
@@ -54,6 +58,7 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
+                @Columns
             </Columns>
         </GenericDataGrid>
 
@@ -69,8 +74,7 @@
     [Parameter, EditorRequired] public Func<TItem, int> IdSelector { get; set; } = null!;
     [Parameter, EditorRequired] public Func<TItem, string> NameSelector { get; set; } = null!;
     [Parameter, EditorRequired] public Func<TItem, object> ExportMapper { get; set; } = null!;
-    [Parameter, EditorRequired] public RenderFragment Header { get; set; } = null!;
-    [Parameter, EditorRequired] public RenderFragment<TItem> Row { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment Columns { get; set; } = null!;
     [Parameter] public RenderFragment<TItem>? AdditionalActions { get; set; }
     [Parameter] public bool CanCreate { get; set; }
     [Parameter] public bool CanUpdate { get; set; }

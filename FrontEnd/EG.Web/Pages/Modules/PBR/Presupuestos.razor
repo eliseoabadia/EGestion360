@@ -1,4 +1,4 @@
-﻿@page "/PBR/Presupuestos"
+@page "/PBR/Presupuestos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.PBR
 @using EG.Dommain.DTOs.Responses
@@ -17,7 +17,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
-<MudContainer MaxWidth="MaxWidth.False" Class="px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
+<MudContainer MaxWidth="MaxWidth.False" Class="operation-page px-3 d-flex flex-column" Style="height: 100%; min-height: 0; overflow: auto;">
     @if (selected == null)
     {
         <PageHeader Title="Presupuestos PBR"
@@ -29,8 +29,8 @@
 
         <PbrTopNavigation />
 
-        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericDataGrid TItem="PbrPresupuestoProgramaResponse"
+        <div style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="PbrPresupuestoProgramaResponse"
                           @ref="table"
                           Title="Presupuesto por programa"
                           SearchPlaceholder="Buscar por programa, entidad, UR o fuente..."
@@ -50,10 +50,10 @@
                         RegistroTitulo="@($"Presupuesto {cell.Item.PkidPresupuestoPrograma}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.ProgramaDescripcion)" />
                         <MudTooltip Text="Ver partidas">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
                         Color="Color.Info"
                         Size="Size.Small"
-                        OnClick="@(() => SelectPresupuesto(cell.Item))" />
+                        OnClick="@(() => SelectPresupuesto(cell.Item))" >Abrir presupuesto</MudButton>
                         </MudTooltip>
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -102,25 +102,15 @@
     {
         <PbrTopNavigation OnBack="BackToTable" />
 
-        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent;">
+        <MudPaper Elevation="0" Class="pa-0 d-flex align-center mb-2" Style="background: transparent; flex-wrap: wrap; gap: 8px;">
             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
             <div class="ml-2">
                 <MudText Typo="Typo.h6" Style="font-weight: 700;">@TextOrDash(selected.ProgramaDescripcion)</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@selected.Anio | @Money(selected.PresupuestoAnual)</MudText>
             </div>
             <MudSpacer />
-            <MudTooltip Text="Agregar partida">
-                <MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd"
-                               Color="Color.Success"
-                               Size="Size.Small"
-                               OnClick="() => OpenPartidaDialog(null)" />
-            </MudTooltip>
-            <MudTooltip Text="Actualizar">
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                               Color="Color.Default"
-                               Size="Size.Small"
-                               OnClick="() => partidaTable.ReloadData()" />
-            </MudTooltip>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" Size="Size.Small" OnClick="() => OpenPartidaDialog(null)">Agregar partida</MudButton>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Refresh" Color="Color.Primary" Size="Size.Small" OnClick="() => partidaTable.ReloadData()">Actualizar</MudButton>
         </MudPaper>
 
         <MudPaper Elevation="1" Class="pa-3 mb-2" Style="border-radius: 8px;">
@@ -132,8 +122,8 @@
             </MudGrid>
         </MudPaper>
 
-        <div style="flex-grow: 1; overflow: hidden; min-height: 0;">
-            <GenericDataGrid TItem="PbrPartidaGastoResponse"
+        <div style="flex: 0 0 auto; overflow: visible; min-height: 0;">
+            <GenericDataGrid FillAvailableHeight="false" TItem="PbrPartidaGastoResponse" @key="selected.PkidPresupuestoPrograma"
                           @ref="partidaTable"
                           Title="Partidas del presupuesto"
                           SearchPlaceholder="Buscar por partida, concepto o descripcion..."

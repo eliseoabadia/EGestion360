@@ -1,4 +1,4 @@
-﻿@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
+@page "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
 @using EG.Domain.DTOs.Responses.CuentasXPagar
 @using EG.Web.Contracts
 @using EG.Web.Pages.Modules.GRP.Presupuesto.Tesoreria.CuentasXPagar
@@ -11,18 +11,18 @@
 @inject IGenericCrudService<ContratoDetalleResponse> DetalleService
 
 <AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height: 100%; min-height: 0; overflow: auto;">
         @if (SelectedContrato == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;">
                 <PageHeader Title="Registro Comprometido"
                             Subtitle="Contratos derivados de autorizaciones de suficiencia"
                             Icon="@Icons.Material.Filled.AssignmentTurnedIn"
                             CanCreate="false"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericDataGrid TItem="ContratoResponse" @ref="table" Title="Contratos"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="ContratoResponse" @ref="table" Title="Contratos"
                                   SearchPlaceholder="Buscar contrato, proveedor o requisición..."
                                   ShowExportButton="@CanExport"
                                   ServerDataFunc="LoadServerData"
@@ -33,7 +33,7 @@
             <Columns>
                 <TemplateColumn T="ContratoResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(cell.Item))" />
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull" Color="Color.Info" Size="Size.Small" OnClick="@(() => SelectContrato(cell.Item))" >Abrir compromiso</MudButton>
                         <DocumentSupportButton Modulo="Presupuesto_Comprometido"
                         SubModulo="Registro_Comprometido"
                         Controlador="Contrato"
@@ -76,8 +76,8 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:hidden;min-height:0;gap:8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
                         <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedContrato.NumeroContrato</MudText>
@@ -92,10 +92,19 @@
                                            FkidEmpresaSis="@SelectedContrato.FkidEmpresaSis"
                                            RegistroTitulo="@TextOrDash(SelectedContrato.NumeroContrato)"
                                            RegistroDescripcion="@TextOrDash(SelectedContrato.Descripcion)" />
-                    <MudIconButton Icon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))" Class="ml-2" />
+
                 </MudPaper>
-                <div Style="flex-grow:1;overflow:hidden;min-height:0;">
-                    <GenericDataGrid TItem="ContratoDetalleResponse" @ref="detalleTable" Title="Calendario por partida"
+                <OperationActionPanel Title="Distribución del compromiso" Description="Revisa el contrato y sus partidas antes de registrar la factura del proceso." Icon="@Icons.Material.Filled.FactCheck">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.ReceiptLong" Visible="@CanAuthorize" Disabled="@(SelectedContrato.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateFactura(SelectedContrato))"  >Registrar factura</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>Las partidas del compromiso aparecen al abrir el registro.</li><li>Comprueba el importe y la distribución presupuestal.</li><li>Registrar factura utiliza el compromiso seleccionado y conserva los permisos y el estado requeridos.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid FillAvailableHeight="false" TItem="ContratoDetalleResponse" @key="SelectedContrato.PkidContrato" @ref="detalleTable" Title="Calendario por partida"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetalles"
                                   SearchString="@detalleSearch"
@@ -168,7 +177,10 @@
     }
     private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
 
-    private async Task GenerateFactura(ContratoResponse contrato)
+    private async Task GenerateFactura(ContratoResponse contrato) =>
+        await RunExclusiveAsync(() => PrepareGenerateFacturaAsync(contrato));
+
+    private async Task PrepareGenerateFacturaAsync(ContratoResponse contrato)
     {
         if (!CanAuthorize)
         {
@@ -176,8 +188,10 @@
             return;
         }
 
-        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidContratoPres"] = contrato.PkidContrato });
-        var details = detailsResponse?.Items?.ToList() ?? new List<ContratoDetalleResponse>();
+        var details = await ReadRelatedRecordsAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty, "PkidContratoDetalle", SortDirection.Ascending, new() { ["FkidContratoPres"] = contrato.PkidContrato }),
+            row => row.PkidContratoDetalle);
+        if (details is null) return;
         if (details.Count == 0)
         {
             Snackbar.Add("El contrato no tiene detalle para generar factura.", Severity.Warning);

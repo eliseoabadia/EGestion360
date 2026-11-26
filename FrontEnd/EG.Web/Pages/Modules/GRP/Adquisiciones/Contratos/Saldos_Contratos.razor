@@ -1,4 +1,4 @@
-﻿@page "/Contratos/Saldos_Contratos"
+@page "/Contratos/Saldos_Contratos"
 @page "/Adquisiciones/Contratos/Saldos_Contratos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Contratos
@@ -11,10 +11,10 @@
 @inject SucursalStateService SucursalStateService
 @inject AnioPresupuestalStateService AnioStateService
 
-<AccessVerification IsInitialized="@IsInitialized"
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)"
                     HasAccess="@HasAccess"
                     NavigateToHome="NavigateToHome">
-    <MudContainer MaxWidth="MaxWidth.False" Class="contratos-dashboard">
+    <MudContainer MaxWidth="MaxWidth.False" Class="operation-page contratos-dashboard">
         <PageHeader Title="Saldos de Contratos"
                     Subtitle="Comprometido no devengado por contrato y mes"
                     Icon="@Icons.Material.Filled.AccountBalanceWallet"
@@ -128,6 +128,7 @@
 </style>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<SaldosContratoResponse> table = null!;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private const string CurrencySymbol = "$";
@@ -145,6 +146,7 @@
         AnioStateService.OnAnioChanged += OnAnioChanged;
         await SucursalStateService.InitializeAsync();
         await AnioStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override Task CreateItem() => Task.CompletedTask;

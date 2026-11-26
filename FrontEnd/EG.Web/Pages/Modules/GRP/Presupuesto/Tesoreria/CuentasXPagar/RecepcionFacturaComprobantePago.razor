@@ -16,19 +16,19 @@
 @inject IGenericCrudService<FacturaDetalleResponse> DetalleService
 @inject SucursalStateService SucursalStateService
 
-<AccessVerification IsInitialized="@IsInitialized" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
-    <MudContainer Class="px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
+<AccessVerification IsInitialized="@(IsInitialized && contextReady)" HasAccess="@HasAccess" NavigateToHome="NavigateToHome">
+    <MudContainer Class="operation-page finance-operation-page px-3 d-flex flex-column" MaxWidth="MaxWidth.False" Style="height:100%;min-height:0;overflow:auto;">
         @if (SelectedFactura == null)
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;">
                 <PageHeader Title="@HeaderTitle"
                             Subtitle="@HeaderSubtitle"
                             Icon="@Icons.Material.Filled.ReceiptLong"
-                            CanCreate="@CanCreate"
+                            CanCreate="@CanCreate" CreateText="Nueva factura"
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div Style="flex-grow:1;overflow:visible;min-height:0;">
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
                     <GenericDataGrid TItem="FacturaResponse" @ref="table" Title="Facturas recibidas"
                                   FillAvailableHeight="false"
                                   ShowDetailHint="false"
@@ -41,7 +41,7 @@
                                   OnSearch="OnSearch">
                         <Columns>
                             <TemplateColumn Resizable="false" T="FacturaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate>
-                                <MudTooltip Text="Ver partidas"><MudIconButton Icon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(context.Item))" /></MudTooltip>
+                                <MudTooltip Text="Ver partidas"><MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectFactura(context.Item))" >Abrir factura</MudButton></MudTooltip>
                                 <DocumentSupportButton Modulo="CuentasXPagar"
                                                        SubModulo="Solicitud_Reintegros"
                                                        Controlador="Factura"
@@ -67,8 +67,8 @@
         }
         else
         {
-            <div Style="display:flex;flex-direction:column;flex-grow:1;overflow:visible;min-height:0;gap:8px;">
-                <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
+            <div Style="display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-height:0;gap:8px;">
+                <MudPaper Elevation="0" Class="pa-0 d-flex align-center operation-record-header" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
                         <MudText Typo="Typo.h6" Style="font-weight:700">@SelectedFactura.NumFactura</MudText>
@@ -76,9 +76,19 @@
                     </div>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@StatusColor(SelectedFactura.Estatus)">@TextOrDash(SelectedFactura.EstatusDescripcion)</MudChip>
-                    <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@(!CanGenerateClc(SelectedFactura))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))" Class="ml-2" /></MudTooltip>
-                    <MudTooltip Text="Agregar partida"><MudIconButton Icon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle" Class="ml-2" /></MudTooltip>
+
+
                 </MudPaper>
+                <OperationActionPanel Title="Partidas y comprobante de la factura" Description="Revisa proveedor, contrato, UUID e importes en la misma vista antes de enviar a autorización." Icon="@Icons.Material.Filled.ReceiptLong">
+                    <Actions>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.PlaylistAdd" Visible="@CanCreate" Disabled="@IsLocked(SelectedFactura)" Color="Color.Success" Size="Size.Small" OnClick="AddDetalle"  >Agregar partida</MudButton>
+                        <MudButton Variant="Variant.Filled"  StartIcon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@(!CanGenerateClc(SelectedFactura))" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateClc(SelectedFactura))"  >Enviar a autorización</MudButton>
+                    </Actions>
+                    <HelpContent>
+                        <ol><li>El detalle presupuestal se carga al abrir la factura.</li><li>Agrega o corrige partidas mientras el estatus permita cambios; revisa subtotal, IVA, retención y total.</li><li>Enviar a autorización continúa el flujo existente y conserva sus validaciones.</li></ol>
+                    </HelpContent>
+                </OperationActionPanel>
+
 
                 <MudPaper Elevation="1" Class="pa-3" Style="border-radius:8px;">
                     <MudGrid Spacing="2">
@@ -90,8 +100,8 @@
                     </MudGrid>
                 </MudPaper>
 
-                <div Style="flex-grow:1;overflow:visible;min-height:0;">
-                    <GenericDataGrid TItem="FacturaDetalleResponse" @ref="detalleTable" Title="Partidas de factura"
+                <div Style="flex:0 0 auto;overflow:visible;min-height:0;">
+                    <GenericDataGrid TItem="FacturaDetalleResponse" @key="SelectedFactura.PkidFactura" @ref="detalleTable" Title="Partidas de factura"
                                   FillAvailableHeight="false"
                                   SearchPlaceholder="Buscar partida..."
                                   ServerDataFunc="LoadDetallesServerData"
@@ -113,6 +123,7 @@
 </AccessVerification>
 
 @code {
+    private bool contextReady;
     private GenericDataGrid<FacturaResponse> table = null!;
     private GenericDataGrid<FacturaDetalleResponse> detalleTable = null!;
     private FacturaResponse? SelectedFactura;
@@ -136,6 +147,7 @@
     {
         SucursalStateService.OnEmpresaChanged += OnEmpresaChanged;
         await SucursalStateService.InitializeAsync();
+        contextReady = true;
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<FacturaResponse> items) =>
@@ -174,7 +186,10 @@
     }
     private async Task DeleteDetalle(int id) { await DetalleService.DeleteAsync(id); await ReloadDetalles(); }
 
-    private async Task GenerateClc(FacturaResponse factura)
+    private async Task GenerateClc(FacturaResponse factura) =>
+        await RunExclusiveAsync(() => PrepareGenerateClcAsync(factura));
+
+    private async Task PrepareGenerateClcAsync(FacturaResponse factura)
     {
         if (!CanAuthorize)
         {
@@ -182,8 +197,10 @@
             return;
         }
 
-        var detailsResponse = await DetalleService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "PartidaClave", SortDirection.Ascending, new() { ["FkidFacturaPres"] = factura.PkidFactura });
-        var details = detailsResponse?.Items?.ToList() ?? new List<FacturaDetalleResponse>();
+        var details = await ReadRelatedRecordsAsync(
+            (page, size) => DetalleService.GetAllPaginadoAsync(page, size, string.Empty, "PkidFacturaDetalle", SortDirection.Ascending, new() { ["FkidFacturaPres"] = factura.PkidFactura }),
+            row => row.PkidFacturaDetalle);
+        if (details is null) return;
         if (details.Count == 0)
         {
             Snackbar.Add("La factura no tiene detalle para generar CLC.", Severity.Warning);
