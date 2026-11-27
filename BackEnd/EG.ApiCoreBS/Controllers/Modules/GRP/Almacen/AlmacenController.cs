@@ -23,6 +23,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpGet]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.ReceiptRead)]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
@@ -30,6 +31,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.ReceiptRead)]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
@@ -80,6 +82,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.ReceiptRead)]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
@@ -87,6 +90,7 @@ namespace EG.ApiCoreBS.Controllers.Almacen
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.ReceiptRead)]
         public async Task<ActionResult<PagedResult<AlmacenResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

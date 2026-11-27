@@ -11,8 +11,13 @@ public sealed class RequestScopeValidationMiddleware(RequestDelegate next)
         if (context.User.Identity?.IsAuthenticated == true &&
             context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is null)
         {
-            userContext.GetCurrentUserId();
-            userContext.TryGetCurrentEmpresaId();
+            if (userContext is IUserContextInitializer initializer)
+                await initializer.InitializeAsync(context.RequestAborted);
+            else
+            {
+                userContext.GetCurrentUserId();
+                userContext.TryGetCurrentEmpresaId();
+            }
         }
         await next(context);
     }

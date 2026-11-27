@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EG.Application.Services.Security
 {
-    public class UserContextService : IUserContextService
+    public class UserContextService : IUserContextService, IUserContextInitializer
     {
         private readonly IUserRequestContext _requestContext;
         private readonly ILogger<UserContextService> _logger;
@@ -57,6 +57,14 @@ namespace EG.Application.Services.Security
 
         private int? ResolveCurrentEmpresaId()
         {
+            var companyId = ResolveRequestedEmpresaId();
+            if (companyId.HasValue && !UserCanAccessEmpresa(companyId.Value))
+                throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
+            return companyId;
+        }
+
+        private int? ResolveRequestedEmpresaId()
+        {
             var user = GetUserPrincipal();
             if (user == null || !user.Identity?.IsAuthenticated == true)
                 return null;
@@ -64,8 +72,7 @@ namespace EG.Application.Services.Security
             var selectedCompany = _requestContext.GetHeader(EmpresaHeader);
             if (selectedCompany != null)
             {
-                if (!AuthenticatedIdentity.TryPositiveId(selectedCompany, out var selectedId) ||
-                    !UserCanAccessEmpresa(selectedId))
+                if (!AuthenticatedIdentity.TryPositiveId(selectedCompany, out var selectedId))
                     throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
                 return selectedId;
             }
@@ -82,9 +89,59 @@ namespace EG.Application.Services.Security
                 companyId = id;
             }
 
-            if (companyId.HasValue && !UserCanAccessEmpresa(companyId.Value))
-                throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
             return companyId;
+        }
+
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            var userId = GetCurrentUserId();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!empresaResolved)
+            {
+                var companyId = ResolveRequestedEmpresaId();
+                if (companyId.HasValue)
+                {
+                    bool allowed;
+                    try
+                    {
+                        allowed = await _queries.CanAccessEmpresaAsync(userId, companyId.Value, cancellationToken);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "No se pudo validar acceso a la empresa solicitada.");
+                        throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied, ex);
+                    }
+                    if (!allowed)
+                        throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
+                }
+                currentEmpresaId = companyId;
+                empresaResolved = true;
+            }
+
+            if (!anioResolved)
+            {
+                if (AuthenticatedIdentity.TryPositiveId(_requestContext.GetHeader(AnioPresupuestalHeader), out var yearId))
+                {
+                    try
+                    {
+                        currentAnioId = await _queries.IsActiveAnioAsync(yearId, cancellationToken) ? yearId : null;
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "No se pudo validar el ejercicio presupuestal solicitado.");
+                        currentAnioId = null;
+                    }
+                }
+                anioResolved = true;
+            }
         }
 
         private bool UserCanAccessEmpresa(int empresaId)

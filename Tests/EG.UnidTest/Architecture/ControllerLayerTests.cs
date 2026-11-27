@@ -7,6 +7,15 @@ namespace EG.UnidTest.Architecture;
 public sealed class ControllerLayerTests
 {
     [Fact]
+    public void DocumentApplicationDoesNotDependOnPersistence()
+    {
+        var service = typeof(EG.Application.Services.SoporteDocumental.SoporteDocumentalAppService);
+        var parameters = service.GetConstructors().SelectMany(constructor => constructor.GetParameters());
+        Assert.DoesNotContain(parameters, parameter => typeof(Microsoft.EntityFrameworkCore.DbContext).IsAssignableFrom(parameter.ParameterType));
+        Assert.Contains(parameters, parameter => parameter.ParameterType == typeof(EG.Business.Interfaces.ISoporteDocumentalService));
+    }
+
+    [Fact]
     public void ControllersDoNotInjectPersistenceOrBusinessServices()
     {
         var controllers = typeof(BaseApiController).Assembly.GetTypes()

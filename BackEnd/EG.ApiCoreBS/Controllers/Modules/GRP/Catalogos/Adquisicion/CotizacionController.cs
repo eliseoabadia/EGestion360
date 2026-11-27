@@ -26,6 +26,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.QuoteRead)]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> GetAll()
         {
             var result = await _appService.GetAllAsync();
@@ -33,6 +34,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.QuoteRead)]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> GetById(int id)
         {
             var result = await _appService.GetByIdAsync(id);
@@ -76,6 +78,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("GetAllPaginado")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.QuoteRead)]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> GetAllPaginado([FromBody] PagedRequest request)
         {
             var result = await _appService.GetAllPaginadoAsync(request);
@@ -106,6 +109,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpGet("recepcion/{cotizacionId}")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.QuoteRead)]
         public async Task<ActionResult<PagedResult<CotizacionDetalleResponse>>> GetRecepcionCotizacion(int cotizacionId)
         {
             var result = await _appService.GetRecepcionCotizacionAsync(cotizacionId);
@@ -121,6 +125,7 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
         }
 
         [HttpPost("buscar")]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.QuoteRead)]
         public async Task<ActionResult<PagedResult<CotizacionResponse>>> Buscar([FromBody] BusquedaRequest request)
         {
             var pagedRequest = new PagedRequest

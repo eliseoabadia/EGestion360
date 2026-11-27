@@ -122,6 +122,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IMatrizConversionValidationService, EG.Application.Services.Contabilidad.MatrizConversionValidationService>();
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
             services.AddScoped<IUsuarioDepartamentoAppService, UsuarioDepartamentoAppService>();
+            services.AddScoped<EG.Business.Interfaces.ISoporteDocumentalService, EG.Business.Services.SoporteDocumental.SoporteDocumentalService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();
             services.AddScoped<IDocumentSummaryQueries, DocumentSummaryQueries>();
             services.AddScoped<IDocumentSummaryAppService, DocumentSummaryAppService>();
@@ -161,6 +162,7 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IRequisicionPartidaAppService, RequisicionPartidaAppService>();
             services.AddScoped<IRequisicionDetalleAppService, RequisicionDetalleAppService>();
             services.AddScoped<IOrdenCompraAppService, OrdenCompraAppService>();
+            services.AddScoped<GenericService<VwOrdenCompra, EG.Domain.DTOs.Requests.Adquisicion.OrdenCompraDto, EG.Domain.DTOs.Responses.Adquisicion.OrdenCompraResponse>, EG.Business.Services.Adquisicion.OrdenCompraReadService>();
             services.AddScoped<IOrdenCompraDetalleAppService, OrdenCompraDetalleAppService>();
             services.AddScoped<IOrdenCompraPartidaAppService, OrdenCompraPartidaAppService>();
             services.AddScoped<ISolicitudSuficienciaAppService, SolicitudSuficienciaAppService>();

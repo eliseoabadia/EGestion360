@@ -1,0 +1,72 @@
+[
+  {
+    "Scenario": "Consulta sin sesión",
+    "Status": 401,
+    "Expected": 401
+  },
+  {
+    "Scenario": "Descarga sin sesión",
+    "Status": 401,
+    "Expected": 401
+  },
+  {
+    "Scenario": "Exportación sin sesión",
+    "Status": 401,
+    "Expected": 401
+  },
+  {
+    "Scenario": "Consulta autorizada",
+    "Status": 200,
+    "Expected": 200
+  },
+  {
+    "Scenario": "Orden con ejercicio del servidor sin filtro del cliente",
+    "Status": 200,
+    "Expected": 200
+  },
+  {
+    "Scenario": "Documento vía Application y Business",
+    "Status": 200,
+    "Expected": 200
+  },
+  {
+    "Scenario": "Consulta con empresa ajena",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Descarga con empresa ajena",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Exportación con empresa ajena",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Empresa malformada",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Token vencido firmado",
+    "Status": 401,
+    "Expected": 401
+  },
+  {
+    "Scenario": "Sin permiso de lectura: Cotizacion",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Sin permiso de lectura: OrdenCompra",
+    "Status": 403,
+    "Expected": 403
+  },
+  {
+    "Scenario": "Sin permiso de lectura: Almacen",
+    "Status": 403,
+    "Expected": 403
+  }
+]

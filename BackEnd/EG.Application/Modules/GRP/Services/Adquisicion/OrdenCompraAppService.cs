@@ -63,7 +63,7 @@ namespace EG.Application.Services.Adquisicion
         {
             var filters = new Dictionary<string, object>(request.AdditionalFilters ?? []);
             PagedResult<OrdenCompraResponse> result;
-            if (filters.Remove("FkidAnioSis", out var requestedYear))
+            if (filters.Remove(nameof(RequisicionResponse.FkidAnioSis), out var requestedYear))
             {
                 var selectedYear = _userContext.GetCurrentAnioPresupuestalId();
                 if (!int.TryParse(requestedYear?.ToString(), out var year) || year != selectedYear)
@@ -74,9 +74,7 @@ namespace EG.Application.Services.Adquisicion
                     SearchString = request.SearchString, SortLabel = request.SortLabel,
                     SortDirection = request.SortDirection, AdditionalFilters = filters
                 };
-                result = await _serviceView.GetAllPaginadoAsync(scopedRequest,
-                    EG.Business.Services.Adquisicion.OrdenCompraReadScope.ForYear(_context,
-                        _userContext.GetCurrentEmpresaId(), selectedYear));
+                result = await base.GetAllPaginadoAsync(scopedRequest);
             }
             else result = await base.GetAllPaginadoAsync(request);
             await ApplyChildCountsAsync(result.Items);

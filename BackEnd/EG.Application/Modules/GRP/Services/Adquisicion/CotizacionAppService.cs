@@ -218,6 +218,7 @@ namespace EG.Application.Services.Adquisicion
         public async Task<PagedResult<CotizacionResponse>> SendCotizacionEmailAsync(int cotizacionId, int usuarioActual)
         {
             EnvioWorkflowClaimResult? claim = null;
+            var deliveryStarted = false;
             try
             {
                 var cotizacion = await _context.Cotizacions
@@ -273,20 +274,14 @@ namespace EG.Application.Services.Adquisicion
                     IsHtml = true
                 };
 
-                var emailResult = await _emailService.SendAsync(email);
+                deliveryStarted = true;
+                var emailResult = await EG.Application.Services.General.WorkflowEmailDelivery.SendClaimedAsync(
+                    _emailService, _envioWorkflow, EnvioWorkflowProcesos.CotizacionCorreo,
+                    cotizacion.PkidCotizacion, claim.OperationToken.Value, email);
                 if (!emailResult.Success)
                 {
-                    await _envioWorkflow.CancelAsync(
-                        EnvioWorkflowProcesos.CotizacionCorreo,
-                        cotizacion.PkidCotizacion,
-                        claim.OperationToken.Value);
-                    return Failure<CotizacionResponse>(emailResult.Message);
+                    return Failure<CotizacionResponse>(emailResult.Message, emailResult.Code);
                 }
-
-                await _envioWorkflow.CompleteAsync(
-                    EnvioWorkflowProcesos.CotizacionCorreo,
-                    cotizacion.PkidCotizacion,
-                    claim.OperationToken.Value);
                 claim = null;
 
                 var result = await GetByIdAsync(cotizacion.PkidCotizacion);
@@ -295,7 +290,7 @@ namespace EG.Application.Services.Adquisicion
             }
             catch (Exception ex)
             {
-                if (claim?.Claimed == true && claim.OperationToken.HasValue)
+                if (!deliveryStarted && claim?.Claimed == true && claim.OperationToken.HasValue)
                 {
                     try
                     {
@@ -310,7 +305,11 @@ namespace EG.Application.Services.Adquisicion
                     }
                 }
 
-                return Failure<CotizacionResponse>($"Error al enviar cotizacion por correo: {ex.Message}");
+                LogException("enviar cotización por correo", ex);
+                return deliveryStarted
+                    ? Failure<CotizacionResponse>(EG.Common.ApplicationText.Workflow.DeliveryUnconfirmed,
+                        EG.Common.ApplicationText.Workflow.DeliveryUnconfirmedCode)
+                    : Failure<CotizacionResponse>(EG.Common.UserFacingMessages.OperationFailed("enviar la cotización"));
             }
         }
 

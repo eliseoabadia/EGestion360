@@ -1,0 +1,44 @@
+{
+  "Environment": "Development",
+  "Validation": "Self-review requested by user; no second agent",
+  "Build": "Full solution .NET 10 passed; no warnings or errors observed",
+  "SqlWorkflow": "Real repository: 16 concurrent claims, exactly one winner; complete/reject/resend/cancel/reload passed; unique technical fixture cleaned",
+  "Capacity": [
+    {
+      "users": 160,
+      "requests": 7046,
+      "failed": 0,
+      "p95Ms": 40,
+      "p99Ms": 62,
+      "requestsPerSecond": 153.55
+    },
+    {
+      "users": 200,
+      "requests": 8819,
+      "failed": 0,
+      "p95Ms": 49,
+      "p99Ms": 76,
+      "requestsPerSecond": 191.67
+    }
+  ],
+  "SqlSampling": {
+    "MaximumBlocked": 0.0,
+    "Samples": 55,
+    "DeadlockCounterDelta": 0,
+    "MaximumLongerThan5s": 0.0
+  },
+  "CapacityLimitations": "Same authenticated profile, five read queries, 45-second stages, not production or distinct-user/write capacity",
+  "Visual": "Fresh visual verification blocked: integrated browser unavailable; Windows browser tool could not verify URL",
+  "Architecture": "Document persistence moved into Business; 74 Application persistence candidates remain for review",
+  "FinalTests": {
+    "Passed": 470,
+    "Failed": 0,
+    "RealSqlEnabled": true,
+    "Skipped": 0
+  },
+  "FinalApiScenarios": 14,
+  "CurrentManifestAssets": {
+    "Status": 200,
+    "Checked": 6
+  }
+}

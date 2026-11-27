@@ -1162,38 +1162,21 @@ namespace EG.Application.Services.Adquisicion
 
                 try
                 {
-                    var result = await _emailService.SendAsync(email);
+                    var result = await EG.Application.Services.General.WorkflowEmailDelivery.SendClaimedAsync(
+                        _emailService, _envioWorkflow, EnvioWorkflowProcesos.EstudioMercadoCotizacion,
+                        solicitud.PkidSolicitudCotizacion, claim.OperationToken.Value, email);
                     if (result.Success)
                     {
-                        await _envioWorkflow.CompleteAsync(
-                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
-                            solicitud.PkidSolicitudCotizacion,
-                            claim.OperationToken.Value);
                         summary.Enviados++;
                     }
                     else
                     {
-                        await _envioWorkflow.CancelAsync(
-                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
-                            solicitud.PkidSolicitudCotizacion,
-                            claim.OperationToken.Value);
                         summary.Errores++;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        await _envioWorkflow.CancelAsync(
-                            EnvioWorkflowProcesos.EstudioMercadoCotizacion,
-                            solicitud.PkidSolicitudCotizacion,
-                            claim.OperationToken.Value);
-                    }
-                    catch
-                    {
-                        // Conserva el resultado de error del proveedor de correo.
-                    }
-
+                    LogException("confirmar envío de solicitud de cotización", ex);
                     summary.Errores++;
                 }
             }
@@ -1212,12 +1195,13 @@ namespace EG.Application.Services.Adquisicion
 
             if (summary.Enviados > 0)
             {
-                return $"{baseMessage}. Correos enviados: {summary.Enviados:N0}; ya enviados y omitidos: {summary.Omitidos:N0}; sin email: {summary.SinEmail:N0}; con error: {summary.Errores:N0}.";
+                var review = summary.Errores > 0 ? $" {EG.Common.ApplicationText.Workflow.DeliveryUnconfirmed}" : string.Empty;
+                return $"{baseMessage}. Correos enviados: {summary.Enviados:N0}; ya enviados y omitidos: {summary.Omitidos:N0}; sin email: {summary.SinEmail:N0}; con error: {summary.Errores:N0}.{review}";
             }
 
             if (summary.Errores > 0)
             {
-                return $"{baseMessage}, pero no se pudo enviar correo. Errores: {summary.Errores:N0}; sin email: {summary.SinEmail:N0}.";
+                return $"{baseMessage}. {EG.Common.ApplicationText.Workflow.DeliveryUnconfirmed} Errores: {summary.Errores:N0}; sin email: {summary.SinEmail:N0}.";
             }
 
             if (summary.Omitidos > 0)

@@ -8,6 +8,20 @@ namespace EG.UnidTest.ApiCoreBS;
 
 public sealed class ApiExceptionMiddlewareTests
 {
+    [Fact]
+    public async Task ClientCancellationDoesNotBecomeAnInternalServerError()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var context = new DefaultHttpContext { RequestAborted = cancellation.Token };
+        context.Response.Body = new MemoryStream();
+        var middleware = new ApiExceptionMiddleware(_ => Task.FromCanceled(cancellation.Token),
+            NullLogger<ApiExceptionMiddleware>.Instance);
+        await middleware.InvokeAsync(context, new UserIpService());
+        Assert.Equal(499, context.Response.StatusCode);
+        Assert.Equal(0, context.Response.Body.Length);
+    }
+
     [Theory]
     [InlineData("not-found", 404, "NOT_FOUND")]
     [InlineData("forbidden", 403, "FORBIDDEN")]

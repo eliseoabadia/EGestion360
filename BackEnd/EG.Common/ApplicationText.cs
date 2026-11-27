@@ -5,6 +5,12 @@ namespace EG.Common;
 /// </summary>
 public static class ApplicationText
 {
+    public static class Workflow
+    {
+        public const string DeliveryUnconfirmed = "El envío requiere revisión: no se pudo confirmar su resultado. Verifica la entrega antes de intentar reenviarlo.";
+        public const string DeliveryUnconfirmedCode = "DELIVERY_UNCONFIRMED";
+    }
+
     public static class FiscalYear
     {
         public const string LoadingContext = "Preparando empresa y ejercicio presupuestal...";

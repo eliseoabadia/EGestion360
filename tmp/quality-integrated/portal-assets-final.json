@@ -1,0 +1,26 @@
+[
+  {
+    "Route": "_framework/dotnet.fo7vogn693.js",
+    "Status": 200
+  },
+  {
+    "Route": "_framework/dotnet.js",
+    "Status": 200
+  },
+  {
+    "Route": "_framework/dotnet.native.6ilbvndvcf.js",
+    "Status": 200
+  },
+  {
+    "Route": "_framework/dotnet.native.js",
+    "Status": 200
+  },
+  {
+    "Route": "_framework/dotnet.runtime.js",
+    "Status": 200
+  },
+  {
+    "Route": "_framework/dotnet.runtime.v2rwe8u38b.js",
+    "Status": 200
+  }
+]
