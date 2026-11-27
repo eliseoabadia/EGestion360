@@ -57,6 +57,7 @@
 
     private async Task<ComboLookupResult> LoadPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var response = await Service.GetAllPaginadoAsync(
             page,
             pageSize,
@@ -65,17 +66,30 @@
             SortDirection.Ascending,
             AdditionalFilters);
 
-        var records = response?.Items?.Where(record => record is not null && IdSelector(record) > 0).ToList() ?? [];
-        foreach (var record in records)
+        cancellationToken.ThrowIfCancellationRequested();
+        if (response?.Success != true)
         {
-            _loadedRecords[IdSelector(record)] = record;
+            throw new InvalidOperationException(response?.Message ?? "No fue posible consultar los registros relacionados.");
         }
 
-        var items = records.Select(record => new LookupItem
+        if (page == 1)
         {
-            Id = IdSelector(record),
-            Text = string.IsNullOrWhiteSpace(TextSelector(record)) ? "Registro sin descripción" : TextSelector(record)
-        }).ToList();
+            _loadedRecords.Clear();
+        }
+
+        var records = response?.Items?.Where(record => record is not null && IdSelector(record) > 0).ToList() ?? [];
+        var items = new List<LookupItem>(records.Count);
+        foreach (var record in records)
+        {
+            var id = IdSelector(record);
+            var text = TextSelector(record);
+            _loadedRecords[id] = record;
+            items.Add(new LookupItem
+            {
+                Id = id,
+                Text = string.IsNullOrWhiteSpace(text) ? "Registro sin descripción" : text
+            });
+        }
 
         return new ComboLookupResult { Items = items, TotalCount = response?.TotalCount ?? items.Count };
     }

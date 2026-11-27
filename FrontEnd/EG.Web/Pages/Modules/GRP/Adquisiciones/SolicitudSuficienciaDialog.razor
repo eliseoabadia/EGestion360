@@ -401,8 +401,8 @@
                     "TipoBienCodigoClave",
                     SortDirection.Ascending,
                     new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId }),
-                requestedPageSize: 250,
-                maximumRows: 10_000,
+                requestedPageSize: EG.Common.GenericModel.PagingPolicy.MaximumPageSize,
+                maximumRows: EG.Web.Models.Forms.PagedCollectionReader.MaximumValidationRows,
                 isCurrent: () => _selectedRequisicion?.Id == requisicionId);
 
             var cotizacionesResult = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
@@ -413,8 +413,8 @@
                     "TipoBienClave",
                     SortDirection.Ascending,
                     new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId }),
-                requestedPageSize: 250,
-                maximumRows: 10_000,
+                requestedPageSize: EG.Common.GenericModel.PagingPolicy.MaximumPageSize,
+                maximumRows: EG.Web.Models.Forms.PagedCollectionReader.MaximumValidationRows,
                 isCurrent: () => _selectedRequisicion?.Id == requisicionId);
 
             if (detallesResult.Limited || cotizacionesResult.Limited)

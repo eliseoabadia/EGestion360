@@ -41,7 +41,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener asignaciones: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -82,7 +82,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener asignación: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -123,7 +123,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener asignación: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -146,7 +146,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener sucursales: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -169,7 +169,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener usuarios: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -192,7 +192,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return StatusCode(500, new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al obtener gerentes: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -223,7 +223,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return BadRequest(new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al asignar usuario: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -253,7 +253,7 @@ namespace EG.ApiCoreBS.Controllers.General
                 return BadRequest(new PagedResult<UsuarioSucursalResponse>
                 {
                     Success = false,
-                    Message = $"Error al eliminar asignación: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });

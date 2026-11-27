@@ -4,12 +4,14 @@ namespace EG.Web.Models.Forms;
 
 public static class PagedCollectionReader
 {
+    public const int MaximumValidationRows = 10_000;
+
     public static async Task<(List<T> Items, bool Limited)> ReadAsync<T>(
         Func<int, int, Task<ApiResponse<T>>> fetchPage, int requestedPageSize, int maximumRows,
         Func<bool>? isCurrent = null)
     {
         if (maximumRows < 1) throw new ArgumentOutOfRangeException(nameof(maximumRows));
-        var pageSize = Math.Clamp(requestedPageSize, 1, 250);
+        var pageSize = Math.Clamp(requestedPageSize, 1, EG.Common.GenericModel.PagingPolicy.MaximumPageSize);
         var items = new List<T>();
         int? expectedCount = null;
         for (var page = 1; ; page++)

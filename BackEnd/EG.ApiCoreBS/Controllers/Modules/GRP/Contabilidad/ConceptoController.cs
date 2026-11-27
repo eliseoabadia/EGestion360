@@ -82,7 +82,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return BadRequest(new PagedResult<ConceptoResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -127,7 +127,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return BadRequest(new PagedResult<ConceptoResponse>
                 {
                     Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });
@@ -165,7 +165,7 @@ namespace EG.ApiCoreBS.Controllers.Contabilidad
                 return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR",
                     TotalCount = 0
                 });

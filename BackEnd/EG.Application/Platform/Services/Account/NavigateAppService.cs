@@ -22,9 +22,10 @@ namespace EG.Application.Services.Account
 
         public async Task<IEnumerable<spNodeMenuResponse>> GetMenuAsync(int userId)
         {
+            EnsureCurrentUser(userId);
             // 🔧 VALIDACIÓN
             if (userId <= 0)
-                throw new ArgumentException("Usuario ID debe ser mayor a 0");
+                throw new ArgumentException("El usuario seleccionado no es válido.");
 
             try
             {
@@ -44,7 +45,7 @@ namespace EG.Application.Services.Account
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error al obtener menú: {ex.Message}", ex);
+                throw new InvalidOperationException("No fue posible obtener el menú del usuario.", ex);
             }
         }
 
@@ -131,6 +132,7 @@ namespace EG.Application.Services.Account
         /// </summary>
         public async Task<List<spGetClaimsByUserResult>> GetAllClaimsByUser(int userId)
         {
+            EnsureCurrentUser(userId);
             if (userId <= 0)
                 throw new ArgumentException("El usuario seleccionado no es válido.");
 
@@ -141,6 +143,14 @@ namespace EG.Application.Services.Account
             catch (Exception ex)
             {
                 throw new InvalidOperationException("No fue posible obtener los permisos del usuario.", ex);
+            }
+        }
+
+        private void EnsureCurrentUser(int userId)
+        {
+            if (userId != _userContext.GetCurrentUserId())
+            {
+                throw new UnauthorizedAccessException("Solo puedes consultar tu propio menú y permisos.");
             }
         }
     }

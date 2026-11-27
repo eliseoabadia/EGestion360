@@ -241,8 +241,8 @@
                     "PartidaClave",
                     SortDirection.Ascending,
                     new Dictionary<string, object> { ["FkidContratoPres"] = value.Id }),
-                requestedPageSize: 250,
-                maximumRows: 10_000);
+                requestedPageSize: EG.Common.GenericModel.PagingPolicy.MaximumPageSize,
+                maximumRows: EG.Web.Models.Forms.PagedCollectionReader.MaximumValidationRows);
 
             if (result.Limited)
             {

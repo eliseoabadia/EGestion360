@@ -105,7 +105,7 @@ public sealed class ApiExceptionMiddleware
             "Excepcion no controlada. TraceId={TraceId}; Method={Method}; Path={Path}; UserId={UserId}; ClientIp={ClientIp}",
             context.TraceIdentifier,
             context.Request.Method,
-            $"{context.Request.Path}{context.Request.QueryString}",
+            context.Request.Path,
             userId,
             userIpService.GetUserIpAddress(context));
     }
@@ -122,7 +122,7 @@ public sealed class ApiExceptionMiddleware
             "Validacion controlada. TraceId={TraceId}; Method={Method}; Path={Path}; UserId={UserId}; ClientIp={ClientIp}; Message={Message}",
             context.TraceIdentifier,
             context.Request.Method,
-            $"{context.Request.Path}{context.Request.QueryString}",
+            context.Request.Path,
             userId,
             userIpService.GetUserIpAddress(context),
             ex.Message);

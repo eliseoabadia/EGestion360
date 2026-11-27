@@ -27,6 +27,10 @@ namespace EG.ApiCoreBS.Controllers.Account
                 var menu = await _navigateAppService.GetMenuAsync(id);
                 return Ok(menu);
             }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
@@ -37,7 +41,8 @@ namespace EG.ApiCoreBS.Controllers.Account
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                _logger.LogError(ex, "Error obteniendo menú para usuario {Id}", id);
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
             catch (Exception ex)
             {
@@ -54,6 +59,10 @@ namespace EG.ApiCoreBS.Controllers.Account
                 var claims = await _navigateAppService.GetAllClaimsByUser(userId);
                 return Ok(claims);
             }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest(Error(ex.Message, ApiResponseCode.InvalidData));
@@ -61,7 +70,7 @@ namespace EG.ApiCoreBS.Controllers.Account
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Error obteniendo claims para usuario {UserId}", userId);
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
             catch (Exception ex)
             {

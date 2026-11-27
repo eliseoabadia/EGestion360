@@ -35,7 +35,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
         }
 
@@ -53,7 +53,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
         }
 
@@ -67,7 +67,7 @@ namespace EG.ApiCoreBS.Controllers.General
         //    }
         //    catch (Exception ex)
         //    {
-            //        return StatusCode(500, Error(ex.Message));
+            //        return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
         //    }
         //}
 
@@ -86,7 +86,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
         }
 
@@ -109,7 +109,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
         }
 
@@ -131,7 +131,7 @@ namespace EG.ApiCoreBS.Controllers.General
             }
             catch (Exception ex)
             {
-                return StatusCode(500, Error(ex.Message));
+                return StatusCode(500, Error(EG.Common.UserFacingMessages.UnexpectedError));
             }
         }
 

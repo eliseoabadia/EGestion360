@@ -148,7 +148,7 @@
             var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
                 (page, pageSize) => _tipoBienService.GetAllPaginadoAsync(
                     page, pageSize, string.Empty, "TipoBienDescripcion", SortDirection.Ascending),
-                requestedPageSize: 250,
+                requestedPageSize: EG.Common.GenericModel.PagingPolicy.MaximumPageSize,
                 maximumRows: 5_000);
             tiposBien = result.Items;
             if (result.Limited)
@@ -167,7 +167,7 @@
             var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
                 (page, pageSize) => _periodoService.GetAllPaginadoAsync(
                     page, pageSize, string.Empty, "Nombre", SortDirection.Ascending),
-                requestedPageSize: 250,
+                requestedPageSize: EG.Common.GenericModel.PagingPolicy.MaximumPageSize,
                 maximumRows: 5_000);
             periodos = result.Items
                 .Where(p => string.Equals(p.EstatusPeriodo, "Pendiente", StringComparison.OrdinalIgnoreCase) ||

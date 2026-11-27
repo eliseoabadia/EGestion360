@@ -111,7 +111,7 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                 return BadRequest(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al crear: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR"
                 });
             }
@@ -154,7 +154,7 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                 return BadRequest(new PagedResult<PeriodoConteoResponse>
                 {
                     Success = false,
-                    Message = $"Error al actualizar: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR"
                 });
             }
@@ -181,7 +181,7 @@ namespace EG.ApiCoreBS.Controllers.ConteoCiclico
                 return BadRequest(new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Error al eliminar: {ex.Message}",
+                    Message = EG.Common.UserFacingMessages.UnexpectedError,
                     Code = "ERROR"
                 });
             }
