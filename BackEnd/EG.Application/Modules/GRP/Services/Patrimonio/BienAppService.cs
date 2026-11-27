@@ -48,7 +48,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync(x => x.PkidBien == id && x.Activo && x.FkidEmpresaSis == companyId);
             if (view == null)
             {
-                return Failure<BienResponse>($"Bien con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<BienResponse>($"Bien no encontrado.", "NOT_FOUND");
             }
 
             var item = view.Adapt<BienResponse>();
@@ -105,7 +105,7 @@ namespace EG.Application.Services.Patrimonio
             var current = await _context.Biens.AsNoTracking().FirstOrDefaultAsync(x => x.PkidBien == id && x.Activo && x.FkidEmpresaSis == companyId);
             if (current == null)
             {
-                return Failure<BienResponse>($"Bien con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<BienResponse>($"Bien no encontrado.", "NOT_FOUND");
             }
 
             var lockReason = await GetLockReasonAsync(current.PkidBien);
@@ -159,6 +159,7 @@ namespace EG.Application.Services.Patrimonio
 
         public async Task<PagedResult<BienResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
+            PagingPolicy.Normalize(request);
             try
             {
                 var companyId = _userContext.GetCurrentEmpresaId();
@@ -204,8 +205,8 @@ namespace EG.Application.Services.Patrimonio
                 query = ApplySort(query, request.SortLabel, request.SortDirection);
 
                 var total = await query.CountAsync();
-                var page = Math.Max(1, request.Page);
-                var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
+                var page = request.Page;
+                var pageSize = request.PageSize;
                 var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
                 var responses = items.Adapt<List<BienResponse>>();
                 await ApplyEntityKeysAsync(responses);
@@ -599,7 +600,7 @@ namespace EG.Application.Services.Patrimonio
         private static IQueryable<VwBien> ApplySort(IQueryable<VwBien> query, string? sortLabel, string? sortDirection)
         {
             var ascending = string.IsNullOrEmpty(sortDirection) || sortDirection.StartsWith("asc", StringComparison.OrdinalIgnoreCase);
-            return sortLabel switch
+            return (sortLabel switch
             {
                 "Clave" => ascending ? query.OrderBy(x => x.Clave) : query.OrderByDescending(x => x.Clave),
                 "Descripcion" => ascending ? query.OrderBy(x => x.Descripcion) : query.OrderByDescending(x => x.Descripcion),
@@ -609,7 +610,7 @@ namespace EG.Application.Services.Patrimonio
                 "FechaAdq" => ascending ? query.OrderBy(x => x.FechaAdq) : query.OrderByDescending(x => x.FechaAdq),
                 "EstaResguardado" => ascending ? query.OrderBy(x => x.EstaResguardado) : query.OrderByDescending(x => x.EstaResguardado),
                 _ => ascending ? query.OrderByDescending(x => x.PkidBien) : query.OrderBy(x => x.PkidBien)
-            };
+            }).ThenBy(x => x.PkidBien);
         }
 
         private static PagedResult<BienResponse> Success(List<BienResponse> items, string message, int total)

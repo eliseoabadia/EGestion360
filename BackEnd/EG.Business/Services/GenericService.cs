@@ -24,8 +24,6 @@ namespace EG.Business.Services
         protected readonly IRepository<TEntity> _repository = repository;
         protected readonly IUserContextService? _userContext = userContext;
         protected readonly ILogger<GenericService<TEntity, TDto, TResponse>>? _logger = logger;
-        private const int DefaultPageSize = 10;
-        private const int MaxPageSize = 250;
         private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, PropertyInfo>> PublicPropertyCache = new();
         private static readonly PropertyInfo[] DefaultSearchProperties = GetPublicProperties(typeof(TEntity))
             .Values
@@ -855,13 +853,7 @@ namespace EG.Business.Services
 
         private static void NormalizePaging(PagedRequest request)
         {
-            if (request.Page < 1)
-            {
-                request.Page = 1;
-            }
-
-            var requestedPageSize = request.PageSize <= 0 ? DefaultPageSize : request.PageSize;
-            request.PageSize = Math.Clamp(requestedPageSize, 1, MaxPageSize);
+            PagingPolicy.Normalize(request);
         }
 
         private static string ResolveSearchTerm(PagedRequest request)

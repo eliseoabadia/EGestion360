@@ -48,7 +48,7 @@
                           TableHeight="calc(100vh - 320px)"
                           >
                 <Columns>
-                <PropertyColumn T="VwClcfacturaImporteResponse" TProperty="int" Property="x => x.PkidFactura" Title="ID" Identifier="PkidFactura" />
+                
                 <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Factura" Identifier="NumFactura"><CellTemplate><MudText Typo="Typo.body2" Style="font-weight: 700;">@TextOrDash(context.Item.NumFactura)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.SerieFactura)</MudText></CellTemplate></TemplateColumn>
                 <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Fecha" Identifier="Fecha"><CellTemplate>@FormatDate(context.Item.Fecha)</CellTemplate></TemplateColumn>
                 <TemplateColumn Resizable="true" T="VwClcfacturaImporteResponse" Title="Proveedor" Identifier="Nombre"><CellTemplate><MudText Typo="Typo.body2">@TextOrDash(context.Item.Nombre)</MudText><MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(context.Item.Rfc)</MudText></CellTemplate></TemplateColumn>
@@ -129,7 +129,6 @@
     protected override IEnumerable<object> MapToExcelData(IEnumerable<VwClcfacturaImporteResponse> items) =>
         items.Select(x => new
         {
-            Id = x.PkidFactura,
             x.NumFactura,
             x.SerieFactura,
             Fecha = FormatDate(x.Fecha),

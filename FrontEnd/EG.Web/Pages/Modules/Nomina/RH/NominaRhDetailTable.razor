@@ -254,7 +254,7 @@
             }
 
             using var stream = new MemoryStream();
-            await stream.SaveAsAsync(items.Select(ExportMapper));
+            await stream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(items.Select(ExportMapper)));
             await JsRuntime.InvokeVoidAsync(
                 "downloadFile",
                 Convert.ToBase64String(stream.ToArray()),

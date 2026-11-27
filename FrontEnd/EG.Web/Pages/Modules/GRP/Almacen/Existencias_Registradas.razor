@@ -55,7 +55,6 @@
                 <TemplateColumn T="AlmacenResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.Clave)</div>
-                        <span>ID @cell.Item.PkidAlmacen</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="AlmacenResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">

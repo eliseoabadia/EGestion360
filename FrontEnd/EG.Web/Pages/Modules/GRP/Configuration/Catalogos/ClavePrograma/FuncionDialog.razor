@@ -157,7 +157,7 @@
             ? funcion.GfClaveNombre
             : funcion.GfClave.HasValue
                 ? $"{funcion.GfClave} - {funcion.GfDescripcion}"
-                : $"Grupo Funcional #{funcion.FkidGfPres}";
+                : "Grupo funcional sin descripción";
 
         return new LookupItem
         {

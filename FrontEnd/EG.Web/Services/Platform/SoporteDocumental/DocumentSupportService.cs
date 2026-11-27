@@ -25,9 +25,22 @@ namespace EG.Web.Services.Platform.SoporteDocumental
             => await PostAsync<ApiResponse<DocumentoResponse>>($"{Endpoint}/entidad", request, useBaseUrl: false)
                 ?? new ApiResponse<DocumentoResponse>();
 
+        private EG.Web.Models.Forms.DeferredBatchLoader<DocumentoEntidadRequest, ApiResponse<DocumentoResumenResponse>>? summaryBatch;
+
         public async Task<ApiResponse<DocumentoResumenResponse>> GetSummaryAsync(DocumentoEntidadRequest request)
-            => await PostAsync<ApiResponse<DocumentoResumenResponse>>($"{Endpoint}/resumen", request, useBaseUrl: false)
-                ?? new ApiResponse<DocumentoResumenResponse>();
+        {
+            summaryBatch ??= new(async requests =>
+                await PostAsync<ApiResponse<DocumentoResumenResponse>>($"{Endpoint}/resumen-lote", requests, useBaseUrl: false)
+                    ?? new ApiResponse<DocumentoResumenResponse>());
+            var response = await summaryBatch.LoadAsync(request);
+            var item = response.Items?.FirstOrDefault(item => item.EntidadId == request.EntidadId &&
+                string.Equals(item.Modulo, request.Modulo, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(item.SubModulo ?? "", request.SubModulo ?? "", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(item.Controlador ?? "", request.Controlador ?? "", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(item.Servicio ?? "", request.Servicio ?? "", StringComparison.OrdinalIgnoreCase));
+            return new() { Success = response.Success, Message = response.Message, Code = response.Code,
+                TraceId = response.TraceId, Data = item!, Items = item is null ? [] : [item], TotalCount = item is null ? 0 : 1 };
+        }
 
         public async Task<ApiResponse<DocumentoResponse>> UploadAsync(DocumentoEntidadRequest request, IBrowserFile file, string? title, string? description)
         {

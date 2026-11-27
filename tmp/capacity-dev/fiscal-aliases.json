@@ -1,0 +1,844 @@
+{
+  "startedUtc": "2026-11-26T19:39:31.325Z",
+  "origin": "http://localhost:5242",
+  "viewport": {
+    "width": 1440,
+    "height": 1080
+  },
+  "authentication": "real-development-session",
+  "mode": "read-only-full-navigation",
+  "pages": [
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/isr/semanal",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 435,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1087,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1092,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1484,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 786,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 52,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6481,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/isr/quincenal",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 958,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1302,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1304,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1306,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 697,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 50,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5908,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/isr/mensual",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 77,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1474,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1511,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1514,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 791,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 330,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6053,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/subsidios/semanal",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 104,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1396,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1401,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1402,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1111,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 187,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5536,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/subsidios/quincenal",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1331,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1334,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1374,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1378,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1067,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 297,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 46,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5959,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/subsidios/mensual",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1320,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1323,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1323,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1324,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 991,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 280,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 46,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5671,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/imss/clase",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1309,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1313,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1313,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1480,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1038,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 240,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5594,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/imss/clase-imss",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1288,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1290,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1318,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1321,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 847,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 26,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5917,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/imss/fraccion",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 50,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 224,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 553,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 556,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 456,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 35,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 26,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4188,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/imss/fraccion-imss",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 577,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 576,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 812,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 451,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 27,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 25,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3853,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "route": "/nomina/configuracion/imss/base-gravable",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 727,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 751,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 753,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTablaFiscal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 411,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 163,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3978,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomFactorInts.razor",
+      "route": "/nomina/configuracion/imss/prestaciones",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 743,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 744,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 744,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 745,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomFactorInt/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 705,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 248,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 29,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3675,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomFactorInts.razor",
+      "route": "/nomina/configuracion/imss/prestaciones-minimas",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 221,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 564,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 796,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1021,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomFactorInt/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 586,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 391,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 57,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4052,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    }
+  ]
+}

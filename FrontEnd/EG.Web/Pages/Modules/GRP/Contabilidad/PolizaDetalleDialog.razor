@@ -272,7 +272,7 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

@@ -198,7 +198,7 @@
     private void SetCuentaBancariaLookup()
     {
         cuentaBancaria = item.FkidCuentaBancariaTes > 0
-            ? new LookupItem { Id = item.FkidCuentaBancariaTes, Text = item.FkidCuentaBancariaTes.ToString() }
+            ? new LookupItem { Id = item.FkidCuentaBancariaTes, Text = "Cuenta bancaria seleccionada" }
             : null;
     }
 
@@ -217,9 +217,7 @@
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => $"${value.ToString("0.00", Culture)}";
     private string EmpresaText => item.FkidEmpresaSis > 0
-        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
 
     private async Task EnsureEmpresaAsync()

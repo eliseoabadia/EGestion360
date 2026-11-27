@@ -77,7 +77,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var existing = await _context.Set<MatrizIngreso>().FirstOrDefaultAsync(e => e.PkIdMatrizIngreso == id);
-            if (existing == null) throw new KeyNotFoundException($"No se encontró el registro con ID {id}");
+            if (existing == null) throw new KeyNotFoundException($"No se encontró el registro");
 
             existing.Activo = false;
             await _context.SaveChangesAsync();

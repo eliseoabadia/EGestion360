@@ -19,7 +19,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoPagoSFResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoPagoSf))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoPagoSf))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoPagoSFResponse" TProperty="int" Property="x => x.PkidTipoPagoSf" Title="ID" Identifier="PkidTipoPagoSf" />
+                
                 <PropertyColumn T="TipoPagoSFResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
         </GenericDataGrid>
@@ -34,7 +34,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPagoSFResponse>);
     protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPagoSFResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoPagoSf, Descripcion = u.Descripcion});
+        items.Select(u => new { Descripcion = u.Descripcion});
 
     protected override async Task ReloadData()
     {

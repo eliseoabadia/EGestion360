@@ -123,6 +123,8 @@ namespace EG.ApiCoreBS.Extensions
             services.AddScoped<IUsuarioAreaAppService, UsuarioAreaAppService>();
             services.AddScoped<IUsuarioDepartamentoAppService, UsuarioDepartamentoAppService>();
             services.AddScoped<ISoporteDocumentalAppService, SoporteDocumentalAppService>();
+            services.AddScoped<IDocumentSummaryQueries, DocumentSummaryQueries>();
+            services.AddScoped<IDocumentSummaryAppService, DocumentSummaryAppService>();
             services.AddSingleton<DocumentRagAppService>();
             services.AddSingleton<IDocumentRagAppService>(provider => provider.GetRequiredService<DocumentRagAppService>());
             services.AddSingleton<IRagEmbeddingService, OpenAiCompatibleRagEmbeddingService>();
@@ -384,7 +386,7 @@ namespace EG.ApiCoreBS.Extensions
             AddReadOnlyCatalog<TipoMovimiento, TipoMovimientoDto, TipoMovimientoResponse>(services, nameof(TipoMovimiento.PkidTipoMovimiento));
             AddReadOnlyCatalog<VwIngresoDisponible, IngresoDisponibleDto, IngresoDisponibleResponse>(services, nameof(VwIngresoDisponible.PkidIngresoAutorizado));
             AddReadOnlyCatalog<VwIngreXejer, IngreXEjerDto, IngreXEjerResponse>(services, nameof(VwIngreXejer.PkIdIngresoAutorizado));
-            AddReadOnlyCatalog<VwClcfactura, IngresoCLCFacturaDto, IngresoCLCFacturaResponse>(services, nameof(VwClcfactura.PkidClcfactura));
+            AddReadOnlyCatalog<IngresoClcFacturaReadModel, IngresoCLCFacturaDto, IngresoCLCFacturaResponse>(services, nameof(IngresoClcFacturaReadModel.PkidClcfactura));
         }
 
         private static void AddReadOnlyCatalog<TEntity, TDto, TResponse>(IServiceCollection services, string idPropertyName)

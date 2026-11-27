@@ -32,7 +32,7 @@ public sealed class TipoBienDefaultsService
         {
             Id = tipoBien.FkidUnidadesAlma.Value,
             Text = string.IsNullOrWhiteSpace(tipoBien.UnidadMedida)
-                ? tipoBien.FkidUnidadesAlma.Value.ToString(CultureInfo.InvariantCulture)
+                ? "Unidad sin descripción"
                 : tipoBien.UnidadMedida
         };
     }

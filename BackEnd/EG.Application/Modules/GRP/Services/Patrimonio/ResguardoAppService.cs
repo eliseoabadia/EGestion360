@@ -48,7 +48,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync(x => x.PkidResguardo == id && x.FkidEmpresaSis == scope.EmpresaId && x.FechaResguardo.Year == scope.Anio);
             if (entity == null)
             {
-                return Failure<ResguardoResponse>($"Resguardo con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<ResguardoResponse>($"Resguardo no encontrado.", "NOT_FOUND");
             }
 
             var item = entity.Adapt<ResguardoResponse>();
@@ -118,7 +118,7 @@ namespace EG.Application.Services.Patrimonio
                     x.FkidEmpresaSis == scope.EmpresaId && x.Fecha.Year == scope.Anio);
             if (current == null)
             {
-                return Failure<ResguardoResponse>($"Resguardo con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<ResguardoResponse>($"Resguardo no encontrado.", "NOT_FOUND");
             }
 
             if (await _context.ResguardoDetalles.AsNoTracking().AnyAsync(x => x.FkidResguardoAlma == id && x.Activo) &&
@@ -177,7 +177,7 @@ namespace EG.Application.Services.Patrimonio
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Resguardo con ID {id} no encontrado.",
+                        Message = $"Resguardo no encontrado.",
                         Code = "NOT_FOUND",
                         Data = false,
                         TotalCount = 0

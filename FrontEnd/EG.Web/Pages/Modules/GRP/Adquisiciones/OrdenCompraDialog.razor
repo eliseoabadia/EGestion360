@@ -213,14 +213,14 @@
                 _selectedRequisicion = new LookupItem
                 {
                     Id = item.FkidRequisicionOrco,
-                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                    Text = string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? "Requisición sin descripción" : item.RequisicionDescripcion
                 };
                 _selectedCotizacion = item.FkidCotizacionOrco.HasValue
                     ? new LookupItem
                     {
                         Id = item.FkidCotizacionOrco.Value,
                         Text = string.IsNullOrWhiteSpace(item.CotizacionDescripcion)
-                            ? $"Cotizacion {item.FkidCotizacionOrco.Value}"
+                            ? "Cotización seleccionada"
                             : item.CotizacionDescripcion
                     }
                     : null;
@@ -313,7 +313,7 @@
         return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
         {
             Id = x.PkidRequisicion,
-            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+            Text = x.Descripcion
         }), response?.TotalCount);
     }
 
@@ -397,7 +397,7 @@
         return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
         {
             Id = x.PkidCotizacion,
-            Text = $"COT-{x.PkidCotizacion} | {BuildProveedorText(x.ProveedorClave, x.ProveedorNombre)} | {x.TotalCotizado:C2}"
+            Text = $"Cotización | {BuildProveedorText(x.ProveedorClave, x.ProveedorNombre)} | {x.TotalCotizado:C2}"
         }), response?.TotalCount);
     }
 
@@ -432,7 +432,7 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 }

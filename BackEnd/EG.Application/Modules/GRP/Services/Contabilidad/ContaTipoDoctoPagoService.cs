@@ -77,7 +77,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var existing = await _service.GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"Registro con ID {id} no encontrado");
+            if (existing == null) throw new KeyNotFoundException($"Registro no encontrado");
 
             await _service.DeleteAsync(id);
         }

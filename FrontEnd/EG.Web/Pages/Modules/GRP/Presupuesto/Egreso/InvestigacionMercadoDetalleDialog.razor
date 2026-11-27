@@ -130,7 +130,7 @@
                 _selectedPaaasDetalle = new LookupItem
                 {
                     Id = item.FkidPaaasdetalleOrco,
-                    Text = $"PAAAS {item.FkidPaaasdetalleOrco} | {TextOrDefault(item.TipoBienDescripcion, item.FkidPaaasdetalleOrco)}"
+                    Text = TextOrDefault(item.TipoBienDescripcion, item.FkidPaaasdetalleOrco)
                 };
 
                 _selectedTipoBien = new LookupItem
@@ -287,11 +287,11 @@
     private static string BuildTipoBienText(string? clave, string? descripcion, int id)
     {
         var text = $"{clave} - {descripcion}".Trim(' ', '-');
-        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        return string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 

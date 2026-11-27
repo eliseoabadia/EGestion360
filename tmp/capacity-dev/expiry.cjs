@@ -1,0 +1,1 @@
+const fs=require('fs');const s=JSON.parse(fs.readFileSync('tmp/capacity-dev/session.json'));let t=s.token;if(t.charCodeAt(0)===34)t=JSON.parse(t);const p=JSON.parse(Buffer.from(t.split('.')[1],'base64url'));console.log(JSON.stringify({expiresUtc:new Date(p.exp*1000).toISOString(),nowUtc:new Date().toISOString()}));

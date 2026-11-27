@@ -31,7 +31,7 @@ namespace EG.Application.Services.Patrimonio
             var item = await _service.GetByIdAsync(id, idPropertyName: "PkidTipoBaja");
             if (item == null)
             {
-                return Failure<TipoBajaResponse>($"Tipo de baja con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<TipoBajaResponse>($"Tipo de baja no encontrado.", "NOT_FOUND");
             }
 
             return new PagedResult<TipoBajaResponse>
@@ -78,7 +78,7 @@ namespace EG.Application.Services.Patrimonio
             var current = await _context.TipoBajas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidTipoBaja == id && x.Activo);
             if (current == null)
             {
-                return Failure<TipoBajaResponse>($"Tipo de baja con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<TipoBajaResponse>($"Tipo de baja no encontrado.", "NOT_FOUND");
             }
 
             if (await _context.TipoBajas.AsNoTracking().AnyAsync(x => x.Clave == response.Clave && x.PkidTipoBaja != id && x.Activo))
@@ -124,7 +124,7 @@ namespace EG.Application.Services.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de baja con ID {id} no encontrado.",
+                    Message = $"Tipo de baja no encontrado.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0

@@ -32,7 +32,7 @@ namespace EG.Application.Services.Account
                 var menu = await _navigateService.GetMenuAsync(userId);
 
                 if (menu == null)
-                    throw new KeyNotFoundException($"Menú para usuario {userId} no encontrado");
+                    throw new KeyNotFoundException("No se encontró el menú del usuario.");
 
                 return EG.Common.Security.SystemRoles.IsSuperAdmin(_userContext.GetUserPrincipal())
                     ? menu
@@ -132,7 +132,7 @@ namespace EG.Application.Services.Account
         public async Task<List<spGetClaimsByUserResult>> GetAllClaimsByUser(int userId)
         {
             if (userId <= 0)
-                throw new ArgumentException("Usuario ID debe ser mayor a 0");
+                throw new ArgumentException("El usuario seleccionado no es válido.");
 
             try
             {
@@ -140,7 +140,7 @@ namespace EG.Application.Services.Account
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error al obtener claims para usuario {userId}: {ex.Message}", ex);
+                throw new InvalidOperationException("No fue posible obtener los permisos del usuario.", ex);
             }
         }
     }

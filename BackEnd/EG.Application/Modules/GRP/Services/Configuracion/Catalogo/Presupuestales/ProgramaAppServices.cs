@@ -115,7 +115,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
             var existing = await _writeService.GetByIdAsync(id, idPropertyName: "PkidPrograma");
             if (existing == null)
-                throw new InvalidOperationException($"Programa con ID {id} no encontrado");
+                throw new InvalidOperationException($"Programa no encontrado");
 
             var dto = response.Adapt<ProgramaDto>();
             dto.PkidPrograma = id;

@@ -139,7 +139,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<EstatusRequisicionResponse>
                     {
                         Success = false,
-                        Message = $"Estatus de Requisicion con ID {id} no encontrado",
+                        Message = $"Estatus de Requisicion no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -212,7 +212,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Estatus de Requisicion con ID {id} no encontrado",
+                        Message = $"Estatus de Requisicion no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -244,7 +244,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"No fue posible dar de baja EstatusRequisicion con ID {id}; el registro sigue activo en la base de datos.",
+                        Message = $"No fue posible dar de baja EstatusRequisicion; el registro sigue activo en la base de datos.",
                         Code = "ERROR",
                         TotalCount = 0
                     };

@@ -241,9 +241,7 @@
     }
     private Dictionary<string, object>? CompanyFilter() => item.FkidEmpresaSis > 0 ? new() { ["FkidEmpresaSis"] = item.FkidEmpresaSis } : null;
     private string EmpresaText => item.FkidEmpresaSis > 0
-        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
 
     private async Task EnsureEmpresaAsync()

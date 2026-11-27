@@ -38,6 +38,17 @@ public sealed class UserContextBoundaryTests
         Assert.Equal(7, service.TryGetCurrentEmpresaId());
     }
 
+    [Fact]
+    public void ScopeChecksAreExecutedOncePerRequestServiceInstance()
+    {
+        var queries = new Queries(true);
+        var service = new UserContextService(new RequestContext("X-Empresa-Id", "9"),
+            NullLogger<UserContextService>.Instance, queries);
+        Assert.Equal(9, service.TryGetCurrentEmpresaId());
+        Assert.Equal(9, service.GetCurrentEmpresaId());
+        Assert.Equal(1, queries.AccessCheckCount);
+    }
+
     private sealed class RequestContext(string header, string value) : IUserRequestContext
     {
         public ClaimsPrincipal User { get; } = new(new ClaimsIdentity([
@@ -48,9 +59,11 @@ public sealed class UserContextBoundaryTests
     private sealed class Queries(bool allowed, bool fail = false) : IUserContextQueries
     {
         public (int UserId, int EmpresaId)? AccessCheck { get; private set; }
+        public int AccessCheckCount { get; private set; }
         public bool CanAccessEmpresa(int usuarioId, int empresaId)
         {
             AccessCheck = (usuarioId, empresaId);
+            AccessCheckCount++;
             if (fail) throw new InvalidOperationException("Unavailable test store");
             return allowed;
         }

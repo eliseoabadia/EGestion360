@@ -214,7 +214,7 @@
 		var knownText = FirstNonEmpty(
 			PersonaNombre,
 			FormatEmpleadoText(item.ClavePersona, item.NombreCompleto));
-		var text = FirstNonEmpty(knownText, item.FkidPersonaNom.ToString(CultureInfo.InvariantCulture));
+		var text = FirstNonEmpty(knownText, "Empleado sin nombre disponible");
 
 		selectedEmpleado = new LookupItem { Id = item.FkidPersonaNom, Text = text };
 		PersonaId = item.FkidPersonaNom;
@@ -315,7 +315,7 @@
 			return FormatPeriodoText(lookup);
 		}
 
-		return periodoId.ToString(CultureInfo.InvariantCulture);
+		return "Periodo sin descripción";
 	}
 
 	private async Task<NominaRhLookupResponse?> FindPeriodoAsync(int periodoId)
@@ -471,7 +471,7 @@
 		}
 
 		return string.IsNullOrWhiteSpace(item.Descripcion)
-			? item.Id.ToString(CultureInfo.InvariantCulture)
+			? "Periodo sin descripción"
 			: item.Descripcion;
 	}
 
@@ -482,7 +482,7 @@
 			Text = FirstNonEmpty(
 				empleado.ClaveNombre,
 				FormatEmpleadoText(empleado.Empleado, empleado.NombreCompleto),
-				empleado.Id.ToString(CultureInfo.InvariantCulture))
+				"Empleado sin clave ni nombre")
 		};
 
 	private static string FormatEmpleadoText(string? clave, string? nombre)

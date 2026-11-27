@@ -1,0 +1,90 @@
+{
+  "startedUtc": "2026-11-26T21:56:07.141Z",
+  "origin": "http://localhost:5198",
+  "mode": "authenticated-read-workload",
+  "secondsPerLevel": 5,
+  "thinkMilliseconds": 1000,
+  "scenarios": [
+    {
+      "name": "Requisicion",
+      "path": "/api/Requisicion/GetAllPaginado",
+      "method": "POST"
+    },
+    {
+      "name": "OrdenCompra",
+      "path": "/api/OrdenCompra/GetAllPaginado",
+      "method": "POST"
+    },
+    {
+      "name": "Poliza",
+      "path": "/api/Poliza/GetAllPaginado",
+      "method": "POST"
+    },
+    {
+      "name": "Bien",
+      "path": "/api/Bien/GetAllPaginado",
+      "method": "POST"
+    },
+    {
+      "name": "NomRhEmpleado",
+      "path": "/api/NomRhEmpleado/GetAllPaginado",
+      "method": "POST"
+    }
+  ],
+  "stages": [
+    {
+      "users": 1,
+      "requests": 5,
+      "failed": 0,
+      "p50Ms": 13,
+      "p95Ms": 51,
+      "p99Ms": 51,
+      "maxMs": 51,
+      "requestsPerSecond": 0.97,
+      "passed": true,
+      "endpoints": {
+        "Requisicion": {
+          "requests": 1,
+          "failed": 0,
+          "p50Ms": 20,
+          "p95Ms": 20,
+          "p99Ms": 20,
+          "maxMs": 20
+        },
+        "OrdenCompra": {
+          "requests": 1,
+          "failed": 0,
+          "p50Ms": 13,
+          "p95Ms": 13,
+          "p99Ms": 13,
+          "maxMs": 13
+        },
+        "Poliza": {
+          "requests": 1,
+          "failed": 0,
+          "p50Ms": 10,
+          "p95Ms": 10,
+          "p99Ms": 10,
+          "maxMs": 10
+        },
+        "Bien": {
+          "requests": 1,
+          "failed": 0,
+          "p50Ms": 51,
+          "p95Ms": 51,
+          "p99Ms": 51,
+          "maxMs": 51
+        },
+        "NomRhEmpleado": {
+          "requests": 1,
+          "failed": 0,
+          "p50Ms": 4,
+          "p95Ms": 4,
+          "p99Ms": 4,
+          "maxMs": 4
+        }
+      },
+      "failures": []
+    }
+  ]
+}

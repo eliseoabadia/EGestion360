@@ -80,7 +80,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         {
             var existing = await _service.GetByIdAsync(id);
             if (existing == null)
-                throw new KeyNotFoundException($"Cuenta contable con ID {id} no encontrada");
+                throw new KeyNotFoundException($"Cuenta contable no encontrada");
 
             var dto = response.Adapt<CuentaContableDto>();
             dto.PkidCuentaContable = id;
@@ -101,7 +101,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var existing = await _service.GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"Cuenta contable con ID {id} no encontrada");
+            if (existing == null) throw new KeyNotFoundException($"Cuenta contable no encontrada");
 
             await _service.DeleteAsync(id);
         }

@@ -76,9 +76,9 @@
                 item = response.Data;
                 item.FkidReferencia = InversionId;
                 _poliza = new LookupItem { Id = item.FkidPolizaConta, Text = $"{item.ClavePoliza} - {item.NombrePoliza}" };
-                _cuenta = new LookupItem { Id = item.FkidCuentaContableConta, Text = item.CuentaClaveNombre ?? item.FkidCuentaContableConta.ToString() };
+                _cuenta = new LookupItem { Id = item.FkidCuentaContableConta, Text = item.CuentaClaveNombre ?? "Cuenta contable seleccionada" };
                 _tipoDetalle = item.FkidTipoDetallePolizaSis.HasValue
-                    ? new LookupItem { Id = item.FkidTipoDetallePolizaSis.Value, Text = item.TipoDetallePoliza ?? item.FkidTipoDetallePolizaSis.Value.ToString() }
+                    ? new LookupItem { Id = item.FkidTipoDetallePolizaSis.Value, Text = item.TipoDetallePoliza ?? "Tipo de detalle seleccionado" }
                     : null;
             }
         }

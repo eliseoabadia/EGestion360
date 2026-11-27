@@ -96,7 +96,7 @@ namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 
             if (usage == null)
             {
-                throw new KeyNotFoundException($"Sf con ID {id} no encontrado");
+                throw new KeyNotFoundException($"Sf no encontrado");
             }
 
             return usage.HasProgramas

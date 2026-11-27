@@ -215,7 +215,7 @@
             return null;
         }
 
-        value = new LookupItem { Id = id.Value, Text = $"{GetLabel(property)} ID {id.Value}" };
+        value = new LookupItem { Id = id.Value, Text = GetLabel(property) };
         lookupValues[property.Name] = value;
         return value;
     }
@@ -275,12 +275,12 @@
                 "FkidUnidadInfonavitNom" => FindStaticLookup(UnidadInfonavitItems, id),
                 "FkidPeriodoPagoSis" => FindStaticLookup(PeriodoPagoItems, id),
                 "FkidContratoPres" => ToLookupItem((await ContratoService.GetByIdAsync(id)).Data),
-                _ => new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" }
+                _ => new LookupItem { Id = id, Text = GetFallbackLookupLabel(lookup.PropertyName) }
             };
         }
         catch
         {
-            return new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" };
+            return new LookupItem { Id = id, Text = GetFallbackLookupLabel(lookup.PropertyName) };
         }
     }
 
@@ -311,10 +311,10 @@
             "FkidFormaCalculoNom" => LoadStaticLookupPage(FormaCalculoItems, page, pageSize, filter),
             "FkidUnidadInfonavitNom" => LoadStaticLookupPage(UnidadInfonavitItems, page, pageSize, filter),
             "FkidPeriodoPagoSis" => LoadStaticLookupPage(PeriodoPagoItems, page, pageSize, filter),
-            "FkidPeriodo" or "FkidPeriodoInicial" or "FkidPeriodoFinal" or "FkidPeriodoMensualNom" or "FkidPeriodoQuincenalNom" or "FkidPeriodoSemanalNom" or "FkidNominaEspecialNom"
+            "FkidPeriodo" or "FkidPeriodoInicial" or "FkidPeriodoFinal" or "FkidPeriodoMensualNom" or "FkidPeriodoQuincenalNom" or "FkidPeriodoSemanalNom"
                 => await LoadPeriodosPageAsync(page, pageSize, filter),
             "FkidContratoPres" => await LoadContratosPageAsync(page, pageSize, filter),
-            _ => LoadNumericLookupPage(lookup, filter)
+            _ => new ComboLookupResult()
         };
     }
 
@@ -429,27 +429,15 @@
             : null;
     }
 
-    private static ComboLookupResult LoadNumericLookupPage(LookupConfig lookup, string filter)
-    {
-        var items = new List<LookupItem>();
-        if (int.TryParse(filter, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id) && id > 0)
-        {
-            items.Add(new LookupItem { Id = id, Text = $"{GetFallbackLookupLabel(lookup.PropertyName)} ID {id}" });
-        }
-
-        return new ComboLookupResult { Items = items, TotalCount = items.Count };
-    }
-
     private static LookupItem FindStaticLookup(IReadOnlyList<LookupItem> source, int id)
-        => source.FirstOrDefault(item => item.Id == id) ?? new LookupItem { Id = id, Text = $"ID {id}" };
+        => source.FirstOrDefault(item => item.Id == id) ?? new LookupItem { Id = id, Text = "Registro relacionado" };
 
     private static ComboLookupResult LoadStaticLookupPage(IReadOnlyList<LookupItem> source, int page, int pageSize, string filter)
     {
         var filtered = string.IsNullOrWhiteSpace(filter)
             ? source
             : source
-                .Where(item => item.Text.Contains(filter, StringComparison.OrdinalIgnoreCase)
-                               || item.Id.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase))
+                .Where(item => item.Text.Contains(filter, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
         var items = filtered
@@ -505,7 +493,8 @@
 
     private static bool IsIgnoredProperty(PropertyInfo property)
     {
-        if (property.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase))
+        if (!property.Name.StartsWith("Fkid", StringComparison.OrdinalIgnoreCase)
+            && EG.Web.Services.ExportProjectionSanitizer.IsInternalIdentifier(property.Name))
         {
             return true;
         }
@@ -654,7 +643,7 @@
     }
 
     private static LookupItem? ToLookupItem(EmpresaResponse? value)
-        => value == null ? null : new LookupItem { Id = value.PkidEmpresa, Text = value.EmpresaNombre ?? value.RazonSocial ?? $"Empresa {value.PkidEmpresa}" };
+        => value == null ? null : new LookupItem { Id = value.PkidEmpresa, Text = value.EmpresaNombre ?? value.RazonSocial ?? "Empresa sin nombre disponible" };
 
     private static LookupItem? ToLookupItem(NomEmpresaNominaResponse? value)
         => value == null ? null : new LookupItem { Id = value.PkidEmpresaNomina, Text = value.ClaveNombre };
@@ -677,7 +666,7 @@
             : new LookupItem
             {
                 Id = value.PkidConceptoProporcional,
-                Text = $"Concepto proporcional {value.PkidConceptoProporcional} - Concepto {value.FkidConceptoNom}"
+                Text = "Concepto proporcional"
             };
 
     private static LookupItem? ToLookupItem(NomContratoTercerosResponse? value)
@@ -767,7 +756,7 @@
             : new LookupItem
             {
                 Id = value.IdPeriodo,
-                Text = $"Periodo {value.IdPeriodo} - Empresa {value.FkidEmpresaSis}"
+                Text = "Periodo activo de la empresa"
             };
 
     private static LookupItem? ToLookupItem(ContratoResponse? value)

@@ -95,7 +95,6 @@
                 <TemplateColumn T="InventarioResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
-                        <span>ID @cell.Item.PkidInventario</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="InventarioResponse" Title="Calendario" Identifier="CalendarioFolio" PropertyName="CalendarioFolio" SortBy="x => x.CalendarioFolio">
@@ -512,7 +511,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidInventario,
             item.Folio,
             Calendario = item.CalendarioFolio,
             Empresa = item.EmpresaNombre,
@@ -548,7 +546,7 @@
                 ? new Dictionary<string, object> { ["FkidEmpresaSis"] = SucursalStateService.EmpresaId.Value }
                 : null;
             var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+            var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection, filters);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -557,7 +555,7 @@
             }
 
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(MapToExcelData(response.Items)));
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,

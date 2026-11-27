@@ -108,7 +108,7 @@ namespace EG.Application.Services.Adquisicion
 
             if (detalle == null)
             {
-                return BoolFailure($"Detalle de orden de compra con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Detalle de orden de compra no encontrado.", "NOT_FOUND");
             }
 
             if (!await IsCurrentCompanyOrderAsync(detalle.FkidOrdenCompraOrco))

@@ -52,7 +52,7 @@ namespace EG.Application.Services.Almacen
                 .AnyAsync(x => x.PkidDetalleSolicitudSalida == id && x.FkidSolicitudSalidaAlmaNavigation.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (!allowed)
             {
-                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud no encontrado.", "NOT_FOUND");
             }
 
             return new PagedResult<DetalleSolicitudSalidaResponse>
@@ -104,7 +104,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud no encontrado.", "NOT_FOUND");
             }
 
             if (IsParentLocked(current.FkidSolicitudSalidaAlmaNavigation))
@@ -150,7 +150,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<DetalleSolicitudSalidaResponse>($"Detalle de solicitud no encontrado.", "NOT_FOUND");
             }
 
             var solicitud = current.FkidSolicitudSalidaAlmaNavigation;
@@ -273,7 +273,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return BoolFailure($"Detalle de solicitud con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Detalle de solicitud no encontrado.", "NOT_FOUND");
             }
 
             if (IsParentLocked(current.FkidSolicitudSalidaAlmaNavigation))

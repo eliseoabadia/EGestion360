@@ -21,6 +21,8 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     [Inject] protected ILogger<BaseCrudPage<TItem, TResponse>> Logger { get; set; } = null!;
     [Inject] private AuthenticationProviderJWT AuthProvider { get; set; } = null!;
     [Inject] protected IGenericCrudService<TResponse> Service { get; set; } = null!;
+    [Inject] private EG.Web.Services.SucursalStateService ExportCompanyState { get; set; } = null!;
+    [Inject] private EG.Web.Services.AnioPresupuestalStateService ExportYearState { get; set; } = null!;
 
     protected List<TResponse> Elements { get; set; } = new();
     protected int TotalCount { get; set; }
@@ -514,40 +516,25 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
 
     protected virtual async Task<List<TResponse>> LoadExportItemsAsync()
     {
-        var items = new List<TResponse>();
-        var page = 1;
         var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
+        var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection, GetAdditionalFilters());
+        return response.Items.ToList();
+    }
 
-        while (items.Count < MaxExportRows)
-        {
-            var response = await Service.GetAllPaginadoAsync(page, ExportPageSize, SearchString, sortLabel, SortDirection);
-            if (response?.Success != true)
-            {
-                throw new InvalidOperationException(response?.Message ?? "No fue posible obtener los datos para exportar.");
-            }
-
-            var pageItems = response.Items?.ToList() ?? new List<TResponse>();
-            if (pageItems.Count == 0)
-            {
-                break;
-            }
-
-            items.AddRange(pageItems);
-
-            if (items.Count >= response.TotalCount || pageItems.Count < ExportPageSize)
-            {
-                break;
-            }
-
-            page++;
-        }
-
-        if (items.Count >= MaxExportRows)
-        {
+    protected async Task<EG.Web.Models.ApiResponse<TExport>> ReadExportResponseAsync<TExport>(
+        IGenericCrudService<TExport> service, string search, string sortLabel, SortDirection direction,
+        Dictionary<string, object>? filters = null) where TExport : class
+    {
+        var route = NavigationManager.Uri;
+        var company = ExportCompanyState.EmpresaId;
+        var year = ExportYearState.AnioId;
+        var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+            (page, size) => service.GetAllPaginadoAsync(page, size, search, sortLabel, direction, filters),
+            ExportPageSize, MaxExportRows,
+            () => NavigationManager.Uri == route && ExportCompanyState.EmpresaId == company && ExportYearState.AnioId == year);
+        if (result.Limited)
             Snackbar.Add($"La exportacion se limito a {MaxExportRows:N0} registros. Ajusta filtros para exportar menos datos.", Severity.Warning);
-        }
-
-        return items;
+        return new() { Success = true, Code = "SUCCESS", Items = result.Items, TotalCount = result.Items.Count };
     }
 
     protected virtual async Task ExportToExcel()
@@ -581,7 +568,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
             var excelData = MapToExcelData(exportItems);
 
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 

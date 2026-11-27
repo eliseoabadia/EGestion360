@@ -40,7 +40,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync(x => x.PkidBien == id && x.FkidEmpresaSis == empresaId);
             if (entity == null)
             {
-                return Failure<BienDisponibleBajaResponse>($"Bien disponible con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<BienDisponibleBajaResponse>($"Bien disponible no encontrado.", "NOT_FOUND");
             }
 
             return new PagedResult<BienDisponibleBajaResponse>

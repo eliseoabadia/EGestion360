@@ -105,11 +105,7 @@
                             </MudTooltip>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn T="MenuItemsResponse" Title="ID" Identifier="PkidMenu" PropertyName="PkidMenu" SortBy="x => x.PkidMenu">
-                        <CellTemplate Context="cell">
-                            @cell.Item.PkidMenu
-                        </CellTemplate>
-                    </TemplateColumn>
+                    
                     <TemplateColumn T="MenuItemsResponse" Title="Nombre" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre">
                         <CellTemplate Context="cell">
                             @if (cell.Item.Tipo == 1)

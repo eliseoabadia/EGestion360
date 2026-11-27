@@ -53,7 +53,7 @@
                                 <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidFactura))" /></MudTooltip>
                                 <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidFactura))" /></MudTooltip>
                             </CellTemplate></TemplateColumn>
-                            <PropertyColumn T="FacturaResponse" TProperty="int" Property="x => x.PkidFactura" Title="ID" Identifier="PkidFactura" />
+                            
                             <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.NumFactura" Title="Factura" Identifier="NumFactura" />
                             <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.NumeroContrato" Title="Contrato" Identifier="NumeroContrato" />
                             <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.ProveedorNombre" Title="Proveedor" Identifier="ProveedorNombre" />
@@ -151,7 +151,7 @@
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<FacturaResponse> items) =>
-        items.Select(x => new { x.PkidFactura, x.NumFactura, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.Total, x.EstatusDescripcion });
+        items.Select(x => new { x.NumFactura, x.NumeroContrato, x.ProveedorNombre, Fecha = x.FechaEmision.ToString("dd/MM/yyyy"), x.Total, x.EstatusDescripcion });
 
     protected override async Task<string> GetItemNameForDelete(int id) => (await Service.GetByIdAsync(id))?.Data?.NumFactura ?? "la factura";
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
@@ -212,7 +212,7 @@
             FkidEmpresaSis = factura.FkidEmpresaSis,
             FkidContratoPres = factura.FkidContratoPres,
             FkidPolizaConta = factura.FkidPolizaConta,
-            NumClc = $"FAC-{factura.PkidFactura}",
+            NumClc = factura.NumFactura,
             FechaSolicitud = DateOnly.FromDateTime(DateTime.Today),
             ImporteTotal = details.Sum(x => x.MontoAplicado),
             Observaciones = $"Generada desde factura {factura.NumFactura}",

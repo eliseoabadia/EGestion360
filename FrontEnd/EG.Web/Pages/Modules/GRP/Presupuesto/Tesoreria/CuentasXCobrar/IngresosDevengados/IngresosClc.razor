@@ -43,11 +43,11 @@
                           SearchStringChanged="value => SearchString = value"
                           OnSearch="OnSearch">
                 <Columns>
-                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Núm. CLC" Identifier="PkidClcfactura" Resizable="true"><CellTemplate><div class="main-cell">@context.Item.PkidClcfactura</div><span>@(context.Item.Activo ? "Activo" : "Inactivo")</span></CellTemplate></TemplateColumn>
-                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Origen" Identifier="FkIdIngresoAutorizado" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.FkIdIngresoAutorizado?.ToString(NumberCulture))</div><span>Año @TextOrDash(context.Item.FkIdAnioSis?.ToString(NumberCulture))</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Núm. CLC" Identifier="NumClc" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@(context.Item.Activo ? "Activo" : "Inactivo")</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Origen" Identifier="FkIdIngresoAutorizado" Resizable="true"><CellTemplate><div class="main-cell">@(context.Item.FkIdIngresoAutorizado.HasValue ? "Ingreso autorizado" : "Sin origen")</div><span>Año @BudgetYear</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Documento" Identifier="NumFactura" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@TextOrDash(context.Item.NumReferenciaDocto)</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@FormatDate(context.Item.Fecha)</CellTemplate></TemplateColumn>
-                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Póliza" Identifier="FkIdPolizaConta" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.FkIdPolizaConta?.ToString(NumberCulture))</div><span>Tipo @TextOrDash(context.Item.FkIdTipoPoliza?.ToString(NumberCulture))</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Póliza" Identifier="FkIdPolizaConta" Resizable="true"><CellTemplate><div class="main-cell">@(context.Item.FkIdPolizaConta.HasValue ? "Póliza registrada" : "Sin póliza")</div></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Concepto" Identifier="Concepto" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.Concepto)</div><span>@TextOrDash(context.Item.Rfc) @TextOrDash(context.Item.Nombre)</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Meses" Identifier="Meses" Resizable="true" Sortable="false"><CellTemplate><div class="month-spark">@foreach (var month in GetMonths(context.Item)) { <span title="@($"{month.Label}: {Money(month.Amount)}")" style="height:@GetMonthHeight(month.Amount, GetAmount(context.Item))%"></span> }</div></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Ene" Identifier="Ene" Resizable="true"><CellTemplate>@Money(context.Item.Ene ?? 0m)</CellTemplate></TemplateColumn>
@@ -63,7 +63,7 @@
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Nov" Identifier="Nov" Resizable="true"><CellTemplate>@Money(context.Item.Nov ?? 0m)</CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Dic" Identifier="Dic" Resizable="true"><CellTemplate>@Money(context.Item.Dic ?? 0m)</CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Total" Identifier="Total" Resizable="true"><CellTemplate><strong>@Money(GetAmount(context.Item))</strong></CellTemplate></TemplateColumn>
-                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Control" Identifier="Control" Resizable="true" Sortable="false"><CellTemplate><div class="main-cell">@FormatDate(context.Item.FechaCreacion)</div><span>Usuario @context.Item.UsuarioCreacion</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Control" Identifier="Control" Resizable="true" Sortable="false"><CellTemplate><div class="main-cell">@FormatDate(context.Item.FechaCreacion)</div><span>@(context.Item.UsuarioCreacion > 0 ? "Registro creado" : "-")</span></CellTemplate></TemplateColumn>
                 </Columns>
             </GenericDataGrid>
         </div>
@@ -97,7 +97,7 @@
     protected override Type EditDialogType => typeof(IngresosClc);
     protected override Type DeleteDialogType => typeof(IngresosClc);
     protected override string GetDefaultSortLabel() => "PkidClcfactura";
-    private string BudgetYear => AnioStateService.AnioClave?.ToString() ?? AnioStateService.AnioId?.ToString() ?? "-";
+    private string BudgetYear => AnioStateService.AnioClave?.ToString() ?? "Sin ejercicio";
 
     protected override async Task OnInitializedAsync()
     {
@@ -167,17 +167,12 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<IngresoCLCFacturaResponse> items) => items.Select(x => new
     {
-        ID = x.PkidClcfactura,
-        Anio = x.FkIdAnioSis,
-        Origen = x.FkIdIngresoAutorizado,
+        Anio = BudgetYear,
+        Origen = x.FkIdIngresoAutorizado.HasValue ? "Ingreso autorizado" : "Sin origen",
         Documento = DocumentNumber(x),
         x.NumReferenciaDocto,
         x.Fecha,
-        Poliza = x.FkIdPolizaConta,
-        TipoDocumento = x.FkIdTipoDoctoClcSis,
-        TipoClc = x.FkIdTipoClcfacturaPres,
-        CuentaCargo = x.FkIdCuentaCargo,
-        CuentaAbono = x.FkIdCuentaAbono,
+        Poliza = x.FkIdPolizaConta.HasValue ? "Registrada" : "Sin póliza",
         x.Concepto,
         x.Rfc,
         x.Nombre,
@@ -196,9 +191,8 @@
         Total = GetAmount(x),
         x.Activo,
         x.FechaCreacion,
-        x.UsuarioCreacion,
         x.FechaModificacion,
-        x.UsuarioModificacion
+        UsuarioModificacion = x.UsuarioModificacion.HasValue ? "Modificado" : "Sin cambios posteriores"
     });
 
     protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;

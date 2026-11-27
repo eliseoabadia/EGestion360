@@ -92,7 +92,6 @@
                             <CellTemplate Context="cell">
                                 <div DataLabel="Bien PAAAS">
                                 <MudText Typo="Typo.body2" Class="main-cell">@cell.Item.TipoBienTexto</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">Detalle @cell.Item.FkidEstudioMercadoDetalleOrco</MudText>
                                 </div>
                             </CellTemplate>
                         </TemplateColumn>
@@ -396,7 +395,7 @@
             PkidEstudioMercadoDetalleCosto = response.PkidEstudioMercadoDetalleCosto;
             FkidProveedorSis = response.FkidProveedorSis;
             ProveedorNombre = string.IsNullOrWhiteSpace(response.ProveedorNombre)
-                ? response.FkidProveedorSis.ToString()
+                ? "Proveedor sin nombre disponible"
                 : response.ProveedorNombre;
             ProveedorRfc = response.ProveedorRfc ?? string.Empty;
             FkidEstudioMercadoDetalleOrco = response.FkidEstudioMercadoDetalleOrco;

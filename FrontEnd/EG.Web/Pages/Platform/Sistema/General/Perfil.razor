@@ -247,7 +247,6 @@
                             <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
                             <MudText Typo="Typo.subtitle1">Información del usuario</MudText>
                         </div>
-                        <MudText Typo="Typo.caption" Class="profile-muted">ID @userProfile.PkIdUsuario</MudText>
                     </div>
 
                     <div class="profile-form-grid">
@@ -682,7 +681,7 @@
 
             var successMessage = !string.IsNullOrEmpty(response.Message)
                 ? response.Message
-                : $"Usuario actualizado: ID {userProfile.PkIdUsuario}, Nombre: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
+                : $"Usuario actualizado: {userProfile.NombreCompleto}, Iniciales: {userProfile.Iniciales}";
 
             Snackbar.Add(successMessage, Severity.Success);
 

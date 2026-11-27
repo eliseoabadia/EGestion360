@@ -318,7 +318,6 @@
 
     private static readonly OperationColumn[] EmployeeColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Empleado", "Empleado"),
         new("Persona", "Persona"),
         new("Tipo", "Contratacion"),
@@ -331,7 +330,6 @@
 
     private static readonly OperationColumn[] MovementColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Empleado", "Empleado"),
         new("Persona", "Persona"),
         new("Tipo", "Tipo Movimiento"),
@@ -345,7 +343,6 @@
 
     private static readonly OperationColumn[] IncidenceColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Empleado", "Empleado"),
         new("Persona", "Persona"),
         new("Tipo", "Incidencia"),
@@ -358,7 +355,6 @@
 
     private static readonly OperationColumn[] VacationColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Empleado", "Empleado"),
         new("Persona", "Persona"),
         new("Periodo", "Periodo"),
@@ -371,7 +367,6 @@
 
     private static readonly OperationColumn[] FiscalColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Periodo", "Catalogo"),
         new("Clave", "Clave"),
         new("Descripcion", "Descripcion"),
@@ -385,7 +380,6 @@
 
     private static readonly OperationColumn[] ProductColumns =
     [
-        new("Id", "Corrida", ColumnKind.Number),
         new("Empresa", "Empresa"),
         new("Periodo", "Periodo"),
         new("Tipo", "Tipo"),
@@ -399,7 +393,6 @@
 
     private static readonly OperationColumn[] LiquidationColumns =
     [
-        new("Id", "ID", ColumnKind.Number),
         new("Empleado", "Contrato"),
         new("Tipo", "Tipo"),
         new("Fecha", "Fecha baja", ColumnKind.Date),
@@ -696,7 +689,7 @@
 
     private static string BuildVacationTitle(NominaOperacionResponse item)
         => string.IsNullOrWhiteSpace(item.Persona)
-            ? $"Vacacion #{item.Id}"
+            ? "Solicitud de vacaciones"
             : $"{item.Empleado} - {item.Persona}".Trim(' ', '-');
 
     private static string BuildVacationDescription(NominaOperacionResponse item)

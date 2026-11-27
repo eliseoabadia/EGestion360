@@ -268,7 +268,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         private static PagedResult<bool> NotFound(int id) => new()
         {
             Success = false,
-            Message = $"Poliza con ID {id} no encontrada",
+            Message = $"Poliza no encontrada",
             Code = "NOT_FOUND",
             Data = false,
             TotalCount = 0

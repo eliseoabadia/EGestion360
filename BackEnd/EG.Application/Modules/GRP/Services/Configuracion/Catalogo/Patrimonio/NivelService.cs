@@ -181,7 +181,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<NivelResponse>
                 {
                     Success = false,
-                    Message = $"Nivel con ID {id} no encontrado",
+                    Message = $"Nivel no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -217,7 +217,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Nivel con ID {id} no encontrado",
+                    Message = $"Nivel no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

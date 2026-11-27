@@ -19,7 +19,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoDoctoClcResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDoctoClc))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDoctoClc))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoDoctoClcResponse" TProperty="int" Property="x => x.PkidTipoDoctoClc" Title="ID" Identifier="PkidTipoDoctoClc" />
+                
                 <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
                 <PropertyColumn T="TipoDoctoClcResponse" TProperty="string" Property="x => x.TipoRecurso" Title="Tipo Recurso" Identifier="TipoRecurso" />
@@ -36,7 +36,7 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoDoctoClcResponse>);
     protected override string GetDefaultSortLabel() => "Clave";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDoctoClcResponse> items) =>
-        items.Select(u => new { ID = u.PkidTipoDoctoClc, Clave = u.Clave, Nombre = u.Nombre, TipoRecurso = u.TipoRecurso});
+        items.Select(u => new { Clave = u.Clave, Nombre = u.Nombre, TipoRecurso = u.TipoRecurso});
 
     protected override async Task ReloadData()
     {

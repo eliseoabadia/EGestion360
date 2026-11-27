@@ -15,7 +15,7 @@
                       SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoPlazoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidTipoPlazo))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidTipoPlazo))" /></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoPlazoResponse" TProperty="int" Property="x => x.PkidTipoPlazo" Title="ID" Identifier="PkidTipoPlazo" />
+                
                 <PropertyColumn T="TipoPlazoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                 <PropertyColumn T="TipoPlazoResponse" TProperty="int" Property="x => x.Dias" Title="Días" Identifier="Dias" />
             </Columns>
@@ -32,6 +32,6 @@
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoPlazoResponse>);
     protected override string GetDefaultSortLabel() => "Descripcion";
     protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoPlazoResponse> items) =>
-        items.Select(x => new { x.PkidTipoPlazo, x.Descripcion, x.Dias});
+        items.Select(x => new { x.Descripcion, x.Dias});
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
 }

@@ -48,16 +48,10 @@
                           Label="Modulo"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense" />
-            <div class="rag-context-grid">
-                <MudTextField @bind-Value="_sessionRequest.SubModulo"
-                              Label="Submodulo"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
-                <MudTextField @bind-Value="_entityIdText"
-                              Label="EntidadId"
-                              Variant="Variant.Outlined"
-                              Margin="Margin.Dense" />
-            </div>
+            <MudTextField @bind-Value="_sessionRequest.SubModulo"
+                          Label="Submodulo"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
             <MudTextField @bind-Value="_sessionRequest.Descripcion"
                           Label="Descripcion"
                           Variant="Variant.Outlined"
@@ -190,7 +184,6 @@
     };
 
     private DocumentRagSessionResponse? _session;
-    private string _entityIdText = string.Empty;
     private string _question = string.Empty;
     private string _uploadNotice = string.Empty;
     private Severity _uploadNoticeSeverity = Severity.Info;
@@ -371,7 +364,6 @@
 
     private DocumentRagSessionRequest BuildSessionRequest()
     {
-        _sessionRequest.EntidadId = long.TryParse(_entityIdText, out var entityId) ? entityId : null;
         return _sessionRequest;
     }
 

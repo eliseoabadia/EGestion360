@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="PgResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPg))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPg))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="PgResponse" TProperty="int" Property="x => x.PkidPg" Title="ID" Identifier="PkidPg" />
+                
                 <PropertyColumn T="PgResponse" TProperty="int" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="PgResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
@@ -52,7 +52,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidPg,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
         });

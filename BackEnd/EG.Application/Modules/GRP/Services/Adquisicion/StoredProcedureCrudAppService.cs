@@ -67,7 +67,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"{_entityName} con ID {id} no encontrado",
+                        Message = $"{_entityName} no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };

@@ -82,7 +82,7 @@ namespace EG.Application.Services.General
                 .FirstOrDefaultAsync();
 
             if (result == null)
-                throw new KeyNotFoundException($"Departamento {id} no encontrado");
+                throw new KeyNotFoundException("Departamento no encontrado");
 
             return result;
         }
@@ -170,7 +170,7 @@ namespace EG.Application.Services.General
             var entity = await _context.Departamentos
                 .FirstOrDefaultAsync(x => x.PkidDepartamento == id && x.Activo);
             if (entity == null)
-                throw new KeyNotFoundException($"Departamento {id} no encontrado");
+                throw new KeyNotFoundException("Departamento no encontrado");
 
             var empresaActiva = await _context.Empresas
                 .AsNoTracking()
@@ -240,7 +240,7 @@ namespace EG.Application.Services.General
                 .FirstOrDefaultAsync();
 
             if (departamento == null)
-                throw new KeyNotFoundException($"Departamento con ID {id} no encontrado");
+                throw new KeyNotFoundException($"Departamento no encontrado");
 
             if (!departamento.Activo)
                 throw new InvalidOperationException($"El departamento \"{departamento.Nombre}\" ya se encuentra inactivo");

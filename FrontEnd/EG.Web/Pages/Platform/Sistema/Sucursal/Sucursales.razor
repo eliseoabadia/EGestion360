@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="SucursalResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar sucursal"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidSucursal))" /></MudTooltip><MudTooltip Text="Eliminar sucursal"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@context.Item.EsMatriz" OnClick="@(() => DeleteItem(context.Item.PkidSucursal))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="SucursalResponse" TProperty="int" Property="x => x.PkidSucursal" Title="ID" Identifier="PkidSucursal" />
+                
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.CodigoSucursal" Title="Código" Identifier="CodigoSucursal" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.Nombre" Title="Sucursal" Identifier="Nombre" />
                 <PropertyColumn T="SucursalResponse" TProperty="string" Property="x => x.NombreEmpresa" Title="Entidad" Identifier="NombreEmpresa" />
@@ -57,7 +57,6 @@
     {
         return items.Select(s => new
         {
-            ID = s.PkidSucursal,
             Codigo = s.CodigoSucursal,
             Sucursal = s.Nombre,
             Empresa = s.NombreEmpresa,

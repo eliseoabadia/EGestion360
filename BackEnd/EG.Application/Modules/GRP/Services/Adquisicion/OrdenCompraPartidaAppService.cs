@@ -108,7 +108,7 @@ namespace EG.Application.Services.Adquisicion
 
             if (partida == null)
             {
-                return BoolFailure($"Partida de orden de compra con ID {id} no encontrada.", "NOT_FOUND");
+                return BoolFailure($"Partida de orden de compra no encontrada.", "NOT_FOUND");
             }
 
             if (!await IsCurrentCompanyOrderAsync(partida.FkidOrdenCompraOrco))

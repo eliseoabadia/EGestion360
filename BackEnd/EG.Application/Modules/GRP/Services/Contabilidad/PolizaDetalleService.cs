@@ -160,7 +160,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Detalle de poliza con ID {id} no encontrado",
+                        Message = $"Detalle de poliza no encontrado",
                         Code = "NOT_FOUND",
                         Data = false,
                         TotalCount = 0
@@ -289,7 +289,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         private static PagedResult<PolizaDetalleResponse> NotFound(int id) => new()
         {
             Success = false,
-            Message = $"Detalle de poliza con ID {id} no encontrado",
+            Message = $"Detalle de poliza no encontrado",
             Code = "NOT_FOUND",
             TotalCount = 0
         };

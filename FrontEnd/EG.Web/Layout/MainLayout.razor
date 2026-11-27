@@ -379,11 +379,7 @@
             }
             else
             {
-                var userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    nombreUsuario = $"ID: {userId}";
-                }
+                nombreUsuario = "Usuario";
             }
         }
         catch (Exception ex)

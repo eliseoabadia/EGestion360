@@ -106,7 +106,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var existing = await GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"MatrizConversion con ID {id} no encontrado");
+            if (existing == null) throw new KeyNotFoundException($"MatrizConversion no encontrado");
 
             var usadaPorPresupuesto = await _context.VwEgresoAutorizados.AsNoTracking().AnyAsync(e =>
                 e.FkidAnioSis == existing.FkidAnioSis &&

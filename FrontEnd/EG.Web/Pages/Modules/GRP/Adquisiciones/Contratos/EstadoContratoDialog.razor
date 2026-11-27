@@ -177,9 +177,9 @@
     private string EmpresaText => string.IsNullOrWhiteSpace(item.EmpresaNombre)
         ? TextOrDash(SucursalStateService.EmpresaNombre)
         : item.EmpresaNombre;
-    private string RequisicionText => item.FkidRequisicionOrco.HasValue
-        ? $"{item.FkidRequisicionOrco} - {TextOrDash(item.RequisicionDescripcion)}"
-        : TextOrDash(item.RequisicionDescripcion);
+    private string RequisicionText => string.IsNullOrWhiteSpace(item.RequisicionDescripcion)
+        ? (item.FkidRequisicionOrco.HasValue ? "Requisición vinculada" : "Sin requisición")
+        : item.RequisicionDescripcion;
     private string StatusText => item.Estatus switch
     {
         2 => "Vigente",
@@ -224,7 +224,7 @@
         _selectedAutorizacion = new LookupItem
         {
             Id = item.FkidAutorizacionSuficienciaPres,
-            Text = BuildAutorizacionText(item.FkidAutorizacionSuficienciaPres, item.RequisicionDescripcion)
+            Text = $"{TextOrDash(item.NumeroContrato)} · {TextOrDash(item.RequisicionDescripcion)}"
         };
         _selectedProveedor = new LookupItem
         {
@@ -232,7 +232,7 @@
             Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre)
         };
         _selectedPoliza = item.FkidPolizaConta.HasValue
-            ? new LookupItem { Id = item.FkidPolizaConta.Value, Text = TextOrId(item.ClavePoliza, item.FkidPolizaConta.Value) }
+            ? new LookupItem { Id = item.FkidPolizaConta.Value, Text = string.IsNullOrWhiteSpace(item.ClavePoliza) ? "Póliza sin clave" : item.ClavePoliza }
             : null;
         await LoadCompraDirectaAsync();
     }
@@ -315,10 +315,10 @@
         item.FkidAnioSis = autorizacion.FkidAnioSis;
         item.RequisicionDescripcion = autorizacion.RequisicionDescripcion;
         item.NumeroContrato = string.IsNullOrWhiteSpace(item.NumeroContrato)
-            ? $"AUT-{autorizacion.PkidAutorizacionSuficiencia}"
+            ? $"AUT-{Guid.NewGuid():N}"
             : item.NumeroContrato;
         item.Descripcion = string.IsNullOrWhiteSpace(item.Descripcion)
-            ? autorizacion.RequisicionDescripcion ?? $"Contrato de autorizacion {autorizacion.PkidAutorizacionSuficiencia}"
+            ? autorizacion.RequisicionDescripcion ?? "Contrato generado desde autorización de suficiencia"
             : item.Descripcion;
         item.Observaciones = string.IsNullOrWhiteSpace(item.Observaciones)
             ? autorizacion.Observaciones
@@ -356,7 +356,7 @@
         return ToComboResult(response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
         {
             Id = x.PkidAutorizacionSuficiencia,
-            Text = BuildAutorizacionText(x.PkidAutorizacionSuficiencia, x.RequisicionDescripcion)
+            Text = $"{x.FechaAutorizacion:dd/MM/yyyy} · {TextOrDash(x.RequisicionDescripcion)}"
         }), response?.TotalCount);
     }
 
@@ -436,10 +436,8 @@
         detail.Septiembre.GetValueOrDefault() + detail.Octubre.GetValueOrDefault() +
         detail.Noviembre.GetValueOrDefault() + detail.Diciembre.GetValueOrDefault();
 
-    private static string BuildAutorizacionText(int id, string? descripcion) => $"AUT-{id} - {TextOrDash(descripcion)}";
     private static string BuildProveedorText(string? clave, string? nombre) => string.IsNullOrWhiteSpace(clave) ? TextOrDash(nombre) : $"{clave} - {TextOrDash(nombre)}";
     private static string BuildPolizaText(string? clave, string? nombre) => string.IsNullOrWhiteSpace(clave) ? TextOrDash(nombre) : $"{clave} - {TextOrDash(nombre)}";
-    private static string TextOrId(string? text, int id) => string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => $"${value.ToString("0.00", NumberCulture)}";
 }

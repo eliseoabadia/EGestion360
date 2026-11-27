@@ -140,6 +140,6 @@
 
     private static string TextOrDefault(string? text, int id) =>
         string.IsNullOrWhiteSpace(text) || text.Trim() == "-"
-            ? id.ToString()
+            ? "Descripción no disponible"
             : text.Trim();
 }

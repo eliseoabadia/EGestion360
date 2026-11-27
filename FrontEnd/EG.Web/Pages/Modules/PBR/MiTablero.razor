@@ -247,6 +247,8 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
     private PbrDashboardResponse? dashboard;
     private bool loading;
+    private bool disposed;
+    private int dashboardVersion;
     private int? anio;
 
     protected override async Task OnInitializedAsync()
@@ -259,6 +261,8 @@
 
     private async Task LoadDashboardAsync()
     {
+        if (disposed) return;
+        var version = ++dashboardVersion;
         if (!PbrFiscalYearContext.TryGetSelectedYear(anio, out var selectedYear))
         {
             dashboard = null;
@@ -269,23 +273,38 @@
         loading = true;
         try
         {
-            dashboard = await DashboardService.GetAsync(selectedYear);
+            var result = await DashboardService.GetAsync(selectedYear);
+            if (!disposed && version == dashboardVersion) dashboard = result;
         }
         catch (Exception ex)
         {
+            if (disposed || version != dashboardVersion) return;
             Snackbar.Add($"No fue posible cargar Mi Tablero PBR: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
         finally
         {
-            loading = false;
+            if (!disposed && version == dashboardVersion) loading = false;
         }
     }
 
-    private async void OnAnioChanged(int? _)
+    private void OnAnioChanged(int? anioId) => _ = RefreshYearAsync();
+
+    private async Task RefreshYearAsync()
     {
-        anio = AnioState.AnioClave;
-        await LoadDashboardAsync();
-        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                if (disposed) return;
+                anio = AnioState.AnioClave;
+                await LoadDashboardAsync();
+                if (!disposed) StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            if (!disposed) Snackbar.Add(UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex), Severity.Error);
+        }
     }
 
     private void GoTo(string route) => NavigationManager.NavigateTo(route);
@@ -348,6 +367,8 @@
 
     public void Dispose()
     {
+        disposed = true;
+        dashboardVersion++;
         AnioState.OnAnioChanged -= OnAnioChanged;
     }
 }

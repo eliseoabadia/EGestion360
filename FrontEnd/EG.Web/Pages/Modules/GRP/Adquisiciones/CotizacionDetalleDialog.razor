@@ -122,7 +122,7 @@
                 _selectedDetalle = new LookupItem
                 {
                     Id = item.FkidRequisicionDetalleOrco,
-                    Text = TextOrDefault($"{item.TipoBienClave} - {item.TipoBienDescripcion}".Trim(' ', '-'), item.FkidRequisicionDetalleOrco)
+                    Text = string.IsNullOrWhiteSpace(item.TipoBienDescripcion) ? "Bien sin clave ni descripción" : $"{item.TipoBienClave} - {item.TipoBienDescripcion}".Trim(' ', '-')
                 };
                 _selectedCantidad = item.Cantidad;
                 _selectedUnidad = item.UnidadMedida ?? string.Empty;
@@ -296,5 +296,5 @@
         string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 }

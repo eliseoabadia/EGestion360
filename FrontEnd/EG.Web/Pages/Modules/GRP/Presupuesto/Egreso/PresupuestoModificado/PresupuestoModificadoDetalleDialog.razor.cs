@@ -89,7 +89,7 @@ public partial class PresupuestoModificadoDetalleDialog : IDisposable
                     _egreso = new()
                     {
                         Id = item.FkidEgresoAutorizadoPres.Value,
-                        Text = item.EgresoAutorizadoDescripcion ?? item.FkidEgresoAutorizadoPres.Value.ToString()
+                        Text = string.IsNullOrWhiteSpace(item.EgresoAutorizadoDescripcion) ? "Egreso autorizado seleccionado" : item.EgresoAutorizadoDescripcion
                     };
                 }
             }

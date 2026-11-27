@@ -71,7 +71,7 @@
         .Take(7);
 
     private static bool IsHiddenColumn(PropertyInfo property)
-        => property.Name is "ClaveNombre" or "FechaCreacion" or "UsuarioCreacion" or "FechaModificacion" or "UsuarioModificacion";
+        => NominaCatalogUi.IsHiddenColumn(property);
 
     private static int GetItemId(NomContratoTercerosResponse item)
     {

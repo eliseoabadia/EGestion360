@@ -109,7 +109,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            if (entity == null) throw new KeyNotFoundException($"Concepto con ID {id} no encontrado");
+            if (entity == null) throw new KeyNotFoundException($"Concepto no encontrado");
             await _repository.DeleteAsync(id);
         }
 

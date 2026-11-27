@@ -90,15 +90,15 @@
             {
                 item = response.Data;
                 _selectedBanco = item.FkidBancoTes.HasValue
-                    ? new LookupItem { Id = item.FkidBancoTes.Value, Text = string.IsNullOrWhiteSpace(item.BancoNombre) ? item.FkidBancoTes.Value.ToString() : item.BancoNombre }
+                    ? new LookupItem { Id = item.FkidBancoTes.Value, Text = string.IsNullOrWhiteSpace(item.BancoNombre) ? "Banco seleccionado" : item.BancoNombre }
                     : null;
-                _selectedMoneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = string.IsNullOrWhiteSpace(item.MonedaDescripcion) ? item.FkidTipoMonedaTes.ToString() : item.MonedaDescripcion };
+                _selectedMoneda = new LookupItem { Id = item.FkidTipoMonedaTes, Text = string.IsNullOrWhiteSpace(item.MonedaDescripcion) ? "Moneda seleccionada" : item.MonedaDescripcion };
                 _selectedCuentaContable = item.FkidCuentaContableSis.HasValue
                     ? new LookupItem
                     {
                         Id = item.FkidCuentaContableSis.Value,
                         Text = string.IsNullOrWhiteSpace(item.CuentaContable)
-                            ? item.FkidCuentaContableSis.Value.ToString()
+                            ? "Cuenta contable seleccionada"
                             : $"{item.CuentaContable} - {item.CuentaContableDescripcion}"
                     }
                     : null;

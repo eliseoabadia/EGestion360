@@ -314,21 +314,21 @@
             ? new LookupItem
             {
                 Id = item.FkidAutorizacionSuficienciaPres,
-                Text = $"Autorización {item.FkidAutorizacionSuficienciaPres}"
+                Text = string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? "Autorización seleccionada" : $"Autorización · {item.RequisicionDescripcion}"
             }
             : null;
         _selectedProveedor = item.FkidProveedorSis > 0
             ? new LookupItem
             {
                 Id = item.FkidProveedorSis,
-                Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre, item.FkidProveedorSis)
+                Text = BuildProveedorText(item.ProveedorClave, item.ProveedorNombre)
             }
             : null;
         _selectedPoliza = item.FkidPolizaConta is > 0
             ? new LookupItem
             {
                 Id = item.FkidPolizaConta.Value,
-                Text = string.IsNullOrWhiteSpace(item.ClavePoliza) ? $"Póliza {item.FkidPolizaConta.Value}" : item.ClavePoliza
+                Text = string.IsNullOrWhiteSpace(item.ClavePoliza) ? "Póliza seleccionada" : item.ClavePoliza
             }
             : null;
     }
@@ -346,7 +346,7 @@
             Items = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
             {
                 Id = x.PkidAutorizacionSuficiencia,
-                Text = $"AUT-{x.PkidAutorizacionSuficiencia} - {TextOrDash(x.RequisicionDescripcion)}"
+                Text = $"Autorización · {TextOrDash(x.RequisicionDescripcion)} · {x.FechaAutorizacion:dd/MM/yyyy}"
             }).ToList() ?? new List<LookupItem>(),
             TotalCount = response?.TotalCount ?? 0
         };
@@ -360,7 +360,7 @@
             Items = response?.Items?.Where(x => x.Activo).Select(x => new LookupItem
             {
                 Id = x.PkidProveedor,
-                Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
+                Text = BuildProveedorText(x.Clave, x.Nombre)
             }).ToList() ?? new List<LookupItem>(),
             TotalCount = response?.TotalCount ?? 0
         };
@@ -380,16 +380,16 @@
         };
     }
 
-    private static string BuildProveedorText(string? clave, string? nombre, int id)
+    private static string BuildProveedorText(string? clave, string? nombre)
     {
         var text = string.Join(" - ", new[] { clave, nombre }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        return string.IsNullOrWhiteSpace(text) ? id.ToString(CultureInfo.InvariantCulture) : text;
+        return string.IsNullOrWhiteSpace(text) ? "Proveedor sin clave ni nombre" : text;
     }
 
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+            ? "Empresa seleccionada"
+            : SucursalStateService.EmpresaNombre
         : "Sin empresa seleccionada";
 
     private async Task EnsureEmpresaAsync()

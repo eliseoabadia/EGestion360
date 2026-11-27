@@ -132,6 +132,8 @@ Lines="3" />
     private PaaaResponse item = new() { Activo = true, Fecha = DateTime.Today };
     private DateTime? _fecha = DateTime.Today;
     private bool _loading = true;
+    private List<UsuarioAreaResponse>? _cachedCurrentUserAreas;
+    private Task<(bool Success, List<UsuarioAreaResponse> Items)>? _currentUserAreasLoadTask;
 
     private LookupItem? _selectedPersona;
     private LookupItem? _selectedProyecto;
@@ -165,8 +167,8 @@ Lines="3" />
 
     private async Task<ComboLookupResult> LoadPersonasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await areaService.GetAllAsync();
-        var items = FilterSolicitantes(response?.Items, filter)
+        var areas = await GetCurrentUserAreasAsync();
+        var items = FilterSolicitantes(areas, filter)
             .Select(x => new LookupItem { Id = x.PkidPersona, Text = GetPersonaText(x) });
 
         return ToPagedComboResult(items, page, pageSize);
@@ -204,11 +206,40 @@ Lines="3" />
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await areaService.GetAllAsync();
-        var items = FilterUsuarioAreas(response?.Items, filter)
+        var areas = await GetCurrentUserAreasAsync();
+        var items = FilterUsuarioAreas(areas, filter)
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private async Task<List<UsuarioAreaResponse>> GetCurrentUserAreasAsync()
+    {
+        if (_cachedCurrentUserAreas is not null)
+            return _cachedCurrentUserAreas;
+
+        _currentUserAreasLoadTask ??= LoadCurrentUserAreasAsync();
+        try
+        {
+            var result = await _currentUserAreasLoadTask;
+            if (result.Success)
+                _cachedCurrentUserAreas = result.Items;
+            else
+                _currentUserAreasLoadTask = null;
+
+            return result.Items;
+        }
+        catch
+        {
+            _currentUserAreasLoadTask = null;
+            throw;
+        }
+    }
+
+    private async Task<(bool Success, List<UsuarioAreaResponse> Items)> LoadCurrentUserAreasAsync()
+    {
+        var response = await areaService.GetAllAsync();
+        return (response?.Success == true, response?.Items?.ToList() ?? new List<UsuarioAreaResponse>());
     }
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)
@@ -259,7 +290,7 @@ Lines="3" />
     {
         var nombreCompleto = $"{item.PersonaNombre} {item.PersonaPaterno} {item.PersonaMaterno}".Trim();
         return string.IsNullOrWhiteSpace(nombreCompleto)
-            ? item.PkidPersona.ToString()
+            ? "Persona sin nombre disponible"
             : nombreCompleto;
     }
 

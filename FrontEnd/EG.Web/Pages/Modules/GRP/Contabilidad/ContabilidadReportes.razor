@@ -40,6 +40,9 @@
 @page "/Contabilidad/EI_Presupuestarios/Resultados_Egresos"
 @page "/Contabilidad/EI_Programaticos"
 @page "/Contabilidad/Indicadores_Postura_Fiscal"
+@using EG.Domain.DTOs.Responses.Contabilidad
+@using EG.Domain.DTOs.Responses.Presupuestales
+@using EG.Common.GenericModel
 @using EG.Web.Auth
 @using EG.Web.Pages.Shared
 @using Microsoft.AspNetCore.Components.Routing
@@ -49,6 +52,8 @@
 @inject AuthenticationProviderJWT AuthProvider
 @inject EG.Web.Services.AuthService UserAuthService
 @inject EG.Web.Services.SucursalStateService SucursalStateService
+@inject IGenericCrudService<PolizaResponse> PolizaService
+@inject IGenericCrudService<ProyectoResponse> ProyectoService
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
@@ -134,10 +139,16 @@
                     @if (_config.ShowCuenta)
                     {
                         <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField T="int?" Label="Cuenta"
-                                             @bind-Value="_cuenta"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense" />
+                            <RelatedRecordSelect TResponse="CuentaContableResponse"
+                                                 Label="Cuenta contable"
+                                                 IdSelector="@(account => account.PkidCuentaContable)"
+                                                 TextSelector="@AccountLabel"
+                                                 SortProperty="Cuenta"
+                                                 SelectedId="@_cuenta"
+                                                 SelectedIdChanged="OnCuentaChanged"
+                                                 SelectedText="@_selectedCuentaText"
+                                                 AdditionalFilters="@ActiveAccountFilters"
+                                                 Clearable="true" />
                         </MudItem>
                     }
 
@@ -151,10 +162,13 @@
                     @if (_config.IdParameter is not null)
                     {
                         <MudItem xs="12" sm="6" md="3">
-                            <MudNumericField T="int?" Label="@_config.IdLabel"
-                                             @bind-Value="_entityId"
-                                             Variant="Variant.Outlined"
-                                             Margin="Margin.Dense" />
+                            <PagedAutocomplete Label="@_config.IdLabel"
+                                               Value="@_selectedReportEntity"
+                                               ValueChanged="OnReportEntityChanged"
+                                               LoadPage="LoadReportEntitiesPageAsync"
+                                               Margin="Margin.Dense"
+                                               Required="true"
+                                               RequiredError="Selecciona un registro." />
                         </MudItem>
                     }
                 </MudGrid>
@@ -206,7 +220,9 @@
     private DateTime? _singleDate;
     private int _nivel;
     private int? _cuenta;
+    private string? _selectedCuentaText;
     private int? _entityId;
+    private LookupItem? _selectedReportEntity;
     private int? _empresaId;
     private int? _usuarioId;
     private bool _usaMesTrece;
@@ -279,7 +295,9 @@
         _singleDate = today;
         _nivel = 10;
         _cuenta = null;
+        _selectedCuentaText = null;
         _entityId = null;
+        _selectedReportEntity = null;
         _usaMesTrece = false;
         _soloCuentasPres = false;
         _esCierre = false;
@@ -369,6 +387,60 @@
         return parameters;
     }
 
+    private async Task<ComboLookupResult> LoadReportEntitiesPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+    {
+        if (string.Equals(_config.IdParameter, "PKIdPoliza", StringComparison.OrdinalIgnoreCase))
+        {
+            var filters = new Dictionary<string, object> { ["Activo"] = true };
+            var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending, filters);
+            var items = response?.Items?.Select(poliza => new LookupItem
+            {
+                Id = poliza.PkidPoliza,
+                Text = string.Join(" - ", new[] { poliza.ClavePoliza, poliza.NombrePoliza }.Where(value => !string.IsNullOrWhiteSpace(value)))
+            }).ToList() ?? [];
+
+            return new ComboLookupResult { Items = items, TotalCount = response?.TotalCount ?? items.Count };
+        }
+
+        if (string.Equals(_config.IdParameter, "idPY", StringComparison.OrdinalIgnoreCase))
+        {
+            var response = await ProyectoService.GetAllPaginadoAsync(
+                page,
+                pageSize,
+                filter,
+                "Clave",
+                SortDirection.Ascending,
+                new Dictionary<string, object> { ["Activo"] = true });
+            var items = response?.Items?.Select(proyecto => new LookupItem
+            {
+                Id = proyecto.PkidPy,
+                Text = string.IsNullOrWhiteSpace(proyecto.ClaveNombre) ? "Proyecto sin descripción" : proyecto.ClaveNombre
+            }).ToList() ?? [];
+
+            return new ComboLookupResult { Items = items, TotalCount = response?.TotalCount ?? items.Count };
+        }
+
+        return new ComboLookupResult { Items = [], TotalCount = 0 };
+    }
+
+    private void OnReportEntityChanged(LookupItem? value)
+    {
+        _selectedReportEntity = value;
+        _entityId = value?.Id;
+    }
+
+    private Task OnCuentaChanged(int? value)
+    {
+        _cuenta = value;
+        _selectedCuentaText = null;
+        return Task.CompletedTask;
+    }
+
+    private static string AccountLabel(CuentaContableResponse account)
+        => string.Join(" - ", new[] { account.Cuenta, account.Descripcion }.Where(value => !string.IsNullOrWhiteSpace(value)));
+
+    private static Dictionary<string, object> ActiveAccountFilters => new() { ["Activo"] = true };
+
     private async Task LoadReportContextAsync()
     {
         await SucursalStateService.InitializeAsync();
@@ -415,7 +487,7 @@
     {
         var configs = new List<ReportPageConfig>
         {
-            Report("/Contabilidad/Autorizacion_Polizas", "Autorizacion_Polizas", "Autorizacion de polizas", "Reporte de poliza por identificador", Icons.Material.Filled.Verified, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Poliza"),
+            Report("/Contabilidad/Autorizacion_Polizas", "Autorizacion_Polizas", "Autorizacion de polizas", "Consulta y autorización de pólizas", Icons.Material.Filled.Verified, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Póliza"),
             Report("/Contabilidad/Balanza_Comprobacion", "Balanza_Comprobacion", "Balanza de comprobacion", "Saldos contables por periodo", Icons.Material.Filled.Balance, "Report_CONTA_SPR_BalanzaComprobacion", showNivel: true),
             Report("/Contabilidad/Auxiliares", "Auxiliares", "Auxiliares", "Movimientos auxiliares por cuenta", Icons.Material.Filled.AccountTree, "Report_CONTA_AuxiliarContables", showCuenta: true),
 
@@ -437,7 +509,7 @@
             Report("/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Materiales", "Libro_Inventarios_Materiales", "Libro Inventarios Materiales", "Inventario de materias por periodo", Icons.Material.Filled.Inventory2, "Report_CONTA_SPR_InventariosdeMaterias", moduleName: "Reportes_Contabilidad"),
             Report("/Contabilidad/Reportes_Contabilidad/Libro_Almacen_Suministros", "Libro_Almacen_Suministros", "Libro Almacen Suministros", "Almacen de materiales y suministros", Icons.Material.Filled.Warehouse, "Report_CONTA_SPR_AlmacéndeMateriales", moduleName: "Reportes_Contabilidad"),
             Report("/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Muebles", "Libro_Inventarios_Muebles", "Libro Inventarios Muebles", "Inventario de bienes muebles", Icons.Material.Filled.Chair, "Report_CONTA_SPR_InventariosdeBienes", moduleName: "Reportes_Contabilidad"),
-            Report("/Contabilidad/Reportes_Contabilidad/Polizas", "Polizas", "Polizas", "Reporte de poliza por identificador", Icons.Material.Filled.Description, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Poliza", moduleName: "Reportes_Contabilidad"),
+            Report("/Contabilidad/Reportes_Contabilidad/Polizas", "Polizas", "Polizas", "Consulta de pólizas", Icons.Material.Filled.Description, "Report_Polizas", showDateRange: false, idParameter: "PKIdPoliza", idLabel: "Póliza", moduleName: "Reportes_Contabilidad"),
             Report("/Contabilidad/Reportes_Contabilidad/Reporte_Retenciones", "Reporte_Retenciones", "Reporte de Retenciones", "Retenciones por periodo", Icons.Material.Filled.ReceiptLong, "Report_Retenciones", moduleName: "Reportes_Contabilidad"),
             Report("/Contabilidad/Reportes_Contabilidad/Reporte_Depreciacion_Acumulada", "Reporte_Depreciacion_Acumulada", "Reporte de Depreciacion Acumulada", "Depreciacion acumulada", Icons.Material.Filled.TrendingDown, "Report_Depreciacion_acumulada", showDateRange: false, showSingleDate: true, moduleName: "Reportes_Contabilidad"),
             Report("/Contabilidad/Reportes_Contabilidad/Reporte_Activos_Fijos", "Reporte_Activos_Fijos", "Reporte de Activos Fijos", "Activos fijos", Icons.Material.Filled.Domain, "Report_Activos_Fijos", showDateRange: false, showSingleDate: true, moduleName: "Reportes_Contabilidad"),
@@ -455,7 +527,7 @@
                 Link("Pasivos Contingentes", "/Contabilidad/EI_Contable/Informe_Pasivos_Contingentes", Icons.Material.Filled.Report),
                 Link("Notas Financieras", "/Contabilidad/EI_Contable/Notas_Estados_Financieros", Icons.Material.Filled.Notes)
             ]),
-            Report("/Contabilidad/EI_Contable/Estados_Actividades", "Estados_Actividades", "Estados de Actividades", "Estado de actividades", Icons.Material.Filled.Assessment, "Report_ORCO_EstadoActividad", showDateRange: false, idParameter: "PK_Id", idLabel: "ID", moduleName: "EI_Contable"),
+            Report("/Contabilidad/EI_Contable/Estados_Actividades", "Estados_Actividades", "Estados de Actividades", "Estado de actividades", Icons.Material.Filled.Assessment, "Report_ORCO_EstadoActividad", showDateRange: false, moduleName: "EI_Contable"),
             Report("/Contabilidad/EI_Contable/Estado_Situacion_Financiera", "Estado_Situacion_Financiera", "Estado de Situacion Financiera", "Situacion financiera", Icons.Material.Filled.AccountBalance, "Report_CONTA_SPR_EstadoDeSitucionFinanciera", moduleName: "EI_Contable"),
             Report("/Contabilidad/EI_Contable/Estado_VHP", "Estado_VHP", "Estado de Variaciones en la Hacienda Publica", "Variaciones en hacienda publica", Icons.Material.Filled.CompareArrows, "Report_CONTA_SPR_EstadoVariacionHaciendaPublica", moduleName: "EI_Contable"),
             Report("/Contabilidad/EI_Contable/Estados_CSF", "Estados_CSF", "Estados de Cambios en la Situacion Financiera", "Cambios en situacion financiera", Icons.Material.Filled.SwapHoriz, "Report_CONTA_SPR_EstadoDeSitucionFinanciera", moduleName: "EI_Contable"),
@@ -491,7 +563,7 @@
             Report("/Contabilidad/EI_Presupuestarios/Proyecciones_Egresos", "Proyecciones_Egresos", "Proyecciones de Egresos", "Proyecciones de egresos", Icons.Material.Filled.Timeline, "Report_Proyecciones_egresos", moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Presupuestarios/Proyecciones_Ingresos", "Proyecciones_Ingresos", "Proyecciones de Ingresos", "Proyecciones de ingresos", Icons.Material.Filled.ShowChart, "Report_RepProyIngresos", showDateRange: false, showSingleDate: true, moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Presupuestarios/Indicadores_APP", "Indicadores_APP", "Indicadores Asociados a Programas Presupuestarios", "Indicadores APP", Icons.Material.Filled.QueryStats, null, moduleName: "EI_Presupuestarios"),
-            Report("/Contabilidad/EI_Presupuestarios/Pp_Inversion", "Pp_Inversion", "Programas y proyectos de Inversion", "Programas y proyectos", Icons.Material.Filled.BusinessCenter, "PRES_SPR_PYs", showDateRange: false, idParameter: "idPY", idLabel: "PY", moduleName: "EI_Presupuestarios"),
+            Report("/Contabilidad/EI_Presupuestarios/Pp_Inversion", "Pp_Inversion", "Programas y proyectos de Inversion", "Programas y proyectos", Icons.Material.Filled.BusinessCenter, "PRES_SPR_PYs", showDateRange: false, idParameter: "idPY", idLabel: "Proyecto", moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Presupuestarios/Resultados_Ingresos", "Resultados_Ingresos", "Resultados de Ingresos", "Resultados de ingresos", Icons.Material.Filled.Savings, "Report_CONTA_SPR_RepResultIngresos", showDateRange: false, showSingleDate: true, moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Presupuestarios/Resultados_Egresos", "Resultados_Egresos", "Resultados de Egresos", "Resultados de egresos", Icons.Material.Filled.Payments, "Report_Resultado_Egresos", moduleName: "EI_Presupuestarios"),
             Report("/Contabilidad/EI_Programaticos", "EI_Programaticos", "Estados e Informes Programaticos", "Informes programaticos", Icons.Material.Filled.Grading, "Report_RepInformesProg"),
@@ -502,7 +574,7 @@
     }
 
     private static ReportPageConfig Parent(string route, string subModule, string title, string subtitle, string icon, IReadOnlyList<ReportLink> links, string moduleName = "Contabilidad") =>
-        new(route, moduleName, subModule, title, subtitle, icon, null, links, true, false, "p_FecInicio", "p_FecFin", false, false, false, false, "p_Fk_ICuentaContable", false, null, "ID");
+        new(route, moduleName, subModule, title, subtitle, icon, null, links, true, false, "p_FecInicio", "p_FecFin", false, false, false, false, "p_Fk_ICuentaContable", false, null, "Registro");
 
     private static ReportPageConfig Report(
         string route,
@@ -520,7 +592,7 @@
         string cuentaParameter = "p_Fk_ICuentaContable",
         bool showCierre = false,
         string? idParameter = null,
-        string idLabel = "ID",
+        string idLabel = "Registro",
         string moduleName = "Contabilidad") =>
         new(route, moduleName, subModule, title, subtitle, icon, reportName, [], showDateRange, showSingleDate, startDateParameter, endDateParameter, showNivel, false, false, showCuenta, cuentaParameter, showCierre, idParameter, idLabel);
 
@@ -568,7 +640,7 @@
             "p_Fk_ICuentaContable",
             false,
             null,
-            "ID");
+            "Registro");
     }
 
     private sealed record ReportLink(string Title, string Route, string Icon);

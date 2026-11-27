@@ -224,7 +224,7 @@
 
     private static bool IsIgnoredProperty(PropertyInfo property)
     {
-        if (property.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase))
+        if (ExportProjectionSanitizer.IsInternalIdentifier(property.Name))
         {
             return true;
         }
@@ -389,7 +389,7 @@
     {
         var text = value
             .Replace("Fkid", string.Empty, StringComparison.Ordinal)
-            .Replace("Pkid", "ID", StringComparison.Ordinal)
+            .Replace("Pkid", string.Empty, StringComparison.Ordinal)
             .Replace("Pbr", string.Empty, StringComparison.Ordinal)
             .Replace("PBR", string.Empty, StringComparison.Ordinal)
             .Replace("Sis", string.Empty, StringComparison.Ordinal)

@@ -69,7 +69,6 @@
                 <TemplateColumn T="AlmacenResponse" Title="Clave" Identifier="Clave" PropertyName="Clave" SortBy="x => x.Clave">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.Clave)</div>
-                        <span>ID @cell.Item.PkidAlmacen</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="AlmacenResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion">
@@ -226,7 +225,7 @@
         Loading = true;
         try
         {
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection, BuildFilters());
+            var response = await ReadExportResponseAsync(Service, SearchString, SortLabel, SortDirection, BuildFilters());
             var items = response?.Items?.ToList() ?? new List<AlmacenResponse>();
             if (response?.Success != true || items.Count == 0)
             {
@@ -235,7 +234,7 @@
             }
 
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(MapToExcelData(items));
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(MapToExcelData(items)));
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,
                 $"Salidas_Ajuste_{DateTime.Now:yyyyMMddHHmmss}.xlsx",

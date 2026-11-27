@@ -229,7 +229,7 @@
             FkidContratoPres = clc.FkidContratoPres,
             FkidPolizaConta = clc.FkidPolizaConta,
             FechaEmision = DateOnly.FromDateTime(DateTime.Today),
-            NumeroCheque = $"CLC-{clc.PkidClc}",
+            NumeroCheque = clc.NumClc,
             Concepto = $"Pago de CLC {clc.NumClc}",
             ImporteTotal = details.Sum(DetailTotal),
             Observaciones = $"Generado desde CLC {clc.NumClc}",

@@ -51,7 +51,7 @@ namespace EG.Application.Services.Patrimonio
                     x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
             if (entity == null)
             {
-                return Failure<CalendarioInventarioResponse>($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<CalendarioInventarioResponse>($"Calendario no encontrado.", "NOT_FOUND");
             }
 
             var item = entity.Adapt<CalendarioInventarioResponse>();
@@ -118,7 +118,7 @@ namespace EG.Application.Services.Patrimonio
                 x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
             if (current == null)
             {
-                return Failure<CalendarioInventarioResponse>($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<CalendarioInventarioResponse>($"Calendario no encontrado.", "NOT_FOUND");
             }
 
             response.PkidCalendarioInventario = id;
@@ -155,7 +155,7 @@ namespace EG.Application.Services.Patrimonio
                 x.FkidEmpresaSis == scope.EmpresaId && x.Anio == scope.Anio);
             if (current == null)
             {
-                return BoolFailure($"Calendario con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Calendario no encontrado.", "NOT_FOUND");
             }
 
             if (await _context.Inventarios.AsNoTracking().AnyAsync(x => x.FkidCalendarioInventarioAlma == id && x.Activo))

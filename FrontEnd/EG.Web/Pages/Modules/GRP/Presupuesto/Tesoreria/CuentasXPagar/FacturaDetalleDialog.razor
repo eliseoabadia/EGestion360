@@ -1,9 +1,12 @@
 @using EG.Domain.DTOs.Responses.CuentasXPagar
+@using EG.Domain.DTOs.Responses.Contabilidad
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<FacturaDetalleResponse> Service
+@inject IGenericCrudService<FacturaResponse> FacturaService
+@inject IGenericCrudService<ContratoDetalleResponse> ContratoDetalleService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -20,11 +23,22 @@
             <MudItem xs="12" md="6">
                 <MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidContratoDetallePres" Label="Detalle contrato" Required="true" Variant="Variant.Outlined" />
+            <MudItem xs="12" md="8">
+                <RelatedRecordSelect TResponse="ContratoDetalleResponse"
+                                     Label="Renglón del contrato"
+                                     SelectedId="@SelectedContratoDetalleId"
+                                     SelectedIdChanged="OnContratoDetalleIdChanged"
+                                     SelectedRecordChanged="OnContratoDetalleSelected"
+                                     SelectedText="@ContratoDetalleText"
+                                     IdSelector="record => record.PkidContratoDetalle"
+                                     TextSelector="ContratoDetalleLabel"
+                                     SortProperty="PartidaClave"
+                                     AdditionalFilters="@ContratoDetalleFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona el renglón del contrato." />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" />
+            <MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" T="string" Value="@PartidaText" Label="Partida" ReadOnly="true" Variant="Variant.Outlined" />
             </MudItem>
                     </MudGrid>
                 </CrudFormSection>
@@ -67,6 +81,13 @@
         if (!Id.HasValue)
         {
             item.FkidFacturaPres = FacturaId;
+            var factura = await FacturaService.GetByIdAsync(FacturaId);
+            if (factura?.Data != null)
+            {
+                item.FkidContratoPres = factura.Data.FkidContratoPres;
+                item.NumeroContrato = factura.Data.NumeroContrato;
+                FacturaNombre = factura.Data.NumFactura;
+            }
             return;
         }
 
@@ -101,10 +122,68 @@
         Snackbar.Add(result?.Message ?? "No fue posible guardar la partida.", Severity.Error);
     }
     private string EmpresaText => item.FkidEmpresaSis > 0
-        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
+
+    private int? SelectedContratoDetalleId
+    {
+        get => item.FkidContratoDetallePres > 0 ? item.FkidContratoDetallePres : null;
+        set => item.FkidContratoDetallePres = value.GetValueOrDefault();
+    }
+
+    private string ContratoDetalleText
+    {
+        get
+        {
+            var text = string.Join(" · ", new[] { item.NumeroContrato, item.PartidaClaveNombre ?? item.PartidaClave }
+                .Where(value => !string.IsNullOrWhiteSpace(value)));
+            return string.IsNullOrWhiteSpace(text) ? "Renglón de contrato" : text;
+        }
+    }
+    private string PartidaText => string.IsNullOrWhiteSpace(item.PartidaClaveNombre)
+        ? "La partida se toma del renglón seleccionado"
+        : item.PartidaClaveNombre;
+    private Dictionary<string, object>? ContratoDetalleFilters => item.FkidContratoPres > 0
+        ? new Dictionary<string, object>
+        {
+            ["FkidContratoPres"] = item.FkidContratoPres,
+            ["FkidEmpresaSis"] = item.FkidEmpresaSis
+        }
+        : null;
+
+    private Task OnContratoDetalleIdChanged(int? value)
+    {
+        SelectedContratoDetalleId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnContratoDetalleSelected(ContratoDetalleResponse? record)
+    {
+        if (record is null)
+        {
+            item.FkidPartidaConta = 0;
+            item.PartidaClave = null;
+            item.PartidaDescripcion = null;
+            item.PartidaClaveNombre = null;
+            return Task.CompletedTask;
+        }
+
+        item.FkidContratoPres = record.FkidContratoPres;
+        item.NumeroContrato = record.NumeroContrato;
+        item.FkidPartidaConta = record.FkidPartidaConta;
+        item.PartidaClave = record.PartidaClave;
+        item.PartidaDescripcion = record.PartidaDescripcion;
+        item.PartidaClaveNombre = record.PartidaClaveNombre;
+        return Task.CompletedTask;
+    }
+
+    private static string ContratoDetalleLabel(ContratoDetalleResponse record)
+    {
+        var parts = new[] { record.NumeroContrato, record.PartidaClaveNombre ?? record.PartidaClave }
+            .Where(value => !string.IsNullOrWhiteSpace(value));
+        var text = string.Join(" · ", parts);
+        return string.IsNullOrWhiteSpace(text) ? "Renglón de contrato" : text;
+    }
 
     private async Task EnsureEmpresaAsync()
     {

@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="DepartamentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar departamento"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidDepartamento))" /></MudTooltip><MudTooltip Text="Eliminar departamento"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidDepartamento))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="DepartamentoResponse" TProperty="int" Property="x => x.PkidDepartamento" Title="ID" Identifier="PkidDepartamento" />
+                
                 <PropertyColumn T="DepartamentoResponse" TProperty="string" Property="x => x.DepartamentoNombre" Title="Nombre" Identifier="DepartamentoNombre" />
                 <PropertyColumn T="DepartamentoResponse" TProperty="string" Property="x => x.EmpresaNombre" Title="Empresa" Identifier="EmpresaNombre" />
             </Columns>
@@ -59,7 +59,6 @@
     {
         return items.Select(d => new
         {
-            ID = d.PkidDepartamento,
             Nombre = d.DepartamentoNombre,
             Descripcion = d.Descripcion ?? "",
             Empresa = d.EmpresaNombre,

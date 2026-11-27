@@ -38,7 +38,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"{PkidEmpresaNomina} - {RazonSocial}".Trim(' ', '-');
+        public string ClaveNombre => RazonSocial.Trim();
     }
 
     public class NomUniversoResponse
@@ -57,7 +57,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"{PkidUniverso} - {Descripcion}".Trim(' ', '-');
+        public string ClaveNombre => Descripcion.Trim();
     }
 
     public class NomNivelResponse
@@ -99,7 +99,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"{PkidClasePuesto} - {Descripcion}".Trim(' ', '-');
+        public string ClaveNombre => Descripcion.Trim();
     }
 
     public class NomPuestoResponse
@@ -142,7 +142,9 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"{PkidPuesto} - {Nombre} - Nivel {NivelClave}".Trim(' ', '-');
+        public string ClaveNombre => string.IsNullOrWhiteSpace(NivelClave)
+            ? Nombre.Trim()
+            : $"{Nombre} - Nivel {NivelClave}".Trim(' ', '-');
     }
 
     public class NomPlazaAutorizadaResponse
@@ -170,7 +172,9 @@ namespace EG.Domain.DTOs.Responses.Nomina
         public DateTime? FechaModificacion { get; set; }
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"Plaza {Plaza ?? PkidPlazaAutorizada} - {PuestoNombre}".Trim(' ', '-');
+        public string ClaveNombre => Plaza.HasValue
+            ? $"Plaza {Plaza.Value} - {PuestoNombre}".Trim(' ', '-')
+            : $"Plaza sin número - {PuestoNombre}".Trim(' ', '-');
     }
 
     public class NomNombramientoResponse
@@ -189,7 +193,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => $"{PkidNombramiento} - {Descripcion}".Trim(' ', '-');
+        public string ClaveNombre => Descripcion.Trim();
     }
 
     public class NomImporteNivelResponse
@@ -325,7 +329,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public string Observaciones { get; set; } = string.Empty;
 
-        public string ClaveNombre => PkidConceptoFactor.ToString();
+        public string ClaveNombre => $"Factor {Factor} · Quincenas {QuincenaInicio} a {QuincenaFin}";
     }
 
     public class NomConceptoFijoResponse
@@ -403,7 +407,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => PkidConceptoPorcentaje.ToString();
+        public string ClaveNombre => $"Porcentaje {Porcentaje}%";
     }
 
     public class NomConceptoProporcionalResponse
@@ -649,7 +653,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => PkidDescuentoCredito.ToString();
+        public string ClaveNombre => $"Descuento de crédito · Pago {NumeroPago}";
     }
 
     public class NomDescuentoInfonavitResponse
@@ -682,7 +686,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => PkidDescuentoInfonavit.ToString();
+        public string ClaveNombre => $"Descuento Infonavit · Pago {NumeroPago}";
     }
 
     public class NomEstatusPagoResponse
@@ -742,7 +746,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => PkidFactor.ToString();
+        public string ClaveNombre => $"Integración {Anio} · {Vacaciones} días de vacaciones";
     }
 
     public class NomTablaFiscalResponse
@@ -871,7 +875,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool? EstaEjercido { get; set; }
 
-        public string ClaveNombre => PkidPeriodoActivo.ToString();
+        public string ClaveNombre => $"Periodo {IdPeriodo} · {(EstaCerrado ? "Cerrado" : "Abierto")}";
     }
 
     public class NomSalarioMinimoResponse
@@ -902,7 +906,7 @@ namespace EG.Domain.DTOs.Responses.Nomina
 
         public bool Activo { get; set; }
 
-        public string ClaveNombre => PkidSalarioMinimo.ToString();
+        public string ClaveNombre => $"Zona {ZonaEconomica} · Quincenas {QuincenaInicio} a {QuincenaFin}";
     }
 
     public class NomSueldoEspecialResponse

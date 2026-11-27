@@ -102,7 +102,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidPlazaAutorizada");
                 return item == null
-                    ? Failure<NomPlazaAutorizadaResponse>($"Plaza autorizada con ID {id} no encontrada", "NOT_FOUND")
+                    ? Failure<NomPlazaAutorizadaResponse>($"Plaza autorizada no encontrada", "NOT_FOUND")
                     : Success("Plaza autorizada encontrada", item, [item], 1);
             }
             catch (Exception ex)
@@ -248,7 +248,7 @@ namespace EG.Application.Services.Nomina
 
                 if (viewItem == null)
                 {
-                    return Failure<NomConceptoResponse>($"Concepto con ID {id} no encontrado", "NOT_FOUND");
+                    return Failure<NomConceptoResponse>($"Concepto no encontrado", "NOT_FOUND");
                 }
 
                 var item = viewItem.Adapt<NomConceptoResponse>();
@@ -366,7 +366,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoFactor");
                 return item == null
-                    ? Failure<NomConceptoFactorResponse>($"Factor de concepto con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoFactorResponse>($"Factor de concepto no encontrado", "NOT_FOUND")
                     : Success("Factor de concepto encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -448,7 +448,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoFijo");
                 return item == null
-                    ? Failure<NomConceptoFijoResponse>($"Concepto fijo con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoFijoResponse>($"Concepto fijo no encontrado", "NOT_FOUND")
                     : Success("Concepto fijo encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -538,7 +538,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoPorcentaje");
                 return item == null
-                    ? Failure<NomConceptoPorcentajeResponse>($"Concepto porcentaje con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoPorcentajeResponse>($"Concepto porcentaje no encontrado", "NOT_FOUND")
                     : Success("Concepto porcentaje encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -631,7 +631,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoProporcional");
                 return item == null
-                    ? Failure<NomConceptoProporcionalResponse>($"Concepto proporcional con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoProporcionalResponse>($"Concepto proporcional no encontrado", "NOT_FOUND")
                     : Success("Concepto proporcional encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -717,7 +717,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoTabulador");
                 return item == null
-                    ? Failure<NomConceptoTabularResponse>($"Concepto tabular con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoTabularResponse>($"Concepto tabular no encontrado", "NOT_FOUND")
                     : Success("Concepto tabular encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -792,7 +792,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidConceptoVariable");
                 return item == null
-                    ? Failure<NomConceptoVariableResponse>($"Concepto variable con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomConceptoVariableResponse>($"Concepto variable no encontrado", "NOT_FOUND")
                     : Success("Concepto variable encontrado", item, [item], 1);
             }
             catch (Exception ex)
@@ -1036,7 +1036,7 @@ namespace EG.Application.Services.Nomina
             {
                 var item = await _readService.GetByIdAsync(id, idPropertyName: "PkidCatalogoSimple");
                 return item == null
-                    ? Failure<NomCatalogoSimpleResponse>($"Catalogo simple con ID {id} no encontrado", "NOT_FOUND")
+                    ? Failure<NomCatalogoSimpleResponse>($"Catalogo simple no encontrado", "NOT_FOUND")
                     : Success("Catalogo simple encontrado", item, [item], 1);
             }
             catch (Exception ex)

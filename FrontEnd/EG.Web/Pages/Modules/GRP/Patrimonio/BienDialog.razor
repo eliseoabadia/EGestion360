@@ -400,5 +400,5 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString(CultureInfo.InvariantCulture) : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 }

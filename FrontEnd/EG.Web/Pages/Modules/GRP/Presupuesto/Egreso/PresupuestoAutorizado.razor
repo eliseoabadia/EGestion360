@@ -121,11 +121,11 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="EgresoAutorizadoResponse" Title="Poliza" Identifier="FkidPolizaConta" PropertyName="FkidPolizaConta" SortBy="x => x.FkidPolizaConta">
+                <TemplateColumn T="EgresoAutorizadoResponse" Title="Póliza" Identifier="Poliza" Sortable="false">
                     <CellTemplate Context="cell">
                         <div class="detail-cell">
                         <MudChip T="string" Size="Size.Small" Color="@(cell.Item.FkidPolizaConta.HasValue ? Color.Success : Color.Default)" Variant="Variant.Filled">
-                        @(cell.Item.FkidPolizaConta.HasValue ? $"Poliza {cell.Item.FkidPolizaConta}" : "Sin poliza")
+                        @(cell.Item.FkidPolizaConta.HasValue ? "Póliza registrada" : "Sin póliza")
                         </MudChip>
                         </div>
                     </CellTemplate>
@@ -419,8 +419,7 @@
     {
         return items.Select(x => new
         {
-            ID = x.PkidEgresoAutorizado,
-            Anteproyecto = x.FkidEgresoProyectadoPres,
+            Anteproyecto = x.FkidEgresoProyectadoPres.HasValue ? "Vinculado a anteproyecto" : "Captura directa",
             Anio = x.AnioClave,
             Programa = x.ProgramaClaveNombre,
             Partida = x.PartidaClaveNombre,
@@ -480,10 +479,7 @@
 
         try
         {
-            var response = await Service.GetAllPaginadoAsync(
-                1,
-                int.MaxValue,
-                SearchString,
+            var response = await ReadExportResponseAsync(Service, SearchString,
                 string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel,
                 SortDirection,
                 new Dictionary<string, object> { ["FkidAnioSis"] = AnioStateService.AnioId!.Value });
@@ -495,7 +491,7 @@
             }
 
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(MapToExcelData(response.Items)));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,

@@ -46,7 +46,7 @@
                             </MudTooltip>
                         </CellTemplate>
                     </TemplateColumn>
-                    <PropertyColumn T="ProveedorResponse" TProperty="int" Property="x => x.PkidProveedor" Title="ID" Identifier="PkidProveedor" />
+                    
                     <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                     <PropertyColumn T="ProveedorResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre">
                         <CellTemplate>
@@ -78,7 +78,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidProveedor,
             Clave = u.Clave,
             Nombre = u.Nombre,
             RFC = u.Rfc,

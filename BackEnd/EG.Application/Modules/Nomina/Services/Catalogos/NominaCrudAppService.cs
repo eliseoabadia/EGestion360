@@ -167,7 +167,7 @@ namespace EG.Application.Services.Nomina
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"{_entityName} con ID {id} no encontrado",
+                        Message = $"{_entityName} no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -198,7 +198,7 @@ namespace EG.Application.Services.Nomina
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"{_entityName} con ID {id} no encontrado",
+                    Message = $"{_entityName} no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -249,7 +249,7 @@ namespace EG.Application.Services.Nomina
         private PagedResult<TResponse> NotFound(int id) => new()
         {
             Success = false,
-            Message = $"{_entityName} con ID {id} no encontrado",
+            Message = $"{_entityName} no encontrado",
             Code = "NOT_FOUND",
             TotalCount = 0
         };

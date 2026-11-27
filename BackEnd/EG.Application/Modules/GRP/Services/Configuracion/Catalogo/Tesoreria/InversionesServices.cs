@@ -44,7 +44,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
                 return new PagedResult<CuentaBancariaResponse>
                 {
                     Success = false,
-                    Message = $"Cuenta bancaria con ID {id} no encontrada",
+                    Message = $"Cuenta bancaria no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -242,7 +242,7 @@ namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
                 return new PagedResult<RetiroResponse>
                 {
                     Success = false,
-                    Message = $"Retiro con ID {id} no encontrado",
+                    Message = $"Retiro no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

@@ -231,33 +231,52 @@
             return;
         }
 
-        var response = await ContratoDetalleService.GetAllPaginadoAsync(
-            1,
-            int.MaxValue,
-            string.Empty,
-            "PartidaClave",
-            SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidContratoPres"] = value.Id });
-        var detalles = response?.Items?.Where(x => x.Activo).ToList() ?? new List<ContratoDetalleResponse>();
-        detalleItems = detalles.Select(detail => new FacturaDetalleResponse
+        try
         {
-            FkidEmpresaSis = detail.FkidEmpresaSis,
-            FkidContratoDetallePres = detail.PkidContratoDetalle,
-            FkidContratoPres = value.Id,
-            NumeroContrato = value.Text.Split(" - ", 2)[0],
-            FkidPartidaConta = detail.FkidPartidaConta,
-            PartidaClave = detail.PartidaClave,
-            PartidaDescripcion = detail.PartidaDescripcion,
-            PartidaClaveNombre = detail.PartidaClaveNombre,
-            MontoAplicado = DetailTotal(detail),
-            Observaciones = detail.Observaciones,
-            Activo = true
-        }).ToList();
+            var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+                (page, pageSize) => ContratoDetalleService.GetAllPaginadoAsync(
+                    page,
+                    pageSize,
+                    string.Empty,
+                    "PartidaClave",
+                    SortDirection.Ascending,
+                    new Dictionary<string, object> { ["FkidContratoPres"] = value.Id }),
+                requestedPageSize: 250,
+                maximumRows: 10_000);
 
-        var total = detalleItems.Sum(x => x.MontoAplicado);
-        item.Subtotal = total;
-        item.Total = total;
-        await InvokeAsync(StateHasChanged);
+            if (result.Limited)
+            {
+                Snackbar.Add("El contrato supera el límite de 10,000 renglones para capturar una factura.", Severity.Warning);
+                return;
+            }
+
+            var detalles = result.Items.Where(x => x.Activo).ToList();
+            detalleItems = detalles.Select(detail => new FacturaDetalleResponse
+            {
+                FkidEmpresaSis = detail.FkidEmpresaSis,
+                FkidContratoDetallePres = detail.PkidContratoDetalle,
+                FkidContratoPres = value.Id,
+                NumeroContrato = value.Text.Split(" - ", 2)[0],
+                FkidPartidaConta = detail.FkidPartidaConta,
+                PartidaClave = detail.PartidaClave,
+                PartidaDescripcion = detail.PartidaDescripcion,
+                PartidaClaveNombre = detail.PartidaClaveNombre,
+                MontoAplicado = DetailTotal(detail),
+                Observaciones = detail.Observaciones,
+                Activo = true
+            }).ToList();
+
+            var total = detalleItems.Sum(x => x.MontoAplicado);
+            item.Subtotal = total;
+            item.Total = total;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("FacturaDialog")
+                .LogError(ex, "No se pudieron cargar los renglones del contrato. ContratoId={ContratoId}", value.Id);
+            Snackbar.Add("No se pudieron cargar los renglones del contrato. Intenta nuevamente.", Severity.Error);
+        }
     }
 
     private static decimal DetailTotal(ContratoDetalleResponse item) =>
@@ -275,9 +294,7 @@
     }
     private Dictionary<string, object>? CompanyFilter() => item.FkidEmpresaSis > 0 ? new() { ["FkidEmpresaSis"] = item.FkidEmpresaSis } : null;
     private string EmpresaText => item.FkidEmpresaSis > 0
-        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
 
     private async Task EnsureEmpresaAsync()

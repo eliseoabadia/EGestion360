@@ -200,12 +200,12 @@
                 _selectedRequisicion = new LookupItem
                 {
                     Id = item.FkidRequisicionOrco,
-                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                    Text = string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? "Requisición sin descripción" : item.RequisicionDescripcion
                 };
                 _selectedProveedor = new LookupItem
                 {
                     Id = item.FkidProveedorSis,
-                    Text = TextOrDefault(ProviderText(item.ProveedorClave, item.ProveedorNombre), item.FkidProveedorSis)
+                    Text = ProviderText(item.ProveedorClave, item.ProveedorNombre)
                 };
             }
         }
@@ -350,7 +350,7 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem
         {
             Id = x.PkidRequisicion,
-            Text = $"{x.PkidRequisicion} - {x.Descripcion}{(x.ListaParaCotizar ? string.Empty : " · incompleta")}"
+            Text = $"{x.Descripcion}{(x.ListaParaCotizar ? string.Empty : " · incompleta")}"
         }), response?.TotalCount);
     }
 
@@ -409,5 +409,5 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 }

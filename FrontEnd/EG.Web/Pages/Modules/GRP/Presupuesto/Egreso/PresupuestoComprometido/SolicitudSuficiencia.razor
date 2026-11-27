@@ -60,7 +60,7 @@
                         Controlador="SolicitudSuficiencia"
                         EntidadId="@cell.Item.PkidSolicitudSuficiencia"
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
-                        RegistroTitulo="@($"Solicitud {cell.Item.PkidSolicitudSuficiencia}")"
+                        RegistroTitulo="@($"Solicitud de suficiencia · {cell.Item.FechaSolicitud:dd/MM/yyyy}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
                         <MudTooltip Text="Autorizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Verified"
@@ -72,11 +72,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SolicitudSuficienciaResponse" Title="ID" Identifier="PkidSolicitudSuficiencia" PropertyName="PkidSolicitudSuficiencia" SortBy="x => x.PkidSolicitudSuficiencia">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidSolicitudSuficiencia</MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="SolicitudSuficienciaResponse" Title="Requisición" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</MudText>
@@ -111,7 +107,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" Size="Size.Medium" OnClick="BackToTable" />
                         <div>
                             <MudText Typo="Typo.h6" Class="selected-name">@TextOrDash(SelectedSolicitud.RequisicionDescripcion)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Solicitud @SelectedSolicitud.PkidSolicitudSuficiencia | @SelectedSolicitud.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Solicitud de suficiencia · @SelectedSolicitud.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
                         </div>
                     </div>
                     <MudSpacer />
@@ -122,7 +118,7 @@
                                            Controlador="SolicitudSuficiencia"
                                            EntidadId="@SelectedSolicitud.PkidSolicitudSuficiencia"
                                            FkidEmpresaSis="@SelectedSolicitud.FkidEmpresaSis"
-                                           RegistroTitulo="@($"Solicitud {SelectedSolicitud.PkidSolicitudSuficiencia}")"
+                                           RegistroTitulo="@($"Solicitud de suficiencia · {SelectedSolicitud.FechaSolicitud:dd/MM/yyyy}")"
                                            RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
 
                     <MudTooltip Text="Actualizar">
@@ -341,7 +337,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidSolicitudSuficiencia,
             Requisicion = item.RequisicionDescripcion,
             FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
             FechaRequisicion = item.FechaRequisicion?.ToString("dd/MM/yyyy") ?? string.Empty,
@@ -459,7 +454,7 @@
 
         if (!await ConfirmWorkflowAsync(
                 "Autorizar solicitud de suficiencia",
-                $"¿Seguro que deseas autorizar la solicitud {solicitud.PkidSolicitudSuficiencia}? Se generara la autorizacion con su detalle.",
+                $"¿Seguro que deseas autorizar la solicitud de suficiencia de {TextOrDash(solicitud.RequisicionDescripcion)}? Se generará la autorización con su detalle.",
                 "Autorizar",
                 Severity.Success,
                 solicitud.PkidSolicitudSuficiencia))
@@ -478,7 +473,7 @@
             IdGastoNoProgramable = solicitud.IdGastoNoProgramable,
             IdCompromisoNomina = solicitud.IdCompromisoNomina,
             AutorizadoPorNom = personaId.Value,
-            Observaciones = $"Autorizada desde solicitud {solicitud.PkidSolicitudSuficiencia}",
+            Observaciones = $"Autorizada desde solicitud de suficiencia · {TextOrDash(solicitud.RequisicionDescripcion)}",
             Estatus = 2,
         };
 

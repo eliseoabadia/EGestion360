@@ -1,9 +1,12 @@
+@using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
 @using MudBlazor
 
 @inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> Service
+@inject IGenericCrudService<AutorizacionSuficienciaResponse> AutorizacionService
+@inject IGenericCrudService<SolicitudSuficienciaDetalleResponse> SolicitudDetalleService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -15,8 +18,23 @@
                     <MudGrid Spacing="2">
 <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@AutorizacionNombre</MudText></MudItem>
             <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidSolicitudSuficienciaDetallePres" Label="Detalle solicitud" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8">
+                <RelatedRecordSelect TResponse="SolicitudSuficienciaDetalleResponse"
+                                     Label="Renglón solicitado"
+                                     SelectedId="@SelectedSolicitudDetalleId"
+                                     SelectedIdChanged="OnSolicitudDetalleIdChanged"
+                                     SelectedRecordChanged="OnSolicitudDetalleSelected"
+                                     SelectedText="@SolicitudDetalleText"
+                                     IdSelector="record => record.PkidSolicitudSuficienciaDetalle"
+                                     TextSelector="SolicitudDetalleLabel"
+                                     SortProperty="PartidaClave"
+                                     AdditionalFilters="@SolicitudDetalleFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona el renglón solicitado." />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" T="string" Value="@PartidaText" Label="Partida" ReadOnly="true" Variant="Variant.Outlined" />
+            </MudItem>
             <MudItem xs="12"><CrudFormSection Title="Distribución mensual"><MudGrid Spacing="2">
 @foreach (var month in MonthFields)
             {
@@ -46,6 +64,28 @@
     private BaseEntityForm<AutorizacionSuficienciaDetalleResponse> form = null!;
     private AutorizacionSuficienciaDetalleResponse item = new() { Activo = true };
     private bool _formLoading = true;
+    private int? SelectedSolicitudDetalleId
+    {
+        get => item.FkidSolicitudSuficienciaDetallePres > 0 ? item.FkidSolicitudSuficienciaDetallePres : null;
+        set => item.FkidSolicitudSuficienciaDetallePres = value.GetValueOrDefault();
+    }
+    private string SolicitudDetalleText => SolicitudDetalleLabel(new SolicitudSuficienciaDetalleResponse
+    {
+        RequisicionDescripcion = item.RequisicionDescripcion ?? string.Empty,
+        PartidaClaveNombre = item.PartidaClaveNombre ?? string.Empty,
+        TipoBienDescripcion = item.TipoBienDescripcion ?? string.Empty
+    });
+    private string PartidaText => string.IsNullOrWhiteSpace(item.PartidaClaveNombre)
+        ? "La partida se toma del renglón seleccionado"
+        : item.PartidaClaveNombre;
+    private Dictionary<string, object>? SolicitudDetalleFilters => item.FkidSolicitudSuficienciaPres > 0
+        ? new Dictionary<string, object>
+        {
+            ["FkidSolicitudSuficienciaPres"] = item.FkidSolicitudSuficienciaPres,
+            ["FkidEmpresaSis"] = item.FkidEmpresaSis,
+            ["Activo"] = true
+        }
+        : null;
     private string Title => Id.HasValue ? "Editar detalle autorizado" : "Nuevo detalle autorizado";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
@@ -59,6 +99,14 @@
             if (!Id.HasValue)
             {
                 item.FkidAutorizacionSuficienciaPres = AutorizacionId;
+                var autorizacion = await AutorizacionService.GetByIdAsync(AutorizacionId);
+                if (autorizacion?.Data != null)
+                {
+                    item.FkidSolicitudSuficienciaPres = autorizacion.Data.FkidSolicitudSuficienciaPres;
+                    item.FkidRequisicionOrco = autorizacion.Data.FkidRequisicionOrco;
+                    item.RequisicionDescripcion = autorizacion.Data.RequisicionDescripcion;
+                    item.FkidEmpresaSis = autorizacion.Data.FkidEmpresaSis;
+                }
                 return;
             }
 
@@ -92,6 +140,11 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
+        if (item.FkidSolicitudSuficienciaDetallePres <= 0 || item.FkidPartidaConta <= 0)
+        {
+            Snackbar.Add("Selecciona un renglón solicitado para asignar su partida.", Severity.Warning);
+            return;
+        }
         item.FkidAutorizacionSuficienciaPres = AutorizacionId;
         var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (result?.Success == true)
@@ -104,9 +157,57 @@
     }
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+            ? "Empresa seleccionada"
+            : SucursalStateService.EmpresaNombre
         : "Sin empresa seleccionada";
+
+    private Task OnSolicitudDetalleIdChanged(int? value)
+    {
+        SelectedSolicitudDetalleId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnSolicitudDetalleSelected(SolicitudSuficienciaDetalleResponse? record)
+    {
+        if (record is null)
+        {
+            item.FkidPartidaConta = 0;
+            item.PartidaClave = null;
+            item.PartidaDescripcion = null;
+            item.PartidaClaveNombre = null;
+            item.FkidRequisicionDetalleOrco = null;
+            item.FkidTipoBienAlma = null;
+            item.TipoBienClave = null;
+            item.TipoBienDescripcion = null;
+            item.FkidUnidadesAlma = null;
+            item.UnidadMedida = null;
+            item.Cantidad = null;
+            return Task.CompletedTask;
+        }
+
+        item.FkidSolicitudSuficienciaPres = record.FkidSolicitudSuficienciaPres;
+        item.FkidRequisicionOrco = record.FkidRequisicionOrco;
+        item.RequisicionDescripcion = record.RequisicionDescripcion;
+        item.FkidRequisicionDetalleOrco = record.FkidRequisicionDetalleOrco;
+        item.FkidTipoBienAlma = record.FkidTipoBienAlma;
+        item.TipoBienClave = record.TipoBienClave;
+        item.TipoBienDescripcion = record.TipoBienDescripcion;
+        item.FkidUnidadesAlma = record.FkidUnidadesAlma;
+        item.UnidadMedida = record.UnidadMedida;
+        item.Cantidad = record.Cantidad;
+        item.FkidPartidaConta = record.FkidPartidaConta;
+        item.PartidaClave = record.PartidaClave;
+        item.PartidaDescripcion = record.PartidaDescripcion;
+        item.PartidaClaveNombre = record.PartidaClaveNombre;
+        return Task.CompletedTask;
+    }
+
+    private static string SolicitudDetalleLabel(SolicitudSuficienciaDetalleResponse record)
+    {
+        var text = string.Join(" · ", new[] { record.RequisicionDescripcion, record.PartidaClaveNombre, record.TipoBienDescripcion }
+            .Where(value => !string.IsNullOrWhiteSpace(value)));
+        return string.IsNullOrWhiteSpace(text) ? "Renglón solicitado" : text;
+    }
 
     private async Task EnsureEmpresaAsync()
     {

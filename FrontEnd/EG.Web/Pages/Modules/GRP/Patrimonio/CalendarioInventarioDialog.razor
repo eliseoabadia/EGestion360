@@ -240,7 +240,7 @@
     }
 
     private static string TextOrId(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
     private string SelectedAnioText => AnioStateService.AnioClave is > 0
         ? AnioStateService.AnioTexto

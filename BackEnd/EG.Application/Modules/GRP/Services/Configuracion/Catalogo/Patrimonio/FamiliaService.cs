@@ -182,7 +182,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<FamiliaResponse>
                 {
                     Success = false,
-                    Message = $"Familia con ID {id} no encontrada",
+                    Message = $"Familia no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -218,7 +218,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Familia con ID {id} no encontrada",
+                    Message = $"Familia no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

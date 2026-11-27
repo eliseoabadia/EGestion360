@@ -4,6 +4,8 @@
 @using MudBlazor
 
 @inject IGenericCrudService<CLCFacturaResponse> Service
+@inject IGenericCrudService<FacturaResponse> FacturaService
+@inject IGenericCrudService<FacturaDetalleResponse> FacturaDetalleService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -15,8 +17,36 @@
                     <MudGrid Spacing="2">
 <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ClcNombre</MudText></MudItem>
             <MudItem xs="12" md="6"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidFacturaPres" Label="Factura" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidFacturaDetallePres" Label="Detalle factura" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="6">
+                <RelatedRecordSelect TResponse="FacturaResponse"
+                                     Label="Factura"
+                                     SelectedId="@SelectedFacturaId"
+                                     SelectedIdChanged="OnFacturaIdChanged"
+                                     SelectedRecordChanged="OnFacturaSelected"
+                                     SelectedText="@FacturaText"
+                                     IdSelector="record => record.PkidFactura"
+                                     TextSelector="FacturaLabel"
+                                     SortProperty="NumFactura"
+                                     AdditionalFilters="@FacturaFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona una factura." />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <RelatedRecordSelect @key="item.FkidFacturaPres"
+                                     TResponse="FacturaDetalleResponse"
+                                     Label="Detalle de la factura"
+                                     SelectedId="@SelectedFacturaDetalleId"
+                                     SelectedIdChanged="OnFacturaDetalleIdChanged"
+                                     SelectedRecordChanged="OnFacturaDetalleSelected"
+                                     SelectedText="@FacturaDetalleText"
+                                     IdSelector="record => record.PkidFacturaDetalle"
+                                     TextSelector="FacturaDetalleLabel"
+                                     SortProperty="PartidaClave"
+                                     AdditionalFilters="@FacturaDetalleFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona el detalle de la factura."
+                                     Disabled="@(item.FkidFacturaPres <= 0)" />
+            </MudItem>
                     </MudGrid>
                 </CrudFormSection>
             </MudItem>
@@ -44,6 +74,25 @@
     private string Title => Id.HasValue ? "Editar factura CLC" : "Nueva factura CLC";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private int? SelectedFacturaId
+    {
+        get => item.FkidFacturaPres > 0 ? item.FkidFacturaPres : null;
+        set => item.FkidFacturaPres = value.GetValueOrDefault();
+    }
+    private int? SelectedFacturaDetalleId
+    {
+        get => item.FkidFacturaDetallePres > 0 ? item.FkidFacturaDetallePres : null;
+        set => item.FkidFacturaDetallePres = value.GetValueOrDefault();
+    }
+    private string FacturaText => string.IsNullOrWhiteSpace(item.NumFactura) ? string.Empty : item.NumFactura;
+    private string FacturaDetalleText => string.Join(" - ", new[] { item.PartidaClave, item.PartidaDescripcion }
+        .Where(value => !string.IsNullOrWhiteSpace(value)));
+    private Dictionary<string, object>? FacturaFilters => item.FkidEmpresaSis > 0
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
+        : new Dictionary<string, object> { ["Activo"] = true };
+    private Dictionary<string, object>? FacturaDetalleFilters => item.FkidFacturaPres > 0
+        ? new Dictionary<string, object> { ["FkidFacturaPres"] = item.FkidFacturaPres, ["Activo"] = true }
+        : null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,6 +121,13 @@
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
             return;
         }
+
+        if (item.FkidFacturaPres <= 0 || item.FkidFacturaDetallePres <= 0 || item.FkidPartidaConta <= 0)
+        {
+            Snackbar.Add("Selecciona la factura y un detalle asociado.", Severity.Warning);
+            return;
+        }
+
         item.FkidClcPres = ClcId;
         var result = Id.HasValue ? await Service.UpdateAsync(item, Id.Value) : await Service.CreateAsync(item);
         if (result?.Success == true)
@@ -83,10 +139,63 @@
         Snackbar.Add(result?.Message ?? "No fue posible guardar la factura CLC.", Severity.Error);
     }
     private string EmpresaText => item.FkidEmpresaSis > 0
-        ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
+
+    private Task OnFacturaIdChanged(int? value)
+    {
+        if (item.FkidFacturaPres != value.GetValueOrDefault())
+        {
+            item.FkidFacturaDetallePres = 0;
+            item.FkidPartidaConta = 0;
+            item.PartidaClave = null;
+            item.PartidaDescripcion = null;
+        }
+        SelectedFacturaId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnFacturaSelected(FacturaResponse? record)
+    {
+        item.NumFactura = record?.NumFactura;
+        return Task.CompletedTask;
+    }
+
+    private Task OnFacturaDetalleIdChanged(int? value)
+    {
+        SelectedFacturaDetalleId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnFacturaDetalleSelected(FacturaDetalleResponse? record)
+    {
+        if (record is null)
+        {
+            item.FkidPartidaConta = 0;
+            item.PartidaClave = null;
+            item.PartidaDescripcion = null;
+            return Task.CompletedTask;
+        }
+
+        item.FkidPartidaConta = record.FkidPartidaConta;
+        item.PartidaClave = record.PartidaClave;
+        item.PartidaDescripcion = record.PartidaDescripcion;
+        return Task.CompletedTask;
+    }
+
+    private static string FacturaLabel(FacturaResponse record)
+    {
+        var text = string.Join(" - ", new[] { record.NumFactura, record.NumeroContrato, record.ProveedorNombre }
+            .Where(value => !string.IsNullOrWhiteSpace(value)));
+        return string.IsNullOrWhiteSpace(text) ? "Factura sin descripción" : text;
+    }
+
+    private static string FacturaDetalleLabel(FacturaDetalleResponse record)
+    {
+        var text = string.Join(" - ", new[] { record.PartidaClave, record.PartidaDescripcion }
+            .Where(value => !string.IsNullOrWhiteSpace(value)));
+        return string.IsNullOrWhiteSpace(text) ? record.NumFactura ?? "Detalle de factura" : text;
+    }
 
     private async Task EnsureEmpresaAsync()
     {

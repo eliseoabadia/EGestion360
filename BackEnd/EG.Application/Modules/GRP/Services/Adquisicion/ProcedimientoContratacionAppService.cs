@@ -148,7 +148,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<ProcedimientoContratacionResponse>
                 {
                     Success = false,
-                    Message = $"Procedimiento de Contratación con ID {id} no encontrado",
+                    Message = $"Procedimiento de Contratación no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -185,7 +185,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Procedimiento de Contratación con ID {id} no encontrado",
+                    Message = $"Procedimiento de Contratación no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

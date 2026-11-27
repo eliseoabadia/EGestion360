@@ -65,7 +65,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync();
             if (item == null)
             {
-                return Failure<InventarioDetalleResponse>($"Detalle de inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<InventarioDetalleResponse>($"Detalle de inventario no encontrado.", "NOT_FOUND");
             }
 
             var response = item.Adapt<InventarioDetalleResponse>();
@@ -130,7 +130,7 @@ namespace EG.Application.Services.Patrimonio
 
             if (current == null)
             {
-                return Failure<InventarioDetalleResponse>($"Detalle de inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<InventarioDetalleResponse>($"Detalle de inventario no encontrado.", "NOT_FOUND");
             }
 
             if (IsLocked(current.FkidInventarioAlmaNavigation))
@@ -178,7 +178,7 @@ namespace EG.Application.Services.Patrimonio
 
             if (current == null)
             {
-                return BoolFailure($"Detalle de inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Detalle de inventario no encontrado.", "NOT_FOUND");
             }
 
             if (IsLocked(current.FkidInventarioAlmaNavigation))

@@ -26,8 +26,15 @@ namespace EG.ApiCoreBS.Controllers.General
         [HttpGet("GetProfileImage/{id}")]
         public async Task<ActionResult<PerfilUsuarioResponse>> GetProfileImage(int id)
         {
+            if (id <= 0 || id != _userContext.GetCurrentUserId())
+            {
+                return Forbid();
+            }
+
             var result = await _appService.GetProfileImageAsync(id);
-            return result == null ? NotFound() : Ok(result);
+            return result?.Fotografia is not { Length: > 0 }
+                ? NoContent()
+                : Ok(result);
         }
 
         [HttpPost("CreateProfile")]

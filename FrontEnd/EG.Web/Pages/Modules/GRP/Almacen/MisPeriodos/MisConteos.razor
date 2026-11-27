@@ -81,11 +81,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="ConteoResponse" Title="ID" Identifier="PkidConteo" PropertyName="PkidConteo" SortBy="x => x.PkidConteo">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidConteo
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="ConteoResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
                         @cell.Item.Descripcion
@@ -191,7 +187,6 @@
                         <MudText>
                             Mostrando escaneos del conteo:
                             <strong>@conteoSeleccionado.Descripcion</strong>
-                            (ID: @conteoSeleccionado.PkidConteo)
                         </MudText>
                         <MudIconButton Icon="@Icons.Material.Filled.Clear"
                                        Size="Size.Small"
@@ -211,11 +206,7 @@
                               SearchStringChanged="(s) => SearchStringEscaneos = s"
                               OnSearch="OnSearchEscaneos">
             <Columns>
-                <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="ID" Identifier="PkidDetalleEscaneo" PropertyName="PkidDetalleEscaneo" SortBy="x => x.PkidDetalleEscaneo">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidDetalleEscaneo
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="ConteoDetalleEscaneoResponse" Title="Código de Barras" Identifier="CodigoBarras" PropertyName="CodigoBarras" SortBy="x => x.CodigoBarras">
                     <CellTemplate Context="cell">
                         <MudChip T="string" Color="Color.Dark" Size="Size.Small">
@@ -409,7 +400,6 @@
     {
         return items.Select(c => new
         {
-            ID = c.PkidConteo,
             Descripción = c.Descripcion ?? "",
             Tipo_Bien = c.DescripcionTipoBien ?? "",
             Código_Clave = c.CodigoClaveTipoBien ?? "",
@@ -436,7 +426,7 @@
 
         try
         {
-            var response = await EscaneoService.GetAllPaginadoAsync(1, int.MaxValue, SearchStringEscaneos, "FechaEscaneo", SortDirection.Descending);
+            var response = await ReadExportResponseAsync(EscaneoService, SearchStringEscaneos, "FechaEscaneo", SortDirection.Descending);
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
                 Snackbar.Add("No hay datos para exportar", Severity.Warning);
@@ -464,7 +454,7 @@
             });
 
             using var ms = new MemoryStream();
-            await ms.SaveAsAsync(excelData);
+            await ms.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
             var base64 = Convert.ToBase64String(ms.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,
                 $"escaneos_{DateTime.Now:yyyyMMddHHmmss}.xlsx",

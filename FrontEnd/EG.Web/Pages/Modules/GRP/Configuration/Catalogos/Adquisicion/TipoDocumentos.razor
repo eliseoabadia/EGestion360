@@ -10,7 +10,7 @@
         <GenericDataGrid TItem="TipoDocumentoResponse" @ref="table" Title="Lista de Tipos de Documentos" SearchPlaceholder="Buscar..." ShowExportButton="@CanExport" ServerDataFunc="LoadServerData" ExportFunc="ExportToExcel" SearchString="@SearchString" SearchStringChanged="(s) => SearchString = s" OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoDocumentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoDocumento))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoDocumento))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoDocumentoResponse" TProperty="int" Property="x => x.PkidTipoDocumento" Title="ID" Identifier="PkidTipoDocumento" />
+                
                 <PropertyColumn T="TipoDocumentoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
         </GenericDataGrid>
@@ -25,7 +25,7 @@
     protected override Type EditDialogType => typeof(TipoDocumentoDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<TipoDocumentoResponse>);
     protected override string GetDefaultSortLabel() => "Descripcion";
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDocumentoResponse> items) => items.Select(u => new { ID = u.PkidTipoDocumento, Descripcion = u.Descripcion});
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<TipoDocumentoResponse> items) => items.Select(u => new { Descripcion = u.Descripcion});
     protected override async Task<string> GetItemNameForDelete(int id) { var response = await Service.GetByIdAsync(id); return response?.Data?.Descripcion ?? "el tipo de documento"; }
     protected override async Task ReloadData() { if (table != null) await table.ReloadData(); }
 }

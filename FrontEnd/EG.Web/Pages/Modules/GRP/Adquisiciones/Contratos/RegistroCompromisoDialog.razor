@@ -308,14 +308,14 @@
         _selectedOrdenCompra = item.FkidOrdenCompraOrco.HasValue
             ? new LookupItem { Id = item.FkidOrdenCompraOrco.Value, Text = BuildOrdenText(item.NumeroOrdenCompra, item.OrdenCompraDescripcion, item.MontoMaximo) }
             : null;
-        _selectedTipoContrato = new LookupItem { Id = item.FkidTipoContratoOrco, Text = TextOrId(item.TipoContratoDescripcion, item.FkidTipoContratoOrco) };
-        _selectedTipoDocumento = new LookupItem { Id = item.FkidTipoDocumentoOrco, Text = TextOrId(item.TipoDocumentoDescripcion, item.FkidTipoDocumentoOrco) };
-        _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = TextOrId(item.AreaNombre, item.FkidAreaSis.Value) } : null;
-        _selectedModalidad = item.FkidModalidadOrco.HasValue ? new LookupItem { Id = item.FkidModalidadOrco.Value, Text = TextOrId(item.ModalidadDescripcion, item.FkidModalidadOrco.Value) } : null;
-        _selectedProcedimiento = item.FkidProcedimientoContratacionOrco.HasValue ? new LookupItem { Id = item.FkidProcedimientoContratacionOrco.Value, Text = TextOrId(item.ProcedimientoContratacionDescripcion, item.FkidProcedimientoContratacionOrco.Value) } : null;
-        _selectedGarantia = item.FkidTipoGarantiaOrco.HasValue ? new LookupItem { Id = item.FkidTipoGarantiaOrco.Value, Text = TextOrId(item.TipoGarantiaDescripcion, item.FkidTipoGarantiaOrco.Value) } : null;
-        _selectedArticulo = item.FkidArticuloOrco.HasValue ? new LookupItem { Id = item.FkidArticuloOrco.Value, Text = TextOrId(item.ArticuloDescripcion, item.FkidArticuloOrco.Value) } : null;
-        _selectedFraccion = item.FkidFraccionOrco.HasValue ? new LookupItem { Id = item.FkidFraccionOrco.Value, Text = TextOrId(item.FraccionDescripcion, item.FkidFraccionOrco.Value) } : null;
+        _selectedTipoContrato = new LookupItem { Id = item.FkidTipoContratoOrco, Text = DisplayText(item.TipoContratoDescripcion, "Tipo de contrato sin descripción") };
+        _selectedTipoDocumento = new LookupItem { Id = item.FkidTipoDocumentoOrco, Text = DisplayText(item.TipoDocumentoDescripcion, "Tipo de documento sin descripción") };
+        _selectedArea = item.FkidAreaSis.HasValue ? new LookupItem { Id = item.FkidAreaSis.Value, Text = DisplayText(item.AreaNombre, "Área sin nombre") } : null;
+        _selectedModalidad = item.FkidModalidadOrco.HasValue ? new LookupItem { Id = item.FkidModalidadOrco.Value, Text = DisplayText(item.ModalidadDescripcion, "Modalidad sin descripción") } : null;
+        _selectedProcedimiento = item.FkidProcedimientoContratacionOrco.HasValue ? new LookupItem { Id = item.FkidProcedimientoContratacionOrco.Value, Text = DisplayText(item.ProcedimientoContratacionDescripcion, "Procedimiento sin descripción") } : null;
+        _selectedGarantia = item.FkidTipoGarantiaOrco.HasValue ? new LookupItem { Id = item.FkidTipoGarantiaOrco.Value, Text = DisplayText(item.TipoGarantiaDescripcion, "Garantía sin descripción") } : null;
+        _selectedArticulo = item.FkidArticuloOrco.HasValue ? new LookupItem { Id = item.FkidArticuloOrco.Value, Text = DisplayText(item.ArticuloDescripcion, "Artículo sin descripción") } : null;
+        _selectedFraccion = item.FkidFraccionOrco.HasValue ? new LookupItem { Id = item.FkidFraccionOrco.Value, Text = DisplayText(item.FraccionDescripcion, "Fracción sin descripción") } : null;
     }
 
     private async Task SaveAsync(bool _)
@@ -522,7 +522,7 @@
             : $"{clave} - {descripcion}".Trim();
     }
 
-    private static string TextOrId(string? text, int id) => string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+    private static string DisplayText(string? text, string fallback) => string.IsNullOrWhiteSpace(text) ? fallback : text;
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
     private static string Money(decimal value) => $"${value.ToString("0.00", NumberCulture)}";
 }

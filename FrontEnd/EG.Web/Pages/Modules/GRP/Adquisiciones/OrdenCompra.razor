@@ -122,7 +122,7 @@
                 <TemplateColumn T="OrdenCompraResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</div>
-                        <span>@(cell.Item.CompraDirecta ? "Compra directa" : $"Cotizacion {cell.Item.FkidCotizacionOrco}")</span>
+                        <span>@(cell.Item.CompraDirecta ? "Compra directa" : "Cotización registrada")</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="OrdenCompraResponse" Title="Fecha" Identifier="FechaOrdenCompra" PropertyName="FechaOrdenCompra" SortBy="x => x.FechaOrdenCompra">
@@ -609,7 +609,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidOrdenCompra,
             Numero = item.NumeroOrdenCompra,
             item.Descripcion,
             Requisicion = item.RequisicionDescripcion,
@@ -641,7 +640,7 @@
         try
         {
             var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection);
+            var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -651,7 +650,7 @@
 
             var excelData = MapToExcelData(response.Items);
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,

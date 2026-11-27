@@ -1,0 +1,6023 @@
+{
+  "startedUtc": "2026-11-26T19:26:56.038Z",
+  "origin": "http://localhost:5242",
+  "viewport": {
+    "width": 1440,
+    "height": 1080
+  },
+  "authentication": "real-development-session",
+  "mode": "read-only-full-navigation",
+  "pages": [
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\General\\Perfil.razor",
+      "route": "/configuracion/sistema/general",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 797,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 805,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 812,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 816,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1295,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 101,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/UserProfile/GetProfileImage/1",
+          "method": "GET",
+          "status": 404,
+          "ms": 130,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 121,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 169,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/FirmaDocumental/certificados",
+          "method": "GET",
+          "status": 200,
+          "ms": 109,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6799,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Anteproyectos.razor",
+      "route": "/PBR/Anteproyectos",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 787,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 797,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 796,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 804,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 670,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/PbrAnteproyecto/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 672,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 135,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 36,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5838,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Presupuestos.razor",
+      "route": "/PBR/Presupuestos",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 213,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 214,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 540,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/PbrPresupuestoPrograma/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 485,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 485,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1261,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 124,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3987,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\MatrizIndicadores.razor",
+      "route": "/PBR/MatrizIndicadores",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 206,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 568,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 569,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 915,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/PbrMirNivel/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 470,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 197,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 69,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 70,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 70,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 70,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 72,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 71,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 73,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 71,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 72,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 70,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 57,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4364,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\AccessConfiguration\\ConfigurarAccesos.razor",
+      "route": "/configuracion/sistema/Configurar_Accesos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 693,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 696,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 695,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 696,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/AccessConfiguration/snapshot",
+          "method": "GET",
+          "status": 200,
+          "ms": 864,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 272,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3870,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\Empleados.razor",
+      "route": "/nomina/empleados",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 459,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 825,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 828,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 826,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomRhEmpleado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 636,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 169,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 28,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3753,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\NominaOperaciones.razor",
+      "route": "/nomina/movimientos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 818,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 823,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 822,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 823,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomOperacion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 738,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 176,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4257,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Suministros_Salida.razor",
+      "route": "/Almacen/Suministros_Salida",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 899,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 902,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SolicitudSalida/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 395,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 910,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 183,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/DetalleSolicitudSalida/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 161,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3952,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 2
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Salidas_Ajuste.razor",
+      "route": "/Almacen/Salidas_Ajuste",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 798,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 801,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 838,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 840,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Almacen/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 769,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 196,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3822,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Reporte_diferencias_Conteo.razor",
+      "route": "/Almacen/Reporte_diferencias_Conteo",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 773,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 775,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 774,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 775,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Conteo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 771,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 207,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3877,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomUniversos.razor",
+      "route": "/rh/configuracion/universo",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 801,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 804,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 803,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 804,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomUniverso/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 751,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 264,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 39,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3883,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoPagos.razor",
+      "route": "/nomina/configuracion/catalogos/tipos-pago",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 773,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 774,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 774,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 776,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTipoPago/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 735,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 217,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 26,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3779,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoIncidencias.razor",
+      "route": "/nomina/configuracion/catalogos/tipo-incidencia",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 38,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 864,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 864,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 865,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTipoIncidencia/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 485,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4502,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoContrataciones.razor",
+      "route": "/nomina/configuracion/catalogos/tipo-contratacion",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 810,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 812,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 812,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 813,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomTipoContratacion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 742,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 219,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3850,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoSemanals.razor",
+      "route": "/nomina/configuracion/catalogos/sueldos-semanales",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 212,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 214,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 556,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 743,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomSueldoSemanal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 477,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 35,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4044,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoMensuals.razor",
+      "route": "/nomina/configuracion/catalogos/sueldos-mensuales",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 752,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 775,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 778,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomSueldoMensual/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 412,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 84,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 26,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3625,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoEspecials.razor",
+      "route": "/nomina/configuracion/catalogos/sueldos-especiales",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 425,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 789,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 796,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 796,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomSueldoEspecial/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 438,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 109,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4183,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomPuestos.razor",
+      "route": "/nomina/configuracion/catalogos/puestos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1001,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1003,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1004,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1107,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomPuesto/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 855,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 320,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 36,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4595,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomPeriodoActivos.razor",
+      "route": "/nomina/configuracion/catalogos/periodos-activos",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 257,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 275,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 279,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 637,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomPeriodoActivo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 542,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 58,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4606,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomNombramientos.razor",
+      "route": "/nomina/configuracion/catalogos/nombramientos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 824,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 827,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 826,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 827,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomNombramiento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 765,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 207,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4338,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomMedodoPagos.razor",
+      "route": "/rh/configuracion/contratos/metodo-pago",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 865,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 867,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 866,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 868,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomMedodoPago/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 756,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 213,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 39,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4103,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomImporteNiveles.razor",
+      "route": "/nomina/configuracion/catalogos/importes-nivel",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 554,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 556,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 743,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 744,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomImporteNivel/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 417,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 60,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4006,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEstatusPagos.razor",
+      "route": "/nomina/configuracion/catalogos/estatus-pago",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 368,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 770,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 771,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 772,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomEstatusPago/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 729,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 204,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 29,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3893,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEscolaridades.razor",
+      "route": "/rh/configuracion/escolaridad",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 212,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 604,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 610,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 805,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomEscolaridad/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 428,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4135,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomDiaSemanas.razor",
+      "route": "/rh/configuracion/contratos/dia-semana",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 782,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 784,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 903,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 906,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomDiaSemana/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 850,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 165,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3972,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomDescuentoCreditos.razor",
+      "route": "/nomina/configuracion/catalogos/descuentos-credito",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 752,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 782,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 784,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomDescuentoCredito/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 420,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 94,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 28,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3744,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomContratoTerceross.razor",
+      "route": "/nomina/configuracion/catalogos/contratos-terceros",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1411,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1414,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1413,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1414,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomContratoTerceros/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1179,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 210,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6416,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoVariables.razor",
+      "route": "/nomina/configuracion/catalogos/conceptos-variables",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1336,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1342,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1341,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1343,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomConceptoVariable/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1066,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 164,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5805,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptos.razor",
+      "route": "/nomina/configuracion/catalogos/conceptos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1324,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1328,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1328,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1498,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomConcepto/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1018,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 250,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5892,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoPorcentajes.razor",
+      "route": "/nomina/configuracion/catalogos/conceptos-porcentaje",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 65,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1251,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1310,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1314,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomConceptoPorcentaje/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 731,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 163,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5701,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoFactors.razor",
+      "route": "/nomina/configuracion/catalogos/concepto-factor",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1005,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1008,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1006,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1007,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomConceptoFactor/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 829,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 138,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4808,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomCatalogosSimples.razor",
+      "route": "/rh/configuracion/sexo",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1011,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1013,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1049,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1218,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomCatalogoSimple/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 862,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 178,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5006,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\Incidencias.razor",
+      "route": "/rh/incidencia",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 496,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 500,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 503,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 915,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/NomRhIncidenciaListado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 736,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 89,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 35,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4220,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Conteo_ciclico.razor",
+      "route": "/Almacen/Conteo_ciclico",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 364,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 403,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 406,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 405,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Conteo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 606,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 29,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4859,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Entradas_Ajuste.razor",
+      "route": "/Almacen/Entradas_Ajuste",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 850,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 851,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 851,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 852,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Almacen/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 707,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 176,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 59,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 60,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4747,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\SaldosCuentas.razor",
+      "route": "/Presupuesto/Tesoreria/Saldos_Cuentas",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 373,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 374,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 376,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1257,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Instrumento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 614,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5127,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\MisPeriodos\\MisConteos.razor",
+      "route": "/ALMAConteo",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 71,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 669,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1094,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1097,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Conteo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 466,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 107,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4433,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\SolicitudSuficienciaDetalles.razor",
+      "route": "/Adquisiciones/SolicitudSuficienciaDetalle",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 359,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 915,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1228,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1231,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SolicitudSuficienciaDetalle/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 770,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 36,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 35,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5568,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Requisiciones.razor",
+      "route": "/Adquisiciones/Requisicion",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 284,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 292,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 294,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1010,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 46,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 33,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4777,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Paaas.razor",
+      "route": "/Adquisiciones/Programa_Anual",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 310,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 781,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 783,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1238,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Paaa/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 648,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 106,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 35,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4629,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Cotizaciones.razor",
+      "route": "/Adquisiciones/Cotizacion",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 380,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 484,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 728,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 730,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 478,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Cotizacion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 291,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 346,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 67,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 66,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 84,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5419,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\ResguardoHistorico.razor",
+      "route": "/Patrimonio/Resguardo_Historico",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 938,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 941,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 940,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 941,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/ResguardoMovimiento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 950,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 201,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4873,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Firma_Resguardos.razor",
+      "route": "/Patrimonio/Firma_Resguardos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 963,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 967,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 966,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 967,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Resguardo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 764,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 434,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 185,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 187,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5199,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Cedula_Diferencia.razor",
+      "route": "/Patrimonio/Cedula_Diferencia",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 68,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 76,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1059,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1062,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 66,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 58,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4542,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Bienes.razor",
+      "route": "/Patrimonio/Bienes",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1095,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1100,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1100,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1295,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Bien/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 995,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 457,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 105,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 106,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 106,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 107,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 107,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 108,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 108,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 110,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 110,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 143,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6130,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\TipoRetiro.razor",
+      "route": "/Presupuesto/Tesoreria/Inversiones/Tipo_Retiro",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 243,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 249,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 987,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 989,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoRetiro/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 559,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 27,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5393,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\ListadoInversiones.razor",
+      "route": "/Presupuesto/Tesoreria/Inversiones/Listado_Inversiones",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 298,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 323,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 330,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 411,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 441,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Inversion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 238,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 118,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4586,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InstrumentosInversion.razor",
+      "route": "/Presupuesto/Tesoreria/Inversiones/Instrumentos_Inversion",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 320,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 323,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1159,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Instrumento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 604,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1429,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 147,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 27,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4937,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\Banco.razor",
+      "route": "/Presupuesto/Tesoreria/Inversiones/Banco",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 296,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 299,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 310,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 313,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Banco/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 721,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 487,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 28,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4585,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\ProvisionPago.razor",
+      "route": "/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1001,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1003,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1039,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1041,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/CLC/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 902,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 219,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4586,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoAutorizado.razor",
+      "route": "/Presupuesto/Egreso/Presupuesto_Autorizado",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 666,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 693,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 696,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 515,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 482,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 34,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EgresoAutorizado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 317,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 36,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 40,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 40,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4564,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\Registro_Compromiso.razor",
+      "route": "/Contratos/Registro_Compromiso",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 827,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 884,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 887,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/RegistroCompromiso/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 492,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 127,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 28,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4309,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Investigacion_Mercado.razor",
+      "route": "/Presupuesto/Egreso/Investigacion_Mercado",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 59,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 668,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 688,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 691,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 535,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 436,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EstudioMercado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 208,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4514,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\AnteproyectoEgresos.razor",
+      "route": "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 770,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 770,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 777,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 775,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 573,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 431,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EgresoProyectado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 487,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 52,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 52,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 52,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5283,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoPagoSF.razor",
+      "route": "/configuracion/tesoreria/Tipo_PagoSF",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 348,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 397,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1088,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1455,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoPagoSF/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 659,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 38,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5855,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoMoneda.razor",
+      "route": "/configuracion/tesoreria/Tipo_Moneda",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 784,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 794,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 797,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 827,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoMoneda/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 975,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 271,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 63,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5740,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoDoctoClc.razor",
+      "route": "/configuracion/tesoreria/Tipo_Documento_CLC",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 355,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 380,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 873,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1084,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoDoctoClc/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 479,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5779,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresoAutorizado.razor",
+      "route": "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Estimados",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 705,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 708,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 707,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 707,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 937,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 321,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 50,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/IngresoAutorizado/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 236,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4574,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\Polizas.razor",
+      "route": "/Contabilidad/Polizas",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 218,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 224,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 305,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 509,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 416,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Poliza/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 270,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 529,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 57,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 55,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 55,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 55,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 55,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 55,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 53,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4628,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\Cierre_Mensual.razor",
+      "route": "/Contabilidad/Cierre_Mensual",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 561,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 564,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 562,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 564,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 771,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 195,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/CierreMensual/estado",
+          "method": "POST",
+          "status": 200,
+          "ms": 511,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/CierreMensual/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 140,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4419,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\Ampliaciones.razor",
+      "route": "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 198,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 289,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 292,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 494,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 411,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EgreAdecuacion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 204,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 83,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 27,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3845,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresosPropios.razor",
+      "route": "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos_Propios",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 245,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 347,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 349,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 439,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1147,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/IngresoRecaudar/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 225,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 119,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3956,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\SolicitudSuficiencia.razor",
+      "route": "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 360,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 712,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 714,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SolicitudSuficiencia/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 400,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 82,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3624,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\AutorizacionSuficiencia.razor",
+      "route": "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1189,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1193,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1191,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1193,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/AutorizacionSuficiencia/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 989,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 688,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 95,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SoporteDocumental/resumen",
+          "method": "POST",
+          "status": 200,
+          "ms": 97,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 68,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6185,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\GruposBien.razor",
+      "route": "/configuracion/Patrimonio/Grupo_Bien",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1414,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1417,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1415,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1417,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/GrupoBien/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1299,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 545,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6318,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\Personas.razor",
+      "route": "/configuracion/Patrimonio/Personas",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1343,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1525,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1536,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1720,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Persona/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1402,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 376,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 7128,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TiposPatrimonio.razor",
+      "route": "/configuracion/Patrimonio/Tipo_Patrimonio",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 680,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1356,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1360,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1362,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoPatrimonio/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 747,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 163,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5953,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\SubFuncion.razor",
+      "route": "/configuracion/presupuestales/clave-programa/subfuncion",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1370,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1408,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1407,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1410,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/SubFuncion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1253,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 419,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6166,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\Funcion.razor",
+      "route": "/configuracion/presupuestales/clave-programa/funcion",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1389,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1391,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1390,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1392,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Fn/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1131,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 238,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6214,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Pgs.razor",
+      "route": "/configuracion/presupuestales/clave-programa/pg",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1375,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1379,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1378,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1529,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Pg/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1228,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 384,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 54,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5786,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Anios.razor",
+      "route": "/configuracion/presupuestales/clave-programa/anios",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1467,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1470,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1469,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1470,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1242,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 377,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5881,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Ramos.razor",
+      "route": "/configuracion/presupuestales/clave-programa/ramo",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 397,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 425,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 429,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1404,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Ramo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 682,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 47,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 40,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6074,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramasPresupuestales.razor",
+      "route": "/configuracion/presupuestales/programas-presupuesta",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1557,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1594,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1599,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1603,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 176,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6333,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\TipoRecursos.razor",
+      "route": "/configuracion/presupuestales/clave-programa/tipo-recurso",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 778,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1345,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1344,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1361,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoRecurso/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 681,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 61,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 39,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5381,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Articulos.razor",
+      "route": "/configuracion/adquisiciones/articulo",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 369,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 377,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 382,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1314,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Articulo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 654,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 68,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 51,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5758,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoDocumentos.razor",
+      "route": "/configuracion/adquisiciones/tipo-documento",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1277,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1470,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1477,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1524,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoDocumento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1012,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 170,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5730,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Proveedores.razor",
+      "route": "/configuracion/adquisiciones/proveedores",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 788,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1393,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1393,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1399,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Proveedor/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 692,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 302,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5571,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Modalidades.razor",
+      "route": "/configuracion/adquisiciones/modalidad",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 763,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1399,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1403,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1404,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Modalidad/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1121,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 207,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6733,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\EstatusRequisiciones.razor",
+      "route": "/configuracion/adquisiciones/estatus-requisicion",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1287,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1289,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1290,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1300,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EstatusRequisicion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 623,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 57,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 43,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5463,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Administracion\\Seguridad\\Bitacora.razor",
+      "route": "/Administracin/Seguridad/Bitacora",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1572,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1575,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1574,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1576,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Bitacora/Filtros",
+          "method": "POST",
+          "status": 400,
+          "ms": 716,
+          "businessFailure": true
+        },
+        {
+          "endpoint": "/api/Bitacora/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1477,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 310,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 51,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [
+        "/api/bitacora/filtros"
+      ],
+      "elapsedMs": 6167,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizConversion.razor",
+      "route": "/configuracion/contabilidad/matriz-conversion",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1363,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1406,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1413,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1594,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/MatrizConversion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1117,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 338,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5924,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\PartidasPresupuestales.razor",
+      "route": "/configuracion/contabilidad/partidas-presupuestales",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1332,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1334,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1335,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1498,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Concepto/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 979,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 300,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6109,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TiposDetallesPolizas.razor",
+      "route": "/configuracion/contabilidad/tipo-detalles-polizas",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1579,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1581,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1580,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1582,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoDetallePoliza/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1399,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 360,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 41,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6336,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\AdecuacionesCompensadasIngresos.razor",
+      "route": "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Adecuaciones_Compensadas_Ingresos",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 87,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 893,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 916,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 919,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1048,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 602,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/IngreAdecuacion/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 278,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 198,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5875,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TiposPolizas.razor",
+      "route": "/configuracion/contabilidad/tipo-polizas",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1359,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1363,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1362,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1364,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/TipoPoliza/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1235,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 360,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 66,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5636,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\PeriodoConteo.razor",
+      "route": "/configuracion/almacen/Perido_Conteo",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1798,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1803,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1830,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1838,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/PeriodoConteo/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1030,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/PeriodoConteo/Planificacion",
+          "method": "GET",
+          "status": 200,
+          "ms": 1050,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1079,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 53,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 7509,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\EstatusSolicitud.razor",
+      "route": "/configuracion/almacen/Estatus_Solicitud",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1474,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1479,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1478,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1479,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/EstatusSol/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1123,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 189,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 46,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6554,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    }
+  ]
+}

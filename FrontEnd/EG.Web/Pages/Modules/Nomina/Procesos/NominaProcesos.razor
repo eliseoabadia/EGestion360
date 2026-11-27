@@ -7,6 +7,7 @@
 @using System.Globalization
 @using EG.Domain.DTOs.Requests.Nomina
 @using EG.Domain.DTOs.Responses.Nomina
+@using EG.Web.Pages.Modules.Nomina.RH
 @using EG.Web.Pages.Shared
 @using EG.Web.Services
 @using EG.Web.Shared
@@ -36,18 +37,20 @@
                     <MudText Typo="Typo.subtitle2">@TextOrDash(AnioStateService.AnioTexto)</MudText>
                 </MudItem>
                 <MudItem xs="12" md="2">
-                    <MudNumericField T="int?" @bind-Value="periodoId"
-                                     Label="Periodo"
-                                     Variant="Variant.Outlined"
-                                     Min="1"
-                                     Immediate="false" />
+                    <NominaRhLookupSelect Value="@periodoId"
+                                          ValueChanged="OnPeriodoChanged"
+                                          Catalogo="PeriodoQuincenal"
+                                          Label="Periodo" />
                 </MudItem>
                 <MudItem xs="12" md="2">
-                    <MudNumericField T="int?" @bind-Value="personaId"
-                                     Label="Persona"
-                                     Variant="Variant.Outlined"
-                                     Min="1"
-                                     Immediate="false" />
+                    <RelatedRecordSelect TResponse="NominaRhEmpleadoResponse"
+                                         Label="Persona"
+                                         IdSelector="@(employee => employee.Id)"
+                                         TextSelector="@EmployeeLabel"
+                                         SortProperty="NombreCompleto"
+                                         SelectedId="@personaId"
+                                         SelectedIdChanged="OnPersonaChanged"
+                                         Clearable="true" />
                 </MudItem>
                 <MudItem xs="12" md="3">
                     <MudDatePicker @bind-Date="fechaProceso"
@@ -124,7 +127,7 @@
                         </TemplateColumn>
                         <TemplateColumn T="NominaProcesoResponse" Title="Corrida" Identifier="__local_2" Sortable="false" Filterable="false">
                             <CellTemplate Context="cell">
-                                @(cell.Item.CorridaId?.ToString(CultureInfo.InvariantCulture) ?? "-")
+                                @(cell.Item.CorridaId.HasValue ? "Generada" : "Sin corrida")
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn T="NominaProcesoResponse" Title="Empresa" Identifier="__local_3" Sortable="false" Filterable="false">
@@ -134,7 +137,7 @@
                         </TemplateColumn>
                         <TemplateColumn T="NominaProcesoResponse" Title="Periodo" Identifier="__local_4" Sortable="false" Filterable="false">
                             <CellTemplate Context="cell">
-                                @(cell.Item.PeriodoId?.ToString(CultureInfo.InvariantCulture) ?? "-")
+                                @(cell.Item.Anio?.ToString(CultureInfo.InvariantCulture) ?? "Periodo aplicado")
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn T="NominaProcesoResponse" Title="Personas" Identifier="__local_5" Sortable="false" Filterable="false">
@@ -333,6 +336,28 @@
             FechaProceso = fechaProceso,
             Observaciones = observaciones.Trim()
         };
+    }
+
+    private Task OnPeriodoChanged(int? value)
+    {
+        periodoId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPersonaChanged(int? value)
+    {
+        personaId = value;
+        return Task.CompletedTask;
+    }
+
+    private static string EmployeeLabel(NominaRhEmpleadoResponse employee)
+    {
+        var name = string.IsNullOrWhiteSpace(employee.NombreCompleto)
+            ? employee.Empleado
+            : employee.NombreCompleto;
+        return string.IsNullOrWhiteSpace(employee.Empleado) || string.Equals(employee.Empleado, name, StringComparison.OrdinalIgnoreCase)
+            ? name
+            : $"{employee.Empleado} - {name}";
     }
 
     private bool HasRequiredContext(ProcessAction action, bool showMessage)

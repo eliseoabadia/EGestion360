@@ -30,7 +30,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="NomEstadoCivilResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(context.Item.PkidEstadoCivil))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(context.Item.PkidEstadoCivil))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="NomEstadoCivilResponse" TProperty="int" Property="x => x.PkidEstadoCivil" Title="ID" Identifier="PkidEstadoCivil" />
+                
                 <PropertyColumn T="NomEstadoCivilResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                 <PropertyColumn T="NomEstadoCivilResponse" TProperty="bool" Property="x => x.Activo" Title="Activo" Identifier="Activo" />
             </Columns>

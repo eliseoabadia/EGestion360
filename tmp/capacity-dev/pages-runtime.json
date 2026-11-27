@@ -1,0 +1,752 @@
+{
+  "startedUtc": "2026-11-26T19:25:49.423Z",
+  "origin": "http://localhost:5242",
+  "viewport": {
+    "width": 1440,
+    "height": 1080
+  },
+  "authentication": "real-development-session",
+  "mode": "read-only-full-navigation",
+  "pages": [
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\FirmaDocumental\\FirmaDocumentalControl.razor",
+      "route": "/firma-documental/control",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1142,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1148,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1144,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1146,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/FirmaDocumental/proveedores",
+          "method": "GET",
+          "status": 200,
+          "ms": 992,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/FirmaDocumental/certificados",
+          "method": "GET",
+          "status": 200,
+          "ms": 154,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 156,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4872,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\DocumentRag\\DocumentRag.razor",
+      "route": "/asistente-documental",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 674,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 678,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 676,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 678,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 31,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4254,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Ayuda.razor",
+      "route": "/ayuda",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 252,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 339,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 342,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 561,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 460,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 34,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 36,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3763,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Usuario\\Usuarios.razor",
+      "route": "/configuracion/sistema/usuarios",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 880,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 884,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 889,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Usuario/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 466,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 212,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 34,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 4017,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\MenuPendiente.razor",
+      "route": "/configuracion/presupuestales/programa-presupuestal",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 269,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 271,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 383,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 588,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 28,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 29,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3680,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Home.razor",
+      "route": "/",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 249,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 273,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 275,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 436,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 30,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 34,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3766,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Licensing\\LicenciaModulos.razor",
+      "route": "/configuracion/sistema/licencia-modulos",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 46,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 48,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 499,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 502,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Licensing/snapshot",
+          "method": "GET",
+          "status": 200,
+          "ms": 615,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 56,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Licensing/installation-request",
+          "method": "GET",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 134,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3709,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Reporting\\ReportViewer.razor",
+      "route": "/Reporting/Viewer",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 231,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 236,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 238,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 314,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 29,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 32,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3563,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Reporting\\ReportDesigner.razor",
+      "route": "/Reporting/Designer",
+      "requests": [
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 488,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 491,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 520,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 45,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 37,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 3266,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\ModuleDashboard.razor",
+      "route": "/1/Dashboard",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 840,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 843,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 842,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 843,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 153,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5039,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 0
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Departamento\\Departamentos.razor",
+      "route": "/configuracion/sistema/departamento",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 383,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 964,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1288,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1291,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Departamento/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 559,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 49,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 42,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 5795,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Sucursal\\Sucursales.razor",
+      "route": "/configuracion/sistema/sucursal",
+      "requests": [
+        {
+          "endpoint": "/api/Empresa/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1333,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/claims/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1337,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Notificacion/resumen",
+          "method": "GET",
+          "status": 200,
+          "ms": 1346,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/1",
+          "method": "GET",
+          "status": 200,
+          "ms": 1349,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Sucursal/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 1046,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Anios/GetAllPaginado",
+          "method": "POST",
+          "status": 200,
+          "ms": 239,
+          "businessFailure": false
+        },
+        {
+          "endpoint": "/api/Navigate/version",
+          "method": "GET",
+          "status": 200,
+          "ms": 44,
+          "businessFailure": false
+        }
+      ],
+      "failures": [],
+      "errors": [],
+      "blockedWrites": [],
+      "elapsedMs": 6162,
+      "timedOut": false,
+      "redirected": false,
+      "visibleError": false,
+      "horizontalOverflow": false,
+      "gridCount": 1
+    }
+  ]
+}

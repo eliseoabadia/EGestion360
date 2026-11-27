@@ -1,0 +1,902 @@
+[
+  {
+    "Utc": "2026-11-26T18:53:21.8537547Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.390625,
+        "WorkingSet64": 143462400
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.09375,
+        "WorkingSet64": 200601600
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.71875,
+        "WorkingSet64": 369016832
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.796875,
+        "WorkingSet64": 156573696
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 306651136
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:23.9437479Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.390625,
+        "WorkingSet64": 143384576
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.421875,
+        "WorkingSet64": 197160960
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.71875,
+        "WorkingSet64": 369020928
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 156581888
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 306651136
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:25.9883647Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.390625,
+        "WorkingSet64": 143384576
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.421875,
+        "WorkingSet64": 195072000
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.71875,
+        "WorkingSet64": 360325120
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 156581888
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307404800
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:28.0163271Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 144117760
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.421875,
+        "WorkingSet64": 195072000
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.71875,
+        "WorkingSet64": 360325120
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 156577792
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307404800
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:30.0390846Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 144117760
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.421875,
+        "WorkingSet64": 194891776
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.734375,
+        "WorkingSet64": 359157760
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 156577792
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307453952
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:32.0651795Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 144089088
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194879488
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.734375,
+        "WorkingSet64": 359157760
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 155770880
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307453952
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:34.1027038Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 144089088
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194879488
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.734375,
+        "WorkingSet64": 359632896
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.8125,
+        "WorkingSet64": 155770880
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307453952
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:36.1189203Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 144089088
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194838528
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.75,
+        "WorkingSet64": 360161280
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.828125,
+        "WorkingSet64": 155742208
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307453952
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:38.1426336Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 142647296
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194797568
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.75,
+        "WorkingSet64": 360161280
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.828125,
+        "WorkingSet64": 156377088
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307453952
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:40.1642326Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 142647296
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194797568
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 18.75,
+        "WorkingSet64": 360103936
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.828125,
+        "WorkingSet64": 156377088
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307470336
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:42.1761719Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.40625,
+        "WorkingSet64": 142618624
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194629632
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.328125,
+        "WorkingSet64": 370188288
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.828125,
+        "WorkingSet64": 156344320
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307470336
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:44.2039177Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.421875,
+        "WorkingSet64": 142782464
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194654208
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.40625,
+        "WorkingSet64": 370528256
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156422144
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307470336
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:46.2284725Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.421875,
+        "WorkingSet64": 142782464
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194531328
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.46875,
+        "WorkingSet64": 370958336
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156422144
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:48.2528850Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.4375,
+        "WorkingSet64": 142802944
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194531328
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.53125,
+        "WorkingSet64": 371126272
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156430336
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:50.2818744Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.4375,
+        "WorkingSet64": 142802944
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 194531328
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.578125,
+        "WorkingSet64": 370642944
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156430336
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:52.3021138Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.453125,
+        "WorkingSet64": 142999552
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 193581056
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.59375,
+        "WorkingSet64": 370642944
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156401664
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:54.3197682Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.453125,
+        "WorkingSet64": 142999552
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 193552384
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 19.859375,
+        "WorkingSet64": 373645312
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156401664
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:56.3420968Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.453125,
+        "WorkingSet64": 142970880
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 193552384
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 20.328125,
+        "WorkingSet64": 375853056
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 156401664
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:53:58.3493644Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.453125,
+        "WorkingSet64": 142946304
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 193552384
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 20.4375,
+        "WorkingSet64": 375934976
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 155742208
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307486720
+      }
+    ]
+  },
+  {
+    "Utc": "2026-11-26T18:54:00.3723584Z",
+    "ActiveRequests": 0,
+    "BlockedRequests": 0,
+    "LongerThan5s": 0,
+    "ServerDeadlocks": 0,
+    "Processes": [
+      {
+        "Id": 1480,
+        "ProcessName": "dotnet",
+        "CPU": 4.453125,
+        "WorkingSet64": 142946304
+      },
+      {
+        "Id": 16896,
+        "ProcessName": "dotnet",
+        "CPU": 5.4375,
+        "WorkingSet64": 193449984
+      },
+      {
+        "Id": 17928,
+        "ProcessName": "dotnet",
+        "CPU": 20.90625,
+        "WorkingSet64": 377606144
+      },
+      {
+        "Id": 18532,
+        "ProcessName": "dotnet",
+        "CPU": 3.5625,
+        "WorkingSet64": 72048640
+      },
+      {
+        "Id": 21904,
+        "ProcessName": "dotnet",
+        "CPU": 5.84375,
+        "WorkingSet64": 155742208
+      },
+      {
+        "Id": 7096,
+        "ProcessName": "sqlservr",
+        "CPU": null,
+        "WorkingSet64": 307499008
+      }
+    ]
+  }
+]

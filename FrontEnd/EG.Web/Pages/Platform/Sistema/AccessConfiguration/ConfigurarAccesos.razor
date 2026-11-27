@@ -157,7 +157,7 @@
                             <MudTextField T="string"
                                           Value="@_userRoleFilter"
                                           ValueChanged="OnUserRoleFilterChanged"
-                                          Placeholder="Buscar rol, codigo o id"
+                                          Placeholder="Buscar rol o codigo"
                                           Variant="Variant.Outlined"
                                           Margin="Margin.Dense"
                                           Immediate="true"
@@ -1562,7 +1562,6 @@
         }
 
         return role.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
-               || role.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)
                || (role.Code?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true);
     }
 
@@ -1587,7 +1586,6 @@
         }
 
         return role.Name.Contains(_userRoleFilter, StringComparison.OrdinalIgnoreCase)
-               || role.Id.Contains(_userRoleFilter, StringComparison.OrdinalIgnoreCase)
                || (role.Code?.Contains(_userRoleFilter, StringComparison.OrdinalIgnoreCase) == true);
     }
 

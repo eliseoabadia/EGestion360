@@ -33,7 +33,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="ProgramaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPrograma))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPrograma))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="ProgramaResponse" TProperty="int" Property="x => x.PkidPrograma" Title="ID" Identifier="PkidPrograma" />
+                
                 <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                 <PropertyColumn T="ProgramaResponse" TProperty="string" Property="x => x.UrclaveNombre" Title="UR" Identifier="UrclaveNombre" />
@@ -138,7 +138,6 @@
     {
         return items.Select(p => new
         {
-            ID = p.PkidPrograma,
             p.Clave,
             p.Descripcion,
             p.Objetivo,
@@ -237,7 +236,7 @@
                 ["FkidAnioSis"] = AnioStateService.AnioId!.Value
             };
 
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+            var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection, filters);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -247,7 +246,7 @@
 
             var excelData = MapToExcelData(response.Items);
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,

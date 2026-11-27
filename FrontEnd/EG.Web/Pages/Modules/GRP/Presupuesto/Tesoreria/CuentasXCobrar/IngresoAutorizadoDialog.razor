@@ -177,9 +177,9 @@
             {
                 <MudItem xs="12">
                     <div class="audit-strip">
-                        <span>Creado: <strong>@Audit(item.UsuarioCreacion, item.FechaCreacion)</strong></span>
-                        <span>Modificado: <strong>@Audit(item.UsuarioModificacion, item.FechaModificacion)</strong></span>
-                        <span>Autorizado: <strong>@Audit(item.UsuarioAutorizacion, item.FechaAutorizacion)</strong></span>
+                        <span>Creado: <strong>@Audit(item.FechaCreacion)</strong></span>
+                        <span>Modificado: <strong>@Audit(item.FechaModificacion)</strong></span>
+                        <span>Autorizado: <strong>@Audit(item.FechaAutorizacion)</strong></span>
                     </div>
                 </MudItem>
             }
@@ -232,7 +232,9 @@
     private string ActionText => IsAuthorizationFlow ? "Autorizar ingreso" : Id.HasValue ? "Actualizar" : "Crear ingreso";
     private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private int SelectedAnioId => AnioId > 0 ? AnioId : AnioStateService.AnioId.GetValueOrDefault();
-    private string PolicyStatus => item.FkidPolizaConta.HasValue ? $"#{item.FkidPolizaConta}" : "Se genera al guardar";
+    private string PolicyStatus => item.FkidPolizaConta.HasValue
+        ? "Póliza registrada"
+        : "Se genera al guardar";
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
 
     protected override async Task OnInitializedAsync()
@@ -374,7 +376,7 @@
     }
 
     private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
-    private static LookupItem RequiredLookup(int id, string? text) => new() { Id = id, Text = string.IsNullOrWhiteSpace(text) ? id.ToString() : text };
+    private static LookupItem RequiredLookup(int id, string? text) => new() { Id = id, Text = string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text };
     private static LookupItem? OptionalLookup(int? id, string? text) => id.HasValue ? RequiredLookup(id.Value, text) : null;
-    private static string Audit(int? userId, DateTime? date) => !date.HasValue ? "-" : $"usuario {userId?.ToString() ?? "-"}, {date:dd/MM/yyyy HH:mm}";
+    private static string Audit(DateTime? date) => date?.ToString("dd/MM/yyyy HH:mm") ?? "-";
 }

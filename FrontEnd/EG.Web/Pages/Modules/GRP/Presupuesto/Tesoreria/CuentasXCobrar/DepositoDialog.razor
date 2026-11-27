@@ -204,8 +204,8 @@
             {
                 <MudItem xs="12">
                     <div class="audit-strip">
-                        <span>Creado: <strong>@Audit(item.UsuarioCreacion, item.FechaCreacion)</strong></span>
-                        <span>Modificado: <strong>@Audit(item.UsuarioModificacion, item.FechaModificacion)</strong></span>
+                        <span>Creado: <strong>@Audit(item.FechaCreacion)</strong></span>
+                        <span>Modificado: <strong>@Audit(item.FechaModificacion)</strong></span>
                         <span>Autorizado: <strong>@(item.FechaAutorizacionPoliza.HasValue ? item.FechaAutorizacionPoliza.Value.ToString("dd/MM/yyyy HH:mm", DateCulture) : "-")</strong></span>
                     </div>
                 </MudItem>
@@ -259,7 +259,7 @@
     private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
     private int SelectedAnioId => AnioId > 0 ? AnioId : AnioStateService.AnioId.GetValueOrDefault();
     private string PolicyStatus => item.FkidPolizaConta > 0
-        ? $"{(string.IsNullOrWhiteSpace(item.ClavePoliza) ? $"#{item.FkidPolizaConta}" : item.ClavePoliza)} {(item.PolizaBalanceada == true ? "balanceada" : "pendiente")}"
+        ? $"{(string.IsNullOrWhiteSpace(item.ClavePoliza) ? "Póliza registrada" : item.ClavePoliza)} {(item.PolizaBalanceada == true ? "balanceada" : "pendiente")}" 
         : "Se genera al guardar";
     private decimal TotalMeses => item.Enero + item.Febrero + item.Marzo + item.Abril + item.Mayo + item.Junio + item.Julio + item.Agosto + item.Septiembre + item.Octubre + item.Noviembre + item.Diciembre;
 
@@ -286,7 +286,7 @@
             _tipoDocto = RequiredLookup(item.FkidTipoDoctoPagoConta, item.TipoDoctoPagoDescripcion);
             _cuentaCargo = RequiredLookup(item.FkidCuentaCargoConta, BuildText(item.CuentaCargoClave, item.CuentaCargoDescripcion));
             _cuentaAbono = RequiredLookup(item.FkidCuentaAbonoConta, BuildText(item.CuentaAbonoClave, item.CuentaAbonoDescripcion));
-            _clcFactura = OptionalLookup(item.FkidClcfacturaPres, item.ClcfacturaFecha.HasValue ? $"CLC factura #{item.FkidClcfacturaPres} | {item.ClcfacturaFecha:dd/MM/yyyy}" : null);
+            _clcFactura = OptionalLookup(item.FkidClcfacturaPres, item.ClcfacturaFecha.HasValue ? $"CLC factura · {item.ClcfacturaFecha:dd/MM/yyyy}" : null);
         }
         catch (Exception ex)
         {
@@ -403,9 +403,9 @@
     }
 
     private string Money(decimal value) => $"{CurrencySymbol}{value.ToString("0.00", NumberCulture)}";
-    private static LookupItem RequiredLookup(int id, string? text) => new() { Id = id, Text = string.IsNullOrWhiteSpace(text) ? id.ToString() : text };
+    private static LookupItem RequiredLookup(int id, string? text) => new() { Id = id, Text = string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text };
     private static LookupItem? OptionalLookup(int? id, string? text) => id.HasValue ? RequiredLookup(id.Value, text) : null;
-    private static string Audit(int? userId, DateTime? date) => !date.HasValue ? "-" : $"usuario {userId?.ToString() ?? "-"}, {date:dd/MM/yyyy HH:mm}";
+    private static string Audit(DateTime? date) => date?.ToString("dd/MM/yyyy HH:mm") ?? "-";
     private static string BuildText(string? clave, string? descripcion)
         => string.IsNullOrWhiteSpace(clave) ? descripcion ?? string.Empty : string.IsNullOrWhiteSpace(descripcion) ? clave : $"{clave} - {descripcion}";
 }

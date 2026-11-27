@@ -145,11 +145,14 @@
     {
         try
         {
-            var response = await _tipoBienService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "TipoBienDescripcion", SortDirection.Ascending);
-            if (response?.Success == true && response.Items != null)
-            {
-                tiposBien = response.Items.ToList();
-            }
+            var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+                (page, pageSize) => _tipoBienService.GetAllPaginadoAsync(
+                    page, pageSize, string.Empty, "TipoBienDescripcion", SortDirection.Ascending),
+                requestedPageSize: 250,
+                maximumRows: 5_000);
+            tiposBien = result.Items;
+            if (result.Limited)
+                Snackbar.Add("Se cargaron los primeros 5,000 tipos de bien. Reduce el catálogo para consultar el resto.", Severity.Warning);
         }
         catch (Exception ex)
         {
@@ -161,14 +164,17 @@
     {
         try
         {
-            var response = await _periodoService.GetAllPaginadoAsync(1, int.MaxValue, string.Empty, "Nombre", SortDirection.Ascending);
-            if (response?.Success == true && response.Items != null)
-            {
-                periodos = response.Items
-                    .Where(p => string.Equals(p.EstatusPeriodo, "Pendiente", StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(p.EstatusPeriodo, "En Proceso", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
+            var result = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+                (page, pageSize) => _periodoService.GetAllPaginadoAsync(
+                    page, pageSize, string.Empty, "Nombre", SortDirection.Ascending),
+                requestedPageSize: 250,
+                maximumRows: 5_000);
+            periodos = result.Items
+                .Where(p => string.Equals(p.EstatusPeriodo, "Pendiente", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(p.EstatusPeriodo, "En Proceso", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (result.Limited)
+                Snackbar.Add("Se cargaron los primeros 5,000 períodos. Reduce el catálogo para consultar el resto.", Severity.Warning);
         }
         catch (Exception ex)
         {

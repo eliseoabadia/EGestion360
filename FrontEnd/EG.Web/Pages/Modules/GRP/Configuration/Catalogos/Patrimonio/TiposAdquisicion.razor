@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoAdquisicionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoAdq))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoAdq))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoAdquisicionResponse" TProperty="int" Property="x => x.PkidTipoAdq" Title="ID" Identifier="PkidTipoAdq" />
+                
                 <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                 <PropertyColumn T="TipoAdquisicionResponse" TProperty="string" Property="x => x.Descripmovto" Title="Descripción Movto" Identifier="Descripmovto" />
@@ -53,7 +53,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidTipoAdq,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
             DescripciónMovto = u.Descripmovto,

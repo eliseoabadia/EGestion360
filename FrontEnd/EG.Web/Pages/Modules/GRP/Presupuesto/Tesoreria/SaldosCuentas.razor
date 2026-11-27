@@ -154,7 +154,6 @@
     protected override IEnumerable<object> MapToExcelData(IEnumerable<InstrumentoResponse> items) =>
         items.Select(x => new
         {
-            x.PkidInstrumento,
             Instrumento = x.Nombre,
             TipoInversion = x.TipoInversionDescripcion,
             Intermediario = x.IntermediarioNombre,

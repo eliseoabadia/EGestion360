@@ -128,7 +128,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
             var existing = await _service.GetByIdAsync(id, idPropertyName: "PkidPy");
             if (existing == null)
-                throw new KeyNotFoundException($"Proyecto con ID {id} no encontrado");
+                throw new KeyNotFoundException($"Proyecto no encontrado");
 
             response.Clave = response.Clave?.Trim() ?? string.Empty;
             response.Descripcion = response.Descripcion?.Trim() ?? string.Empty;

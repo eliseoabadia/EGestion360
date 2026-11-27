@@ -287,7 +287,7 @@
         string.Join(" ", new[] { persona.Nombre, persona.Paterno, persona.Materno }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
     private sealed record StatusOption(int Id, string Text);
 }

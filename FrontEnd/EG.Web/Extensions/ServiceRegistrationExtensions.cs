@@ -216,6 +216,7 @@ public static class ApiServiceExtensions
         RegisterCrud<NomTipoPagoResponse>(services, "api/NomTipoPago");
         RegisterCrud<NomTipoPensionResponse>(services, "api/NomTipoPension");
         RegisterCrud<NomCatalogoSimpleResponse>(services, "api/NomCatalogoSimple");
+        RegisterCrud<NomTablaFiscalResponse>(services, "api/NomTablaFiscal");
         RegisterCrud<NomEstadoCivilResponse>(services, "api/NomEstadoCivil");
         RegisterCrud<NomEscolaridadResponse>(services, "api/NomEscolaridad");
         RegisterCrud<NomDiaSemanaResponse>(services, "api/NomDiaSemana");

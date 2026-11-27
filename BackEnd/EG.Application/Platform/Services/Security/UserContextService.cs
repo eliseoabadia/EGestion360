@@ -10,6 +10,10 @@ namespace EG.Application.Services.Security
         private readonly IUserRequestContext _requestContext;
         private readonly ILogger<UserContextService> _logger;
         private readonly IUserContextQueries _queries;
+        private bool empresaResolved;
+        private int? currentEmpresaId;
+        private bool anioResolved;
+        private int? currentAnioId;
         private const string EmpresaHeader = "X-Empresa-Id";
         private const string AnioPresupuestalHeader = "X-Anio-Presupuestal-Id";
         private static readonly string[] CandidateClaimTypes = new[]
@@ -73,6 +77,16 @@ namespace EG.Application.Services.Security
         }
 
         public int? TryGetCurrentEmpresaId()
+        {
+            if (!empresaResolved)
+            {
+                currentEmpresaId = ResolveCurrentEmpresaId();
+                empresaResolved = true;
+            }
+            return currentEmpresaId;
+        }
+
+        private int? ResolveCurrentEmpresaId()
         {
             var user = GetUserPrincipal();
             if (user == null || !user.Identity?.IsAuthenticated == true)
@@ -138,6 +152,16 @@ namespace EG.Application.Services.Security
         }
 
         public int? TryGetCurrentAnioPresupuestalId()
+        {
+            if (!anioResolved)
+            {
+                currentAnioId = ResolveCurrentAnioPresupuestalId();
+                anioResolved = true;
+            }
+            return currentAnioId;
+        }
+
+        private int? ResolveCurrentAnioPresupuestalId()
         {
             var value = _requestContext.GetHeader(AnioPresupuestalHeader);
             if (!int.TryParse(value, out var anioId) ||

@@ -71,7 +71,7 @@
                         SubModulo="Cotizacion"
                         Controlador="Cotizacion"
                         EntidadId="@cell.Item.PkidCotizacion"
-                        RegistroTitulo="@($"{TextOrDash(cell.Item.ProveedorNombre)} - Cotizacion {cell.Item.PkidCotizacion}")"
+                        RegistroTitulo="@($"Cotización · {TextOrDash(cell.Item.ProveedorNombre)}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -90,11 +90,7 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="CotizacionResponse" Title="ID" Identifier="PkidCotizacion" PropertyName="PkidCotizacion" SortBy="x => x.PkidCotizacion">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidCotizacion</MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="CotizacionResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</MudText>
@@ -184,7 +180,7 @@
                                            SubModulo="Cotizacion"
                                            Controlador="Cotizacion"
                                            EntidadId="@SelectedCotizacion.PkidCotizacion"
-                                           RegistroTitulo="@($"{TextOrDash(SelectedCotizacion.ProveedorNombre)} - Cotizacion {SelectedCotizacion.PkidCotizacion}")"
+                                           RegistroTitulo="@($"Cotización · {TextOrDash(SelectedCotizacion.ProveedorNombre)}")"
                                            RegistroDescripcion="@TextOrDash(SelectedCotizacion.RequisicionDescripcion)" />
 
 
@@ -297,11 +293,7 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="CotizacionDetalleResponse" Title="ID" Identifier="PkidCotizacionDetalle" PropertyName="PkidCotizacionDetalle" SortBy="x => x.PkidCotizacionDetalle">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidCotizacionDetalle
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="CotizacionDetalleResponse" Title="Clave" Identifier="TipoBienClave" PropertyName="TipoBienClave" SortBy="x => x.TipoBienClave">
                     <CellTemplate Context="cell">
                         <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(cell.Item.TipoBienClave)</MudChip>
@@ -517,7 +509,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidCotizacion,
             Requisicion = item.RequisicionDescripcion,
             Proveedor = item.ProveedorNombre,
             RFC = item.ProveedorRfc,

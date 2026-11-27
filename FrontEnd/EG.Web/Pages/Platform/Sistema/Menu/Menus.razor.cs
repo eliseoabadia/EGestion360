@@ -143,7 +143,6 @@ public partial class Menus
             }
             var rows = response.Items.Select(menu => new
             {
-                ID = menu.PkidMenu,
                 Nombre = menu.Nombre,
                 Tipo = menu.TipoDescripcion,
                 MenuPadre = menu.NombreMenuPadre ?? "-",
@@ -152,7 +151,7 @@ public partial class Menus
                 Validacion = menu.ValidacionEstructura
             }).ToList();
             using var stream = new MemoryStream();
-            await stream.SaveAsAsync(rows);
+            await stream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(rows));
             if (disposed)
                 return;
             await _jsRuntime.InvokeVoidAsync("downloadFile", Convert.ToBase64String(stream.ToArray()),

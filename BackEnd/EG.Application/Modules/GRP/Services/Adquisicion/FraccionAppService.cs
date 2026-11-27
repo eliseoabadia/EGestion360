@@ -138,7 +138,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<FraccionResponse>
                     {
                         Success = false,
-                        Message = $"Fracción con ID {id} no encontrada",
+                        Message = $"Fracción no encontrada",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -202,7 +202,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Fracción con ID {id} no encontrada",
+                        Message = $"Fracción no encontrada",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };

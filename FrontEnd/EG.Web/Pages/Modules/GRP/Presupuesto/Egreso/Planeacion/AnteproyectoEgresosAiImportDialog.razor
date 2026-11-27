@@ -502,6 +502,9 @@
 </style>
 
 @code {
+    private List<UsuarioAreaResponse>? _cachedCurrentUserAreas;
+    private Task<(bool Success, List<UsuarioAreaResponse> Items)>? _currentUserAreasLoadTask;
+
     [Parameter] public string CurrencySymbol { get; set; } = "$";
     [Parameter] public int? EmpresaId { get; set; }
     [Parameter] public string? EmpresaNombre { get; set; }
@@ -1017,11 +1020,40 @@
 
     private async Task<ComboLookupResult> LoadAreasPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await AreaService.GetAllAsync();
-        var items = FilterUsuarioAreas(response?.Items, filter)
+        var areas = await GetCurrentUserAreasAsync();
+        var items = FilterUsuarioAreas(areas, filter)
             .Select(x => new LookupItem { Id = x.PkidArea, Text = x.UsuarioAreaDescripcion });
 
         return ToPagedComboResult(items, page, pageSize);
+    }
+
+    private async Task<List<UsuarioAreaResponse>> GetCurrentUserAreasAsync()
+    {
+        if (_cachedCurrentUserAreas is not null)
+            return _cachedCurrentUserAreas;
+
+        _currentUserAreasLoadTask ??= LoadCurrentUserAreasAsync();
+        try
+        {
+            var result = await _currentUserAreasLoadTask;
+            if (result.Success)
+                _cachedCurrentUserAreas = result.Items;
+            else
+                _currentUserAreasLoadTask = null;
+
+            return result.Items;
+        }
+        catch
+        {
+            _currentUserAreasLoadTask = null;
+            throw;
+        }
+    }
+
+    private async Task<(bool Success, List<UsuarioAreaResponse> Items)> LoadCurrentUserAreasAsync()
+    {
+        var response = await AreaService.GetAllAsync();
+        return (response?.Success == true, response?.Items?.ToList() ?? new List<UsuarioAreaResponse>());
     }
 
     private Task<ComboLookupResult> LoadFuentesFinanciamientoPageAsync(int page, int pageSize, string filter, CancellationToken ct)

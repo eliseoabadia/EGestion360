@@ -148,7 +148,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<TipoDocumentoResponse>
                 {
                     Success = false,
-                    Message = $"Tipo de Documento con ID {id} no encontrado",
+                    Message = $"Tipo de Documento no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -185,7 +185,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de Documento con ID {id} no encontrado",
+                    Message = $"Tipo de Documento no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

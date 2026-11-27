@@ -48,11 +48,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="ID" Identifier="PkidSolicitudSuficienciaDetalle" PropertyName="PkidSolicitudSuficienciaDetalle" SortBy="x => x.PkidSolicitudSuficienciaDetalle">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidSolicitudSuficienciaDetalle
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="SolicitudSuficienciaDetalleResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         @TextOrDash(cell.Item.RequisicionDescripcion)
@@ -103,7 +99,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidSolicitudSuficienciaDetalle,
             Requisicion = item.RequisicionDescripcion,
             Partida = item.PartidaClaveNombre,
             Bien = item.TipoBienDescripcion,

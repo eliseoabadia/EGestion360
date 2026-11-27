@@ -63,7 +63,7 @@
                         Controlador="SolicitudSuficiencia"
                         EntidadId="@cell.Item.PkidSolicitudSuficiencia"
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
-                        RegistroTitulo="@($"Solicitud {cell.Item.PkidSolicitudSuficiencia}")"
+                        RegistroTitulo="@($"Solicitud de suficiencia · {cell.Item.FechaSolicitud:dd/MM/yyyy}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -81,11 +81,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SolicitudSuficienciaResponse" Title="ID" Identifier="PkidSolicitudSuficiencia" PropertyName="PkidSolicitudSuficiencia" SortBy="x => x.PkidSolicitudSuficiencia">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidSolicitudSuficiencia</MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="SolicitudSuficienciaResponse" Title="Requisicion" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</MudText>
@@ -126,7 +122,7 @@
                                        Tooltip="Volver al listado" />
                         <div>
                             <MudText Typo="Typo.h6" Class="selected-name">@TextOrDash(SelectedSolicitud.RequisicionDescripcion)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Solicitud @SelectedSolicitud.PkidSolicitudSuficiencia | @SelectedSolicitud.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Solicitud de suficiencia · @SelectedSolicitud.FechaSolicitud.ToString("dd/MM/yyyy")</MudText>
                         </div>
                     </div>
                     <MudSpacer />
@@ -142,7 +138,7 @@
                                            Controlador="SolicitudSuficiencia"
                                            EntidadId="@SelectedSolicitud.PkidSolicitudSuficiencia"
                                            FkidEmpresaSis="@SelectedSolicitud.FkidEmpresaSis"
-                                           RegistroTitulo="@($"Solicitud {SelectedSolicitud.PkidSolicitudSuficiencia}")"
+                                           RegistroTitulo="@($"Solicitud de suficiencia · {SelectedSolicitud.FechaSolicitud:dd/MM/yyyy}")"
                                            RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
                     <MudTooltip Text="Actualizar">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
@@ -436,7 +432,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidSolicitudSuficiencia,
             Requisicion = item.RequisicionDescripcion,
             FechaSolicitud = item.FechaSolicitud.ToString("dd/MM/yyyy"),
             FechaRequisicion = item.FechaRequisicion?.ToString("dd/MM/yyyy") ?? string.Empty,

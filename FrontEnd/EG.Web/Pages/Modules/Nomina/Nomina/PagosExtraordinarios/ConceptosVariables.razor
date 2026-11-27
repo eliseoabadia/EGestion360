@@ -81,8 +81,8 @@
                     <TemplateColumn T="NomConceptoVariableResponse" Title="Concepto" Identifier="ConceptoClaveNombre" PropertyName="ConceptoClaveNombre" SortBy="x => x.ConceptoClaveNombre">
                         <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@TextOrDash(cell.Item.ConceptoClaveNombre)</span></CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn T="NomConceptoVariableResponse" Title="Periodo" Identifier="PeriodoId" PropertyName="PeriodoId" SortBy="x => x.PeriodoId">
-                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@cell.Item.PeriodoId.ToString(CultureInfo.InvariantCulture)</span></CellTemplate>
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Periodo" Identifier="Periodo" PropertyName="PeriodoId" SortBy="x => x.PeriodoId">
+                        <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@($"Periodo {cell.Item.PeriodoId.ToString(Culture)}")</span></CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn T="NomConceptoVariableResponse" Title="Importe" Identifier="Importe" PropertyName="Importe" SortBy="x => x.Importe" CellClass="money-cell">
                         <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@Money(cell.Item.Importe)</span></CellTemplate>
@@ -182,7 +182,7 @@
         {
             Empleado = item.PersonaClaveNombre,
             Concepto = item.ConceptoClaveNombre,
-            Periodo = item.PeriodoId,
+            Periodo = $"Periodo {item.PeriodoId.ToString(Culture)}",
             Importe = item.Importe.ToString("0.00", Culture),
             item.Referencia,
             Estado = item.Activo ? "Activo" : "Inactivo"

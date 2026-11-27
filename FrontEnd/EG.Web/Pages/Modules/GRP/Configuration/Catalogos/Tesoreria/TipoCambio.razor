@@ -25,7 +25,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoCambioResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoCambio))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoCambio))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoCambioResponse" TProperty="int" Property="x => x.PkidTipoCambio" Title="ID" Identifier="PkidTipoCambio" />
+                
                 <PropertyColumn T="TipoCambioResponse" TProperty="string" Property="x => x.MonedaCodigo" Title="Moneda" Identifier="MonedaCodigo" />
                 <PropertyColumn T="TipoCambioResponse" TProperty="string" Property="x => x.MonedaDescripcion" Title="Descripción" Identifier="MonedaDescripcion" />
                 <TemplateColumn Resizable="true" T="TipoCambioResponse" Title="Cantidad" Identifier="Cantidad"><CellTemplate>@context.Item.Cantidad.ToString("N4")</CellTemplate></TemplateColumn>
@@ -51,7 +51,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidTipoCambio,
             Moneda = u.MonedaCodigo ?? string.Empty,
             Descripcion = u.MonedaDescripcion ?? string.Empty,
             Cantidad = u.Cantidad,

@@ -165,7 +165,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<ProveedorResponse>
                     {
                         Success = false,
-                        Message = $"Proveedor con ID {id} no encontrado",
+                        Message = $"Proveedor no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -234,7 +234,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Proveedor con ID {id} no encontrado",
+                        Message = $"Proveedor no encontrado",
                         Code = "NOT_FOUND",
                         TotalCount = 0
                     };
@@ -265,7 +265,7 @@ namespace EG.Application.Services.Adquisicion
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"No fue posible dar de baja Proveedor con ID {id}; el registro sigue activo en la base de datos.",
+                        Message = $"No fue posible dar de baja Proveedor; el registro sigue activo en la base de datos.",
                         Code = "ERROR",
                         TotalCount = 0
                     };

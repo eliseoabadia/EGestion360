@@ -15,9 +15,14 @@ namespace EG.ApiCoreBS.Controllers.SoporteDocumental
     [Authorize]
     public class SoporteDocumentalController(
         ISoporteDocumentalAppService service,
+        IDocumentSummaryAppService summaries,
         IFirmaDocumentalStore firmaStore,
         IUserContextService userContext) : ControllerBase
     {
+        [HttpPost("resumen-lote")]
+        public async Task<ActionResult<PagedResult<DocumentoResumenResponse>>> ObtenerResumenLote([FromBody] List<DocumentoEntidadRequest> requests)
+            => Ok(await summaries.ReadBatchAsync(requests));
+
         [HttpPost("entidad")]
         public async Task<ActionResult<PagedResult<DocumentoResponse>>> ObtenerPorEntidad([FromBody] DocumentoEntidadRequest request)
         {

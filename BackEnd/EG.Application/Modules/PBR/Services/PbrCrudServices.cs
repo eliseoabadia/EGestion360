@@ -44,7 +44,7 @@ namespace EG.Application.Services.PBR
                 return new PagedResult<PbrAnteproyectoResponse>
                 {
                     Success = false,
-                    Message = $"Anteproyecto PBR con ID {id} no encontrado",
+                    Message = $"Anteproyecto PBR no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

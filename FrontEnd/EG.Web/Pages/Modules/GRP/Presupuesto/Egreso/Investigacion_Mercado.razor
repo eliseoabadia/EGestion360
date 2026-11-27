@@ -85,11 +85,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="EstudioMercadoResponse" Title="ID" Identifier="PkidEstudioMercado" PropertyName="PkidEstudioMercado" SortBy="x => x.PkidEstudioMercado">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Color="Color.Tertiary" Size="Size.Small">@cell.Item.PkidEstudioMercado</MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="EstudioMercadoResponse" Title="Estudio" Identifier="Nombre" PropertyName="Nombre" SortBy="x => x.Nombre">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Class="main-cell">@TextOrDash(cell.Item.Nombre)</MudText>
@@ -270,11 +266,7 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="EstudioMercadoDetalleResponse" Title="ID" Identifier="PkidEstudioMercadoDetalle" PropertyName="PkidEstudioMercadoDetalle" SortBy="x => x.PkidEstudioMercadoDetalle">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidEstudioMercadoDetalle
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="EstudioMercadoDetalleResponse" Title="Clave" Identifier="TipoBienClave" PropertyName="TipoBienClave" SortBy="x => x.TipoBienClave">
                     <CellTemplate Context="cell">
                         <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(cell.Item.TipoBienClave)</MudChip>
@@ -560,8 +552,7 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidEstudioMercado,
-            Anio = item.AnioClave ?? item.FkidAnioSis,
+            Anio = item.AnioClave?.ToString(CultureInfo.InvariantCulture) ?? "Sin ejercicio",
             Estudio = item.Nombre,
             Descripcion = item.Descripcion,
             Responsable = item.ResponsableNombre,
@@ -1071,7 +1062,7 @@
     private static string ProviderText(EstudioMercadoDetalleProveedorResponse proveedor)
     {
         var text = $"{proveedor.ProveedorClave} - {proveedor.ProveedorNombre}".Trim(' ', '-');
-        return string.IsNullOrWhiteSpace(text) ? proveedor.PkidProveedor.ToString() : text;
+        return string.IsNullOrWhiteSpace(text) ? "Proveedor sin clave ni nombre" : text;
     }
 
     private static Color QuoteProgressColor(EstudioMercadoDetalleResponse detalle)

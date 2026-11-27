@@ -1,0 +1,67 @@
+[
+  {
+    "path": "/api/Requisicion/GetAllPaginado",
+    "name": "Requisicion",
+    "body": {
+      "searchString": "",
+      "page": 1,
+      "pageSize": 10,
+      "sortLabel": "",
+      "additionalFilters": {},
+      "sortDirection": "Ascending"
+    },
+    "method": "POST"
+  },
+  {
+    "path": "/api/OrdenCompra/GetAllPaginado",
+    "name": "OrdenCompra",
+    "body": {
+      "searchString": "",
+      "page": 1,
+      "pageSize": 10,
+      "sortLabel": "",
+      "additionalFilters": {},
+      "sortDirection": "Ascending"
+    },
+    "method": "POST"
+  },
+  {
+    "path": "/api/Poliza/GetAllPaginado",
+    "name": "Poliza",
+    "body": {
+      "searchString": "",
+      "page": 1,
+      "pageSize": 10,
+      "sortLabel": "",
+      "additionalFilters": {},
+      "sortDirection": "Ascending"
+    },
+    "method": "POST"
+  },
+  {
+    "path": "/api/Bien/GetAllPaginado",
+    "name": "Bien",
+    "body": {
+      "searchString": "",
+      "page": 1,
+      "pageSize": 10,
+      "sortLabel": "",
+      "additionalFilters": {},
+      "sortDirection": "Ascending"
+    },
+    "method": "POST"
+  },
+  {
+    "path": "/api/NomRhEmpleado/GetAllPaginado",
+    "name": "NomRhEmpleado",
+    "body": {
+      "searchString": "",
+      "page": 1,
+      "pageSize": 10,
+      "sortLabel": "",
+      "additionalFilters": {},
+      "sortDirection": "Ascending"
+    },
+    "method": "POST"
+  }
+]

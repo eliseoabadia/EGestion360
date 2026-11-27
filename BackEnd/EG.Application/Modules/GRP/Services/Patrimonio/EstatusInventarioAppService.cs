@@ -31,7 +31,7 @@ namespace EG.Application.Services.Patrimonio
             var item = await _service.GetByIdAsync(id, idPropertyName: "PkidEstatusInventario");
             if (item == null)
             {
-                return Failure<EstatusInventarioResponse>($"Estatus de inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstatusInventarioResponse>($"Estatus de inventario no encontrado.", "NOT_FOUND");
             }
 
             return new PagedResult<EstatusInventarioResponse>
@@ -78,7 +78,7 @@ namespace EG.Application.Services.Patrimonio
             var current = await _context.EstatusInventarios.AsNoTracking().FirstOrDefaultAsync(x => x.PkidEstatusInventario == id && x.Activo);
             if (current == null)
             {
-                return Failure<EstatusInventarioResponse>($"Estatus de inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstatusInventarioResponse>($"Estatus de inventario no encontrado.", "NOT_FOUND");
             }
 
             if (await _context.EstatusInventarios.AsNoTracking().AnyAsync(x => x.Descripcion == response.Descripcion && x.PkidEstatusInventario != id && x.Activo))
@@ -124,7 +124,7 @@ namespace EG.Application.Services.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Estatus de inventario con ID {id} no encontrado.",
+                    Message = $"Estatus de inventario no encontrado.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0

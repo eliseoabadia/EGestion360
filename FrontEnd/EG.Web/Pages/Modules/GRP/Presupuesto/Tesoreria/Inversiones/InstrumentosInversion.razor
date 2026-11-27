@@ -27,7 +27,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="InstrumentoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidInstrumento))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidInstrumento))" /></CellTemplate></TemplateColumn>
-                <PropertyColumn T="InstrumentoResponse" TProperty="int" Property="x => x.PkidInstrumento" Title="ID" Identifier="PkidInstrumento" />
+                
                 <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
                 <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.TipoInversionDescripcion" Title="Tipo inversión" Identifier="TipoInversionDescripcion" />
                 <PropertyColumn T="InstrumentoResponse" TProperty="string" Property="x => x.IntermediarioNombre" Title="Intermediario" Identifier="IntermediarioNombre" />
@@ -52,7 +52,6 @@
     protected override IEnumerable<object> MapToExcelData(IEnumerable<InstrumentoResponse> items) =>
         items.Select(x => new
         {
-            x.PkidInstrumento,
             x.Nombre,
             x.TipoInversionDescripcion,
             x.IntermediarioNombre,

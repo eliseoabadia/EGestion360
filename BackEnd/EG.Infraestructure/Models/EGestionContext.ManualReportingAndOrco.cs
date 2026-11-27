@@ -14,6 +14,22 @@ public partial class EGestionContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<IngresoClcFacturaReadModel>().HasNoKey().ToSqlQuery("""
+            SELECT v.PKIdCLCFactura AS PkidClcfactura, v.FKIdEmpresa_SIS AS FkidEmpresaSis,
+                v.EmpresaNombre, v.FKIdCLC_PRES AS FkidClcPres, v.NumCLC AS NumClc,
+                v.FKIdFactura_PRES AS FkidFacturaPres, v.NumFactura,
+                v.FKIdFacturaDetalle_PRES AS FkidFacturaDetallePres, v.FKIdPartida_CONTA AS FkidPartidaConta,
+                v.PartidaClave, v.PartidaDescripcion, v.MontoAplicado, v.Observaciones, v.Activo,
+                v.FechaCreacion, v.UsuarioCreacion, v.FechaModificacion, v.UsuarioModificacion,
+                i.FKIdAnio_SIS AS FkIdAnioSis, c.FKIdIngresoAutorizado_PRES AS FkIdIngresoAutorizado,
+                c.Fecha, v.MontoAplicado AS Total
+            FROM PRES.Vw_CLCFactura v
+            INNER JOIN PRES.CLCFactura c ON c.PKIdCLCFactura=v.PKIdCLCFactura
+            INNER JOIN PRES.Vw_IngresoAutorizado i ON i.PKIdIngresoAutorizado=c.FKIdIngresoAutorizado_PRES
+                AND i.Activo=1
+            """);
+        modelBuilder.Entity<IngresoClcFacturaReadModel>().Property(e => e.MontoAplicado).HasPrecision(20, 4);
+        modelBuilder.Entity<IngresoClcFacturaReadModel>().Property(e => e.Total).HasPrecision(20, 4);
         modelBuilder.Entity<Empresa>(entity =>
         {
             entity.Property(e => e.PkidEmpresa).ValueGeneratedOnAdd();

@@ -112,7 +112,7 @@
                                 </MudTooltip>
                                 </CellTemplate>
                             </TemplateColumn>
-                            <PropertyColumn T="PolizaResponse" TProperty="int" Property="x => x.PkidPoliza" Title="ID" Identifier="PkidPoliza" />
+                            
                             <PropertyColumn T="PolizaResponse" TProperty="string" Property="x => x.ClavePoliza" Title="Clave" Identifier="ClavePoliza">
                                 <CellTemplate>
                                     <MudChip T="string" Color="Color.Primary" Size="Size.Small">@TextOrDash(context.Item.ClavePoliza)</MudChip>
@@ -317,11 +317,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="PolizaDetalleResponse" Title="ID" Identifier="PkidPolizaDetalle" PropertyName="PkidPolizaDetalle" SortBy="x => x.PkidPolizaDetalle">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidPolizaDetalle
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="PolizaDetalleResponse" Title="Cuenta" Identifier="CuentaClave" PropertyName="CuentaClave" SortBy="x => x.CuentaClave">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.CuentaClave)</MudText>
@@ -386,7 +382,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidPoliza,
             Clave = item.ClavePoliza,
             Poliza = item.NombrePoliza,
             Fecha = item.FechaPoliza.ToString("dd/MM/yyyy"),

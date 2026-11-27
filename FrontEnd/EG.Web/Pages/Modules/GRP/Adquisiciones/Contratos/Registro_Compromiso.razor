@@ -214,7 +214,6 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<OrcoContratoResponse> items) => items.Select(x => new
     {
-        x.PkidContrato,
         x.Numero,
         x.Descripcion,
         Proveedor = x.ProveedorNombre,

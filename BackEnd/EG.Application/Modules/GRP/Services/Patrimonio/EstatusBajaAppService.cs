@@ -31,7 +31,7 @@ namespace EG.Application.Services.Patrimonio
             var item = await _service.GetByIdAsync(id, idPropertyName: "PkidEstatusBaja");
             if (item == null)
             {
-                return Failure<EstatusBajaResponse>($"Estatus de baja con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstatusBajaResponse>($"Estatus de baja no encontrado.", "NOT_FOUND");
             }
 
             return new PagedResult<EstatusBajaResponse>
@@ -78,7 +78,7 @@ namespace EG.Application.Services.Patrimonio
             var current = await _context.EstatusBajas.AsNoTracking().FirstOrDefaultAsync(x => x.PkidEstatusBaja == id && x.Activo);
             if (current == null)
             {
-                return Failure<EstatusBajaResponse>($"Estatus de baja con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstatusBajaResponse>($"Estatus de baja no encontrado.", "NOT_FOUND");
             }
 
             if (await _context.EstatusBajas.AsNoTracking().AnyAsync(x => x.Descripcion == response.Descripcion && x.PkidEstatusBaja != id && x.Activo))
@@ -124,7 +124,7 @@ namespace EG.Application.Services.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Estatus de baja con ID {id} no encontrado.",
+                    Message = $"Estatus de baja no encontrado.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0

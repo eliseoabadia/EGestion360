@@ -539,7 +539,7 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem
         {
             Id = x.PkidProveedor,
-            Text = BuildProveedorText(x.Clave, x.Nombre, x.PkidProveedor)
+            Text = BuildProveedorText(x.Clave, x.Nombre)
         }), response?.TotalCount);
     }
 
@@ -734,10 +734,10 @@
 
     private static string Quantity(decimal value) => value.ToString("0.00", NumberCulture);
 
-    private static string BuildProveedorText(string? clave, string? nombre, int id)
+    private static string BuildProveedorText(string? clave, string? nombre)
     {
         var text = $"{clave} - {nombre}".Trim(' ', '-');
-        return string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        return string.IsNullOrWhiteSpace(text) ? "Proveedor sin clave ni nombre" : text;
     }
 
     private sealed class PaaasDetalleDragItem

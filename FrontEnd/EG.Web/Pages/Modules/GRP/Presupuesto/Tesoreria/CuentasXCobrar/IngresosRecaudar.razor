@@ -43,9 +43,9 @@
                           OnSearch="OnSearch"
                           >
                 <Columns>
-                    <PropertyColumn T="IngreXEjerResponse" TProperty="int" Property="x => x.PkIdIngresoAutorizado" Title="ID" Identifier="PkIdIngresoAutorizado" />
-                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Área funcional" Identifier="AreaFuncional"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.AreaFuncional)</div><span>Programa @context.Item.FkIdProgramaPres</span></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Origen" Identifier="Origen"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.Origen)</div><span>Origen @context.Item.FkIdOrigenPres</span></CellTemplate></TemplateColumn>
+                    
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Área funcional" Identifier="AreaFuncional"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.AreaFuncional)</div><span>@(context.Item.FkIdProgramaPres > 0 ? "Programa asociado" : "Sin programa asignado")</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Origen" Identifier="Origen"><CellTemplate><div class="main-cell">@TextOrDash(context.Item.Origen)</div></CellTemplate></TemplateColumn>
                     <PropertyColumn T="IngreXEjerResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                     <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Meses" Sortable="false"><CellTemplate><div class="month-spark">@foreach (var month in GetMonths(context.Item)) { <span title="@($"{month.Label}: {Money(month.Amount)}")" style="height:@GetMonthHeight(month.Amount, context.Item.Total ?? 0m)%"></span> }</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="IngreXEjerResponse" Title="Ene" Identifier="Ene"><CellTemplate>@Money(context.Item.Ene ?? 0m)</CellTemplate></TemplateColumn>
@@ -94,7 +94,7 @@
     protected override Type EditDialogType => typeof(IngresosRecaudar);
     protected override Type DeleteDialogType => typeof(IngresosRecaudar);
     protected override string GetDefaultSortLabel() => "PkIdIngresoAutorizado";
-    private string BudgetYear => AnioStateService.AnioClave?.ToString() ?? AnioStateService.AnioId?.ToString() ?? "-";
+    private string BudgetYear => AnioStateService.AnioClave?.ToString() ?? "Sin ejercicio";
 
     protected override async Task OnInitializedAsync()
     {
@@ -171,10 +171,8 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<IngreXEjerResponse> items) => items.Select(x => new
     {
-        ID = x.PkIdIngresoAutorizado,
-        Anio = x.FkIdAnioSis,
-        Programa = x.FkIdProgramaPres,
-        OrigenId = x.FkIdOrigenPres,
+        Anio = BudgetYear,
+        Programa = x.FkIdProgramaPres > 0 ? "Programa asociado" : "Sin programa asignado",
         x.AreaFuncional,
         x.Origen,
         x.Descripcion,

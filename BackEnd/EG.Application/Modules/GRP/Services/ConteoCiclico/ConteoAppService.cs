@@ -67,7 +67,7 @@ namespace EG.Application.Services.ConteoCiclico
             var existing = await _service.GetByIdAsync(id);
             if (existing == null)
             {
-                throw new KeyNotFoundException($"Conteo con ID {id} no encontrado.");
+                throw new KeyNotFoundException($"Conteo no encontrado.");
             }
 
             await ValidateReferencesAndStatusAsync(dto);
@@ -96,7 +96,7 @@ namespace EG.Application.Services.ConteoCiclico
             var existing = await _context.Conteos
                 .Include(c => c.FkidPeriodoConteoAlmaNavigation)
                 .FirstOrDefaultAsync(c => c.PkidConteo == id && c.Activo)
-                ?? throw new KeyNotFoundException($"Conteo con ID {id} no encontrado.");
+                ?? throw new KeyNotFoundException($"Conteo no encontrado.");
 
             await EnsureEditablePeriodStatusAsync(existing.FkidPeriodoConteoAlmaNavigation);
             if (await _context.ConteoDetalleEscaneos.AnyAsync(e => e.FkidConteoAlma == id && e.Activo))

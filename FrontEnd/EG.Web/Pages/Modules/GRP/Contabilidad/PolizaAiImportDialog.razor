@@ -513,8 +513,9 @@
         && !_ragBusy
         && !string.IsNullOrWhiteSpace(_ragQuestion);
     private string EmpresaText => _header.FkidEmpresaSis is > 0
-        ? $"{_header.FkidEmpresaSis} - {SucursalStateService.EmpresaNombre}"
+        ? (string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre) ? "Empresa seleccionada" : SucursalStateService.EmpresaNombre)
         : "Sin empresa seleccionada";
+    private string HeaderMesText => MonthOptions.FirstOrDefault(month => month.Id == _header.FkidMesSis)?.Name ?? "Sin mes seleccionado";
     private string HeaderAnioText => _header.Anio?.ToString(CultureInfo.InvariantCulture)
         ?? AnioStateService.AnioClave?.ToString(CultureInfo.InvariantCulture)
         ?? "-";
@@ -788,7 +789,7 @@
         Servicio = "AiImport",
         FkidEmpresaSis = _header.FkidEmpresaSis,
         Titulo = $"Poliza {_header.ClavePoliza ?? "sin clave"}",
-        Descripcion = $"Empresa: {EmpresaText}. Anio: {HeaderAnioText}. Mes: {_header.FkidMesSis?.ToString() ?? "-"}. Archivo: {_file?.Name ?? "sin archivo"}."
+        Descripcion = $"Empresa: {EmpresaText}. Anio: {HeaderAnioText}. Mes: {HeaderMesText}. Archivo: {_file?.Name ?? "sin archivo"}."
     };
 
     private static string GetFileKey(IBrowserFile file)
@@ -889,7 +890,7 @@
         var warnings = _preview.Messages.Where(message => !IsError(message)).ToList();
         var sb = new StringBuilder();
 
-        sb.AppendLine($"Contexto de carga: empresa {EmpresaText}, anio {HeaderAnioText}, mes {_header.FkidMesSis?.ToString() ?? "-"}.");
+        sb.AppendLine($"Contexto de carga: empresa {EmpresaText}, anio {HeaderAnioText}, mes {HeaderMesText}.");
         sb.AppendLine($"La poliza tiene {_preview.Details.Count} movimiento(s), debe {Money(_preview.TotalDebe)}, haber {Money(_preview.TotalHaber)} y diferencia {Money(_preview.Diferencia)}.");
 
         if (_preview.CanImport && _preview.EstaCuadrada)

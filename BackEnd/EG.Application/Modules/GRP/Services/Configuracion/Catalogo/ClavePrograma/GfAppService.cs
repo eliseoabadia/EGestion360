@@ -38,7 +38,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
                 return new PagedResult<GfResponse>
                 {
                     Success = false,
-                    Message = $"No se encontró el registro con ID {id}",
+                    Message = $"No se encontró el registro",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -156,7 +156,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
                 return new PagedResult<GfResponse>
                 {
                     Success = false,
-                    Message = $"No se encontró el registro con ID {id}",
+                    Message = $"No se encontró el registro",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -201,7 +201,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.ClavePrograma
                 return new PagedResult<GfResponse>
                 {
                     Success = false,
-                    Message = $"No se encontró el registro con ID {id}",
+                    Message = $"No se encontró el registro",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

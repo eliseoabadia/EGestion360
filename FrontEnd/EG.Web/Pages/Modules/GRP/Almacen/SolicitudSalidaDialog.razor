@@ -109,6 +109,9 @@
 </BaseCrudDialog>
 
 @code {
+    private List<UsuarioAreaResponse>? _cachedCurrentUserAreas;
+    private Task<(bool Success, List<UsuarioAreaResponse> Items)>? _currentUserAreasLoadTask;
+
     [Parameter] public int? Id { get; set; }
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
@@ -219,8 +222,8 @@
 
     private async Task<ComboLookupResult> LoadAreaPageAsync(int page, int pageSize, string filter, CancellationToken ct)
     {
-        var response = await AreaService.GetAllAsync();
-        var items = (response?.Items ?? Enumerable.Empty<UsuarioAreaResponse>())
+        var areas = await GetCurrentUserAreasAsync();
+        var items = areas
             .Where(x => x.PkidArea > 0 && x.Activo)
             .Where(x => string.IsNullOrWhiteSpace(filter) || x.UsuarioAreaDescripcion.Contains(filter, StringComparison.OrdinalIgnoreCase))
             .OrderBy(x => x.UsuarioAreaDescripcion)
@@ -233,6 +236,35 @@
             Items = items.Skip((currentPage - 1) * currentPageSize).Take(currentPageSize).ToList(),
             TotalCount = items.Count
         };
+    }
+
+    private async Task<List<UsuarioAreaResponse>> GetCurrentUserAreasAsync()
+    {
+        if (_cachedCurrentUserAreas is not null)
+            return _cachedCurrentUserAreas;
+
+        _currentUserAreasLoadTask ??= LoadCurrentUserAreasAsync();
+        try
+        {
+            var result = await _currentUserAreasLoadTask;
+            if (result.Success)
+                _cachedCurrentUserAreas = result.Items;
+            else
+                _currentUserAreasLoadTask = null;
+
+            return result.Items;
+        }
+        catch
+        {
+            _currentUserAreasLoadTask = null;
+            throw;
+        }
+    }
+
+    private async Task<(bool Success, List<UsuarioAreaResponse> Items)> LoadCurrentUserAreasAsync()
+    {
+        var response = await AreaService.GetAllAsync();
+        return (response?.Success == true, response?.Items?.ToList() ?? new List<UsuarioAreaResponse>());
     }
 
 }

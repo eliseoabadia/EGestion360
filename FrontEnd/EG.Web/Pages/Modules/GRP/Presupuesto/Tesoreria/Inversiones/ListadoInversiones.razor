@@ -44,7 +44,7 @@
                                   OnSearch="OnSearch">
                         <Columns>
                             <TemplateColumn Resizable="false" T="InversionResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Ver detalle"><MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small" Color="Color.Info" OnClick="@(() => SelectInversion(context.Item))" >Abrir inversión</MudButton></MudTooltip><DocumentSupportButton Modulo="Inversiones" SubModulo="Listado_Inversiones" Controlador="Inversion" EntidadId="@context.Item.PkidInversion" RegistroTitulo="@TextOrDash(context.Item.Instrumento)" RegistroDescripcion="@TextOrDash(context.Item.CuentaBan)" /><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item.PkidInversion)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidInversion))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item.PkidInversion)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidInversion))" /></MudTooltip></CellTemplate></TemplateColumn>
-                            <PropertyColumn T="InversionResponse" TProperty="int" Property="x => x.PkidInversion" Title="ID" Identifier="PkidInversion" />
+                            
                             <PropertyColumn T="InversionResponse" TProperty="string" Property="x => x.CuentaBan" Title="Cuenta bancaria" Identifier="CuentaBan" />
                             <PropertyColumn T="InversionResponse" TProperty="string" Property="x => x.Instrumento" Title="Instrumento" Identifier="Instrumento" />
                             <TemplateColumn Resizable="true" T="InversionResponse" Title="Monto" Identifier="Monto"><CellTemplate>@Money(context.Item.Monto)</CellTemplate></TemplateColumn>
@@ -115,7 +115,7 @@
                     </MudGrid>
                     <GenericDataGrid TItem="PolizaDetalleResponse" @ref="contaTable" @key="SelectedInversion.PkidInversion" Items="@_contaBoard" Title="Movimientos contables de la inversión" FillAvailableHeight="false" PageSize="5" ShowDetailHint="false" ShowExportButton="false" SearchPlaceholder="Buscar cuenta o concepto..." SearchTextFunc="x => x.CuentaClaveNombre + x.Descripcion" EmptyTitle="Sin movimientos contables" EmptyMessage="La inversión aún no tiene movimientos contables asociados.">
                         <Columns>
-                            <PropertyColumn T="PolizaDetalleResponse" TProperty="int" Property="x => x.FkidPolizaConta" Title="Póliza" />
+                            <PropertyColumn T="PolizaDetalleResponse" TProperty="string" Property="x => x.ClavePoliza" Title="Póliza" />
                             <PropertyColumn T="PolizaDetalleResponse" TProperty="string" Property="x => x.CuentaClaveNombre" Title="Cuenta" />
                             <PropertyColumn T="PolizaDetalleResponse" TProperty="string" Property="x => x.Descripcion" Title="Concepto" />
                             <TemplateColumn T="PolizaDetalleResponse" Title="Debe" SortBy="x => x.ImporteDebe"><CellTemplate>@Money(context.Item.ImporteDebe ?? 0m)</CellTemplate></TemplateColumn>
@@ -182,7 +182,6 @@
     protected override IEnumerable<object> MapToExcelData(IEnumerable<InversionResponse> items) =>
         items.Select(x => new
         {
-            x.PkidInversion,
             x.CuentaBan,
             x.Instrumento,
             Monto = x.Monto.ToString("0.00", NumberCulture),

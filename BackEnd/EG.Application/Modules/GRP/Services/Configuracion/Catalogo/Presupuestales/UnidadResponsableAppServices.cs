@@ -84,7 +84,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             var existing = await _service.GetByIdAsync(id, idPropertyName: "PkidArea");
             if (existing == null)
             {
-                throw new KeyNotFoundException($"Unidad Responsable con ID {id} no encontrada");
+                throw new KeyNotFoundException($"Unidad Responsable no encontrada");
             }
 
             var dto = response.Adapt<UnidadResponsableDto>();

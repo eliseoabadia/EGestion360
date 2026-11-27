@@ -54,7 +54,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync(x => x.PkidBaja == id && x.FkidEmpresaSis == empresaId);
             if (entity == null)
             {
-                return Failure<BajaResponse>($"Baja con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<BajaResponse>($"Baja no encontrada.", "NOT_FOUND");
             }
 
             var item = entity.Adapt<BajaResponse>();
@@ -122,7 +122,7 @@ namespace EG.Application.Services.Patrimonio
 
             if (current == null)
             {
-                return Failure<BajaResponse>($"Baja con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<BajaResponse>($"Baja no encontrada.", "NOT_FOUND");
             }
 
             if (current.FkidEstatusBajaAlmaNavigation?.EsFinal == true)
@@ -178,7 +178,7 @@ namespace EG.Application.Services.Patrimonio
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Baja con ID {id} no encontrada.",
+                    Message = $"Baja no encontrada.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0

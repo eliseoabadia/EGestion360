@@ -1,0 +1,82 @@
+{
+  "startedUtc": "2026-11-26T18:49:22.080Z",
+  "origin": "http://localhost:5198",
+  "mode": "health-only-not-user-capacity",
+  "secondsPerLevel": 10,
+  "thinkMilliseconds": 1000,
+  "scenarios": [
+    {
+      "name": "health-only",
+      "path": "/api/Navigate/ping",
+      "method": "GET"
+    }
+  ],
+  "stages": [
+    {
+      "users": 1,
+      "requests": 10,
+      "failed": 0,
+      "p50Ms": 2,
+      "p95Ms": 6,
+      "p99Ms": 6,
+      "maxMs": 6,
+      "requestsPerSecond": 0.99,
+      "passed": true,
+      "endpoints": {
+        "health-only": {
+          "requests": 10,
+          "failed": 0,
+          "p50Ms": 2,
+          "p95Ms": 6,
+          "p99Ms": 6,
+          "maxMs": 6
+        }
+      },
+      "failures": []
+    },
+    {
+      "users": 10,
+      "requests": 100,
+      "failed": 0,
+      "p50Ms": 2,
+      "p95Ms": 3,
+      "p99Ms": 5,
+      "maxMs": 103,
+      "requestsPerSecond": 9.75,
+      "passed": true,
+      "endpoints": {
+        "health-only": {
+          "requests": 100,
+          "failed": 0,
+          "p50Ms": 2,
+          "p95Ms": 3,
+          "p99Ms": 5,
+          "maxMs": 103
+        }
+      },
+      "failures": []
+    },
+    {
+      "users": 40,
+      "requests": 400,
+      "failed": 0,
+      "p50Ms": 1,
+      "p95Ms": 3,
+      "p99Ms": 6,
+      "maxMs": 18,
+      "requestsPerSecond": 36.7,
+      "passed": true,
+      "endpoints": {
+        "health-only": {
+          "requests": 400,
+          "failed": 0,
+          "p50Ms": 1,
+          "p95Ms": 3,
+          "p99Ms": 6,
+          "maxMs": 18
+        }
+      },
+      "failures": []
+    }
+  ]
+}

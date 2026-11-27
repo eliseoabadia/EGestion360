@@ -29,7 +29,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="TipoBienResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidTipoBien))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidTipoBien))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="TipoBienResponse" TProperty="int" Property="x => x.PkidTipoBien" Title="ID" Identifier="PkidTipoBien" />
+                
                 <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.GrupoBienDescripcion" Title="Clave CUCOP" Identifier="GrupoBienDescripcion" />
                 <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.CodigoClave" Title="Código o Clave" Identifier="CodigoClave" />
                 <PropertyColumn T="TipoBienResponse" TProperty="string" Property="x => x.PartidaDescripcion" Title="Partida" Identifier="PartidaDescripcion" />
@@ -160,7 +160,6 @@
     {
         return items.Select(u => new
         {
-            Id = u.PkidTipoBien,
             ClaveCUCOP = u.GrupoBienDescripcion ?? string.Empty,
             CodigoClave = u.CodigoClave ?? string.Empty,
             Partida = u.PartidaDescripcion ?? string.Empty,

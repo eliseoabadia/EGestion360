@@ -43,18 +43,14 @@
                         Controlador="AutorizacionSuficiencia"
                         EntidadId="@cell.Item.PkidAutorizacionSuficiencia"
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
-                        RegistroTitulo="@($"Autorizacion {cell.Item.PkidAutorizacionSuficiencia}")"
+                        RegistroTitulo="@($"Autorización · {TextOrDash(cell.Item.RequisicionDescripcion)} · {cell.Item.FechaAutorizacion:dd/MM/yyyy}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.RequisicionDescripcion)" />
                         <MudIconButton Icon="@Icons.Material.Filled.AssignmentTurnedIn" Visible="@CanAuthorize" Disabled="@(cell.Item.Estatus >= 3)" Color="Color.Success" Size="Size.Small" OnClick="@(() => GenerateContrato(cell.Item))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(cell.Item)" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(cell.Item.PkidAutorizacionSuficiencia))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(cell.Item.PkidAutorizacionSuficiencia))" />
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="AutorizacionSuficienciaResponse" Title="ID" Identifier="PkidAutorizacionSuficiencia" PropertyName="PkidAutorizacionSuficiencia" SortBy="x => x.PkidAutorizacionSuficiencia">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidAutorizacionSuficiencia
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="AutorizacionSuficienciaResponse" Title="Requisición" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
                         @TextOrDash(cell.Item.RequisicionDescripcion)
@@ -86,7 +82,7 @@
                 <MudPaper Elevation="0" Class="pa-0 d-flex align-center" Style="background:transparent;">
                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="BackToTable" />
                     <div class="ml-2">
-                        <MudText Typo="Typo.h6" Style="font-weight:700">Autorización @SelectedAutorizacion.PkidAutorizacionSuficiencia</MudText>
+                        <MudText Typo="Typo.h6" Style="font-weight:700">Autorización de suficiencia · @TextOrDash(SelectedAutorizacion.RequisicionDescripcion)</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">@SelectedAutorizacion.RequisicionDescripcion</MudText>
                     </div>
                     <MudSpacer />
@@ -96,7 +92,7 @@
                                            Controlador="AutorizacionSuficiencia"
                                            EntidadId="@SelectedAutorizacion.PkidAutorizacionSuficiencia"
                                            FkidEmpresaSis="@SelectedAutorizacion.FkidEmpresaSis"
-                                           RegistroTitulo="@($"Autorizacion {SelectedAutorizacion.PkidAutorizacionSuficiencia}")"
+                                           RegistroTitulo="@($"Autorización · {TextOrDash(SelectedAutorizacion.RequisicionDescripcion)} · {SelectedAutorizacion.FechaAutorizacion:dd/MM/yyyy}")"
                                            RegistroDescripcion="@TextOrDash(SelectedAutorizacion.RequisicionDescripcion)" />
 
 
@@ -178,8 +174,12 @@
     protected override Type EditDialogType => typeof(AutorizacionSuficienciaDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<AutorizacionSuficienciaResponse>);
     protected override string GetDefaultSortLabel() => "FechaAutorizacion";
-    protected override IEnumerable<object> MapToExcelData(IEnumerable<AutorizacionSuficienciaResponse> items) => items.Select(x => new { x.PkidAutorizacionSuficiencia, x.RequisicionDescripcion, Fecha = x.FechaAutorizacion.ToString("dd/MM/yyyy"), x.AutorizadoPorNombre, x.EstatusDescripcion });
-    protected override async Task<string> GetItemNameForDelete(int id) => $"la autorización {(await Service.GetByIdAsync(id))?.Data?.PkidAutorizacionSuficiencia}";
+    protected override IEnumerable<object> MapToExcelData(IEnumerable<AutorizacionSuficienciaResponse> items) => items.Select(x => new { x.RequisicionDescripcion, Fecha = x.FechaAutorizacion.ToString("dd/MM/yyyy"), x.AutorizadoPorNombre, x.EstatusDescripcion });
+    protected override async Task<string> GetItemNameForDelete(int id)
+    {
+        var response = await Service.GetByIdAsync(id);
+        return $"la autorización de {TextOrDash(response?.Data?.RequisicionDescripcion)}";
+    }
     protected override async Task ReloadData() { if (SelectedAutorizacion is not null) await ReloadDetalles(); else if (table != null) await table.ReloadData(); }
 
     private static string TextOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
@@ -209,7 +209,7 @@
     private async Task EditDetalle(int id) => await OpenDetalle(id);
     private async Task OpenDetalle(int? id) {
         if (SelectedAutorizacion == null) return;
-        var p = new DialogParameters { ["Id"] = id, ["AutorizacionId"] = SelectedAutorizacion.PkidAutorizacionSuficiencia, ["AutorizacionNombre"] = $"Autorización {SelectedAutorizacion.PkidAutorizacionSuficiencia}" };
+        var p = new DialogParameters { ["Id"] = id, ["AutorizacionId"] = SelectedAutorizacion.PkidAutorizacionSuficiencia, ["AutorizacionNombre"] = $"Autorización · {TextOrDash(SelectedAutorizacion.RequisicionDescripcion)}" };
         var d = await DialogService.ShowAsync<AutorizacionSuficienciaDetalleDialog>(id.HasValue ? "Editar detalle" : "Nuevo detalle", p, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if ((await d.Result) is { Canceled: false }) await ReloadDetalles();
     }
@@ -249,11 +249,11 @@
             FkidAutorizacionSuficienciaPres = autorizacion.PkidAutorizacionSuficiencia,
             FkidSolicitudSuficienciaPres = autorizacion.FkidSolicitudSuficienciaPres,
             FkidRequisicionOrco = autorizacion.FkidRequisicionOrco,
-            NumeroContrato = $"AUT-{autorizacion.PkidAutorizacionSuficiencia}",
-            Descripcion = autorizacion.RequisicionDescripcion ?? $"Contrato de autorizacion {autorizacion.PkidAutorizacionSuficiencia}",
+            NumeroContrato = $"AUT-{Guid.NewGuid():N}",
+            Descripcion = autorizacion.RequisicionDescripcion ?? "Contrato generado desde autorización de suficiencia",
             FechaContrato = DateOnly.FromDateTime(DateTime.Today),
             MontoTotal = details.Sum(DetailTotal),
-            Observaciones = $"Generado desde autorizacion {autorizacion.PkidAutorizacionSuficiencia}",
+            Observaciones = $"Generado desde autorización de suficiencia · {TextOrDash(autorizacion.RequisicionDescripcion)}",
             Estatus = 1,
         };
 

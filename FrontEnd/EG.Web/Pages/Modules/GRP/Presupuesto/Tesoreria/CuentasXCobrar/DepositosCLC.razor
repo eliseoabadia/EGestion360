@@ -55,7 +55,7 @@
                     <TemplateColumn Resizable="true" T="DepositoResponse" Title="Cuenta abono" Identifier="CuentaAbonoClave"><CellTemplate><strong>@TextOrDash(context.Item.CuentaAbonoClave)</strong><br /><span>@TextOrDash(context.Item.CuentaAbonoDescripcion)</span></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="DepositoResponse" Title="Meses" Sortable="false"><CellTemplate><div class="month-spark">@foreach (var month in GetMonths(context.Item)) { <span title="@($"{month.Label}: {Money(month.Amount)}")" style="height:@GetMonthHeight(month.Amount, context.Item.Total ?? context.Item.Importe)%"></span> }</div></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="DepositoResponse" Title="Importe" Identifier="Importe"><CellTemplate><strong>@Money(context.Item.Total ?? context.Item.Importe)</strong></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="DepositoResponse" Title="Póliza" Identifier="ClavePoliza"><CellTemplate><MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Info" Disabled="@(context.Item.FkidPolizaConta <= 0)" OnClick="@(() => OpenPolizaAsync(context.Item))">@TextOrDash(context.Item.ClavePoliza ?? context.Item.FkidPolizaConta.ToString())</MudButton></CellTemplate></TemplateColumn>
+                    <TemplateColumn Resizable="true" T="DepositoResponse" Title="Póliza" Identifier="ClavePoliza"><CellTemplate><MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Info" Disabled="@(context.Item.FkidPolizaConta <= 0)" OnClick="@(() => OpenPolizaAsync(context.Item))">@TextOrDash(context.Item.ClavePoliza ?? "Ver póliza")</MudButton></CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="DepositoResponse" Title="Estatus" Identifier="EstaAutorizado"><CellTemplate><MudChip T="string" Size="Size.Small" Color="@(context.Item.EstaAutorizado ? Color.Success : Color.Warning)">@(context.Item.EstaAutorizado ? "Autorizado" : "Pendiente")</MudChip></CellTemplate></TemplateColumn>
                 </Columns>
             </GenericDataGrid>
@@ -221,7 +221,6 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<DepositoResponse> items) => items.Select(x => new
     {
-        ID = x.PkidDeposito,
         Referencia = x.NumeroReferencia,
         Fecha = x.FechaEmision.ToString("dd/MM/yyyy", DateCulture),
         Aportante = x.NombreAportante,

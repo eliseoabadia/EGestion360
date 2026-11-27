@@ -173,7 +173,7 @@
             }
             if (exported.Count == 0) { Snackbar.Add("No hay datos para exportar con el rango seleccionado.", Severity.Warning); return; }
             using var stream = new MemoryStream();
-            await stream.SaveAsAsync(MapToExcelData(exported));
+            await stream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(MapToExcelData(exported)));
             await JsRuntime.InvokeVoidAsync("downloadFile", Convert.ToBase64String(stream.ToArray()),
                 $"Bitacora_{DateTime.Now:yyyyMMddHHmmss}.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             Snackbar.Add($"Exportación exitosa: {exported.Count:N0} registros.", Severity.Success);

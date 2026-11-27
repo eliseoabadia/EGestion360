@@ -148,7 +148,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<ArticuloResponse>
                 {
                     Success = false,
-                    Message = $"Artículo con ID {id} no encontrado",
+                    Message = $"Artículo no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -185,7 +185,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Artículo con ID {id} no encontrado",
+                    Message = $"Artículo no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

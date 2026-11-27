@@ -30,7 +30,6 @@
 
                 <Columns>
                     <TemplateColumn Resizable="false" T="MatrizIngresoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMatrizIngreso))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMatrizIngreso))" /></MudTooltip></CellTemplate></TemplateColumn>
-                    <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="PK" Identifier="PkidMatrizIngreso"><CellTemplate>@context.Item.PkidMatrizIngreso</CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Programa" Identifier="ProgramaClave"><CellTemplate>@context.Item.ProgramaClave</CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Origen de Recursos" Identifier="OrigenDescripcion"><CellTemplate>@context.Item.OrigenDescripcion</CellTemplate></TemplateColumn>
                     <TemplateColumn Resizable="true" T="MatrizIngresoResponse" Title="Cta. Presupuesto Autorizado" Identifier="CuentaAutorizadoNombre"><CellTemplate>@context.Item.CuentaAutorizadoNombre</CellTemplate></TemplateColumn>
@@ -72,7 +71,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidMatrizIngreso,
             Programa = u.ProgramaClave,
             OrigenRecursos = u.OrigenDescripcion,
             CtaAutorizado = u.CuentaAutorizadoNombre,

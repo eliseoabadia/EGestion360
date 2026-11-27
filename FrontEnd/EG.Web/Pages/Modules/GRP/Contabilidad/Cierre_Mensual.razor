@@ -156,7 +156,7 @@
                     </MudChip>
                 </ToolbarActions>
             <Columns>
-                <TemplateColumn T="CierreMensualResponse" Title="Cuenta" Identifier="FkidCuentaContable" PropertyName="FkidCuentaContable" SortBy="x => x.FkidCuentaContable">
+                <TemplateColumn T="CierreMensualResponse" Title="Cuenta" Identifier="CuentaClave" PropertyName="CuentaClave" SortBy="x => x.CuentaClave">
                     <CellTemplate Context="cell">
                         <div class="account-cell">@TextOrDash(cell.Item.CuentaClave)</div>
                         <span>@TextOrDash(cell.Item.CuentaDescripcion)</span>
@@ -463,7 +463,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidSaldoMensual,
             Anio = item.Anio,
             Mes = item.Mes,
             Cuenta = item.CuentaClave,

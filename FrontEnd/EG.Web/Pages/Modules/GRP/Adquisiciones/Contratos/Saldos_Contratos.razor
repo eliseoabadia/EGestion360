@@ -67,10 +67,9 @@
                         <span>@TextOrDash(cell.Item.Descripcion)</span>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="SaldosContratoResponse" Title="Requisicion" Identifier="FkidRequisicionOrco" PropertyName="FkidRequisicionOrco" SortBy="x => x.FkidRequisicionOrco">
+                <TemplateColumn T="SaldosContratoResponse" Title="Requisición" Identifier="RequisicionDescripcion" PropertyName="RequisicionDescripcion" SortBy="x => x.RequisicionDescripcion">
                     <CellTemplate Context="cell">
-                        <div class="main-cell">@cell.Item.FkidRequisicionOrco</div>
-                        <span>@TextOrDash(cell.Item.RequisicionDescripcion)</span>
+                        <div class="main-cell">@TextOrDash(cell.Item.RequisicionDescripcion)</div>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="SaldosContratoResponse" Title="Proveedor" Identifier="ProveedorNombre" PropertyName="ProveedorNombre" SortBy="x => x.ProveedorNombre">
@@ -155,11 +154,10 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<SaldosContratoResponse> items) => items.Select(x => new
     {
-        x.PkidContrato,
         Anio = x.AnioClave,
         x.NumeroContrato,
         x.Descripcion,
-        Requisicion = x.FkidRequisicionOrco,
+        Requisicion = x.RequisicionDescripcion,
         x.RequisicionDescripcion,
         x.ProveedorNombre,
         x.ProveedorRfc,

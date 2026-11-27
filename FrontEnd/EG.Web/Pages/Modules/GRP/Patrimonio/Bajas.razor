@@ -124,7 +124,6 @@
                 <TemplateColumn T="BajaResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
-                        <span>ID @cell.Item.PkidBaja</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="BajaResponse" Title="Bien" Identifier="BienClave" PropertyName="BienClave" SortBy="x => x.BienClave">
@@ -388,7 +387,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidBaja,
             item.Folio,
             Bien = item.BienClave,
             Descripcion = item.BienDescripcion,
@@ -438,7 +436,7 @@
                 ["FkidAnioSis"] = AnioStateService.AnioId.Value
             };
             var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+            var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection, filters);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -447,7 +445,7 @@
             }
 
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(MapToExcelData(response.Items));
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(MapToExcelData(response.Items)));
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,

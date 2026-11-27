@@ -40,7 +40,7 @@ namespace EG.Application.Services.Nomina
                 await using var reader = await command.ExecuteReaderAsync();
                 if (!await reader.ReadAsync())
                 {
-                    return Failure<NominaRhEmpleadoResponse>($"Empleado con ID {id} no encontrado", "NOT_FOUND");
+                    return Failure<NominaRhEmpleadoResponse>($"Empleado no encontrado", "NOT_FOUND");
                 }
 
                 var item = MapEmpleado(reader);
@@ -86,7 +86,7 @@ namespace EG.Application.Services.Nomina
                 {
                     Success = deleted,
                     Code = deleted ? "SUCCESS" : "NOT_FOUND",
-                    Message = deleted ? "Empleado eliminado correctamente" : $"Empleado con ID {id} no encontrado",
+                    Message = deleted ? "Empleado eliminado correctamente" : $"Empleado no encontrado",
                     Data = deleted,
                     Items = new List<bool> { deleted },
                     TotalCount = deleted ? 1 : 0

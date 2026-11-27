@@ -167,7 +167,16 @@
 	protected override Type EditDialogType => typeof(JustificacionIncidenciasDialog);
 	protected override Type DeleteDialogType => typeof(DeleteDialog<VwRhIncidenciaResponse>);
 	protected override string GetDefaultSortLabel() => "PkidIncidencia";
-	protected override IEnumerable<object> MapToExcelData(IEnumerable<VwRhIncidenciaResponse> items) => items;
+	protected override IEnumerable<object> MapToExcelData(IEnumerable<VwRhIncidenciaResponse> items) => items.Select(item => new
+	{
+		item.NombreCompleto,
+		item.TipoIncidenciaDescripcion,
+		Fecha = item.Fecha?.ToString("dd/MM/yyyy") ?? "-",
+		item.TipoJustificacionDescripcion,
+		item.ComentarioJustificacion,
+		item.AplicaDescuento,
+		item.Activo
+	});
 	protected override Task ReloadData() => table?.ReloadData() ?? Task.CompletedTask;
 
 	protected override async Task<TableData<VwRhIncidenciaResponse>> LoadServerData(TableState state, CancellationToken cancellationToken)
@@ -311,10 +320,7 @@
 	{
 		try
 		{
-			var allData = await Service.GetAllPaginadoAsync(
-				1,
-				int.MaxValue,
-				string.Empty,
+			var allData = await ReadExportResponseAsync(Service, string.Empty,
 				nameof(VwRhIncidenciaResponse.PkidIncidencia),
 				SortDirection.Descending);
 
@@ -333,7 +339,7 @@
 				}).ToList() ?? new List<object>();
 
 			using var stream = new MemoryStream();
-			await stream.SaveAsAsync(data);
+			await stream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(data));
 			var base64 = Convert.ToBase64String(stream.ToArray());
 
 			await JsRuntime.InvokeVoidAsync("downloadFile", base64,

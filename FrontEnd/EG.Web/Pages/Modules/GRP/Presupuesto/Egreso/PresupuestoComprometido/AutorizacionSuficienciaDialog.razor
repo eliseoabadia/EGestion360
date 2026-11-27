@@ -1,4 +1,6 @@
 ﻿@using System.Globalization
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Domain.DTOs.Responses.PresupuestoComprometido
 @using EG.Web.Contracts
 @using EG.Web.Pages.Shared
@@ -6,6 +8,8 @@
 
 @inject IGenericCrudService<AutorizacionSuficienciaResponse> Service
 @inject IGenericCrudService<AutorizacionSuficienciaDetalleResponse> DetalleService
+@inject IGenericCrudService<SolicitudSuficienciaResponse> SolicitudService
+@inject IGenericCrudService<PersonaResponse> PersonaService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -16,8 +20,34 @@
                 <CrudFormSection Title="Origen y autorización">
                     <MudGrid Spacing="2">
 <MudItem xs="12" md="4"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidSolicitudSuficienciaPres" Label="Solicitud suficiencia" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="4"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.AutorizadoPorNom" Label="Autorizado por" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="4">
+                <RelatedRecordSelect TResponse="SolicitudSuficienciaResponse"
+                                     Label="Solicitud de suficiencia"
+                                     SelectedId="@SelectedSolicitudId"
+                                     SelectedIdChanged="OnSolicitudIdChanged"
+                                     SelectedRecordChanged="OnSolicitudSelected"
+                                     SelectedText="@SolicitudText"
+                                     IdSelector="record => record.PkidSolicitudSuficiencia"
+                                     TextSelector="SolicitudLabel"
+                                     SortProperty="FechaSolicitud"
+                                     AdditionalFilters="@SolicitudFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona una solicitud." />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <RelatedRecordSelect TResponse="PersonaResponse"
+                                     Label="Autorizó"
+                                     SelectedId="@SelectedAutorizadorId"
+                                     SelectedIdChanged="OnAutorizadorIdChanged"
+                                     SelectedRecordChanged="OnAutorizadorSelected"
+                                     SelectedText="@AutorizadorText"
+                                     IdSelector="record => record.PkidPersona"
+                                     TextSelector="PersonaLabel"
+                                     SortProperty="Nombre"
+                                     AdditionalFilters="@AutorizadorFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona a la persona que autorizó." />
+            </MudItem>
             <MudItem xs="12" md="4"><MudDatePicker Margin="Margin.Dense" @bind-Date="fechaAutorizacion" Label="Fecha autorizacion" Required="true" Variant="Variant.Outlined" /></MudItem>
             <MudItem xs="12" md="4">
                 <MudSelect Margin="Margin.Dense" T="int" @bind-Value="item.Estatus" Label="Estatus" Variant="Variant.Outlined">
@@ -90,6 +120,24 @@
     private List<AutorizacionSuficienciaDetalleResponse> detalleItems = new();
     private DateTime? fechaAutorizacion = DateTime.Today;
     private bool _formLoading = true;
+    private int? SelectedSolicitudId
+    {
+        get => item.FkidSolicitudSuficienciaPres > 0 ? item.FkidSolicitudSuficienciaPres : null;
+        set => item.FkidSolicitudSuficienciaPres = value.GetValueOrDefault();
+    }
+    private int? SelectedAutorizadorId
+    {
+        get => item.AutorizadoPorNom > 0 ? item.AutorizadoPorNom : null;
+        set => item.AutorizadoPorNom = value.GetValueOrDefault();
+    }
+    private string SolicitudText => string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? string.Empty : item.RequisicionDescripcion;
+    private string AutorizadorText => string.IsNullOrWhiteSpace(item.AutorizadoPorNombre) ? string.Empty : item.AutorizadoPorNombre;
+    private Dictionary<string, object> SolicitudFilters => item.FkidEmpresaSis > 0
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
+        : new Dictionary<string, object> { ["Activo"] = true };
+    private Dictionary<string, object> AutorizadorFilters => item.FkidEmpresaSis > 0
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
+        : new Dictionary<string, object> { ["Activo"] = true };
 
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
     private string Title => Id.HasValue ? "Editar autorizacion" : "Nueva autorizacion";
@@ -139,6 +187,12 @@
         if (!await form.ValidateAsync())
         {
             Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (item.FkidSolicitudSuficienciaPres <= 0 || item.AutorizadoPorNom <= 0)
+        {
+            Snackbar.Add("Selecciona la solicitud y la persona que autorizó.", Severity.Warning);
             return;
         }
 
@@ -239,9 +293,64 @@
         item.Noviembre.GetValueOrDefault() + item.Diciembre.GetValueOrDefault();
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+            ? "Empresa seleccionada"
+            : SucursalStateService.EmpresaNombre
         : "Sin empresa seleccionada";
+
+    private Task OnSolicitudIdChanged(int? value)
+    {
+        SelectedSolicitudId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnSolicitudSelected(SolicitudSuficienciaResponse? record)
+    {
+        if (record is null)
+        {
+            item.RequisicionDescripcion = null;
+            item.FkidRequisicionOrco = 0;
+            item.FkidAnioSis = null;
+            return Task.CompletedTask;
+        }
+
+        item.FkidEmpresaSis = record.FkidEmpresaSis;
+        item.FkidRequisicionOrco = record.FkidRequisicionOrco;
+        item.FkidAnioSis = record.FkidAnioSis;
+        item.RequisicionDescripcion = record.RequisicionDescripcion;
+        return Task.CompletedTask;
+    }
+
+    private Task OnAutorizadorIdChanged(int? value)
+    {
+        SelectedAutorizadorId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnAutorizadorSelected(PersonaResponse? record)
+    {
+        item.AutorizadoPorNombre = record is null ? null : PersonaLabel(record);
+        return Task.CompletedTask;
+    }
+
+    private static string SolicitudLabel(SolicitudSuficienciaResponse record)
+    {
+        var text = string.Join(" · ", new[]
+        {
+            record.RequisicionDescripcion,
+            record.FechaSolicitud.ToString("dd/MM/yyyy"),
+            record.EstatusDescripcion
+        }.Where(value => !string.IsNullOrWhiteSpace(value)));
+        return string.IsNullOrWhiteSpace(text) ? "Solicitud de suficiencia" : text;
+    }
+
+    private static string PersonaLabel(PersonaResponse record)
+    {
+        var name = string.Join(" ", new[] { record.Nombre, record.Paterno, record.Materno }
+            .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+        return string.IsNullOrWhiteSpace(name)
+            ? (string.IsNullOrWhiteSpace(record.Clave) ? "Persona sin nombre" : record.Clave)
+            : string.IsNullOrWhiteSpace(record.Clave) ? name : $"{record.Clave} - {name}";
+    }
 
     private async Task EnsureEmpresaAsync()
     {

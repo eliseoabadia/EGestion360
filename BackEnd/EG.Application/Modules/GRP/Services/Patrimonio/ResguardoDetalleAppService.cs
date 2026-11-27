@@ -58,7 +58,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync();
             if (entity == null)
             {
-                return Failure<ResguardoDetalleResponse>($"Detalle de resguardo con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<ResguardoDetalleResponse>($"Detalle de resguardo no encontrado.", "NOT_FOUND");
             }
 
             var item = entity.Adapt<ResguardoDetalleResponse>();
@@ -165,7 +165,7 @@ namespace EG.Application.Services.Patrimonio
                 x.FkidResguardoAlmaNavigation.FkidEmpresaSis == scope.EmpresaId &&
                 x.FkidResguardoAlmaNavigation.Fecha.Year == scope.Anio))
             {
-                return Failure<ResguardoDetalleResponse>($"Detalle de resguardo con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<ResguardoDetalleResponse>($"Detalle de resguardo no encontrado.", "NOT_FOUND");
             }
 
             var validation = Validate(response, false);
@@ -219,7 +219,7 @@ namespace EG.Application.Services.Patrimonio
                     return new PagedResult<bool>
                     {
                         Success = false,
-                        Message = $"Detalle de resguardo con ID {id} no encontrado.",
+                        Message = $"Detalle de resguardo no encontrado.",
                         Code = "NOT_FOUND",
                         Data = false,
                         TotalCount = 0

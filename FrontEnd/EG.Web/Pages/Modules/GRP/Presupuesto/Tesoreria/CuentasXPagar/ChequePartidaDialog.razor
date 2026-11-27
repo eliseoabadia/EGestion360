@@ -4,6 +4,8 @@
 @using MudBlazor
 
 @inject IGenericCrudService<ChequePartidaResponse> Service
+@inject IGenericCrudService<ChequeResponse> ChequeHeaderService
+@inject IGenericCrudService<CLCDetalleResponse> ClcDetalleService
 @inject ISnackbar Snackbar
 @inject SucursalStateService SucursalStateService
 
@@ -15,8 +17,23 @@
                     <MudGrid Spacing="2">
 <MudItem xs="12"><MudText Typo="Typo.subtitle2" Color="Color.Primary">@ChequeNombre</MudText></MudItem>
             <MudItem xs="12" md="6"><MudTextField Margin="Margin.Dense" T="string" Value="@EmpresaText" Label="Empresa" ReadOnly="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidClcdetallePres" Label="Detalle CLC" Required="true" Variant="Variant.Outlined" /></MudItem>
-            <MudItem xs="12" md="6"><MudNumericField Margin="Margin.Dense" T="int" @bind-Value="item.FkidPartidaConta" Label="Partida" Required="true" Variant="Variant.Outlined" /></MudItem>
+            <MudItem xs="12" md="8">
+                <RelatedRecordSelect TResponse="CLCDetalleResponse"
+                                     Label="Renglón del CLC"
+                                     SelectedId="@SelectedClcDetalleId"
+                                     SelectedIdChanged="OnClcDetalleIdChanged"
+                                     SelectedRecordChanged="OnClcDetalleSelected"
+                                     SelectedText="@ClcDetalleText"
+                                     IdSelector="record => record.PkidClcdetalle"
+                                     TextSelector="ClcDetalleLabel"
+                                     SortProperty="PartidaClave"
+                                     AdditionalFilters="@ClcDetalleFilters"
+                                     Required="true"
+                                     RequiredError="Selecciona el renglón del CLC." />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField Margin="Margin.Dense" T="string" Value="@PartidaText" Label="Partida" ReadOnly="true" Variant="Variant.Outlined" />
+            </MudItem>
                     </MudGrid>
                 </CrudFormSection>
             </MudItem>
@@ -41,6 +58,7 @@
     private readonly System.Globalization.CultureInfo Culture = System.Globalization.CultureInfo.InvariantCulture;
     private BaseEntityForm<ChequePartidaResponse> form = null!;
     private ChequePartidaResponse item = new() { Activo = true };
+    private string? _selectedClcDetalleText;
     private string Title => Id.HasValue ? "Editar partida de cheque" : "Nueva partida de cheque";
     private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
     private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
@@ -52,6 +70,12 @@
         if (!Id.HasValue)
         {
             item.FkidChequePres = ChequeId;
+            var cheque = await ChequeHeaderService.GetByIdAsync(ChequeId);
+            if (cheque?.Data != null)
+            {
+                item.FkidClcPres = cheque.Data.FkidClcPres;
+                item.NumClc = cheque.Data.NumClc;
+            }
             return;
         }
         var response = await Service.GetByIdAsync(Id.Value);
@@ -60,6 +84,11 @@
             item = response.Data;
             ChequeId = item.FkidChequePres;
             ChequeNombre = item.NumeroCheque ?? ChequeNombre;
+            var clcDetail = await ClcDetalleService.GetByIdAsync(item.FkidClcdetallePres);
+            if (clcDetail?.Data != null)
+            {
+                _selectedClcDetalleText = ClcDetalleLabel(clcDetail.Data);
+            }
         }
     }
 
@@ -84,9 +113,68 @@
     }
     private string EmpresaText => item.FkidEmpresaSis > 0
         ? string.IsNullOrWhiteSpace(SucursalStateService.EmpresaNombre)
-            ? item.FkidEmpresaSis.ToString()
-            : $"{SucursalStateService.EmpresaNombre} ({item.FkidEmpresaSis})"
+            ? "Empresa seleccionada"
+            : SucursalStateService.EmpresaNombre
         : "Sin empresa seleccionada";
+
+    private int? SelectedClcDetalleId
+    {
+        get => item.FkidClcdetallePres > 0 ? item.FkidClcdetallePres : null;
+        set => item.FkidClcdetallePres = value.GetValueOrDefault();
+    }
+    private string ClcDetalleText => _selectedClcDetalleText ?? ClcDetalleLabel(new CLCDetalleResponse
+    {
+        NumClc = item.NumClc,
+        PartidaClave = item.PartidaClave,
+        PartidaClaveNombre = item.PartidaClaveNombre
+    });
+    private string PartidaText => string.IsNullOrWhiteSpace(item.PartidaClaveNombre)
+        ? "La partida se toma del renglón seleccionado"
+        : item.PartidaClaveNombre;
+    private Dictionary<string, object>? ClcDetalleFilters => item.FkidClcPres > 0
+        ? new Dictionary<string, object>
+        {
+            ["FkidClcPres"] = item.FkidClcPres,
+            ["FkidEmpresaSis"] = item.FkidEmpresaSis,
+            ["Activo"] = true
+        }
+        : null;
+
+    private Task OnClcDetalleIdChanged(int? value)
+    {
+        SelectedClcDetalleId = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnClcDetalleSelected(CLCDetalleResponse? record)
+    {
+        if (record is null)
+        {
+            item.FkidClcPres = 0;
+            item.FkidPartidaConta = 0;
+            item.NumClc = null;
+            item.PartidaClave = null;
+            item.PartidaDescripcion = null;
+            item.PartidaClaveNombre = null;
+            return Task.CompletedTask;
+        }
+
+        item.FkidClcPres = record.FkidClcPres;
+        item.NumClc = record.NumClc;
+        _selectedClcDetalleText = ClcDetalleLabel(record);
+        item.FkidPartidaConta = record.FkidPartidaConta;
+        item.PartidaClave = record.PartidaClave;
+        item.PartidaDescripcion = record.PartidaDescripcion;
+        item.PartidaClaveNombre = record.PartidaClaveNombre;
+        return Task.CompletedTask;
+    }
+
+    private static string ClcDetalleLabel(CLCDetalleResponse record)
+    {
+        var text = string.Join(" · ", new[] { record.NumClc, record.NumeroContrato, record.PartidaClaveNombre ?? record.PartidaClave }
+            .Where(value => !string.IsNullOrWhiteSpace(value)));
+        return string.IsNullOrWhiteSpace(text) ? "Renglón de CLC" : text;
+    }
 
     private async Task EnsureEmpresaAsync()
     {

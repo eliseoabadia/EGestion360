@@ -1,12 +1,12 @@
-@if (Visible && (FechaCreacion.HasValue || UsuarioCreacion is not null))
+@if (Visible && (FechaCreacion.HasValue || FechaModificacion.HasValue))
 {
     <MudPaper Class="rh-audit-info pa-2 mt-2" Elevation="0">
         <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Small" />
         <MudText Typo="Typo.caption">
-            Creado: @(FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "-") por @(UsuarioCreacion?.ToString() ?? "-")
+            Creado: @(FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")
             @if (FechaModificacion.HasValue || UsuarioModificacion is not null)
             {
-                <span> | Modificado: @(FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "-") por @(UsuarioModificacion?.ToString() ?? "-")</span>
+                <span> | Modificado: @(FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</span>
             }
         </MudText>
     </MudPaper>

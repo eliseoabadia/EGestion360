@@ -5,6 +5,7 @@
 @using EG.Domain.DTOs.Responses.General
 @using EG.Web.Contracts
 @using EG.Web.Models
+@using EG.Web.Models.Forms
 @using EG.Web.Models.ProcessAssistance
 @using EG.Web.Pages.Shared
 @using EG.Web.Pages.Shared.SoporteDocumental
@@ -84,19 +85,19 @@
                                                        EntidadId="@cell.Item.PkidRequisicion"
                                                        FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                                                        RegistroTitulo="@cell.Item.Descripcion"
-                                                       RegistroDescripcion="@($"Requisicion {cell.Item.PkidRequisicion} | {TextOrDash(cell.Item.AreaNombre)}")" />
+                                                       RegistroDescripcion="@GetDocumentContext(cell.Item)" />
                             </SupplementalActions>
                         </ProgressiveActions>
-                    </CellTemplate>
-                </TemplateColumn>
-                <TemplateColumn T="RequisicionResponse" Title="ID" Identifier="PkidRequisicion" PropertyName="PkidRequisicion" SortBy="x => x.PkidRequisicion">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidRequisicion
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
                         @cell.Item.Descripcion
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="RequisicionResponse" Title="Oficio" Identifier="Oficio" PropertyName="Oficio" SortBy="x => x.Oficio">
+                    <CellTemplate Context="cell">
+                        @TextOrDash(cell.Item.Oficio)
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="RequisicionResponse" Title="Área" Identifier="AreaNombre" PropertyName="AreaNombre" SortBy="x => x.AreaNombre">
@@ -169,8 +170,11 @@
                                    OnClick="BackToTable"
                                    Tooltip="Volver al listado" />
                     <MudText Typo="Typo.h6" Class="requisition-object-title ml-2">
-                        <span class="requisition-object-id">REQ-@SelectedRequisicion.PkidRequisicion.ToString("D6")</span>
-                        <span class="requisition-object-separator">·</span>
+                        @if (!string.IsNullOrWhiteSpace(SelectedRequisicion.Oficio))
+                        {
+                            <span class="requisition-object-reference">Oficio @SelectedRequisicion.Oficio.Trim()</span>
+                            <span class="requisition-object-separator">·</span>
+                        }
                         <span>@TextOrDash(SelectedRequisicion.Descripcion)</span>
                     </MudText>
                     <MudSpacer />
@@ -194,7 +198,7 @@
                                                    EntidadId="@SelectedRequisicion.PkidRequisicion"
                                                    FkidEmpresaSis="@SelectedRequisicion.FkidEmpresaSis"
                                                    RegistroTitulo="@SelectedRequisicion.Descripcion"
-                                                   RegistroDescripcion="@($"Requisicion {SelectedRequisicion.PkidRequisicion} | {TextOrDash(SelectedRequisicion.AreaNombre)}")" />
+                                                   RegistroDescripcion="@GetDocumentContext(SelectedRequisicion)" />
                         </SupplementalActions>
                     </ProgressiveActions>
                 </MudPaper>
@@ -251,7 +255,7 @@
                 @{ var diagnosis = DiagnoseRequisition(SelectedRequisicion); }
                 <ProcessAssistancePanel Assistance="@diagnosis"
                                         Eyebrow="Asistente de esta REQ"
-                                        ContextLabel="@($"REQ-{SelectedRequisicion.PkidRequisicion:D6}")"
+                                        ContextLabel="@GetRequisitionReference(SelectedRequisicion)"
                                         AriaLabel="Asistente de esta requisicion"
                                         IsNotifying="@_sendingHelpNotification"
                                         OnAction="ExecuteDiagnosisAsync"
@@ -423,7 +427,7 @@
     protected override Type EditDialogType => typeof(RequisicionDialog);
     protected override Type DeleteDialogType => typeof(DeleteDialog<RequisicionResponse>);
 
-    protected override string GetDefaultSortLabel() => "PkidRequisicion";
+    protected override string GetDefaultSortLabel() => nameof(RequisicionResponse.PkidRequisicion);
 
     protected override async Task OnInitializedAsync()
     {
@@ -484,7 +488,7 @@
 
             var filters = new Dictionary<string, object>
             {
-                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
+                [nameof(RequisicionResponse.FkidAnioSis)] = AnioStateService.AnioId!.Value
             };
 
             var response = await Service.GetAllPaginadoAsync(
@@ -586,7 +590,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidRequisicion,
             item.Descripcion,
             Area = item.AreaNombre,
             Solicitante = item.SolicitanteCompleto,
@@ -632,10 +635,10 @@
             var sortLabel = string.IsNullOrWhiteSpace(SortLabel) ? GetDefaultSortLabel() : SortLabel;
             var filters = new Dictionary<string, object>
             {
-                ["FkidAnioSis"] = AnioStateService.AnioId!.Value
+                [nameof(RequisicionResponse.FkidAnioSis)] = AnioStateService.AnioId!.Value
             };
 
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, sortLabel, SortDirection, filters);
+            var response = await ReadExportResponseAsync(Service, SearchString, sortLabel, SortDirection, filters);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -645,7 +648,7 @@
 
             var excelData = MapToExcelData(response.Items);
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,
@@ -683,11 +686,11 @@
         {
             var excelData = MapToExcelData(new[] { requisicion });
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JsRuntime.InvokeVoidAsync("downloadFile", base64,
-                $"Requisicion_{requisicion.PkidRequisicion}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                $"Requisicion_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
             Snackbar.Add("Requisicion exportada correctamente", Severity.Success);
@@ -870,9 +873,9 @@
             Math.Max(1, state.Page + 1),
             state.PageSize,
             partidaSearchString,
-            state.SortLabel ?? "PartidaClave",
+            state.SortLabel ?? nameof(RequisicionPartidaResponse.PartidaClave),
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+            new Dictionary<string, object> { [nameof(RequisicionPartidaResponse.FkidRequisicionOrco)] = requisicionId });
 
         if (disposed || cancellationToken.IsCancellationRequested || version != partidaLoadVersion || SelectedRequisicion?.PkidRequisicion != requisicionId)
             return new() { Items = [], TotalItems = 0 };
@@ -910,9 +913,13 @@
             Math.Max(1, state.Page + 1),
             state.PageSize,
             detalleSearchString,
-            state.SortLabel ?? "TipoBienCodigoClave",
+            state.SortLabel ?? nameof(RequisicionDetalleResponse.TipoBienCodigoClave),
             state.SortDirection,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId, ["FkidPartidaConta"] = partidaId });
+            new Dictionary<string, object>
+            {
+                [nameof(RequisicionDetalleResponse.FkidRequisicionOrco)] = requisicionId,
+                [nameof(RequisicionPartidaResponse.FkidPartidaConta)] = partidaId
+            });
 
         if (disposed || cancellationToken.IsCancellationRequested || version != detailSelectionVersion || SelectedRequisicion?.PkidRequisicion != requisicionId)
             return new() { Items = [], TotalItems = 0 };
@@ -1303,56 +1310,78 @@
             1,
             1,
             "",
-            "PkidRequisicionDetalle",
+            nameof(RequisicionDetalleResponse.PkidRequisicionDetalle),
             SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+            new Dictionary<string, object> { [nameof(RequisicionDetalleResponse.FkidRequisicionOrco)] = requisicionId });
 
         return response?.TotalCount > 0;
     }
 
     private async Task<bool> RequisicionTieneTodosLosBienesCotizadosAsync(int requisicionId)
     {
-        var detallesResponse = await DetalleService.GetAllPaginadoAsync(
-            1,
-            int.MaxValue,
-            string.Empty,
-            "PkidRequisicionDetalle",
-            SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
-
-        var detalles = detallesResponse?.Items?.Where(x => x.Activo).ToList() ?? new List<RequisicionDetalleResponse>();
-        if (!detalles.Any())
+        try
         {
-            Snackbar.Add("La requisicion debe tener al menos un bien para generar la solicitud de suficiencia.", Severity.Warning);
+            var detallesResult = await PagedCollectionReader.ReadAsync(
+                (page, pageSize) => DetalleService.GetAllPaginadoAsync(
+                    page,
+                    pageSize,
+                    string.Empty,
+                    nameof(RequisicionDetalleResponse.PkidRequisicionDetalle),
+                    SortDirection.Ascending,
+                    new Dictionary<string, object> { [nameof(RequisicionDetalleResponse.FkidRequisicionOrco)] = requisicionId }),
+                requestedPageSize: 250,
+                maximumRows: 10_000);
+
+            var cotizacionesResult = await PagedCollectionReader.ReadAsync(
+                (page, pageSize) => CotizacionDetalleService.GetAllPaginadoAsync(
+                    page,
+                    pageSize,
+                    string.Empty,
+                    nameof(CotizacionDetalleResponse.FkidRequisicionDetalleOrco),
+                    SortDirection.Ascending,
+                    new Dictionary<string, object> { [nameof(CotizacionDetalleResponse.FkidRequisicionOrco)] = requisicionId }),
+                requestedPageSize: 250,
+                maximumRows: 10_000);
+
+            if (detallesResult.Limited || cotizacionesResult.Limited)
+            {
+                Snackbar.Add("La requisición supera el límite de 10,000 renglones para validar cotizaciones. Reduce los datos e intenta de nuevo.", Severity.Warning);
+                return false;
+            }
+
+            var detalles = detallesResult.Items.Where(x => x.Activo).ToList();
+            if (!detalles.Any())
+            {
+                Snackbar.Add("La requisicion debe tener al menos un bien para generar la solicitud de suficiencia.", Severity.Warning);
+                return false;
+            }
+
+            var cotizados = cotizacionesResult.Items
+                .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
+                .Select(x => x.FkidRequisicionDetalleOrco)
+                .ToHashSet();
+
+            var pendientes = detalles
+                .Where(x => !cotizados.Contains(x.PkidRequisicionDetalle))
+                .Select(x => TextOrDash(x.TipoBienDescripcion))
+                .Take(4)
+                .ToList();
+
+            if (pendientes.Any())
+            {
+                Snackbar.Add($"Faltan bienes con monto cotizado: {string.Join(", ", pendientes)}.", Severity.Warning);
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            AppLoggerFactory.CreateLogger("Requisiciones")
+                .LogError(ex, "No se pudo validar la cobertura de cotizaciones. RequisicionId={RequisicionId}", requisicionId);
+            Snackbar.Add("No se pudo validar la cobertura de cotizaciones. Intenta de nuevo.", Severity.Error);
             return false;
         }
-
-        var cotizacionesResponse = await CotizacionDetalleService.GetAllPaginadoAsync(
-            1,
-            int.MaxValue,
-            string.Empty,
-            "FkidRequisicionDetalleOrco",
-            SortDirection.Ascending,
-            new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
-
-        var cotizados = cotizacionesResponse?.Items?
-            .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
-            .Select(x => x.FkidRequisicionDetalleOrco)
-            .ToHashSet() ?? new HashSet<int>();
-
-        var pendientes = detalles
-            .Where(x => !cotizados.Contains(x.PkidRequisicionDetalle))
-            .Select(x => TextOrDash(x.TipoBienDescripcion))
-            .Take(4)
-            .ToList();
-
-        if (pendientes.Any())
-        {
-            Snackbar.Add($"Faltan bienes con monto cotizado: {string.Join(", ", pendientes)}.", Severity.Warning);
-            return false;
-        }
-
-        return true;
     }
 
     private async Task EditDetalle(int id)
@@ -1849,7 +1878,9 @@
             {
                 ClaveAyuda = diagnosis.HelpKey,
                 EntidadId = SelectedRequisicion.PkidRequisicion,
-                Referencia = $"REQ-{SelectedRequisicion.PkidRequisicion:D6} · {SelectedRequisicion.Descripcion}",
+                Referencia = string.IsNullOrWhiteSpace(SelectedRequisicion.Oficio)
+                    ? SelectedRequisicion.Descripcion
+                    : SelectedRequisicion.Oficio,
                 Detalle = diagnosis.Detail
             });
             Snackbar.Add(response?.Message ?? "Solicitud enviada al responsable.", response?.Success == true ? Severity.Success : Severity.Warning);
@@ -1966,6 +1997,14 @@
 
     private static string TextOrDash(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetRequisitionReference(RequisicionResponse requisicion) =>
+        !string.IsNullOrWhiteSpace(requisicion.Oficio)
+            ? $"Oficio {requisicion.Oficio.Trim()}"
+            : TextOrDash(requisicion.Descripcion);
+
+    private static string GetDocumentContext(RequisicionResponse requisicion) =>
+        $"Área: {TextOrDash(requisicion.AreaNombre)} · Solicitante: {TextOrDash(requisicion.SolicitanteCompleto)}";
 
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 

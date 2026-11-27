@@ -42,7 +42,7 @@
 
         previousValue = Value;
         selected = Value.HasValue
-            ? new LookupItem { Id = Value.Value, Text = string.IsNullOrWhiteSpace(InitialText) ? Value.Value.ToString() : InitialText }
+            ? new LookupItem { Id = Value.Value, Text = string.IsNullOrWhiteSpace(InitialText) ? $"{Label} seleccionado" : InitialText }
             : null;
     }
 

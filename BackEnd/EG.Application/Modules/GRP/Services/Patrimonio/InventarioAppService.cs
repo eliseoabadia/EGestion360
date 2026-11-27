@@ -64,7 +64,7 @@ namespace EG.Application.Services.Patrimonio
                 .FirstOrDefaultAsync();
             if (entity == null)
             {
-                return Failure<InventarioResponse>($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<InventarioResponse>($"Inventario no encontrado.", "NOT_FOUND");
             }
 
             var item = entity.Adapt<InventarioResponse>();
@@ -133,7 +133,7 @@ namespace EG.Application.Services.Patrimonio
 
             if (current == null)
             {
-                return Failure<InventarioResponse>($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<InventarioResponse>($"Inventario no encontrado.", "NOT_FOUND");
             }
 
             if (IsLocked(current))
@@ -189,7 +189,7 @@ namespace EG.Application.Services.Patrimonio
 
             if (current == null)
             {
-                return BoolFailure($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Inventario no encontrado.", "NOT_FOUND");
             }
 
             if (IsLocked(current))
@@ -381,7 +381,7 @@ namespace EG.Application.Services.Patrimonio
                     x.FkidCalendarioInventarioAlmaNavigation.Anio == scope.Anio);
             if (current == null)
             {
-                return Failure<InventarioResponse>($"Inventario con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<InventarioResponse>($"Inventario no encontrado.", "NOT_FOUND");
             }
 
             if (IsLocked(current))

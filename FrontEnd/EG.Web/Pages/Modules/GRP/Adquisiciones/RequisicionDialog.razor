@@ -368,8 +368,8 @@
                 _fechaRequisicion = item.FechaRequisicion == default ? null : item.FechaRequisicion;
                 _fechaRequiereInicio = item.FechaRequiereInicio;
                 _fechaRequiereFin = item.FechaRequiereFin;
-                _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, item.FkidPersonaNom) };
-                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, item.FkidAreaSis) };
+                _selectedPersona = new LookupItem { Id = item.FkidPersonaNom, Text = TextOrDefault(item.SolicitanteCompleto, "Solicitante sin nombre") };
+                _selectedArea = new LookupItem { Id = item.FkidAreaSis, Text = TextOrDefault(item.AreaNombre, "Área sin nombre") };
                 await ValidateLoadedRequesterAssignmentAsync();
 
                 if (item.FkidProyectoOrco.HasValue)
@@ -397,7 +397,7 @@
                     {
                         Id = item.FkidEgresoAutorizadoPres.Value,
                         Text = _selectedDisponible?.DescripcionRequisicion
-                            ?? item.FkidEgresoAutorizadoPres.Value.ToString()
+                            ?? "Partida presupuestal seleccionada"
                     };
                 }
             }
@@ -681,7 +681,7 @@
         _selectedPrograma = new LookupItem
         {
             Id = _selectedDisponible.FkidProgramaPres,
-            Text = _selectedDisponible.ProgramaClaveNombre ?? _selectedDisponible.FkidProgramaPres.ToString()
+            Text = _selectedDisponible.ProgramaClaveNombre ?? "Programa presupuestario sin clave"
         };
         _selectedFuente = BuildLookup(
             _selectedDisponible.FkidFuenteFinanciamientoPres,
@@ -773,7 +773,10 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
+
+    private static string TextOrDefault(string? text, string fallback) =>
+        string.IsNullOrWhiteSpace(text) ? fallback : text;
 
     private static LookupItem? BuildLookup(int? id, string? text)
     {

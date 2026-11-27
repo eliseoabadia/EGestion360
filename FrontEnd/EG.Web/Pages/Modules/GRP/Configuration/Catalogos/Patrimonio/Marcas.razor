@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="MarcaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidMarca))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidMarca))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="MarcaResponse" TProperty="int" Property="x => x.PkidMarca" Title="ID" Identifier="PkidMarca" />
+                
                 <PropertyColumn T="MarcaResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
         </GenericDataGrid>
@@ -51,7 +51,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidMarca,
             Descripcion = u.Descripcion,
         });
     }

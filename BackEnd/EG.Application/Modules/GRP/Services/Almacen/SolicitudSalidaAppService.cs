@@ -47,7 +47,7 @@ namespace EG.Application.Services.Almacen
                 .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.FkidEmpresaSis == empresaId);
             if (item == null)
             {
-                return Failure<SolicitudSalidaResponse>($"Solicitud de salida con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
             }
 
             var response = item.Adapt<SolicitudSalidaResponse>();
@@ -103,7 +103,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return Failure<SolicitudSalidaResponse>($"Solicitud de salida con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
             }
 
             if (IsLocked(current))
@@ -144,7 +144,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return BoolFailure($"Solicitud de salida con ID {id} no encontrada.", "NOT_FOUND");
+                return BoolFailure($"Solicitud de salida no encontrada.", "NOT_FOUND");
             }
 
             if (IsLocked(current))
@@ -183,7 +183,7 @@ namespace EG.Application.Services.Almacen
 
             if (current == null)
             {
-                return Failure<SolicitudSalidaResponse>($"Solicitud de salida con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
             }
 
             if (IsLocked(current))

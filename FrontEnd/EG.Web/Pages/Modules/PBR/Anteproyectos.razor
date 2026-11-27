@@ -45,7 +45,7 @@
                         SubModulo="Anteproyectos"
                         Controlador="PbrAnteproyecto"
                         EntidadId="@cell.Item.PkidAnteproyecto"
-                        RegistroTitulo="@($"Anteproyecto {cell.Item.PkidAnteproyecto}")"
+                        RegistroTitulo="@($"{TextOrDash(cell.Item.ProgramaDescripcion)} · {cell.Item.Anio}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.ProgramaDescripcion)" />
                         <MudTooltip Text="Autorizar">
                         <MudIconButton Icon="@Icons.Material.Filled.TaskAlt"
@@ -73,14 +73,9 @@
                 <TemplateColumn T="PbrAnteproyectoResponse" Title="Programa" Identifier="ProgramaDescripcion" PropertyName="ProgramaDescripcion" SortBy="x => x.ProgramaDescripcion">
                     <CellTemplate Context="cell">
                         <MudText Typo="Typo.body2" Style="font-weight: 600;">@TextOrDash(cell.Item.ProgramaDescripcion)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">PBR @cell.Item.FkidProgramaPresupuestarioPbr</MudText>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="PbrAnteproyectoResponse" Title="ID" Identifier="PkidAnteproyecto" PropertyName="PkidAnteproyecto" SortBy="x => x.PkidAnteproyecto">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidAnteproyecto
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="PbrAnteproyectoResponse" Title="Año" Identifier="Anio" PropertyName="Anio" SortBy="x => x.Anio">
                     <CellTemplate Context="cell">
                         @cell.Item.Anio
@@ -154,7 +149,7 @@
     {
         if (!await DialogService.ConfirmWorkflowAsync(
                 "Autorizar anteproyecto",
-                $"¿Seguro que deseas autorizar el anteproyecto {item.PkidAnteproyecto}? Esta acción actualizará su estatus.",
+                $"¿Seguro que deseas autorizar el anteproyecto de {TextOrDash(item.ProgramaDescripcion)} para {item.Anio}? Esta acción actualizará su estatus.",
                 "Autorizar",
                 Color.Success,
                 item.PkidAnteproyecto))
@@ -178,7 +173,7 @@
 
     private async Task DeleteAsync(PbrAnteproyectoResponse item)
     {
-        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar anteproyecto {item.PkidAnteproyecto}?"))
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"¿Eliminar el anteproyecto de {TextOrDash(item.ProgramaDescripcion)} para {item.Anio}?"))
         {
             return;
         }

@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="ProyectoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar proyecto"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPy))" /></MudTooltip><MudTooltip Text="Eliminar proyecto"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPy))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="ProyectoResponse" TProperty="int" Property="x => x.PkidPy" Title="ID" Identifier="PkidPy" />
+                
                 <TemplateColumn Resizable="true" T="ProyectoResponse" Title="Clave" Identifier="Clave"><CellTemplate><MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">@context.Item.Clave</MudChip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="ProyectoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
@@ -52,7 +52,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidPy,
             item.Clave,
             item.Descripcion,
             Estatus = item.Activo ? "Activo" : "Inactivo",

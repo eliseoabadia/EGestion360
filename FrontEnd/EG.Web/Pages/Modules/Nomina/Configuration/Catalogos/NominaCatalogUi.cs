@@ -59,7 +59,15 @@ public static class NominaCatalogUi
     }
 
     public static bool IsHiddenColumn(PropertyInfo property)
-        => HiddenColumns.Contains(property.Name) || property.Name.StartsWith("PkidNom", StringComparison.OrdinalIgnoreCase);
+        => !property.Name.Equals("IdPeriodo", StringComparison.OrdinalIgnoreCase)
+            && (HiddenColumns.Contains(property.Name)
+            || property.Name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase)
+            || property.Name.StartsWith("Fkid", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Equals("Id", StringComparison.OrdinalIgnoreCase)
+            || (!property.Name.Equals("PayrollId", StringComparison.OrdinalIgnoreCase)
+                && property.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+            || property.Name.Equals("UsuarioCreacion", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Equals("UsuarioModificacion", StringComparison.OrdinalIgnoreCase));
 
     public static bool IsDisplayOnlyDialogColumn(string propertyName)
         => DisplayOnlyDialogColumns.Contains(propertyName);
@@ -130,6 +138,7 @@ public static class NominaCatalogUi
         ["FkidNombramientoNom"] = "Nombramiento",
         ["NombramientoDescripcion"] = "Nombramiento",
         ["FkidPeriodo"] = "Periodo",
+        ["IdPeriodo"] = "Periodo",
         ["FkidPeriodoInicial"] = "Periodo inicial",
         ["FkidPeriodoFinal"] = "Periodo final",
         ["FkidPeriodoPagoSis"] = "Periodo de pago",

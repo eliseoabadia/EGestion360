@@ -148,7 +148,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<TipoGarantiaResponse>
                 {
                     Success = false,
-                    Message = $"Tipo de Garantía con ID {id} no encontrado",
+                    Message = $"Tipo de Garantía no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -185,7 +185,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Tipo de Garantía con ID {id} no encontrado",
+                    Message = $"Tipo de Garantía no encontrado",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

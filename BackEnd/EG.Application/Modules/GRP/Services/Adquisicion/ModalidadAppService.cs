@@ -148,7 +148,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<ModalidadResponse>
                 {
                     Success = false,
-                    Message = $"Modalidad con ID {id} no encontrada",
+                    Message = $"Modalidad no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };
@@ -185,7 +185,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Modalidad con ID {id} no encontrada",
+                    Message = $"Modalidad no encontrada",
                     Code = "NOT_FOUND",
                     TotalCount = 0
                 };

@@ -1,0 +1,5537 @@
+{
+  "generatedUtc": "2026-11-26T19:12:58.714Z",
+  "sourceFiles": 406,
+  "routedComponents": 188,
+  "routeAliases": 469,
+  "pages": [
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\UiTerminology.cs",
+      "routes": [],
+      "lines": 21,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\SoporteDocumental\\DocumentSupportDialog.razor",
+      "routes": [],
+      "lines": 597,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\SoporteDocumental\\DocumentSupportButton.razor",
+      "routes": [],
+      "lines": 130,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\SessionStatus.razor",
+      "routes": [],
+      "lines": 26,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\SessionGuard.razor",
+      "routes": [],
+      "lines": 175,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\Reporting\\ReportOpenButton.razor",
+      "routes": [],
+      "lines": 89,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\Reporting\\ReportDesignerOpenButton.razor",
+      "routes": [],
+      "lines": 66,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\ProgressiveActions.razor",
+      "routes": [],
+      "lines": 138,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\ProcessAssistancePanel.razor",
+      "routes": [],
+      "lines": 55,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\PageHeader.razor",
+      "routes": [],
+      "lines": 128,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\PagedAutocomplete.razor",
+      "routes": [],
+      "lines": 366,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\OperationActionPanel.razor",
+      "routes": [],
+      "lines": 32,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\ModuleShortcut.razor",
+      "routes": [],
+      "lines": 17,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\ICrudDialogFormHost.cs",
+      "routes": [],
+      "lines": 8,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\GenericTable.razor",
+      "routes": [],
+      "lines": 1042,
+      "grids": 0,
+      "legacySharedTables": 1,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\GenericDeleteDialog.razor",
+      "routes": [],
+      "lines": 60,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\GenericDataGrid.razor.cs",
+      "routes": [],
+      "lines": 364,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\GenericDataGrid.razor",
+      "routes": [],
+      "lines": 232,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\FormLoadingState.razor",
+      "routes": [],
+      "lines": 34,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\EntityDetailHeader.razor",
+      "routes": [],
+      "lines": 77,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\EditorLoadError.razor.cs",
+      "routes": [],
+      "lines": 10,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\EditorLoadError.razor",
+      "routes": [],
+      "lines": 5,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\DeleteDialog.razor.cs",
+      "routes": [],
+      "lines": 35,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\DeleteDialog.razor",
+      "routes": [],
+      "lines": 29,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CrudFormToggle.razor",
+      "routes": [],
+      "lines": 27,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CrudFormSection.razor",
+      "routes": [],
+      "lines": 34,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CrudFieldLayout.cs",
+      "routes": [],
+      "lines": 36,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\ConfirmIniciarConteoDialog.razor",
+      "routes": [],
+      "lines": 50,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CinematicRecordModel.cs",
+      "routes": [],
+      "lines": 31,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CinematicRecordFactory.cs",
+      "routes": [],
+      "lines": 384,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\CinematicRecordDialog.razor",
+      "routes": [],
+      "lines": 112,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BudgetMonthlyGrid.razor.cs",
+      "routes": [],
+      "lines": 16,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BudgetMonthlyGrid.razor",
+      "routes": [],
+      "lines": 15,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseEntityForm.razor.cs",
+      "routes": [],
+      "lines": 75,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseEntityForm.razor",
+      "routes": [],
+      "lines": 41,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseDialog.razor",
+      "routes": [],
+      "lines": 112,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseCrudPage.razor.cs",
+      "routes": [],
+      "lines": 610,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseCrudDialog.razor.cs",
+      "routes": [],
+      "lines": 278,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\BaseCrudDialog.razor",
+      "routes": [],
+      "lines": 88,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Shared\\AccessVerification.razor",
+      "routes": [],
+      "lines": 40,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\FirmaDocumental\\FirmaDocumentalControl.razor",
+      "routes": [
+        "/firma-documental/control"
+      ],
+      "lines": 237,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\DocumentRag\\DocumentRag.razor",
+      "routes": [
+        "/asistente-documental"
+      ],
+      "lines": 453,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Ayuda.razor",
+      "routes": [
+        "/ayuda"
+      ],
+      "lines": 244,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Usuario\\Usuarios.razor",
+      "routes": [
+        "/configuracion/sistema/usuarios"
+      ],
+      "lines": 166,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Usuario\\UsuarioDialog.razor",
+      "routes": [],
+      "lines": 1369,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 2,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Usuario\\AsignarUsuariosDepartamento.razor",
+      "routes": [],
+      "lines": 287,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\SelectSucursalDialog.razor.cs",
+      "routes": [],
+      "lines": 50,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\SelectSucursalDialog.razor",
+      "routes": [],
+      "lines": 87,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\ResetPassword.razor.cs",
+      "routes": [],
+      "lines": 99,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\ResetPassword.razor",
+      "routes": [
+        "/resetPassword"
+      ],
+      "lines": 57,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\Register.razor",
+      "routes": [
+        "/register"
+      ],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\Login.razor.cs",
+      "routes": [],
+      "lines": 329,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\Login.razor",
+      "routes": [
+        "/login"
+      ],
+      "lines": 477,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Account\\AuthLinks.razor",
+      "routes": [],
+      "lines": 73,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\MenuPendiente.razor",
+      "routes": [
+        "/configuracion/presupuestales/programa-presupuestal",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Otros_Ingresos",
+        "/Presupuesto/Tesoreria/Planeacion_Gastos",
+        "/Presupuesto/Tesoreria/Inversiones/Simulador",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Analisis_Saldos",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Antiguedad_Saldos",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Consulta_Documentos",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Estado_Cuenta",
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Reportes_CxC/Integracion_Saldos"
+      ],
+      "lines": 119,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Loading.razor",
+      "routes": [],
+      "lines": 4,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Home.razor",
+      "routes": [
+        "/"
+      ],
+      "lines": 1040,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Licensing\\LicenciaModulos.razor",
+      "routes": [
+        "/configuracion/sistema/licencia-modulos"
+      ],
+      "lines": 291,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Reporting\\ReportViewer.razor",
+      "routes": [
+        "/Reporting/Viewer"
+      ],
+      "lines": 207,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Reporting\\ReportDesigner.razor",
+      "routes": [
+        "/Reporting/Designer"
+      ],
+      "lines": 36,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\ModuleDashboard.razor",
+      "routes": [
+        "/{ModuleSlug}/Dashboard"
+      ],
+      "lines": 2013,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Departamento\\Departamentos.razor",
+      "routes": [
+        "/configuracion/sistema/departamento"
+      ],
+      "lines": 94,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Departamento\\DepartamentoDialog.razor",
+      "routes": [],
+      "lines": 210,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Sucursal\\Sucursales.razor",
+      "routes": [
+        "/configuracion/sistema/sucursal"
+      ],
+      "lines": 96,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Sucursal\\SucursalDialog.razor",
+      "routes": [],
+      "lines": 313,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 2,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\General\\Perfil.razor",
+      "routes": [
+        "/configuracion/sistema/general",
+        "/perfil"
+      ],
+      "lines": 981,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Index.razor",
+      "routes": [
+        "/PBR"
+      ],
+      "lines": 453,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Anteproyectos.razor",
+      "routes": [
+        "/PBR/Anteproyectos"
+      ],
+      "lines": 224,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Empresa\\Empresas.razor",
+      "routes": [
+        "/configuracion/sistema/empresa"
+      ],
+      "lines": 116,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Empresa\\EmpresaDialog.razor",
+      "routes": [],
+      "lines": 758,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 3,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Shared\\PbrTopNavigation.razor",
+      "routes": [],
+      "lines": 131,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Shared\\PbrCrudDialog.razor",
+      "routes": [],
+      "lines": 403,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\Presupuestos.razor",
+      "routes": [
+        "/PBR/Presupuestos"
+      ],
+      "lines": 303,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\MiTablero.razor",
+      "routes": [
+        "/PBR/MiTablero"
+      ],
+      "lines": 475,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\MatrizIndicadores.razor",
+      "routes": [
+        "/PBR/MatrizIndicadores",
+        "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Indicadores",
+        "/Presupuesto/Egreso/Planeacion/Catalogos_Planeacion/Resumen_Narrativo"
+      ],
+      "lines": 260,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\PBR\\MapaProcesos.razor",
+      "routes": [
+        "/PBR/MapaProcesos"
+      ],
+      "lines": 211,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\AccessConfiguration\\ConfigurarAccesos.razor",
+      "routes": [
+        "/configuracion/sistema/Configurar_Accesos"
+      ],
+      "lines": 1941,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\NominaClaimGroups.cs",
+      "routes": [],
+      "lines": 14,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\SelectorIconos.razor",
+      "routes": [],
+      "lines": 343,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\Menus.razor.cs",
+      "routes": [],
+      "lines": 179,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\Menus.razor",
+      "routes": [
+        "/configuracion/sistema/menu"
+      ],
+      "lines": 151,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhPensionDialog.razor",
+      "routes": [],
+      "lines": 168,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhLookupSelect.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhExpedienteDialog.razor",
+      "routes": [],
+      "lines": 242,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhEmployeeDetails.razor",
+      "routes": [],
+      "lines": 253,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhEmpleadoDialog.razor",
+      "routes": [],
+      "lines": 252,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhDetailTable.razor",
+      "routes": [],
+      "lines": 308,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhDependienteDialog.razor",
+      "routes": [],
+      "lines": 101,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhContratoDialog.razor",
+      "routes": [],
+      "lines": 175,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\NominaRhAuditInfo.razor",
+      "routes": [],
+      "lines": 22,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\RH\\Empleados.razor",
+      "routes": [
+        "/nomina/empleados",
+        "/rh/persona"
+      ],
+      "lines": 264,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\MenuEditor.razor.cs",
+      "routes": [],
+      "lines": 133,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\MenuEditor.razor",
+      "routes": [],
+      "lines": 61,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\EliminarMenu.razor.cs",
+      "routes": [],
+      "lines": 69,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\EliminarMenu.razor",
+      "routes": [],
+      "lines": 27,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\EditarMenu.razor.cs",
+      "routes": [],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\EditarMenu.razor",
+      "routes": [],
+      "lines": 2,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\CrearMenu.razor.cs",
+      "routes": [],
+      "lines": 10,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Procesos\\NominaProcesos.razor",
+      "routes": [
+        "/nomina/procesos",
+        "/nom/calcnomina",
+        "/nom/cierraperiodo",
+        "/nom/calcaguinaldo",
+        "/nom/primavacacionalind"
+      ],
+      "lines": 411,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\NominaOperaciones.razor",
+      "routes": [
+        "/nomina/movimientos",
+        "/rh/datormovto",
+        "/rh/datosmovto",
+        "/nomina/depersonal",
+        "/nomina/reportequincenal",
+        "/aux/auxcalcissste",
+        "/aux/auxcalcisrquincenal",
+        "/aux/auxcalcisrmensual",
+        "/aux/auxcalcisrsemanal",
+        "/aux/auxcalcfovissste",
+        "/aux/auxcalcinfonavitquincenal",
+        "/aux/auxcalcimssquincenal",
+        "/aux/auxcalcimssmensual",
+        "/aux/auxcalcimsssemanal",
+        "/nom/resumennomina",
+        "/nom/resnommen",
+        "/nom/recibonomina",
+        "/nom/archivodispercion",
+        "/nom/archivodispercion__",
+        "/nom/timbradopercepciones",
+        "/aux/imssquincenal_rep",
+        "/aux/imssmensual_rep",
+        "/aux/imsssemanal_rep",
+        "/nom/reportenomina",
+        "/nom/reportenomina_b",
+        "/nom/reporteisr_actual_rep",
+        "/nom/nomactualquincenal",
+        "/nom/nomactualmensual",
+        "/rh/liquidacion",
+        "/rh/vacaciones",
+        "/sis/nominaespecial",
+        "/sis/vwnominaespecial",
+        "/emp/faltasxempresa",
+        "/sis/solicitudvacaciones",
+        "/sis/autorizacionvacaciones",
+        "/nomina/historicos/consulta",
+        "/nomina/historicos/analisis",
+        "/nomina/historicos/recibos",
+        "/nomina/historicos/dispersion",
+        "/nomina/historicos/timbrado",
+        "/nomina/historicos/reportequincenal",
+        "/nomina/historicos/resumen",
+        "/nomina/historicos/reportehistorico",
+        "/nomina/historicos/cubo",
+        "/nomina/historicos/sbc",
+        "/nomina/historicos/acumuladosimss",
+        "/nomina/historicos/sbchistorico",
+        "/nomina/historicos/acumuladosbimestre",
+        "/nomina/historicos/isr_mensual",
+        "/nomina/historicos/isr_acumulados",
+        "/nomina/historicos/impuestoslocales",
+        "/nhis/vwnomhistoricaquincenal",
+        "/nhis/vwnomhistoricaquincenal_pivot",
+        "/nhis/vwnomhistoricaquincenal_rep",
+        "/nhis/dispercion__2",
+        "/nhis/timbrado__2",
+        "/nhis/nominareport",
+        "/nhis/nominareport_b",
+        "/nhis/auxcalcimssquincenal_repbim",
+        "/nhis/auxcalcimssquincenal_repmens",
+        "/nhis/auxcalcisrquincenal_repmens",
+        "/nhis/auxcalcisrquincenal_rep",
+        "/nhis/sbcbimestral",
+        "/nhis/sbc_rep",
+        "/rh/configuracion"
+      ],
+      "lines": 842,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Platform\\Sistema\\Menu\\CrearMenu.razor",
+      "routes": [],
+      "lines": 2,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\PagosExtraordinarios\\ConceptosVariablesDialog.razor",
+      "routes": [],
+      "lines": 399,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\PagosExtraordinarios\\ConceptosVariables.razor",
+      "routes": [
+        "/nom/conceptovariable"
+      ],
+      "lines": 200,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Suministros_Salida.razor",
+      "routes": [
+        "/Almacen/Suministros_Salida"
+      ],
+      "lines": 337,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\SolicitudSalidaDialog.razor",
+      "routes": [],
+      "lines": 239,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Solicitudes_Salida.razor",
+      "routes": [
+        "/Almacen/Solicitudes_Salida"
+      ],
+      "lines": 493,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Salidas_Ajuste.razor",
+      "routes": [
+        "/Almacen/Salidas_Ajuste"
+      ],
+      "lines": 300,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\SalidaAjusteDialog.razor",
+      "routes": [],
+      "lines": 263,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Reporte_diferencias_Conteo_anual.razor",
+      "routes": [
+        "/Almacen/Reporte_diferencias_Conteo_anual"
+      ],
+      "lines": 79,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\ReporteIncidenciasDetalleDialog.razor.cs",
+      "routes": [],
+      "lines": 13,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Reporte_diferencias_Conteo.razor",
+      "routes": [
+        "/Almacen/Reporte_diferencias_Conteo"
+      ],
+      "lines": 79,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Recepcion_Pedidos.razor.cs",
+      "routes": [],
+      "lines": 397,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Recepcion_Pedidos.razor",
+      "routes": [
+        "/Almacen/Recepcion_Pedidos"
+      ],
+      "lines": 146,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomUniversos.razor",
+      "routes": [
+        "/rh/configuracion/universo",
+        "/rh/universo"
+      ],
+      "lines": 78,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoPensions.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipos-pension"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoPagos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipos-pago",
+        "/nomina/configuracion/catalogos/forma-pago",
+        "/sis/formapago"
+      ],
+      "lines": 122,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoJustificaciones.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipo-justificacion",
+        "/sis/tipojustificacion"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoIncidencias.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipo-incidencia",
+        "/nomina/configuracion/catalogos/tipos-incidencia",
+        "/sis/tipoincidencia"
+      ],
+      "lines": 76,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoIncapacidads.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipos-incapacidad"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTipoContrataciones.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/tipo-contratacion",
+        "/sis/tipocontratacion"
+      ],
+      "lines": 80,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscals.razor",
+      "routes": [
+        "/nomina/configuracion/isr/semanal",
+        "/sis/isrsemanal",
+        "/nomina/configuracion/isr/quincenal",
+        "/sis/isrquincenal",
+        "/nomina/configuracion/isr/mensual",
+        "/sis/isrmensual",
+        "/nomina/configuracion/tablas-isr/semanal",
+        "/nomina/configuracion/tablas-isr/quincenal",
+        "/nomina/configuracion/tablas-isr/mensual",
+        "/nomina/configuracion/subsidios/semanal",
+        "/sis/subsidiosemanal",
+        "/nomina/configuracion/subsidios/quincenal",
+        "/sis/subsidioquincenal",
+        "/nomina/configuracion/subsidios/mensual",
+        "/sis/subsidiomensual",
+        "/nomina/configuracion/subsidios-isr/semanal",
+        "/nomina/configuracion/subsidios-isr/quincenal",
+        "/nomina/configuracion/subsidios-isr/mensual",
+        "/nomina/configuracion/impuestos/base-gravable",
+        "/sis/basegravable",
+        "/nomina/configuracion/impuestos/locales",
+        "/nomina/configuracion/imss/clase",
+        "/sis/imssclase",
+        "/nomina/configuracion/imss/clase-imss",
+        "/nomina/configuracion/imss/fraccion",
+        "/sis/imssfraccion",
+        "/nomina/configuracion/imss/fraccion-imss",
+        "/nomina/configuracion/imss/base-gravable",
+        "/sis/basegravableimss"
+      ],
+      "lines": 458,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomTablaFiscalDialog.razor",
+      "routes": [],
+      "lines": 270,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoSemanals.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/sueldos-semanales"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoQuincenals.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/sueldos-quincenales",
+        "/nom/sueldoquincenal"
+      ],
+      "lines": 121,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoMensuals.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/sueldos-mensuales",
+        "/nom/sueldomensual"
+      ],
+      "lines": 121,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoLiqFins.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/sueldos-liquidacion-finiquito"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSueldoEspecials.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/sueldos-especiales"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomSalarioMinimos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/salarios-minimos",
+        "/nomina/configuracion/catalogos/smg",
+        "/sis/smg"
+      ],
+      "lines": 122,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomPuestos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/puestos"
+      ],
+      "lines": 81,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomPlazasAutorizadas.razor",
+      "routes": [
+        "/rh/configuracion/plazas",
+        "/emp/plazasautorizadas"
+      ],
+      "lines": 85,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomPeriodoActivos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/periodos-activos",
+        "/nomina/configuracion/periodos/semanal",
+        "/sis/periodosemanal",
+        "/nomina/configuracion/periodos/quincenal",
+        "/sis/periodoquincenal",
+        "/nomina/configuracion/periodos/mensual",
+        "/sis/periodomensual",
+        "/nomina/configuracion/periodos/bimestral",
+        "/sis/periodobimestral"
+      ],
+      "lines": 220,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomParentescos.razor",
+      "routes": [
+        "/rh/configuracion/parentesco",
+        "/sis/tipoparentesco",
+        "/sis/parentesco"
+      ],
+      "lines": 74,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomNombramientos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/nombramientos"
+      ],
+      "lines": 77,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomNiveles.razor",
+      "routes": [
+        "/rh/configuracion/nivel",
+        "/rh/nivel"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomMedodoPagos.razor",
+      "routes": [
+        "/rh/configuracion/contratos/metodo-pago",
+        "/sis/metodopago",
+        "/sis/medodopago"
+      ],
+      "lines": 79,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomInfonavits.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/infonavit",
+        "/nom/infonavit"
+      ],
+      "lines": 121,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NominaCatalogUi.cs",
+      "routes": [],
+      "lines": 208,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NominaCatalogDialog.razor",
+      "routes": [],
+      "lines": 793,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomImporteNiveles.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/importes-nivel"
+      ],
+      "lines": 80,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomFactorInts.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/factores-integracion",
+        "/nom/factorint",
+        "/nomina/configuracion/imss/prestaciones",
+        "/sis/deprecar",
+        "/nomina/configuracion/imss/prestaciones-minimas",
+        "/sis/deprecar1"
+      ],
+      "lines": 125,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEstatusPagos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/estatus-pago"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEstadosCiviles.razor",
+      "routes": [
+        "/rh/configuracion/estado-civil",
+        "/sis/estadocivil"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEscolaridades.razor",
+      "routes": [
+        "/rh/configuracion/escolaridad",
+        "/sis/escolaridad"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomEmpresasNomina.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/empresas-nomina"
+      ],
+      "lines": 80,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomDiaSemanas.razor",
+      "routes": [
+        "/rh/configuracion/contratos/dia-semana",
+        "/sis/diasemana"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomDescuentoInfonavits.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/descuentos-infonavit"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomDescuentoCreditos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/descuentos-credito"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomCreditos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/creditos",
+        "/nomina/creditos",
+        "/emp/credito",
+        "/nom/credito"
+      ],
+      "lines": 154,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomContratoTerceross.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/contratos-terceros"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomContratosLaborales.razor",
+      "routes": [
+        "/rh/configuracion/contratos",
+        "/rh/contrato",
+        "/rh/contratolaboral"
+      ],
+      "lines": 84,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoVariables.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos-variables"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoTabulars.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos-tabulares",
+        "/nomina/configuracion/catalogos/tabulador",
+        "/nom/conceptotabular"
+      ],
+      "lines": 132,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos",
+        "/nom/concepto"
+      ],
+      "lines": 128,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoProporcionals.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos-proporcionales"
+      ],
+      "lines": 128,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoPorcentajes.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos-porcentaje"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoFijos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/conceptos-fijos",
+        "/nomina/configuracion/catalogos/concepto-fijo",
+        "/nom/conceptofijo"
+      ],
+      "lines": 132,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomConceptoFactors.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/concepto-factor"
+      ],
+      "lines": 120,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomClasePuestos.razor",
+      "routes": [
+        "/nomina/configuracion/catalogos/clases-puesto"
+      ],
+      "lines": 77,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomCatalogosSimples.razor",
+      "routes": [
+        "/rh/configuracion/sexo",
+        "/sis/sexo",
+        "/rh/configuracion/tipo-sangre",
+        "/sis/tiposangre",
+        "/rh/configuracion/profesion",
+        "/sis/profesion",
+        "/rh/configuracion/regimen-fiscal",
+        "/sis/regimenfiscal",
+        "/rh/configuracion/pais",
+        "/sis/pais",
+        "/rh/configuracion/periodo-pago",
+        "/sis/periodopago",
+        "/rh/configuracion/tipo-documento",
+        "/rh/tipodocumento",
+        "/sis/tipodocumento",
+        "/rh/configuracion/tipo-expediente",
+        "/rh/tipoexpediente",
+        "/sis/tipoexpediente",
+        "/rh/configuracion/opcion-jubilacion",
+        "/rh/opcionjubilacion",
+        "/rh/configuracion/situacion-persona",
+        "/rh/situacionpersona",
+        "/rh/configuracion/situacion-plaza",
+        "/rh/situacionplaza",
+        "/rh/configuracion/situacion-movimiento",
+        "/rh/situacionmovimiento",
+        "/rh/configuracion/clase-movimiento",
+        "/rh/clasemovto",
+        "/rh/configuracion/movimiento",
+        "/rh/movimiento",
+        "/rh/configuracion/estado",
+        "/sis/estado",
+        "/rh/configuracion/banco",
+        "/sis/banco",
+        "/rh/configuracion/municipio",
+        "/sis/municipio",
+        "/rh/configuracion/contratos/base-pago",
+        "/sis/basepago",
+        "/rh/configuracion/contratos/tipo-regimen",
+        "/sis/tiporegimen",
+        "/rh/configuracion/contratos/base-cotizacion",
+        "/sis/basecotizacion",
+        "/rh/configuracion/contratos/zona-geografica",
+        "/sis/zonageografica",
+        "/nomina/configuracion/catalogos/tipo-nomina",
+        "/sis/tiponomina",
+        "/nomina/configuracion/catalogos/cuotas-imss",
+        "/sis/cuotasimss",
+        "/nomina/configuracion/catalogos/uma",
+        "/sis/uma",
+        "/nomina/configuracion/catalogos/tipo-descanso",
+        "/sis/tipodescanso",
+        "/nomina/configuracion/catalogos/unidad-infonavit",
+        "/sis/unidadinfonavit",
+        "/nomina/configuracion/catalogos/forma-calculo",
+        "/sis/formacalculo",
+        "/nomina/configuracion/catalogos/capitulos",
+        "/sis/capitulos"
+      ],
+      "lines": 714,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Configuration\\Catalogos\\NomCatalogoSimpleDialog.razor",
+      "routes": [],
+      "lines": 300,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\JustificacionIncidenciasDialog.razor",
+      "routes": [],
+      "lines": 215,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\JustificacionIncidencias.razor",
+      "routes": [
+        "/rh/justificacion"
+      ],
+      "lines": 358,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\IncidenciasDialog.razor",
+      "routes": [],
+      "lines": 512,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\Incidencias.razor",
+      "routes": [
+        "/rh/incidencia"
+      ],
+      "lines": 316,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\ReporteIncidencias.razor",
+      "routes": [
+        "/rh/incidenciareport"
+      ],
+      "lines": 217,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\NominaRhIncidenciaDialog.razor",
+      "routes": [],
+      "lines": 378,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\ReporteIncidenciasDetalleDialog.razor",
+      "routes": [],
+      "lines": 55,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Conteo_ciclico.razor",
+      "routes": [
+        "/Almacen/Conteo_ciclico"
+      ],
+      "lines": 83,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\AlmacenDialog.razor",
+      "routes": [],
+      "lines": 378,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\DetalleSolicitudSalidaDialog.razor",
+      "routes": [],
+      "lines": 280,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Conteo_ciclico_anual.razor",
+      "routes": [
+        "/Almacen/Conteo_ciclico_anual"
+      ],
+      "lines": 78,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Entradas_Ajuste.razor",
+      "routes": [
+        "/Almacen/Entradas_Ajuste"
+      ],
+      "lines": 268,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Existencias_Registradas.razor",
+      "routes": [
+        "/Almacen/Existencias_Registradas"
+      ],
+      "lines": 225,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\SaldosCuentas.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Saldos_Cuentas"
+      ],
+      "lines": 201,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\ProvisionPago.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Provision_Pago"
+      ],
+      "lines": 180,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\MisPeriodos\\MisConteos.razor",
+      "routes": [
+        "/ALMAConteo",
+        "/configuracion/almacen/Numero_Conteo"
+      ],
+      "lines": 574,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\MisPeriodos\\ConteoDialog.razor",
+      "routes": [],
+      "lines": 275,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 2,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\MisPeriodos\\AgregarBienScannerDialog.razor",
+      "routes": [],
+      "lines": 647,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\SolicitudSuficiencias.razor",
+      "routes": [
+        "/Adquisiciones/Solicitud_Suficiencia"
+      ],
+      "lines": 591,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\SolicitudSuficienciaDialog.razor",
+      "routes": [],
+      "lines": 644,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 2,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\SolicitudSuficienciaDetalles.razor",
+      "routes": [
+        "/Adquisiciones/SolicitudSuficienciaDetalle"
+      ],
+      "lines": 163,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\SolicitudSuficienciaDetalleDialog.razor",
+      "routes": [],
+      "lines": 185,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\RequisicionPartidas.razor",
+      "routes": [
+        "/Adquisiciones/RequisicionPartida"
+      ],
+      "lines": 130,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\RequisicionPartidaDialog.razor",
+      "routes": [],
+      "lines": 322,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Requisiciones.razor",
+      "routes": [
+        "/Adquisiciones/Requisicion",
+        "/Adquisiciones/Requisicion/{RequisicionId:int}"
+      ],
+      "lines": 2029,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 3,
+      "fullCatalogReads": 0,
+      "onAfterRender": true,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\RequisicionDialog.razor",
+      "routes": [],
+      "lines": 790,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\RequisicionDetalles.razor",
+      "routes": [
+        "/Adquisiciones/RequisicionDetalle"
+      ],
+      "lines": 135,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\RequisicionDetalleDialog.razor",
+      "routes": [],
+      "lines": 465,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\PaaasPartidaDialog.razor",
+      "routes": [],
+      "lines": 120,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\PaaasDetalleDialog.razor",
+      "routes": [],
+      "lines": 326,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Paaas.razor",
+      "routes": [
+        "/Adquisiciones/Programa_Anual"
+      ],
+      "lines": 1223,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\PaaaDialog.razor",
+      "routes": [],
+      "lines": 363,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 2,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\OrdenCompraPartidaDialog.razor",
+      "routes": [],
+      "lines": 196,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\OrdenCompraDialog.razor",
+      "routes": [],
+      "lines": 439,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\OrdenCompraDetalleDialog.razor",
+      "routes": [],
+      "lines": 344,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\OrdenCompra.razor",
+      "routes": [
+        "/Adquisiciones/Orden_Compra"
+      ],
+      "lines": 1120,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\CotizacionRecepcionDialog.razor",
+      "routes": [],
+      "lines": 329,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Cotizaciones.razor",
+      "routes": [
+        "/Adquisiciones/Cotizacion"
+      ],
+      "lines": 980,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\CotizacionDialog.razor",
+      "routes": [],
+      "lines": 414,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\CotizacionDetalleDialog.razor",
+      "routes": [],
+      "lines": 301,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\CotizacionDetalleBatchDialog.razor",
+      "routes": [],
+      "lines": 651,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Resguardos.razor",
+      "routes": [
+        "/Patrimonio/Resguardos"
+      ],
+      "lines": 702,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\ResguardoHistorico.razor",
+      "routes": [
+        "/Patrimonio/Resguardo_Historico"
+      ],
+      "lines": 155,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\ResguardoDialog.razor",
+      "routes": [],
+      "lines": 211,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\ResguardoDetalleDialog.razor",
+      "routes": [],
+      "lines": 172,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\RecepcionBienesDialog.razor",
+      "routes": [],
+      "lines": 72,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Inventarios.razor",
+      "routes": [
+        "/Patrimonio/Inventarios"
+      ],
+      "lines": 851,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\InventarioDialog.razor",
+      "routes": [],
+      "lines": 286,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\InventarioDetalleDialog.razor",
+      "routes": [],
+      "lines": 252,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Firma_Resguardos.razor",
+      "routes": [
+        "/Patrimonio/Firma_Resguardos"
+      ],
+      "lines": 594,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Clasificacion_Bienes_Muebles.razor",
+      "routes": [
+        "/Patrimonio/Clasificacion_Bienes_Muebles"
+      ],
+      "lines": 825,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Cedula_Diferencia.razor",
+      "routes": [
+        "/Patrimonio/Cedula_Diferencia"
+      ],
+      "lines": 178,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Calendario_Inventarios.razor",
+      "routes": [
+        "/Patrimonio/Calendario_Inventarios"
+      ],
+      "lines": 451,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\CalendarioInventarioDialog.razor",
+      "routes": [],
+      "lines": 249,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Bienes.razor",
+      "routes": [
+        "/Patrimonio/Bienes",
+        "/configuracion/almacen/Bien"
+      ],
+      "lines": 900,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\BienDialog.razor",
+      "routes": [],
+      "lines": 405,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Bajas.razor",
+      "routes": [
+        "/Patrimonio/Bajas"
+      ],
+      "lines": 600,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 2,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\BajaDialog.razor",
+      "routes": [],
+      "lines": 366,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\TipoRetiroDialog.razor",
+      "routes": [],
+      "lines": 61,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\TipoRetiro.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Tipo_Retiro",
+        "/Presupuesto/Tesorería/Inversiones/Tipo_Retiro"
+      ],
+      "lines": 37,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\TipoPlazos.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Tipo_Plazos",
+        "/Presupuesto/Tesorería/Inversiones/Tipo_Plazos"
+      ],
+      "lines": 38,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\TipoPlazoDialog.razor",
+      "routes": [],
+      "lines": 62,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\ListadoInversiones.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Listado_Inversiones",
+        "/Presupuesto/Tesorería/Inversiones/Listado_Inversiones"
+      ],
+      "lines": 469,
+      "grids": 4,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InversionRetiroDialog.razor",
+      "routes": [],
+      "lines": 98,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InversionInteresDialog.razor",
+      "routes": [],
+      "lines": 76,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InversionDialog.razor",
+      "routes": [],
+      "lines": 142,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InversionContabilidadDialog.razor",
+      "routes": [],
+      "lines": 179,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\IntermediariosFinanciero.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Intermediarios_Financiero",
+        "/Presupuesto/Tesorería/Inversiones/Intermediarios_Financiero"
+      ],
+      "lines": 55,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\IntermediarioFinancieroDialog.razor",
+      "routes": [],
+      "lines": 64,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InstrumentosInversion.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Instrumentos_Inversion",
+        "/Presupuesto/Tesoreria/Instrumentos_Inversion",
+        "/Presupuesto/Tesorería/Inversiones/Instrumentos_Inversion"
+      ],
+      "lines": 71,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\InstrumentoInversionDialog.razor",
+      "routes": [],
+      "lines": 178,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\CuentaBancariaDialog.razor",
+      "routes": [],
+      "lines": 186,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\CuentaBancaria.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Cuenta_Bancaria",
+        "/Presupuesto/Tesorería/Inversiones/Cuenta_Bancaria"
+      ],
+      "lines": 71,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\BancoDialog.razor",
+      "routes": [],
+      "lines": 75,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\Inversiones\\Banco.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Inversiones/Banco",
+        "/Presupuesto/Tesorería/Inversiones/Banco"
+      ],
+      "lines": 57,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\RegresarChequeSuficienciaDialog.razor",
+      "routes": [],
+      "lines": 53,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\RecepcionFacturaComprobantePago.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/CuentasXPagar/Factura_Pago",
+        "/Presupuesto/Tesoreria/CuentasXPagar/Solicitud_Reintegros",
+        "/Presupuesto/Tesoreria/Solicitud_Reintegros",
+        "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Factura_Pago",
+        "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Solicitud_Reintegros"
+      ],
+      "lines": 289,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\ProvisionPago.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/CuentasXPagar/Autorizar_Solicitud_Reingresos",
+        "/Presupuesto/Tesoreria/Autorizar_Solicitud_Reingresos",
+        "/Presupuesto/Tesoreria/CuentasXPagar/Provision_Pago",
+        "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Autorizar_Solicitud_Reingresos",
+        "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Provision_Pago"
+      ],
+      "lines": 279,
+      "grids": 3,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\FacturaDialog.razor",
+      "routes": [],
+      "lines": 299,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\FacturaDetalleDialog.razor",
+      "routes": [],
+      "lines": 125,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\CLCFacturaDialog.razor",
+      "routes": [],
+      "lines": 107,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\CLCDialog.razor",
+      "routes": [],
+      "lines": 265,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\CLCDetalleDialog.razor",
+      "routes": [],
+      "lines": 117,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\ChequeTransferencia.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/CuentasXPagar/Cheque_Transferencia",
+        "/Presupuesto/Tesoreria/CuentasXPagar/PEF_Unipartida_TES/Cheque_Transferencia"
+      ],
+      "lines": 218,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\ChequePartidaDialog.razor",
+      "routes": [],
+      "lines": 107,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXPagar\\ChequeDialog.razor",
+      "routes": [],
+      "lines": 252,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoAutorizado.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupuesto_Autorizado"
+      ],
+      "lines": 628,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\Saldos_Contratos.razor",
+      "routes": [
+        "/Contratos/Saldos_Contratos",
+        "/Adquisiciones/Contratos/Saldos_Contratos"
+      ],
+      "lines": 199,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\Registro_Compromiso.razor",
+      "routes": [
+        "/Contratos/Registro_Compromiso",
+        "/Adquisiciones/Contratos/Registro_Administrativo"
+      ],
+      "lines": 291,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\RegistroCompromisoDialog.razor",
+      "routes": [],
+      "lines": 529,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\Estado_Contrato.razor",
+      "routes": [
+        "/Contratos/Estado_Contrato",
+        "/Adquisiciones/Contratos/Estado_Contrato",
+        "/Adquisiciones/Contratos/Registro_Compromiso"
+      ],
+      "lines": 353,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Contratos\\EstadoContratoDialog.razor",
+      "routes": [],
+      "lines": 446,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\SeleccionarAnteproyectoAutorizadoDialog.razor",
+      "routes": [],
+      "lines": 290,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\InvestigacionMercadoDetalleDialog.razor",
+      "routes": [],
+      "lines": 300,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\InvestigacionMercadoDetalleBuilderDialog.razor",
+      "routes": [],
+      "lines": 769,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\InvestigacionMercadoDialog.razor",
+      "routes": [],
+      "lines": 294,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Investigacion_Mercado.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Investigacion_Mercado",
+        "/Planeacion/Investigacion_Mercado"
+      ],
+      "lines": 1137,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoDisponible.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupuesto_Disponible"
+      ],
+      "lines": 527,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\RecepcionCotizacionesDialog.razor",
+      "routes": [],
+      "lines": 423,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\RegresarAProyectadoDialog.razor",
+      "routes": [],
+      "lines": 280,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\PresupuestoAutorizadoDialog.razor",
+      "routes": [],
+      "lines": 1107,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\AnteproyectoEgresosDialog.razor",
+      "routes": [],
+      "lines": 596,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\AnteproyectoEgresosDetalleDialog.razor",
+      "routes": [],
+      "lines": 368,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\AnteproyectoEgresosAiImportDialog.razor",
+      "routes": [],
+      "lines": 1433,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\Planeacion\\AnteproyectoEgresos.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Planeacion/Anteproyecto_Egresos"
+      ],
+      "lines": 832,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoSolicitudCLCDialog.razor",
+      "routes": [],
+      "lines": 76,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoSolicitudCLC.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Solicitud_CLC"
+      ],
+      "lines": 45,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoPagoSFDialog.razor",
+      "routes": [],
+      "lines": 76,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoPagoSF.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_PagoSF"
+      ],
+      "lines": 45,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoPagoDialog.razor",
+      "routes": [],
+      "lines": 76,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoPago.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Pago"
+      ],
+      "lines": 45,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoMonedaDialog.razor",
+      "routes": [],
+      "lines": 147,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoMoneda.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Moneda"
+      ],
+      "lines": 59,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoInversionDialog.razor",
+      "routes": [],
+      "lines": 76,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoInversion.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Inversion",
+        "/Presupuesto/Tesoreria/Inversiones/Tipo_Instrumentos"
+      ],
+      "lines": 52,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoDoctoClcDialog.razor",
+      "routes": [],
+      "lines": 78,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoDoctoClc.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Documento_CLC"
+      ],
+      "lines": 47,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoCambioDialog.razor",
+      "routes": [],
+      "lines": 146,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Tesoreria\\TipoCambio.razor",
+      "routes": [
+        "/configuracion/tesoreria/Tipo_Cambio"
+      ],
+      "lines": 70,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresoAutorizadoDialog.razor",
+      "routes": [],
+      "lines": 381,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresoAutorizado.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Estimados"
+      ],
+      "lines": 349,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\DepositosCLC.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Depositos_CLC",
+        "/Tesoreria/Cuentas_Cobrar/Depositos_CLC"
+      ],
+      "lines": 291,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 1,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\DepositoPolizaDialog.razor",
+      "routes": [],
+      "lines": 130,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\DepositoDialog.razor",
+      "routes": [],
+      "lines": 412,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\Polizas.razor",
+      "routes": [
+        "/Contabilidad/Polizas"
+      ],
+      "lines": 819,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\PolizaDialog.razor",
+      "routes": [],
+      "lines": 294,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\PolizaDetalleDialog.razor",
+      "routes": [],
+      "lines": 279,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\PolizaAiImportDialog.razor",
+      "routes": [],
+      "lines": 1272,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\ContabilidadReportes.razor",
+      "routes": [
+        "/Contabilidad/Autorizacion_Polizas",
+        "/Contabilidad/Balanza_Comprobacion",
+        "/Contabilidad/Auxiliares",
+        "/Contabilidad/Reportes_Contabilidad",
+        "/Contabilidad/Reportes_Contabilidad/Libro_Diario",
+        "/Contabilidad/Reportes_Contabilidad/Libro_Mayor",
+        "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Materiales",
+        "/Contabilidad/Reportes_Contabilidad/Libro_Almacen_Suministros",
+        "/Contabilidad/Reportes_Contabilidad/Libro_Inventarios_Muebles",
+        "/Contabilidad/Reportes_Contabilidad/Polizas",
+        "/Contabilidad/Reportes_Contabilidad/Reporte_Retenciones",
+        "/Contabilidad/Reportes_Contabilidad/Reporte_Depreciacion_Acumulada",
+        "/Contabilidad/Reportes_Contabilidad/Reporte_Activos_Fijos",
+        "/Contabilidad/Reportes_Contabilidad/Reporte_Facturas_Emitidas",
+        "/Contabilidad/Reportes_Contabilidad/Reporte_DIOT",
+        "/Contabilidad/EI_Contable",
+        "/Contabilidad/EI_Contable/Estados_Actividades",
+        "/Contabilidad/EI_Contable/Estado_Situacion_Financiera",
+        "/Contabilidad/EI_Contable/Estado_VHP",
+        "/Contabilidad/EI_Contable/Estados_CSF",
+        "/Contabilidad/EI_Contable/Estado_Flujos_Efectivo",
+        "/Contabilidad/EI_Contable/Estado_Analitico_Activo",
+        "/Contabilidad/EI_Contable/Estado_ADOP",
+        "/Contabilidad/EI_Contable/Informe_Pasivos_Contingentes",
+        "/Contabilidad/EI_Contable/Notas_Estados_Financieros",
+        "/Contabilidad/Conciliacion_IE",
+        "/Contabilidad/EI_Presupuestarios",
+        "/Contabilidad/EI_Presupuestarios/Estado_Analitico_Ingresos",
+        "/Contabilidad/EI_Presupuestarios/Estado_AECA",
+        "/Contabilidad/EI_Presupuestarios/Estado_AECE",
+        "/Contabilidad/EI_Presupuestarios/Estado_AECOG",
+        "/Contabilidad/EI_Presupuestarios/Estado_AECF",
+        "/Contabilidad/EI_Presupuestarios/Endeudamiento_Neto",
+        "/Contabilidad/EI_Presupuestarios/Intereses_Deuda",
+        "/Contabilidad/EI_Presupuestarios/Proyecciones_Egresos",
+        "/Contabilidad/EI_Presupuestarios/Proyecciones_Ingresos",
+        "/Contabilidad/EI_Presupuestarios/Indicadores_APP",
+        "/Contabilidad/EI_Presupuestarios/Pp_Inversion",
+        "/Contabilidad/EI_Presupuestarios/Resultados_Ingresos",
+        "/Contabilidad/EI_Presupuestarios/Resultados_Egresos",
+        "/Contabilidad/EI_Programaticos",
+        "/Contabilidad/Indicadores_Postura_Fiscal"
+      ],
+      "lines": 576,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Contabilidad\\Cierre_Mensual.razor",
+      "routes": [
+        "/Contabilidad/Cierre_Mensual"
+      ],
+      "lines": 580,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\Reducciones.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupesto_Modificado/Reducciones"
+      ],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoShell.razor.cs",
+      "routes": [],
+      "lines": 444,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoShell.razor",
+      "routes": [],
+      "lines": 350,
+      "grids": 4,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoDialog.razor.cs",
+      "routes": [],
+      "lines": 160,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoDialog.razor",
+      "routes": [],
+      "lines": 50,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoDetalleDialog.razor.cs",
+      "routes": [],
+      "lines": 307,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\PresupuestoModificadoDetalleDialog.razor",
+      "routes": [],
+      "lines": 70,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\Ampliaciones.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones",
+        "/Presupuesto/Egreso/Presupesto_Modificado/Ampliaciones"
+      ],
+      "lines": 10,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoModificado\\AdecuacionesCompensadas.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupesto_Modificado/Adecuaciones_Compensadas"
+      ],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresoAutorizadoPolizaDialog.razor",
+      "routes": [],
+      "lines": 130,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresosPropios.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos_Propios"
+      ],
+      "lines": 237,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresosRecaudar.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Recaudar"
+      ],
+      "lines": 231,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\SolicitudSuficiencia.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupuesto_Comprometido/Solicitud_Suficiencia"
+      ],
+      "lines": 648,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\RegistroComprometido.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupuesto_Comprometido/Registro_Comprometido"
+      ],
+      "lines": 253,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\ContratoDialog.razor",
+      "routes": [],
+      "lines": 411,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\ContratoDetalleDialog.razor",
+      "routes": [],
+      "lines": 128,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\AutorizacionSuficienciaDialog.razor",
+      "routes": [],
+      "lines": 262,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\AutorizacionSuficienciaDetalleDialog.razor",
+      "routes": [],
+      "lines": 127,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoComprometido\\AutorizacionSuficiencia.razor",
+      "routes": [
+        "/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia"
+      ],
+      "lines": 306,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\Familias.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Familia",
+        "/configuracion/almacen/Familia"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\FamiliaDialog.razor",
+      "routes": [],
+      "lines": 109,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\MarcaDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\GruposBien.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Grupo_Bien"
+      ],
+      "lines": 81,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\GrupoBienDialog.razor",
+      "routes": [],
+      "lines": 178,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\PersonaDialog.razor",
+      "routes": [],
+      "lines": 151,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\Marcas.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Marca"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\Personas.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Personas"
+      ],
+      "lines": 81,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TipoAdquisicionDialog.razor",
+      "routes": [],
+      "lines": 117,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TipoBien.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Bienes_Servicios",
+        "/configuracion/almacen/Tipo_Bien"
+      ],
+      "lines": 198,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TiposPatrimonio.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Tipo_Patrimonio"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TiposAdquisicion.razor",
+      "routes": [
+        "/configuracion/Patrimonio/Tipo_Adquisicion"
+      ],
+      "lines": 77,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TipoPatrimonioDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Patrimonio\\TipoBienDialog.razor",
+      "routes": [],
+      "lines": 305,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\SubFuncionDialog.razor",
+      "routes": [],
+      "lines": 141,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\SubFuncion.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/subfuncion"
+      ],
+      "lines": 72,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\GrupoFuncionalDialog.razor",
+      "routes": [],
+      "lines": 110,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\GrupoFuncional.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/finalidad"
+      ],
+      "lines": 116,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\FuncionDialog.razor",
+      "routes": [],
+      "lines": 179,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\ClavePrograma\\Funcion.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/funcion"
+      ],
+      "lines": 74,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramaPresupuestals.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/programa-presupuestal"
+      ],
+      "lines": 83,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramaPresupuestalDialog.razor",
+      "routes": [],
+      "lines": 123,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramaDialog.razor",
+      "routes": [],
+      "lines": 399,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Pgs.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/pg"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\PgDialog.razor",
+      "routes": [],
+      "lines": 111,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\FuenteFinanciamientos.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/fuente-financiamiento"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\FuenteFinanciamientoDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\AniosDialog.razor",
+      "routes": [],
+      "lines": 111,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Anios.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/anios"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ActividadInstitucionales.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/actividad-institucional"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ActividadInstitucionalDialog.razor",
+      "routes": [],
+      "lines": 107,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\SectorDialog.razor",
+      "routes": [],
+      "lines": 111,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Ramos.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/ramo"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\RamoDialog.razor",
+      "routes": [],
+      "lines": 111,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Proyectos.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/proyecto"
+      ],
+      "lines": 80,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProyectoDialog.razor",
+      "routes": [],
+      "lines": 123,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramasPresupuestales.razor",
+      "routes": [
+        "/configuracion/presupuestales/programas-presupuesta"
+      ],
+      "lines": 294,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 1,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\TipoRecursoDialog.razor",
+      "routes": [],
+      "lines": 111,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\Sectores.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/sector"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\TipoRecursos.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/tipo-recurso"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\UnidadResponsableDialog.razor",
+      "routes": [],
+      "lines": 121,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\ArticuloDialog.razor",
+      "routes": [],
+      "lines": 109,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\UnidadResponsables.razor",
+      "routes": [
+        "/configuracion/presupuestales/clave-programa/unidad-responsable"
+      ],
+      "lines": 117,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Articulos.razor",
+      "routes": [
+        "/configuracion/adquisiciones/articulo"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\EstatusRequisicionDialog.razor",
+      "routes": [],
+      "lines": 185,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoGarantias.razor",
+      "routes": [
+        "/configuracion/adquisiciones/tipo-garantia"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoGarantiaDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoDocumentos.razor",
+      "routes": [
+        "/configuracion/adquisiciones/tipo-documento"
+      ],
+      "lines": 32,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoDocumentoDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoContratos.razor",
+      "routes": [
+        "/configuracion/adquisiciones/tipo-contrato"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\TipoContratoDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Proveedores.razor",
+      "routes": [
+        "/configuracion/adquisiciones/proveedores"
+      ],
+      "lines": 116,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\ProveedorDialog.razor",
+      "routes": [],
+      "lines": 419,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\ProcedimientosContratacion.razor",
+      "routes": [
+        "/configuracion/adquisiciones/procedimientos-contratacion"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\ProcedimientoContratacionDialog.razor",
+      "routes": [],
+      "lines": 108,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Modalidades.razor",
+      "routes": [
+        "/configuracion/adquisiciones/modalidad"
+      ],
+      "lines": 78,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\ModalidadDialog.razor",
+      "routes": [],
+      "lines": 102,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\Fracciones.razor",
+      "routes": [
+        "/configuracion/adquisiciones/fraccion"
+      ],
+      "lines": 77,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\FraccionDialog.razor",
+      "routes": [],
+      "lines": 115,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Adquisicion\\EstatusRequisiciones.razor",
+      "routes": [
+        "/configuracion/adquisiciones/estatus-requisicion"
+      ],
+      "lines": 78,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\IngresosDevengados\\IngresosClc.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Ingresos_Devengados/Ingresos"
+      ],
+      "lines": 264,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Administracion\\Seguridad\\BitacoraDetalleDialog.razor",
+      "routes": [],
+      "lines": 26,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Administracion\\Seguridad\\Bitacora.razor",
+      "routes": [
+        "/Administracin/Seguridad/Bitacora",
+        "/Administracion/Seguridad/Bitacora"
+      ],
+      "lines": 202,
+      "grids": 0,
+      "legacySharedTables": 1,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ReduccionPresupuestoIngreso.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Reduccion_Presupuesto_Ingreso"
+      ],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoShell.razor.cs",
+      "routes": [],
+      "lines": 386,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoShell.razor",
+      "routes": [],
+      "lines": 246,
+      "grids": 2,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizIngresoPersonalizado.razor",
+      "routes": [],
+      "lines": 289,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizIngresoDialog.razor",
+      "routes": [],
+      "lines": 242,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizConversionPersonalizado.razor",
+      "routes": [],
+      "lines": 384,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizConversionDialog.razor",
+      "routes": [],
+      "lines": 297,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatrizConversion.razor",
+      "routes": [
+        "/configuracion/contabilidad/matriz-conversion"
+      ],
+      "lines": 159,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TipoDetallePolizaDialog.razor",
+      "routes": [],
+      "lines": 103,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\MatricesIngresos.razor",
+      "routes": [
+        "/configuracion/contabilidad/matriz-conversion-ingresos"
+      ],
+      "lines": 142,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\PartidasPresupuestales.razor",
+      "routes": [
+        "/configuracion/contabilidad/partidas-presupuestales"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TipoPolizaDialog.razor",
+      "routes": [],
+      "lines": 103,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\FormasPago.razor",
+      "routes": [
+        "/configuracion/contabilidad/formas-pago"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TiposDetallesPolizas.razor",
+      "routes": [
+        "/configuracion/contabilidad/tipo-detalles-polizas"
+      ],
+      "lines": 73,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\FormaPagoDialog.razor",
+      "routes": [],
+      "lines": 103,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\CuentasContables.razor",
+      "routes": [
+        "/configuracion/contabilidad/cuentas-contables"
+      ],
+      "lines": 75,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\AdecuacionesCompensadasIngresos.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Adecuaciones_Compensadas_Ingresos"
+      ],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\CuentaContableDialog.razor",
+      "routes": [],
+      "lines": 105,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\ConceptoDialog.razor",
+      "routes": [],
+      "lines": 105,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\AumentosPresupuestoIngreso.razor",
+      "routes": [
+        "/Presupuesto/Tesoreria/Cuentas_Cobrar/Modificado_Ingreso/Aumentos_Presupuesto_Ingreso"
+      ],
+      "lines": 9,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoDetalleDialog.razor.cs",
+      "routes": [],
+      "lines": 349,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoDialog.razor",
+      "routes": [],
+      "lines": 58,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Contabilidad\\TiposPolizas.razor",
+      "routes": [
+        "/configuracion/contabilidad/tipo-polizas"
+      ],
+      "lines": 74,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoDialog.razor.cs",
+      "routes": [],
+      "lines": 146,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Tesoreria\\CuentasXCobrar\\ModificadoIngreso\\ModificadoIngresoDetalleDialog.razor",
+      "routes": [],
+      "lines": 83,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\UnidadesDialog.razor",
+      "routes": [],
+      "lines": 97,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\Unidades.razor",
+      "routes": [
+        "/configuracion/almacen/unidades"
+      ],
+      "lines": 66,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\PlanConteoCiclicoDialog.razor",
+      "routes": [],
+      "lines": 100,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 1,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\PeriodoConteoDialog.razor",
+      "routes": [],
+      "lines": 386,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 2,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\PeriodoConteo.razor",
+      "routes": [
+        "/configuracion/almacen/Perido_Conteo"
+      ],
+      "lines": 410,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\MotivoEsDialog.razor",
+      "routes": [],
+      "lines": 112,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\MotivoEntradasSalidas.razor",
+      "routes": [
+        "/configuracion/almacen/motivo_entradas_salidas"
+      ],
+      "lines": 61,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\EstatusSolicitudDialog.razor",
+      "routes": [],
+      "lines": 105,
+      "grids": 0,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": true
+    },
+    {
+      "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Almacen\\EstatusSolicitud.razor",
+      "routes": [
+        "/configuracion/almacen/Estatus_Solicitud"
+      ],
+      "lines": 66,
+      "grids": 1,
+      "legacySharedTables": 0,
+      "asyncVoid": 0,
+      "unboundedPageRequests": 0,
+      "fullCatalogReads": 0,
+      "onAfterRender": false,
+      "initialization": false
+    }
+  ]
+}

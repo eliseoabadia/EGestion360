@@ -216,12 +216,12 @@
             item.FkidDetalleOrdenCompraOrco = OrdenDetalleId;
             if (TipoBienId.HasValue)
             {
-                _selectedTipoBien = new LookupItem { Id = TipoBienId.Value, Text = string.IsNullOrWhiteSpace(TipoBienText) ? TipoBienId.Value.ToString() : TipoBienText };
+                _selectedTipoBien = new LookupItem { Id = TipoBienId.Value, Text = string.IsNullOrWhiteSpace(TipoBienText) ? "Bien seleccionado" : TipoBienText };
                 item.FkidTipoBienAlma = TipoBienId.Value;
             }
             if (UnidadId.HasValue)
             {
-                _selectedUnidad = new LookupItem { Id = UnidadId.Value, Text = string.IsNullOrWhiteSpace(UnidadText) ? UnidadId.Value.ToString() : UnidadText };
+                _selectedUnidad = new LookupItem { Id = UnidadId.Value, Text = string.IsNullOrWhiteSpace(UnidadText) ? "Unidad seleccionada" : UnidadText };
                 item.FkidUnidadesAlma = UnidadId.Value;
             }
         }

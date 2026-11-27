@@ -74,7 +74,7 @@ namespace EG.ApiCoreBS.Services.Contabilidad
         public async Task DeleteAsync(int id)
         {
             var existing = await GetByIdAsync(id);
-            if (existing == null) throw new KeyNotFoundException($"TipoPoliza con ID {id} no encontrado");
+            if (existing == null) throw new KeyNotFoundException($"TipoPoliza no encontrado");
 
             var dto = new TipoPolizaDto
             {

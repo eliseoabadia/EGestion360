@@ -53,7 +53,7 @@
                     {
                         Id = item.FkidTipoRetiroTes.Value,
                         Text = string.IsNullOrWhiteSpace(item.TipoRetiroDescripcion)
-                            ? item.FkidTipoRetiroTes.Value.ToString()
+                            ? "Tipo de retiro seleccionado"
                             : item.TipoRetiroDescripcion
                     }
                     : null;

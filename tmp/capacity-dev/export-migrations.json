@@ -1,0 +1,62 @@
+[
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Almacen\\Salidas_Ajuste.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Requisiciones.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\Paaas.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Adquisiciones\\OrdenCompra.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Resguardos.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Inventarios.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Firma_Resguardos.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Calendario_Inventarios.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Patrimonio\\Bajas.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\ReporteIncidencias.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\JustificacionIncidencias.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\Nomina\\Nomina\\Incidencias\\Incidencias.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoAutorizado.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Presupuesto\\Egreso\\PresupuestoDisponible.razor",
+    "count": 1
+  },
+  {
+    "file": "FrontEnd/EG.Web/Pages\\Modules\\GRP\\Configuration\\Catalogos\\Presupuestales\\ProgramasPresupuestales.razor",
+    "count": 1
+  }
+]

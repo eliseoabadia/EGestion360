@@ -11,7 +11,6 @@
             <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Duración</MudText><MudText>@(Item.ExecutionTime.HasValue ? $"{Item.ExecutionTime:N0} ms" : "—")</MudText></MudItem>
             <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Dirección IP</MudText><MudText>@Text(Item.Ipclient)</MudText></MudItem>
             <MudItem xs="12" sm="6"><MudText Typo="Typo.caption">Equipo</MudText><MudText>@Text(Item.HostName)</MudText></MudItem>
-            <MudItem xs="12"><MudText Typo="Typo.caption">Identificador de evidencia</MudText><MudText Style="font-family:monospace">LOG-@Item.PkidSystemLog.ToString("D10")</MudText></MudItem>
         </MudGrid>
     </DialogContent>
     <DialogActions><MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Primary">Cerrar</MudButton></DialogActions>

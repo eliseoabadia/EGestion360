@@ -1,0 +1,92 @@
+@typeparam TResponse where TResponse : class
+@using EG.Common.GenericModel
+@using EG.Web.Contracts
+@using EG.Web.Models
+@inject IGenericCrudService<TResponse> Service
+
+<PagedAutocomplete Label="@Label"
+                   Value="@_selected"
+                   ValueChanged="HandleValueChangedAsync"
+                   LoadPage="LoadPageAsync"
+                   Required="@Required"
+                   RequiredError="@RequiredError"
+                   Disabled="@Disabled"
+                   Clearable="@Clearable"
+                   Margin="@Margin"
+                   PageSize="@PageSize" />
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public Func<TResponse, int> IdSelector { get; set; } = null!;
+    [Parameter, EditorRequired] public Func<TResponse, string> TextSelector { get; set; } = null!;
+    [Parameter, EditorRequired] public string SortProperty { get; set; } = string.Empty;
+    [Parameter] public int? SelectedId { get; set; }
+    [Parameter] public EventCallback<int?> SelectedIdChanged { get; set; }
+    [Parameter] public EventCallback<TResponse?> SelectedRecordChanged { get; set; }
+    [Parameter] public string? SelectedText { get; set; }
+    [Parameter] public Dictionary<string, object>? AdditionalFilters { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string? RequiredError { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Clearable { get; set; }
+    [Parameter] public Margin Margin { get; set; } = Margin.Dense;
+    [Parameter] public int PageSize { get; set; } = 100;
+
+    private readonly Dictionary<int, TResponse> _loadedRecords = new();
+    private LookupItem? _selected;
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedId is not > 0)
+        {
+            _selected = null;
+            return;
+        }
+
+        if (_selected?.Id == SelectedId && string.IsNullOrWhiteSpace(SelectedText))
+        {
+            return;
+        }
+
+        var text = string.IsNullOrWhiteSpace(SelectedText) ? "Registro seleccionado" : SelectedText;
+        if (_selected?.Id != SelectedId || !string.Equals(_selected.Text, text, StringComparison.Ordinal))
+        {
+            _selected = new LookupItem { Id = SelectedId.Value, Text = text };
+        }
+    }
+
+    private async Task<ComboLookupResult> LoadPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+    {
+        var response = await Service.GetAllPaginadoAsync(
+            page,
+            pageSize,
+            filter,
+            SortProperty,
+            SortDirection.Ascending,
+            AdditionalFilters);
+
+        var records = response?.Items?.Where(record => record is not null && IdSelector(record) > 0).ToList() ?? [];
+        foreach (var record in records)
+        {
+            _loadedRecords[IdSelector(record)] = record;
+        }
+
+        var items = records.Select(record => new LookupItem
+        {
+            Id = IdSelector(record),
+            Text = string.IsNullOrWhiteSpace(TextSelector(record)) ? "Registro sin descripción" : TextSelector(record)
+        }).ToList();
+
+        return new ComboLookupResult { Items = items, TotalCount = response?.TotalCount ?? items.Count };
+    }
+
+    private async Task HandleValueChangedAsync(LookupItem? value)
+    {
+        _selected = value;
+        await SelectedIdChanged.InvokeAsync(value?.Id);
+        var record = value != null && _loadedRecords.TryGetValue(value.Id, out var selectedRecord)
+            ? selectedRecord
+            : null;
+        await SelectedRecordChanged.InvokeAsync(record);
+    }
+}

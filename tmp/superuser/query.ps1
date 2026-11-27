@@ -1,0 +1,3 @@
+param([string]$Sql)
+$c=[System.Data.SqlClient.SqlConnection]::new('Data Source=.;Initial Catalog=GestionEmpresarial;Integrated Security=True;TrustServerCertificate=True;Application Name=EGestion360-SuperUserReview;Connect Timeout=5')
+try{$c.Open();$q=$c.CreateCommand();$q.CommandTimeout=30;$q.CommandText=$Sql;$r=$q.ExecuteReader();$t=[System.Data.DataTable]::new();$t.Load($r);$rows=@($t|ForEach-Object{$o=[ordered]@{};foreach($col in $t.Columns){$v=$_.($col.ColumnName);$o[$col.ColumnName]=if($v -is [DBNull]){$null}else{$v}};[pscustomobject]$o});ConvertTo-Json -InputObject $rows -Depth 5}finally{$c.Dispose()}

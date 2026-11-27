@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="EmpresaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar entidad"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidEmpresa))" /></MudTooltip><MudTooltip Text="Agregar departamento a esta entidad"><MudIconButton Icon="@Icons.Material.Filled.DomainAdd" Visible="@CanCreate" Color="Color.Success" Size="Size.Small" OnClick="@(() => CrearDepartamentoEmpresa(context.Item))" /></MudTooltip><MudTooltip Text="Eliminar entidad"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidEmpresa))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="EmpresaResponse" TProperty="int" Property="x => x.PkidEmpresa" Title="ID" Identifier="PkidEmpresa" />
+                
                 <PropertyColumn T="EmpresaResponse" TProperty="string" Property="x => x.EmpresaNombre" Title="Nombre" Identifier="EmpresaNombre" />
                 <PropertyColumn T="EmpresaResponse" TProperty="string" Property="x => x.NombreCorto" Title="Nombre corto" Identifier="NombreCorto" />
                 <PropertyColumn T="EmpresaResponse" TProperty="string" Property="x => x.RazonSocial" Title="Razón social" Identifier="RazonSocial" />
@@ -56,7 +56,6 @@
     {
         return items.Select(e => new
         {
-            ID = e.PkidEmpresa,
             Nombre = e.EmpresaNombre,
             NombreCorto = e.NombreCorto,
             RazonSocial = e.RazonSocial,

@@ -47,7 +47,7 @@ namespace EG.Application.Services.Contratos
             var current = await GetCurrentAsync(id);
             if (current == null)
             {
-                return Failure<OrcoContratoResponse>($"Registro de compromiso con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<OrcoContratoResponse>($"Registro de compromiso no encontrado.", "NOT_FOUND");
             }
 
             if (current.FkidEstatusContratoOrco > EstatusInicial)
@@ -73,7 +73,7 @@ namespace EG.Application.Services.Contratos
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Registro de compromiso con ID {id} no encontrado.",
+                    Message = $"Registro de compromiso no encontrado.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0
@@ -100,7 +100,7 @@ namespace EG.Application.Services.Contratos
             var result = await GetByIdAsync(id);
             if (!result.Success || result.Data == null)
             {
-                return Failure<OrcoContratoResponse>($"Registro de compromiso con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<OrcoContratoResponse>($"Registro de compromiso no encontrado.", "NOT_FOUND");
             }
 
             var registro = result.Data;
@@ -572,7 +572,7 @@ namespace EG.Application.Services.Contratos
 
             if (current == null)
             {
-                return Failure<EstadoContratoResponse>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstadoContratoResponse>($"Estado de contrato no encontrado.", "NOT_FOUND");
             }
 
             if (current.Estatus > 1)
@@ -648,7 +648,7 @@ namespace EG.Application.Services.Contratos
 
             if (current == null)
             {
-                return Failure<bool>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<bool>($"Estado de contrato no encontrado.", "NOT_FOUND");
             }
 
             if (current.Estatus > 1)
@@ -673,7 +673,7 @@ namespace EG.Application.Services.Contratos
 
             if (current == null)
             {
-                return Failure<EstadoContratoResponse>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstadoContratoResponse>($"Estado de contrato no encontrado.", "NOT_FOUND");
             }
 
             if (current.Estatus != EstatusBorrador)
@@ -887,7 +887,7 @@ namespace EG.Application.Services.Contratos
 
             if (current == null)
             {
-                return Failure<EstadoContratoResponse>($"Estado de contrato con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<EstadoContratoResponse>($"Estado de contrato no encontrado.", "NOT_FOUND");
             }
 
             if (current.Estatus < EstatusVigente)

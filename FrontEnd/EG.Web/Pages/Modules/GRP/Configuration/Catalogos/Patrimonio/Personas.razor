@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="PersonaResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPersona))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPersona))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="PersonaResponse" TProperty="int" Property="x => x.PkidPersona" Title="ID" Identifier="PkidPersona" />
+                
                 <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
                 <PropertyColumn T="PersonaResponse" TProperty="string" Property="x => x.Paterno" Title="Paterno" Identifier="Paterno" />
@@ -55,7 +55,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidPersona,
             Clave = u.Clave,
             Nombre = u.Nombre,
             Paterno = u.Paterno,

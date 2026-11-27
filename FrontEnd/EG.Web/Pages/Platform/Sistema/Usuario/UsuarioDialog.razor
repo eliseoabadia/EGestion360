@@ -1145,7 +1145,7 @@
                     return new EmpresaUsuarioAsignacion
                     {
                         IdEmpresa = empresa.PkidEmpresa,
-                        NombreEmpresa = empresa.EmpresaNombre ?? empresa.RazonSocial ?? $"Empresa {empresa.PkidEmpresa}",
+                        NombreEmpresa = empresa.EmpresaNombre ?? empresa.RazonSocial ?? "Empresa sin nombre disponible",
                         IdSucursal = asignacionEmpresa?.IdSucursal ?? sucursal?.PkidSucursal ?? 0,
                         NombreSucursal = asignacionEmpresa?.NombreSucursal ?? sucursal?.Nombre ?? "Se creará matriz al activar",
                         Asignada = asignacionEmpresa != null,

@@ -26,7 +26,7 @@
         <GenericDataGrid TItem="UsuarioResponse"
                       @ref="table"
                       Title="Lista de Usuarios"
-                      SearchPlaceholder="Buscar por ID, persona, clave, email, telefono o empresa..."
+                      SearchPlaceholder="Buscar persona, clave, correo, teléfono o empresa..."
                       ShowExportButton="@CanExport"
                       ServerDataFunc="LoadServerData"
                       ExportFunc="ExportToExcel"
@@ -36,7 +36,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="UsuarioResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar usuario"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkIdUsuario))" /></MudTooltip><MudTooltip Text="Eliminar usuario"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkIdUsuario))" /></MudTooltip><MudTooltip Text="Asignar Sucursal"><MudIconButton Icon="@Icons.Material.Filled.AssignmentInd" Visible="@CanUpdate" Color="Color.Error" Size="Size.Small" OnClick="@(() => AssingSucursal(context.Item.PkIdUsuario))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="UsuarioResponse" TProperty="int" Property="x => x.PkIdUsuario" Title="ID" Identifier="PkIdUsuario" />
+                
                 <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.NombreCompletoPersona" Title="Persona" Identifier="NombreCompletoPersona" />
                 <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.EmailPersona" Title="Email" Identifier="EmailPersona" />
                 <PropertyColumn T="UsuarioResponse" TProperty="string" Property="x => x.TelefonoMovil" Title="Teléfono" Identifier="TelefonoMovil" />
@@ -65,7 +65,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkIdUsuario,
             Nombre_Completo = u.NombreCompleto,
             Email = u.Email,
             Telefono = u.TelefonoUsuario,

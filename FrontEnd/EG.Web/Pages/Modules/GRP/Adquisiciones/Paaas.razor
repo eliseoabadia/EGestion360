@@ -49,7 +49,7 @@
                         <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="@(() => SelectPaaa(cell.Item))">Abrir programa</MudButton>
                         <ReportOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                         EntityId="@cell.Item.PkidPaaas"
-                        Title="@($"Reporte PAAA {cell.Item.PkidPaaas}")"
+                        Title="@($"Reporte PAAA · {TextOrDash(cell.Item.ClaveNombre)}")"
                         Tooltip="Ver reporte PAAAS"
                         Color="Color.Secondary"
                         Visible="@CanView" />
@@ -64,7 +64,7 @@
                         EntidadId="@cell.Item.PkidPaaas"
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@cell.Item.Descripcion"
-                        RegistroDescripcion="@($"PAAA {cell.Item.PkidPaaas} · {cell.Item.AreaNombre}")" />
+                        RegistroDescripcion="@($"{TextOrDash(cell.Item.ClaveNombre)} · {TextOrDash(cell.Item.AreaNombre)}")" />
                         <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@(CanUpdate && !cell.Item.BloqueadoPorEstudioMercado)"
@@ -81,11 +81,7 @@
                         </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="PaaaResponse" Title="ID" Identifier="PkidPaaas" PropertyName="PkidPaaas" SortBy="x => x.PkidPaaas">
-                    <CellTemplate Context="cell">
-                        <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">@cell.Item.PkidPaaas</MudChip>
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="PaaaResponse" Title="Descripción" Identifier="Descripcion" PropertyName="Descripcion" SortBy="x => x.Descripcion">
                     <CellTemplate Context="cell">
                         <div Style="font-weight: 500;">
@@ -152,7 +148,7 @@
                                     </MudChip>
                                 </div>
                                 <MudText Typo="Typo.caption" Class="paaa-subtitle">
-                                    Programa anual @SelectedPaaa.PkidPaaas.ToString("N0") | @SelectedPaaa.Fecha.ToString("dd/MM/yyyy")
+                                    Programa anual · @TextOrDash(SelectedPaaa.ClaveNombre) | @SelectedPaaa.Fecha.ToString("dd/MM/yyyy")
                                 </MudText>
                             </div>
                         </div>
@@ -164,10 +160,10 @@
                                                    EntidadId="@SelectedPaaa.PkidPaaas"
                                                    FkidEmpresaSis="@SelectedPaaa.FkidEmpresaSis"
                                                    RegistroTitulo="@SelectedPaaa.Descripcion"
-                                                   RegistroDescripcion="@($"Programa anual {SelectedPaaa.PkidPaaas} · {SelectedPaaa.AreaNombre}")" />
+                                                   RegistroDescripcion="@($"{TextOrDash(SelectedPaaa.ClaveNombre)} · {TextOrDash(SelectedPaaa.AreaNombre)}")" />
                             <ReportOpenButton ReportName="Adquisiciones.Paaas.StoredProcedure"
                                               EntityId="@SelectedPaaa.PkidPaaas"
-                                              Title="@($"Reporte PAAA {SelectedPaaa.PkidPaaas}")"
+                                              Title="@($"Reporte PAAA · {TextOrDash(SelectedPaaa.ClaveNombre)}")"
                                               Tooltip="Ver reporte PAAAS"
                                               Color="Color.Secondary"
                                               Visible="@CanView" />
@@ -663,7 +659,6 @@
     {
         return items.Select(e => new
         {
-            ID = e.PkidPaaas,
             Descripción = e.Descripcion,
             Área = e.AreaNombre,
             Responsable = e.ResponsableCompleto,
@@ -698,7 +693,7 @@
                 ["FkidAnioSis"] = AnioStateService.AnioId!.Value
             };
 
-            var response = await Service.GetAllPaginadoAsync(1, int.MaxValue, SearchString, SortLabel, SortDirection, filters);
+            var response = await ReadExportResponseAsync(Service, SearchString, SortLabel, SortDirection, filters);
 
             if (response?.Success != true || response.Items == null || !response.Items.Any())
             {
@@ -708,7 +703,7 @@
 
             var excelData = MapToExcelData(response.Items);
             using var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(excelData);
+            await memoryStream.SaveAsAsync(EG.Web.Services.ExportProjectionSanitizer.RemoveInternalIdentifiers(excelData));
 
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
             await JS.InvokeVoidAsync("downloadFile", base64,

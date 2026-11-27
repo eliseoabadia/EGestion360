@@ -28,7 +28,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="ProgramaPresupuestalResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar programa presupuestal"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidPp))" /></MudTooltip><MudTooltip Text="Eliminar programa presupuestal"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidPp))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="ProgramaPresupuestalResponse" TProperty="int" Property="x => x.PkidPp" Title="ID" Identifier="PkidPp" />
+                
                 <TemplateColumn Resizable="true" T="ProgramaPresupuestalResponse" Title="Clave" Identifier="Clave"><CellTemplate><MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">@context.Item.Clave</MudChip></CellTemplate></TemplateColumn>
                 <PropertyColumn T="ProgramaPresupuestalResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
             </Columns>
@@ -52,7 +52,6 @@
     {
         return items.Select(item => new
         {
-            ID = item.PkidPp,
             item.Clave,
             item.Descripcion,
             Estatus = item.Activo ? "Activo" : "Inactivo",

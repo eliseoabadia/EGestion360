@@ -47,7 +47,7 @@
                         SubModulo="Presupuestos"
                         Controlador="PbrPresupuestoPrograma"
                         EntidadId="@cell.Item.PkidPresupuestoPrograma"
-                        RegistroTitulo="@($"Presupuesto {cell.Item.PkidPresupuestoPrograma}")"
+                        RegistroTitulo="@($"{TextOrDash(cell.Item.ProgramaDescripcion)} · {cell.Item.Anio}")"
                         RegistroDescripcion="@TextOrDash(cell.Item.ProgramaDescripcion)" />
                         <MudTooltip Text="Ver partidas">
                         <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.OpenInFull"
@@ -69,11 +69,7 @@
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@TextOrDash(cell.Item.ProgramaClave)</MudText>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="ID" Identifier="PkidPresupuestoPrograma" PropertyName="PkidPresupuestoPrograma" SortBy="x => x.PkidPresupuestoPrograma">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidPresupuestoPrograma
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="PbrPresupuestoProgramaResponse" Title="Año" Identifier="Anio" PropertyName="Anio" SortBy="x => x.Anio">
                     <CellTemplate Context="cell">
                         @cell.Item.Anio
@@ -144,11 +140,7 @@
                         @TextOrDash(cell.Item.ProgramaDescripcion)
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="PbrPartidaGastoResponse" Title="ID" Identifier="PkidPartidaGasto" PropertyName="PkidPartidaGasto" SortBy="x => x.PkidPartidaGasto">
-                    <CellTemplate Context="cell">
-                        @cell.Item.PkidPartidaGasto
-                    </CellTemplate>
-                </TemplateColumn>
+                
                 <TemplateColumn T="PbrPartidaGastoResponse" Title="Partida" Identifier="PartidaDescripcion" PropertyName="PartidaDescripcion" SortBy="x => x.PartidaDescripcion">
                     <CellTemplate Context="cell">
                         @TextOrDash(cell.Item.PartidaDescripcion)
@@ -261,7 +253,7 @@
 
     private async Task DeletePartidaAsync(PbrPartidaGastoResponse item)
     {
-        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Eliminar partida {item.PkidPartidaGasto}?"))
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"¿Eliminar la partida {TextOrDash(item.PartidaDescripcion ?? item.Descripcion)}?"))
         {
             return;
         }

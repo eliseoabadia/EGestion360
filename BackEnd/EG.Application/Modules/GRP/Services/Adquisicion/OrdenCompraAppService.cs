@@ -61,7 +61,24 @@ namespace EG.Application.Services.Adquisicion
 
         public override async Task<PagedResult<OrdenCompraResponse>> GetAllPaginadoAsync(PagedRequest request)
         {
-            var result = await base.GetAllPaginadoAsync(request);
+            var filters = new Dictionary<string, object>(request.AdditionalFilters ?? []);
+            PagedResult<OrdenCompraResponse> result;
+            if (filters.Remove("FkidAnioSis", out var requestedYear))
+            {
+                var selectedYear = _userContext.GetCurrentAnioPresupuestalId();
+                if (!int.TryParse(requestedYear?.ToString(), out var year) || year != selectedYear)
+                    return Failure<OrdenCompraResponse>("El ejercicio solicitado no coincide con el contexto activo.", "INVALID_YEAR");
+                var scopedRequest = new PagedRequest
+                {
+                    Page = request.Page, PageSize = request.PageSize, Filtro = request.Filtro,
+                    SearchString = request.SearchString, SortLabel = request.SortLabel,
+                    SortDirection = request.SortDirection, AdditionalFilters = filters
+                };
+                result = await _serviceView.GetAllPaginadoAsync(scopedRequest,
+                    EG.Business.Services.Adquisicion.OrdenCompraReadScope.ForYear(_context,
+                        _userContext.GetCurrentEmpresaId(), selectedYear));
+            }
+            else result = await base.GetAllPaginadoAsync(request);
             await ApplyChildCountsAsync(result.Items);
             return result;
         }
@@ -108,7 +125,7 @@ namespace EG.Application.Services.Adquisicion
             var current = await GetActiveOrdenAsync(id);
             if (current == null)
             {
-                return Failure<OrdenCompraResponse>($"Orden de compra con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<OrdenCompraResponse>($"Orden de compra no encontrada.", "NOT_FOUND");
             }
 
             if (IsLocked(current.FkidEstatusOrdenCompraOrco))
@@ -159,7 +176,7 @@ namespace EG.Application.Services.Adquisicion
                 return new PagedResult<bool>
                 {
                     Success = false,
-                    Message = $"Orden de compra con ID {id} no encontrada.",
+                    Message = $"Orden de compra no encontrada.",
                     Code = "NOT_FOUND",
                     Data = false,
                     TotalCount = 0
@@ -228,7 +245,7 @@ namespace EG.Application.Services.Adquisicion
             var result = await GetByIdAsync(id);
             if (!result.Success || result.Data == null)
             {
-                return Failure<OrdenCompraResponse>($"Orden de compra con ID {id} no encontrada.", "NOT_FOUND");
+                return Failure<OrdenCompraResponse>($"Orden de compra no encontrada.", "NOT_FOUND");
             }
 
             var orden = result.Data;

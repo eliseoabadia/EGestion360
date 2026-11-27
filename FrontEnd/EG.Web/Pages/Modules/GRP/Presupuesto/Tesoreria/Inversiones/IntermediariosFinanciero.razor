@@ -25,7 +25,7 @@
                       OnSearch="OnSearch">
             <Columns>
                 <TemplateColumn Resizable="false" T="IntermediarioFinancieroResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidIntermediarioFinanciero))" /><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidIntermediarioFinanciero))" /></CellTemplate></TemplateColumn>
-                <PropertyColumn T="IntermediarioFinancieroResponse" TProperty="int" Property="x => x.PkidIntermediarioFinanciero" Title="ID" Identifier="PkidIntermediarioFinanciero" />
+                
                 <PropertyColumn T="IntermediarioFinancieroResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="IntermediarioFinancieroResponse" TProperty="string" Property="x => x.Nombre" Title="Nombre" Identifier="Nombre" />
                 <PropertyColumn T="IntermediarioFinancieroResponse" TProperty="string" Property="x => x.RazonSocial" Title="Razón social" Identifier="RazonSocial" />
@@ -45,7 +45,7 @@
     protected override string GetDefaultSortLabel() => "Nombre";
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<IntermediarioFinancieroResponse> items) =>
-        items.Select(x => new { x.PkidIntermediarioFinanciero, x.Clave, x.Nombre, x.RazonSocial, x.Rfc});
+        items.Select(x => new { x.Clave, x.Nombre, x.RazonSocial, x.Rfc});
 
     protected override async Task ReloadData()
     {

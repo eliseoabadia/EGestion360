@@ -98,7 +98,11 @@ public partial class ModificadoIngresoDetalleDialog : IDisposable
                     _ingreso = new()
                     {
                         Id = item.FkidIngresoAutorizadoPres,
-                        Text = item.PosicionPresupuestal ?? item.IngresoAutorizadoDescripcion ?? item.FkidIngresoAutorizadoPres.ToString()
+                        Text = !string.IsNullOrWhiteSpace(item.PosicionPresupuestal)
+                            ? item.PosicionPresupuestal
+                            : !string.IsNullOrWhiteSpace(item.IngresoAutorizadoDescripcion)
+                                ? item.IngresoAutorizadoDescripcion
+                                : "Ingreso autorizado seleccionado"
                     };
                 }
             }

@@ -29,7 +29,7 @@
 
             <Columns>
                 <TemplateColumn Resizable="false" T="UnidadResponsableResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Agregar hijo"><MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Error" Size="Size.Small" Visible="@CanCreate" OnClick="@(() => CrearHijoArea(context.Item.PkidUnidadResponsable, context.Item.Descripcion))" /></MudTooltip><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidUnidadResponsable))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidUnidadResponsable))" /></MudTooltip></CellTemplate></TemplateColumn>
-                <PropertyColumn T="UnidadResponsableResponse" TProperty="int" Property="x => x.PkidUnidadResponsable" Title="ID" Identifier="PkidUnidadResponsable" />
+                
                 <PropertyColumn T="UnidadResponsableResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="UnidadResponsableResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
                 <TemplateColumn Resizable="true" T="UnidadResponsableResponse" Title="Área Padre" Identifier="AreaPadreNombre"><CellTemplate>@(context.Item.AreaPadreNombre ?? "-")</CellTemplate></TemplateColumn>
@@ -54,7 +54,6 @@
     {
         return items.Select(u => new
         {
-            ID = u.PkidUnidadResponsable,
             Clave = u.Clave,
             Descripcion = u.Descripcion,
             AreaPadre = u.AreaPadreNombre ?? "-",

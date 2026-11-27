@@ -121,7 +121,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
 
             var existing = await _service.GetByIdAsync(id, idPropertyName: "PkidPp");
             if (existing == null)
-                throw new KeyNotFoundException($"Programa Presupuestal con ID {id} no encontrado");
+                throw new KeyNotFoundException($"Programa Presupuestal no encontrado");
 
             var dto = response.Adapt<ProgramaPresupuestalDto>();
             dto.PkidPp = id;

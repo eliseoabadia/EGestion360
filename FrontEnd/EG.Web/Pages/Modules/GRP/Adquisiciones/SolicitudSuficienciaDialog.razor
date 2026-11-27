@@ -90,24 +90,6 @@
                               Disabled="@IsHeaderLocked" />
             </MudItem>
 
-            <MudItem xs="12" md="4">
-                <MudNumericField Margin="Margin.Dense" T="int?"
-                                 @bind-Value="item.IdGastoNoProgramable"
-                                 Label="Id gasto no programable"
-                                 Variant="Variant.Outlined"
-                                 Min="0"
-                                 Disabled="@IsHeaderLocked" />
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudNumericField Margin="Margin.Dense" T="int?"
-                                 @bind-Value="item.IdCompromisoNomina"
-                                 Label="Id compromiso nomina"
-                                 Variant="Variant.Outlined"
-                                 Min="0"
-                                 Disabled="@IsHeaderLocked" />
-            </MudItem>
-
             <MudItem xs="12" md="8">
                 <MudTextField Margin="Margin.Dense" @bind-Value="item.Justificacion"
                               Label="Justificacion"
@@ -361,7 +343,7 @@
                 _selectedRequisicion = new LookupItem
                 {
                     Id = item.FkidRequisicionOrco,
-                    Text = TextOrDefault(item.RequisicionDescripcion, item.FkidRequisicionOrco)
+                    Text = string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? "Requisición sin descripción" : item.RequisicionDescripcion
                 };
                 await LoadRequisicionDataAsync(item.FkidRequisicionOrco);
             }
@@ -411,26 +393,41 @@
         try
         {
             var requisicionId = _selectedRequisicion.Id;
-            var detallesResponse = await RequisicionDetalleService.GetAllPaginadoAsync(
-                1,
-                int.MaxValue,
-                string.Empty,
-                "TipoBienCodigoClave",
-                SortDirection.Ascending,
-                new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+            var detallesResult = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+                (page, pageSize) => RequisicionDetalleService.GetAllPaginadoAsync(
+                    page,
+                    pageSize,
+                    string.Empty,
+                    "TipoBienCodigoClave",
+                    SortDirection.Ascending,
+                    new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId }),
+                requestedPageSize: 250,
+                maximumRows: 10_000,
+                isCurrent: () => _selectedRequisicion?.Id == requisicionId);
 
-            var cotizacionesResponse = await CotizacionDetalleService.GetAllPaginadoAsync(
-                1,
-                int.MaxValue,
-                string.Empty,
-                "TipoBienClave",
-                SortDirection.Ascending,
-                new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId });
+            var cotizacionesResult = await EG.Web.Models.Forms.PagedCollectionReader.ReadAsync(
+                (page, pageSize) => CotizacionDetalleService.GetAllPaginadoAsync(
+                    page,
+                    pageSize,
+                    string.Empty,
+                    "TipoBienClave",
+                    SortDirection.Ascending,
+                    new Dictionary<string, object> { ["FkidRequisicionOrco"] = requisicionId }),
+                requestedPageSize: 250,
+                maximumRows: 10_000,
+                isCurrent: () => _selectedRequisicion?.Id == requisicionId);
 
-            var detalles = detallesResponse?.Items?.Where(x => x.Activo).ToList() ?? new List<RequisicionDetalleResponse>();
-            var cotizacionesValidas = cotizacionesResponse?.Items?
+            if (detallesResult.Limited || cotizacionesResult.Limited)
+            {
+                _previewOk = false;
+                _previewMessage = "La requisición supera el límite de 10,000 renglones para esta vista previa. Reduce los datos e inténtalo de nuevo.";
+                return;
+            }
+
+            var detalles = detallesResult.Items.Where(x => x.Activo).ToList();
+            var cotizacionesValidas = cotizacionesResult.Items
                 .Where(x => x.Activo && x.PrecioUnitario.GetValueOrDefault() > 0m)
-                .ToList() ?? new List<CotizacionDetalleResponse>();
+                .ToList();
             var cotizaciones = cotizacionesValidas
                 .GroupBy(x => x.FkidRequisicionDetalleOrco)
                 .ToDictionary(x => x.Key, x => x.ToList());
@@ -451,7 +448,7 @@
 
                 return new PreviewItem
                 {
-                    Bien = TextOrDefault(detalle.BienClaveNombre, detalle.PkidRequisicionDetalle),
+                    Bien = string.IsNullOrWhiteSpace(detalle.BienClaveNombre) ? "Bien sin clave ni descripción" : detalle.BienClaveNombre,
                     Cantidad = detalle.Cantidad,
                     Cotizaciones = preciosPorProveedor.Count,
                     Promedio = promedio,
@@ -477,6 +474,11 @@
                     : _totalCotizados != _totalBienes
                         ? "Faltan bienes con monto cotizado; no se puede generar la solicitud."
                         : "Se requieren tres cotizaciones completas de proveedores distintos o compra directa autorizada.";
+        }
+        catch (OperationCanceledException ex)
+        {
+            AppLoggerFactory.CreateLogger("SolicitudSuficienciaDialog")
+                .LogDebug(ex, "Se descartó una vista previa porque cambió la requisición seleccionada.");
         }
         catch (Exception ex)
         {
@@ -605,7 +607,7 @@
         return ToComboResult(response?.Items?.Select(x => new LookupItem
         {
             Id = x.PkidRequisicion,
-            Text = $"{x.PkidRequisicion} - {x.Descripcion}"
+            Text = string.IsNullOrWhiteSpace(x.Descripcion) ? "Requisición sin descripción" : x.Descripcion
         }), response?.TotalCount);
     }
 
@@ -623,7 +625,7 @@
     }
 
     private static string TextOrDefault(string? text, int id) =>
-        string.IsNullOrWhiteSpace(text) ? id.ToString() : text;
+        string.IsNullOrWhiteSpace(text) ? "Descripción no disponible" : text;
 
 
     private static string Money(decimal value) =>

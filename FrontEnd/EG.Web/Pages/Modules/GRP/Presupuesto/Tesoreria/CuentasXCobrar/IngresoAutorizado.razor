@@ -108,7 +108,7 @@
                                    Color="Color.Info"
                                    Disabled="@(!context.Item.FkidPolizaConta.HasValue)"
                                    OnClick="@(() => OpenPolizaAsync(context.Item))">
-                            #@(context.Item.FkidPolizaConta?.ToString() ?? "-")
+                            @(context.Item.FkidPolizaConta.HasValue ? "Ver póliza" : "-")
                         </MudButton>
                     </CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoAutorizadoResponse" Title="Estatus" Identifier="Estatus" Resizable="true" Sortable="false"><CellTemplate>
@@ -287,7 +287,6 @@
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<IngresoAutorizadoResponse> items) => items.Select(x => new
     {
-        ID = x.PkidIngresoAutorizado,
         Programa = x.ProgramaClaveNombre,
         Origen = x.OrigenClaveNombre,
         Fuente = x.FuenteFinanciamientoClaveNombre,
@@ -299,7 +298,7 @@
         x.Enero, x.Febrero, x.Marzo, x.Abril, x.Mayo, x.Junio,
         x.Julio, x.Agosto, x.Septiembre, x.Octubre, x.Noviembre, x.Diciembre,
         x.Total,
-        Poliza = x.FkidPolizaConta,
+        Poliza = x.FkidPolizaConta.HasValue ? "Registrada" : "Sin póliza",
         x.FechaAutorizacion,
         x.UsuarioAutorizacion,
         x.FechaCreacion,

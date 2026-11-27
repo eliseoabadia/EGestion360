@@ -110,7 +110,6 @@
                 <TemplateColumn T="SolicitudSalidaResponse" Title="Folio" Identifier="Folio" PropertyName="Folio" SortBy="x => x.Folio">
                     <CellTemplate Context="cell">
                         <div class="main-cell">@TextOrDash(cell.Item.Folio)</div>
-                        <span>ID @cell.Item.PkidSolicitudSalida</span>
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn T="SolicitudSalidaResponse" Title="Solicitante" Identifier="Solicitante" PropertyName="Solicitante" SortBy="x => x.Solicitante">
@@ -433,7 +432,7 @@
     protected override Task<string> GetItemNameForDelete(int id)
     {
         var item = Elements.FirstOrDefault(x => x.PkidSolicitudSalida == id);
-        return Task.FromResult(item == null ? id.ToString() : $"{item.Folio} - {item.Solicitante}");
+        return Task.FromResult(item == null ? "Solicitud seleccionada" : $"{item.Folio} - {item.Solicitante}");
     }
 
     protected override IEnumerable<object> MapToExcelData(IEnumerable<SolicitudSalidaResponse> items)

@@ -166,7 +166,7 @@
             selectedEmpleado = new LookupItem
             {
                 Id = item.FkidPersonaNom,
-                Text = FirstNonEmpty(item.PersonaClaveNombre, item.FkidPersonaNom.ToString(Culture))
+                Text = FirstNonEmpty(item.PersonaClaveNombre, "Persona sin clave ni nombre")
             };
         }
 
@@ -175,7 +175,7 @@
             selectedConcepto = new LookupItem
             {
                 Id = item.FkidConceptoNom,
-                Text = FirstNonEmpty(item.ConceptoClaveNombre, item.FkidConceptoNom.ToString(Culture))
+                Text = FirstNonEmpty(item.ConceptoClaveNombre, "Concepto sin clave ni descripción")
             };
         }
 
@@ -184,7 +184,7 @@
             selectedPeriodo = new LookupItem
             {
                 Id = item.FkidPeriodo,
-                Text = item.FkidPeriodo.ToString(Culture)
+                Text = $"Periodo {item.FkidPeriodo.ToString(Culture)}"
             };
         }
     }
@@ -213,7 +213,7 @@
 
             var periodoId = periodo.EstaCerrado ? periodo.IdPeriodo + 1 : periodo.IdPeriodo;
             item.FkidPeriodo = periodoId;
-            selectedPeriodo = new LookupItem { Id = periodoId, Text = periodoId.ToString(Culture) };
+            selectedPeriodo = new LookupItem { Id = periodoId, Text = $"Periodo {periodoId.ToString(Culture)} seleccionado" };
         }
         catch
         {
@@ -257,7 +257,7 @@
         }
 
         var response = await ConceptoService.GetAllPaginadoAsync(page, pageSize, filter, nameof(NomConceptoResponse.Clave));
-        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidConcepto, Text = FirstNonEmpty(x.ClaveNombre, x.PkidConcepto.ToString(Culture)) }), response?.TotalCount);
+        return ToComboResult(response?.Items?.Select(x => new LookupItem { Id = x.PkidConcepto, Text = FirstNonEmpty(x.ClaveNombre, "Concepto sin clave ni descripción") }), response?.TotalCount);
     }
 
     private async Task<ComboLookupResult> LoadPeriodosPageAsync(int page, int pageSize, string filter, CancellationToken ct)
@@ -375,14 +375,14 @@
         => new()
         {
             Id = empleado.Id,
-            Text = FirstNonEmpty(empleado.ClaveNombre, $"{empleado.Empleado} - {empleado.NombreCompleto}".Trim(' ', '-'), empleado.Id.ToString(Culture))
+            Text = FirstNonEmpty(empleado.ClaveNombre, $"{empleado.Empleado} - {empleado.NombreCompleto}".Trim(' ', '-'), "Empleado sin nombre")
         };
 
     private static LookupItem ToPeriodoLookupItem(NomPeriodoActivoResponse periodo)
         => new()
         {
             Id = periodo.IdPeriodo,
-            Text = $"{periodo.IdPeriodo} - {(periodo.EstaCerrado ? "Cerrado" : "Abierto")}"
+            Text = $"Periodo {periodo.IdPeriodo.ToString(Culture)} · {(periodo.EstaCerrado ? "cerrado" : "abierto")}"
         };
 
     private static ComboLookupResult ToComboResult(IEnumerable<LookupItem>? items, int? totalCount)

@@ -2,7 +2,9 @@
 @using EG.Web.Pages.Shared
 @using EG.Web.Contracts
 @using EG.Domain.DTOs.Responses.Adquisicion
+@using EG.Common.GenericModel
 @inject IGenericCrudService<FraccionResponse> Service
+@inject IGenericCrudService<ArticuloResponse> ArticuloService
 @inject ISnackbar Snackbar
 
 <BaseCrudDialog TItem="FraccionResponse"
@@ -27,10 +29,13 @@
                               RequiredError="La clave es requerida" />
             </MudItem>
             <MudItem xs="12">
-                <MudNumericField Margin="Margin.Dense" @bind-Value="item.FkidArticuloOrco"
-                                 Label="ID Artículo"
-                                 Variant="Variant.Outlined"
-                                 Required="true" />
+                <PagedAutocomplete Margin="Margin.Dense"
+                                   Value="@articuloSeleccionado"
+                                   ValueChanged="OnArticuloChanged"
+                                   Label="Artículo"
+                                   Required="true"
+                                   RequiredError="Selecciona un artículo"
+                                   LoadPage="LoadArticulosPageAsync" />
             </MudItem>
             <MudItem xs="12">
                 <MudTextField Margin="Margin.Dense" @bind-Value="item.Descripcion"
@@ -51,6 +56,7 @@
 
     private BaseEntityForm<FraccionResponse> form = null!;
     private FraccionResponse item = new() { Activo = true };
+    private LookupItem? articuloSeleccionado;
 
     private string dialogTitle => Id.HasValue ? "Editar Fracción" : "Nueva Fracción";
     private string actionText => Id.HasValue ? "Actualizar" : "Crear";
@@ -72,12 +78,43 @@
             if (response?.Success == true && response.Data != null)
             {
                 item = response.Data;
+                articuloSeleccionado = new LookupItem
+                {
+                    Id = item.FkidArticuloOrco,
+                    Text = ArticuloText(item.ArticuloClave, item.ArticuloDescripcion, item.NombreArticulo)
+                };
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cargar datos: {UserFacingExceptionMessages.ForDisplay(AppLoggerFactory, ex)}", Severity.Error);
         }
+    }
+
+    private async Task<ComboLookupResult> LoadArticulosPageAsync(int page, int pageSize, string filter, CancellationToken cancellationToken)
+    {
+        var response = await ArticuloService.GetAllPaginadoAsync(page, pageSize, filter, "Clave", SortDirection.Ascending);
+        var articles = response?.Items?.Select(article => new LookupItem
+        {
+            Id = article.PkidArticulo,
+            Text = ArticuloText(article.Clave, article.Descripcion, null)
+        }).ToList() ?? [];
+
+        return new ComboLookupResult { Items = articles, TotalCount = response?.TotalCount ?? articles.Count };
+    }
+
+    private void OnArticuloChanged(LookupItem? value)
+    {
+        articuloSeleccionado = value;
+        item.FkidArticuloOrco = value?.Id ?? 0;
+    }
+
+    private static string ArticuloText(string? clave, string? descripcion, string? nombre)
+    {
+        var text = string.Join(" - ", new[] { clave, descripcion, nombre }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase));
+        return string.IsNullOrWhiteSpace(text) ? "Artículo sin descripción" : text;
     }
 
     private async Task GuardarCambiosAsync()

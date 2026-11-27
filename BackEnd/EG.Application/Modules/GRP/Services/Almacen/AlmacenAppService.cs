@@ -44,7 +44,7 @@ namespace EG.Application.Services.Almacen
                 .FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.FkidEmpresaSis == empresaId);
             if (item == null)
             {
-                return Failure<AlmacenResponse>($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<AlmacenResponse>($"Movimiento de almacen no encontrado.", "NOT_FOUND");
             }
 
             var response = item.Adapt<AlmacenResponse>();
@@ -108,7 +108,7 @@ namespace EG.Application.Services.Almacen
             var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (current == null)
             {
-                return Failure<AlmacenResponse>($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
+                return Failure<AlmacenResponse>($"Movimiento de almacen no encontrado.", "NOT_FOUND");
             }
 
             if (!current.AplicaAlmacen && current.Cantidad < 0)
@@ -157,7 +157,7 @@ namespace EG.Application.Services.Almacen
             var current = await _context.Almacens.FirstOrDefaultAsync(x => x.PkidAlmacen == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
             if (current == null)
             {
-                return BoolFailure($"Movimiento de almacen con ID {id} no encontrado.", "NOT_FOUND");
+                return BoolFailure($"Movimiento de almacen no encontrado.", "NOT_FOUND");
             }
 
             if (!current.AplicaAlmacen && current.Cantidad < 0)

@@ -84,7 +84,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
                                                   x.FkidEmpresaSis == empresaId && x.Activo);
 
                     if (autorizado == null)
-                        return BoolFailure($"Presupuesto autorizado con ID {pkidEgresoAutorizado} no encontrado para la empresa actual.", "NOT_FOUND");
+                        return BoolFailure($"Presupuesto autorizado no encontrado para la empresa actual.", "NOT_FOUND");
 
                     if (!autorizado.FkidEgresoProyectadoPres.HasValue)
                         return BoolFailure("El presupuesto autorizado no proviene de un anteproyecto.", "INVALID_OPERATION");

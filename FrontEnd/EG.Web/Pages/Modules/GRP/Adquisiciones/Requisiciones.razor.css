@@ -98,7 +98,7 @@
     white-space: nowrap;
 }
 
-.requisition-object-id {
+.requisition-object-reference {
     flex: 0 0 auto;
     color: var(--mud-palette-primary);
     font-size: .72rem;

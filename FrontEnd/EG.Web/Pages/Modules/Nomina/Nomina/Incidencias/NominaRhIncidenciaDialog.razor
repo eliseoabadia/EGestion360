@@ -253,7 +253,7 @@
             return FormatPeriodoText(lookup);
         }
 
-        return periodoId.ToString(CultureInfo.InvariantCulture);
+        return "Periodo sin descripción";
     }
 
     private async Task<NominaRhLookupResponse?> FindPeriodoAsync(int periodoId)
@@ -368,7 +368,7 @@
         }
 
         return string.IsNullOrWhiteSpace(item.Descripcion)
-            ? item.Id.ToString(CultureInfo.InvariantCulture)
+            ? "Periodo sin descripción"
             : item.Descripcion;
     }
 
