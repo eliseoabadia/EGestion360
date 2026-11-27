@@ -34,9 +34,11 @@ public static class ExportProjectionSanitizer
     public static bool IsInternalIdentifier(string name)
         => !name.Equals("PayrollId", StringComparison.OrdinalIgnoreCase)
             && !name.Equals("IdPeriodo", StringComparison.OrdinalIgnoreCase)
+            && !name.Equals("Uuid", StringComparison.OrdinalIgnoreCase)
             && (name.StartsWith("Pkid", StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("Fkid", StringComparison.OrdinalIgnoreCase)
             || name.Equals("Id", StringComparison.OrdinalIgnoreCase)
+            || (name.StartsWith("Id", StringComparison.Ordinal) && name.Length > 2 && char.IsUpper(name[2]))
             || name.EndsWith("Id", StringComparison.OrdinalIgnoreCase)
             || name.Equals("UsuarioCreacion", StringComparison.OrdinalIgnoreCase)
             || name.Equals("UsuarioModificacion", StringComparison.OrdinalIgnoreCase));

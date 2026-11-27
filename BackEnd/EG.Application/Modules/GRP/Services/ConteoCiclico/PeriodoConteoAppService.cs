@@ -225,7 +225,9 @@ namespace EG.Application.Services.ConteoCiclico
                             FkidTipoBienAlma = existencia.TipoBienId,
                             FkidPeriodoConteoAlma = id,
                             CantidadInventario = existencia.Cantidad,
-                            Descripcion = descripcion ?? $"Conteo del tipo de bien {existencia.TipoBienId}",
+                            Descripcion = string.IsNullOrWhiteSpace(descripcion)
+                                ? "Conteo de bien sin descripción"
+                                : descripcion,
                             FechaInicio = DateTime.Now,
                             Activo = true,
                             UsuarioCreacion = usuarioActual,

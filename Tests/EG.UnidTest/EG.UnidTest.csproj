@@ -19,6 +19,7 @@
     <Compile Include="../../FrontEnd/EG.Web/Models/Forms/DeferredBatchLoader.cs" Link="Presentation/DeferredBatchLoader.cs" />
     <Compile Include="../../FrontEnd/EG.Web/Models/Forms/PagedCollectionReader.cs" Link="Presentation/PagedCollectionReader.cs" />
     <Compile Include="../../FrontEnd/EG.Web/Services/BaseService.cs" Link="Presentation/BaseService.cs" />
+    <Compile Include="../../FrontEnd/EG.Web/Services/ExportProjectionSanitizer.cs" Link="Presentation/ExportProjectionSanitizer.cs" />
     <Compile Include="../../FrontEnd/EG.Web/Pages/Modules/Nomina/Configuration/Catalogos/NominaCatalogUi.cs" Link="Presentation/NominaCatalogUi.cs" />
     <Compile Include="../../FrontEnd/EG.Web/Models/Forms/EditorRequestState.cs" Link="Presentation/EditorRequestState.cs" />
     <Compile Include="../../FrontEnd/EG.Web/Models/Forms/LatestGridRequest.cs" Link="Presentation/LatestGridRequest.cs" />

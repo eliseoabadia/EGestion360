@@ -1761,6 +1761,15 @@ namespace EG.Application.Services.CuentasXPagar
             if (details.Count == 0)
                 throw new InvalidOperationException("No existen importes presupuestales para generar la poliza.");
 
+            var partidaIds = details.Select(detail => detail.PartidaId).ToArray();
+            var partidaClaves = await context.Partida.AsNoTracking()
+                .Where(partida => partidaIds.Contains(partida.PkidPartida))
+                .ToDictionaryAsync(partida => partida.PkidPartida, partida => partida.Clave);
+            string GetPartidaLabel(int partidaId)
+                => partidaClaves.TryGetValue(partidaId, out var clave) && !string.IsNullOrWhiteSpace(clave)
+                    ? $"PARTIDA {clave}"
+                    : "PARTIDA SIN CLAVE";
+
             var matrices = await context.MatrizConversions.AsNoTracking()
                 .Where(x => x.Activo && x.FkidAnioSis == scope.FkidAnioSis &&
                             x.FkidProgramaPres == scope.ProgramaId.Value &&
@@ -1771,7 +1780,7 @@ namespace EG.Application.Services.CuentasXPagar
             {
                 var count = matrices.Count(x => x.FkidPartidaSis == detail.PartidaId);
                 if (count != 1)
-                    throw new InvalidOperationException($"La matriz de conversion para la partida {detail.PartidaId} debe existir una sola vez; se encontraron {count} registros activos.");
+                    throw new InvalidOperationException($"La matriz de conversión para {GetPartidaLabel(detail.PartidaId)} debe existir una sola vez; se encontraron {count} registros activos.");
             }
 
             var now = DateTime.Now;
@@ -1816,7 +1825,7 @@ namespace EG.Application.Services.CuentasXPagar
                     {
                         FkidCuentaContableConta = debitAccount,
                         FkidPolizaConta = poliza.PkidPoliza,
-                        Descripcion = $"{stageName} PARTIDA {detail.PartidaId}",
+                        Descripcion = $"{stageName} {GetPartidaLabel(detail.PartidaId)}",
                         ImporteDebe = detail.Importe,
                         ImporteHaber = null,
                         FkidTipoDetallePolizaSis = 1,
@@ -1828,7 +1837,7 @@ namespace EG.Application.Services.CuentasXPagar
                     {
                         FkidCuentaContableConta = creditAccount,
                         FkidPolizaConta = poliza.PkidPoliza,
-                        Descripcion = $"{stageName} PARTIDA {detail.PartidaId}",
+                        Descripcion = $"{stageName} {GetPartidaLabel(detail.PartidaId)}",
                         ImporteDebe = null,
                         ImporteHaber = detail.Importe,
                         FkidTipoDetallePolizaSis = 2,
