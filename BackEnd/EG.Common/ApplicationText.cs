@@ -60,6 +60,8 @@ public static class ApplicationText
         public const string ExportDenied = "No tienes permisos para exportar";
         public const string ResourceDenied = "No tienes permiso para acceder a este recurso.";
         public const string OwnNavigationOnly = "Solo puedes consultar tu propio menú y permisos.";
+        public const string InvalidIdentity = "La sesión no contiene una identidad válida. Inicia sesión nuevamente.";
+        public const string CompanyDenied = "No tienes acceso a la empresa solicitada.";
     }
 
     public static class Paging

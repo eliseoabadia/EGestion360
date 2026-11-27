@@ -4,7 +4,6 @@ using EG.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace EG.ApiCoreBS.Controllers.Reporting;
 
@@ -74,12 +73,8 @@ public sealed class ReportingExportController : ControllerBase
         return string.IsNullOrWhiteSpace(query) ? reportName : $"{reportName}?{query}";
     }
 
-    private string? GetUserId() =>
-        User.FindFirstValue(ClaimTypes.NameIdentifier)
-        ?? User.FindFirstValue("sub")
-        ?? User.FindFirstValue("nameid")
-        ?? User.FindFirstValue("Id")
-        ?? User.FindFirstValue("id");
+    private string GetUserId() =>
+        _userContext.GetCurrentUserId().ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static void SetContextParameter(
         IDictionary<string, string?> parameters,

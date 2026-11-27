@@ -1,0 +1,52 @@
+{
+  "environment": "Development",
+  "operations": "Queries only; no business records modified",
+  "results": [
+    {
+      "Scenario": "Consulta sin sesión",
+      "Status": 401,
+      "Expected": 401
+    },
+    {
+      "Scenario": "Adjunto sin sesión",
+      "Status": 401,
+      "Expected": 401
+    },
+    {
+      "Scenario": "Exportación sin sesión",
+      "Status": 401,
+      "Expected": 401
+    },
+    {
+      "Scenario": "Consulta permitida",
+      "Status": 200,
+      "Expected": 200
+    },
+    {
+      "Scenario": "Empresa ajena",
+      "Status": 403,
+      "Expected": 403
+    },
+    {
+      "Scenario": "Adjunto con empresa ajena",
+      "Status": 403,
+      "Expected": 403
+    },
+    {
+      "Scenario": "Exportación con empresa ajena",
+      "Status": 403,
+      "Expected": 403
+    },
+    {
+      "Scenario": "Empresa malformada",
+      "Status": 403,
+      "Expected": 403
+    },
+    {
+      "Scenario": "Sesión vencida con firma válida",
+      "Status": 401,
+      "Expected": 401
+    }
+  ],
+  "date": "2026-11-26"
+}

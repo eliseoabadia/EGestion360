@@ -8,16 +8,13 @@ public sealed class UserContextQueries(EGestionContext context) : IUserContextQu
 {
     public bool CanAccessEmpresa(int usuarioId, int empresaId)
     {
-        if (context.Usuarios.AsNoTracking().Any(user =>
-                user.PkIdUsuario == usuarioId && user.Activo && user.FkidEmpresaSis == empresaId))
-        {
-            return true;
-        }
-
-        return context.UsuarioSucursals.AsNoTracking().Any(assignment =>
-            assignment.FkidUsuarioSis == usuarioId && assignment.Activo &&
-            assignment.FkidSucursalSisNavigation.Activo &&
-            assignment.FkidSucursalSisNavigation.FkidEmpresaSis == empresaId);
+        return context.Usuarios.AsNoTracking().Any(user =>
+            user.PkIdUsuario == usuarioId && user.Activo &&
+            (user.FkidEmpresaSis == empresaId ||
+             context.UsuarioSucursals.AsNoTracking().Any(assignment =>
+                 assignment.FkidUsuarioSis == user.PkIdUsuario && assignment.Activo &&
+                 assignment.FkidSucursalSisNavigation.Activo &&
+                 assignment.FkidSucursalSisNavigation.FkidEmpresaSis == empresaId)));
     }
 
     public bool IsActiveAnio(int anioId) =>

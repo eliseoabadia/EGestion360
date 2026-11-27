@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using EG.Business.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +32,7 @@ namespace EG.ApiCoreBS.Auth
                 return;
             }
 
-            var userId = GetUserId(context.User);
+            var userId = EG.Common.Security.AuthenticatedIdentity.GetUserId(context.User);
             if (!userId.HasValue)
                 return;
 
@@ -53,16 +53,6 @@ namespace EG.ApiCoreBS.Auth
             {
                 _logger.LogError(ex, "Error cargando permisos para el usuario {UserId}", userId.Value);
             }
-        }
-
-        private static int? GetUserId(ClaimsPrincipal user)
-        {
-            var value = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? user.FindFirstValue("sub")
-                ?? user.FindFirstValue("id")
-                ?? user.FindFirstValue("Id");
-
-            return int.TryParse(value, out var userId) ? userId : null;
         }
 
         private static bool HasPermission(

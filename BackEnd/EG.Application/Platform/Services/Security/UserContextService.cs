@@ -1,5 +1,6 @@
-using System.Security.Claims;
-using System.Text.RegularExpressions;
+﻿using System.Security.Claims;
+using EG.Common;
+using EG.Common.Security;
 using EG.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -16,16 +17,6 @@ namespace EG.Application.Services.Security
         private int? currentAnioId;
         private const string EmpresaHeader = "X-Empresa-Id";
         private const string AnioPresupuestalHeader = "X-Anio-Presupuestal-Id";
-        private static readonly string[] CandidateClaimTypes = new[]
-        {
-            ClaimTypes.NameIdentifier,
-            "sub",
-            "userid",
-            "UserId",
-            "id",
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-        };
-
         public UserContextService(
             IUserRequestContext requestContext,
             ILogger<UserContextService> logger,
@@ -43,36 +34,14 @@ namespace EG.Application.Services.Security
 
         public int? TryGetCurrentUserId()
         {
-            var user = GetUserPrincipal();
-            if (user == null || !user.Identity?.IsAuthenticated == true)
-                return null;
-
-            foreach (var claimType in CandidateClaimTypes)
-            {
-                var claim = user.Claims.FirstOrDefault(c => string.Equals(c.Type, claimType, StringComparison.OrdinalIgnoreCase));
-                if (claim == null) continue;
-
-                if (int.TryParse(claim.Value, out var id))
-                    return id;
-
-                var m = Regex.Match(claim.Value, @"\d+");
-                if (m.Success && int.TryParse(m.Value, out id))
-                    return id;
-            }
-
-            var nameClaim = user.Identity?.Name;
-            if (!string.IsNullOrEmpty(nameClaim) && int.TryParse(nameClaim, out var nameId))
-                return nameId;
-
-            _logger.LogDebug("No se pudo obtener id de usuario desde los claims.");
-            return null;
+            return AuthenticatedIdentity.GetUserId(GetUserPrincipal());
         }
 
         public int GetCurrentUserId()
         {
             var id = TryGetCurrentUserId();
             if (!id.HasValue)
-                throw new InvalidOperationException("No se pudo obtener el ID del usuario autenticado.");
+                throw new UnauthorizedAccessException(ApplicationText.Permissions.InvalidIdentity);
             return id.Value;
         }
 
@@ -92,38 +61,30 @@ namespace EG.Application.Services.Security
             if (user == null || !user.Identity?.IsAuthenticated == true)
                 return null;
 
-            var selectedEmpresaId = TryGetSelectedEmpresaIdFromHeader();
-            if (selectedEmpresaId.HasValue && UserCanAccessEmpresa(selectedEmpresaId.Value))
-                return selectedEmpresaId.Value;
+            var selectedCompany = _requestContext.GetHeader(EmpresaHeader);
+            if (selectedCompany != null)
+            {
+                if (!AuthenticatedIdentity.TryPositiveId(selectedCompany, out var selectedId) ||
+                    !UserCanAccessEmpresa(selectedId))
+                    throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
+                return selectedId;
+            }
 
-            var empresaClaim = user.Claims.FirstOrDefault(c => 
-                string.Equals(c.Type, "empresaId", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "EmpresaId", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "empresa", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "Empresa", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "fkidEmpresa", StringComparison.OrdinalIgnoreCase));
+            int? companyId = null;
+            foreach (var claim in user.Claims.Where(claim =>
+                string.Equals(claim.Type, "empresaId", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(claim.Type, "empresa", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(claim.Type, "fkidEmpresa", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!AuthenticatedIdentity.TryPositiveId(claim.Value, out var id) ||
+                    (companyId.HasValue && companyId != id))
+                    throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
+                companyId = id;
+            }
 
-            if (empresaClaim != null && int.TryParse(empresaClaim.Value, out var empresaId))
-                return empresaId;
-
-            var fkidEmpresaClaim = user.Claims.FirstOrDefault(c => 
-                c.Type.StartsWith("fkid", StringComparison.OrdinalIgnoreCase) ||
-                c.Type.Contains("Empresa", StringComparison.OrdinalIgnoreCase));
-
-            if (fkidEmpresaClaim != null && int.TryParse(fkidEmpresaClaim.Value, out empresaId))
-                return empresaId;
-
-            _logger.LogDebug("No se pudo obtener empresaId desde los claims.");
-            return null;
-        }
-
-        private int? TryGetSelectedEmpresaIdFromHeader()
-        {
-            var value = _requestContext.GetHeader(EmpresaHeader);
-            return int.TryParse(value, out var empresaId) &&
-                   empresaId > 0
-                ? empresaId
-                : null;
+            if (companyId.HasValue && !UserCanAccessEmpresa(companyId.Value))
+                throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
+            return companyId;
         }
 
         private bool UserCanAccessEmpresa(int empresaId)
@@ -147,7 +108,7 @@ namespace EG.Application.Services.Security
         {
             var id = TryGetCurrentEmpresaId();
             if (!id.HasValue)
-                throw new InvalidOperationException("No se pudo obtener el ID de la empresa del usuario autenticado.");
+                throw new UnauthorizedAccessException(ApplicationText.Permissions.CompanyDenied);
             return id.Value;
         }
 

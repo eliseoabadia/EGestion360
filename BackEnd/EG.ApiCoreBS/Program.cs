@@ -299,13 +299,14 @@ try
 
     app.UseResponseCompression();
     app.UseCors("AllowFrontend");
+    app.UseMiddleware<RejectedMutationAuditMiddleware>();
     app.UseMiddleware<ApiExceptionMiddleware>();
     app.UseMiddleware<RequestPerformanceMiddleware>();
     app.UseRateLimiter();
     app.UseDevExpressControls();
     app.UseAuthentication();
     app.UseAuthorization();
-    app.UseMiddleware<RejectedMutationAuditMiddleware>();
+    app.UseMiddleware<RequestScopeValidationMiddleware>();
     app.MapMethods("/api/Navigate/ping", ["GET", "POST"], () =>
         Results.Ok(new { success = true, message = "pong" })).AllowAnonymous();
     app.MapGet("/api/Navigate/version", (IConfiguration configuration) =>

@@ -722,7 +722,7 @@ namespace EG.Business.Services
                     Success = true
                 };
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not UnauthorizedAccessException)
             {
                 _logger?.LogError(ex, "Error en GetAllPaginado para {Entity}", typeof(TEntity).Name);
             }

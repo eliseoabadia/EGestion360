@@ -42,4 +42,34 @@ public sealed class PermissionHandlerRegressionTests
         public Task<List<spGetClaimsByUserResult>> ObtenerClaimsUsuarioAsync(int userId) => Task.FromResult(permissions);
         public Task<LoginInformationEmployeeResult> ValidarCredencialesAsync(LoginRequestDto request) => throw new NotSupportedException();
     }
+
+    [Theory]
+    [InlineData("-7")]
+    [InlineData("0")]
+    [InlineData("user-7")]
+    public async Task MalformedIdentityCannotUseStoredPermissions(string id)
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        var handler = new PermissionAuthorizationHandler(new Auth([
+            new() { Group = "Sistema", SubGroup = "Menu", Values = "delete" }
+        ]), cache, NullLogger<PermissionAuthorizationHandler>.Instance);
+        var requirement = new PermissionRequirement("Sistema", "Menu", "delete");
+        var context = new AuthorizationHandlerContext([requirement],
+            new ClaimsPrincipal(new ClaimsIdentity([new(ClaimTypes.NameIdentifier, id)], "test")), null);
+        await handler.HandleAsync(context);
+        Assert.False(context.HasSucceeded);
+    }
+
+    [Fact]
+    public async Task AuthenticatedSuperAdminRetainsPermissionExemption()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        var handler = new PermissionAuthorizationHandler(new Auth([]), cache, NullLogger<PermissionAuthorizationHandler>.Instance);
+        var requirement = new PermissionRequirement("Sistema", "Menu", "delete");
+        var context = new AuthorizationHandlerContext([requirement], new ClaimsPrincipal(new ClaimsIdentity([
+            new(ClaimTypes.NameIdentifier, "1"), new(ClaimTypes.Role, EG.Common.Security.SystemRoles.SuperAdmin)
+        ], "test")), null);
+        await handler.HandleAsync(context);
+        Assert.True(context.HasSucceeded);
+    }
 }

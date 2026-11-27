@@ -9,7 +9,6 @@ public sealed class UserContextBoundaryTests
 {
     [Theory]
     [InlineData(true, 9)]
-    [InlineData(false, 7)]
     public void SelectedCompanyUsesBusinessAccessCheck(bool allowed, int expected)
     {
         var request = new RequestContext("X-Empresa-Id", "9");
@@ -35,7 +34,31 @@ public sealed class UserContextBoundaryTests
     {
         var service = new UserContextService(new RequestContext("X-Empresa-Id", "9"),
             NullLogger<UserContextService>.Instance, new Queries(false, true));
-        Assert.Equal(7, service.TryGetCurrentEmpresaId());
+        Assert.Throws<UnauthorizedAccessException>(() => service.TryGetCurrentEmpresaId());
+    }
+
+    [Theory]
+    [InlineData("9")]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("company-9")]
+    [InlineData("")]
+    [InlineData("9,7")]
+    public void DeniedOrInvalidSelectionCannotFallBackToTokenCompany(string selected)
+    {
+        var service = new UserContextService(new RequestContext("X-Empresa-Id", selected),
+            NullLogger<UserContextService>.Instance, new Queries(false));
+        Assert.Throws<UnauthorizedAccessException>(() => service.TryGetCurrentEmpresaId());
+    }
+
+    [Fact]
+    public void TokenCompanyAlsoRequiresCurrentAccess()
+    {
+        var queries = new Queries(false);
+        var service = new UserContextService(new RequestContext("unused", ""),
+            NullLogger<UserContextService>.Instance, queries);
+        Assert.Throws<UnauthorizedAccessException>(() => service.TryGetCurrentEmpresaId());
+        Assert.Equal((42, 7), queries.AccessCheck);
     }
 
     [Fact]

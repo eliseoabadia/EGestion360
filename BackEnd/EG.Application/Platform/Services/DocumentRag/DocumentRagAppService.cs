@@ -191,13 +191,11 @@ namespace EG.Application.Services.DocumentRag
             }
 
             logger.LogInformation(
-                "RAG pregunta procesada. Usuario={Usuario}; SessionId={SessionId}; QuestionId={QuestionId}; Answered={Answered}; Question={Question}; Answer={Answer}",
+                "RAG pregunta procesada. Usuario={Usuario}; SessionId={SessionId}; QuestionId={QuestionId}; Answered={Answered}",
                 usuarioActual,
                 session.SessionId,
                 questionId,
-                hasEvidence,
-                TruncateForLog(question, 300),
-                TruncateForLog(answer, 600));
+                hasEvidence);
 
             return Success("Pregunta procesada.", response);
         }
@@ -572,7 +570,7 @@ namespace EG.Application.Services.DocumentRag
                 throw new InvalidOperationException("La sesion documental no existe o ya fue liberada.");
 
             if (session.UsuarioId != usuarioActual)
-                throw new InvalidOperationException("No tienes acceso a esta sesion documental.");
+                throw new UnauthorizedAccessException(EG.Common.ApplicationText.Permissions.ResourceDenied);
 
             if (DateTime.UtcNow > session.ExpiresAtUtc)
             {
@@ -738,9 +736,6 @@ namespace EG.Application.Services.DocumentRag
 
             return $"{clean[..Math.Max(0, maxLength - 3)].Trim()}...";
         }
-
-        private static string TruncateForLog(string value, int maxLength)
-            => value.Length <= maxLength ? value : $"{value[..maxLength]}...";
 
         private static readonly HashSet<string> StopWords = new(StringComparer.Ordinal)
         {

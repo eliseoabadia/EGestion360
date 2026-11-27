@@ -9,6 +9,27 @@ namespace EG.UnidTest.Business;
 public sealed class GenericServicePagingTests
 {
     [Fact]
+    public async Task AuthorizationFailureCannotBecomeSuccessfulHttpPayload()
+    {
+        var service = CreateService([], new DeniedCompanyContext());
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetAllPaginadoAsync(new()
+        {
+            Page = 1, PageSize = 10
+        }));
+    }
+
+    private sealed class DeniedCompanyContext : IUserContextService
+    {
+        public int GetCurrentUserId() => 42;
+        public int? TryGetCurrentUserId() => 42;
+        public int GetCurrentEmpresaId() => throw new UnauthorizedAccessException();
+        public int? TryGetCurrentEmpresaId() => throw new UnauthorizedAccessException();
+        public int GetCurrentAnioPresupuestalId() => 2026;
+        public int? TryGetCurrentAnioPresupuestalId() => 2026;
+        public System.Security.Claims.ClaimsPrincipal? GetUserPrincipal() => null;
+    }
+
+    [Fact]
     public async Task GetAllPaginadoAsync_Normalizes_InvalidPage_And_Clamps_PageSize()
     {
         var request = new PagedRequest

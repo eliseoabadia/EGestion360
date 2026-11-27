@@ -22,17 +22,17 @@ public sealed class UserContextServiceTests
     }
 
     [Fact]
-    public void TryGetCurrentUserId_Extracts_NumericUserId_From_MixedClaimValue()
+    public void TryGetCurrentUserId_Rejects_MixedClaimValue()
     {
         var service = CreateService(new Claim("UserId", "user-983-active"));
 
-        Assert.Equal(983, service.TryGetCurrentUserId());
+        Assert.Null(service.TryGetCurrentUserId());
     }
 
     [Fact]
     public void TryGetCurrentEmpresaId_Returns_EmpresaId_From_SupportedClaimNames()
     {
-        var service = CreateService(new Claim("Empresa", "21"));
+        var service = CreateService(new Claim(ClaimTypes.NameIdentifier, "42"), new Claim("Empresa", "21"));
 
         Assert.Equal(21, service.TryGetCurrentEmpresaId());
         Assert.Equal(21, service.GetCurrentEmpresaId());
@@ -51,7 +51,7 @@ public sealed class UserContextServiceTests
         var service = CreateService(accessor);
 
         Assert.Null(service.TryGetCurrentUserId());
-        Assert.Throws<InvalidOperationException>(() => service.GetCurrentUserId());
+        Assert.Throws<UnauthorizedAccessException>(() => service.GetCurrentUserId());
     }
 
     private static UserContextService CreateService(params Claim[] claims)
@@ -69,9 +69,20 @@ public sealed class UserContextServiceTests
 
     private static UserContextService CreateService(IHttpContextAccessor accessor)
     {
-        var options = new DbContextOptionsBuilder<EGestionContext>().Options;
-        var context = new EGestionContext(options);
+        return new UserContextService(new HttpUserRequestContext(accessor), NullLogger<UserContextService>.Instance, new Queries());
+    }
 
-        return new UserContextService(new HttpUserRequestContext(accessor), NullLogger<UserContextService>.Instance, new EG.Business.Services.Security.UserContextQueries(context));
+    private sealed class Queries : EG.Domain.Interfaces.IUserContextQueries
+    {
+        public bool CanAccessEmpresa(int userId, int companyId) => userId == 42 && companyId == 21;
+        public bool IsActiveAnio(int yearId) => true;
+    }
+
+    [Theory]
+    [InlineData("fkidSucursal")]
+    [InlineData("OtraEmpresa")]
+    public void UnrelatedClaimsCannotSelectACompany(string claimType)
+    {
+        Assert.Null(CreateService(new Claim(ClaimTypes.NameIdentifier, "42"), new Claim(claimType, "21")).TryGetCurrentEmpresaId());
     }
 }
