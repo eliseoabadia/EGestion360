@@ -192,8 +192,8 @@
 
     private TipoBienResponse item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Bien" : "Nuevo Tipo de Bien";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private bool _loading = true;
 
     private LookupItem? _selectedGrupo;
@@ -288,7 +288,7 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de bien actualizado correctamente" : "Tipo de bien creado correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Tipo de bien actualizado correctamente" : "Tipo de bien creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

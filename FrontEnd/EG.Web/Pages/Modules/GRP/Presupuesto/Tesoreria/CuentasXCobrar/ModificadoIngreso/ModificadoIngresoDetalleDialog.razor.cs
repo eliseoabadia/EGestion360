@@ -31,8 +31,8 @@ public partial class ModificadoIngresoDetalleDialog : IDisposable
     private int requestVersion;
 
     private string dialogTitle => Id.HasValue ? "Editar movimiento" : "Nuevo movimiento";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private string TipoTexto => TipoMovimientoId == 3 ? "Aumento de ingresos" : "Reducción de ingresos";
     private decimal? CapturedTotal => IncomeAmountRules.TrySum(
         BudgetCaptureUi.Months.Select(month => GetMonth(month.Index)), out var total) ? total : null;

@@ -104,7 +104,7 @@
                         </MudChip>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="@EG.Common.Constants.EntityFields.Active" PropertyName="@EG.Common.Constants.EntityFields.Active" SortBy="x => x.Activo">
                     <CellTemplate Context="cell">
                         <!-- FIX: Added T="string" -->
                         <MudChip T="string"

@@ -108,7 +108,7 @@
                         Size="Size.Small"
                         OnClick="@(() => OpenBajaDialog(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="@(cell.Item.BloqueadoOperacion ? cell.Item.MotivoBloqueo : "Editar")">
+                        <MudTooltip Text="@(cell.Item.BloqueadoOperacion ? cell.Item.MotivoBloqueo : EG.Common.ApplicationText.Actions.Edit)">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Disabled="@cell.Item.BloqueadoOperacion"
@@ -504,7 +504,7 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -528,7 +528,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 

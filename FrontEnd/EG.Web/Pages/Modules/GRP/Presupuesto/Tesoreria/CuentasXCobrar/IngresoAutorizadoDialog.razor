@@ -229,8 +229,8 @@
             : Id.HasValue ? "Editar ingreso estimado" : "Nuevo ingreso estimado";
     private Color ActionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
     private string ActionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
-    private string ActionText => IsAuthorizationFlow ? "Autorizar ingreso" : Id.HasValue ? "Actualizar" : "Crear ingreso";
-    private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
+    private string ActionText => IsAuthorizationFlow ? "Autorizar ingreso" : Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Crear ingreso";
+    private string ProcessingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private int SelectedAnioId => AnioId > 0 ? AnioId : AnioStateService.AnioId.GetValueOrDefault();
     private string PolicyStatus => item.FkidPolizaConta.HasValue
         ? "Póliza registrada"
@@ -280,7 +280,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
         if (_programa == null || _origen == null || !_fecha.HasValue)

@@ -43,7 +43,7 @@
                           SearchStringChanged="value => SearchString = value"
                           OnSearch="OnSearch">
                 <Columns>
-                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Núm. CLC" Identifier="NumClc" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@(context.Item.Activo ? "Activo" : "Inactivo")</span></CellTemplate></TemplateColumn>
+                    <TemplateColumn T="IngresoCLCFacturaResponse" Title="Núm. CLC" Identifier="NumClc" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@(context.Item.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive)</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Origen" Identifier="FkIdIngresoAutorizado" Resizable="true"><CellTemplate><div class="main-cell">@(context.Item.FkIdIngresoAutorizado.HasValue ? "Ingreso autorizado" : "Sin origen")</div><span>Año @BudgetYear</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Documento" Identifier="NumFactura" Resizable="true"><CellTemplate><div class="main-cell">@TextOrDash(DocumentNumber(context.Item))</div><span>@TextOrDash(context.Item.NumReferenciaDocto)</span></CellTemplate></TemplateColumn>
                     <TemplateColumn T="IngresoCLCFacturaResponse" Title="Fecha" Identifier="Fecha" Resizable="true"><CellTemplate>@FormatDate(context.Item.Fecha)</CellTemplate></TemplateColumn>

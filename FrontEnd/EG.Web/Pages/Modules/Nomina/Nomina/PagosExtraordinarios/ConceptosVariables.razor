@@ -50,7 +50,7 @@
                 <Columns>
                     <TemplateColumn T="NomConceptoVariableResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                         <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Visible="@CanUpdate"
                                            Disabled="@(!cell.Item.Activo || IsBusy)"
@@ -65,7 +65,7 @@
                                                FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                                                RegistroTitulo="@TextOrDash(cell.Item.PersonaClaveNombre)"
                                                RegistroDescripcion="@TextOrDash(cell.Item.ConceptoClaveNombre)" />
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Visible="@CanDelete"
                                            Disabled="@(!cell.Item.Activo || IsBusy)"
@@ -90,13 +90,13 @@
                     <TemplateColumn T="NomConceptoVariableResponse" Title="Referencia" Identifier="Referencia" PropertyName="Referencia" SortBy="x => x.Referencia">
                         <CellTemplate Context="cell"><span @ondblclick="@(() => EditIfAllowed(cell.Item))">@TextOrDash(cell.Item.Referencia)</span></CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn T="NomConceptoVariableResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                    <TemplateColumn T="NomConceptoVariableResponse" Title="Estado" Identifier="@EG.Common.Constants.EntityFields.Active" PropertyName="@EG.Common.Constants.EntityFields.Active" SortBy="x => x.Activo">
                         <CellTemplate Context="cell">
                         <MudChip T="string"
                                  Size="Size.Small"
                                  Color="@(cell.Item.Activo ? Color.Success : Color.Error)"
                                  Variant="Variant.Text">
-                            @(cell.Item.Activo ? "Activo" : "Inactivo")
+                            @(cell.Item.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive)
                         </MudChip>
                         </CellTemplate>
                     </TemplateColumn>
@@ -122,7 +122,7 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -147,7 +147,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -185,7 +185,7 @@
             Periodo = $"Periodo {item.PeriodoId.ToString(Culture)}",
             Importe = item.Importe.ToString("0.00", Culture),
             item.Referencia,
-            Estado = item.Activo ? "Activo" : "Inactivo"
+            Estado = item.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive
         });
 
     protected override async Task<string> GetItemNameForDelete(int id)

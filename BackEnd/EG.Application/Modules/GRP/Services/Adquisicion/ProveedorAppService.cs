@@ -321,7 +321,7 @@ namespace EG.Application.Services.Adquisicion
                         "EstatusProveedorNombre" => isAscending ? query.OrderBy(e => e.EstatusProveedorDesc) : query.OrderByDescending(e => e.EstatusProveedorDesc),
                         "MunicipioNombre" => isAscending ? query.OrderBy(e => e.MunicipioNombre) : query.OrderByDescending(e => e.MunicipioNombre),
                         "EstadoNombre" => isAscending ? query.OrderBy(e => e.EstadoNombre) : query.OrderByDescending(e => e.EstadoNombre),
-                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        EG.Common.Constants.EntityFields.Active => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
                         _ => query.OrderBy(e => e.Nombre)
                     };
                 }

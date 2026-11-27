@@ -98,8 +98,8 @@
     private DateTime? fechaAutorizacion;
     private LookupItem? contrato;
     private string Title => Id.HasValue ? "Editar CLC" : "Nueva CLC";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar CLC";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Guardar CLC";
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Saving;
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,7 +136,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
         if (contrato == null)

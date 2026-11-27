@@ -178,8 +178,8 @@
     private NominaRhEmpleadoResponse item = new() { Activo = true, FechaIngreso = DateTime.Today };
 
     private string DialogTitle => Id.HasValue ? "Editar empleado" : "Nuevo empleado";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {

@@ -8,6 +8,8 @@ namespace EG.Web.Services
     {
         private const string ANIO_KEY = "anio_presupuestal_seleccionado";
         private readonly IJSRuntime _jsRuntime;
+        private readonly SemaphoreSlim storageGate = new(1, 1);
+        private int selectionVersion;
 
         public event Action<int?>? OnAnioChanged;
 
@@ -27,9 +29,13 @@ namespace EG.Web.Services
 
         public async Task InitializeAsync()
         {
+            var version = selectionVersion;
+            await storageGate.WaitAsync();
             try
             {
+                if (version != selectionVersion) return;
                 var anioJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", ANIO_KEY);
+                if (version != selectionVersion) return;
                 if (string.IsNullOrWhiteSpace(anioJson))
                 {
                     ResetSelection();
@@ -49,7 +55,11 @@ namespace EG.Web.Services
             }
             catch
             {
-                ResetSelection();
+                if (version == selectionVersion) ResetSelection();
+            }
+            finally
+            {
+                storageGate.Release();
             }
         }
 
@@ -62,6 +72,8 @@ namespace EG.Web.Services
 
         public async Task SetAnioAsync(int anioId, int? anioClave, string? anioDescripcion)
         {
+            if (anioId <= 0) throw new ArgumentOutOfRangeException(nameof(anioId));
+            var version = ++selectionVersion;
             AnioId = anioId;
             AnioClave = anioClave;
             AnioDescripcion = anioDescripcion ?? string.Empty;
@@ -73,8 +85,17 @@ namespace EG.Web.Services
                 Descripcion = AnioDescripcion
             };
 
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ANIO_KEY, JsonSerializer.Serialize(anio));
-            OnAnioChanged?.Invoke(AnioId);
+            await storageGate.WaitAsync();
+            try
+            {
+                if (version != selectionVersion) return;
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ANIO_KEY, JsonSerializer.Serialize(anio));
+            }
+            finally
+            {
+                storageGate.Release();
+            }
+            if (version == selectionVersion) OnAnioChanged?.Invoke(AnioId);
         }
 
         public async Task SetAnioAsync(LookupItem item)
@@ -85,16 +106,18 @@ namespace EG.Web.Services
 
         public async Task ClearAnioAsync()
         {
-            AnioId = null;
-            AnioClave = null;
-            AnioDescripcion = string.Empty;
+            var version = ++selectionVersion;
+            ResetSelection();
+            await storageGate.WaitAsync();
             try
             {
+                if (version != selectionVersion) return;
                 await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", ANIO_KEY);
             }
             finally
             {
-                OnAnioChanged?.Invoke(null);
+                storageGate.Release();
+                if (version == selectionVersion) OnAnioChanged?.Invoke(null);
             }
         }
 

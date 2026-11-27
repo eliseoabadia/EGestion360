@@ -12,7 +12,7 @@
              MaxWidth="MaxWidth.Small"
              ActionText="@actionText"
              ProcessingText="@processingText"
-             LoadingMessage="Cargando datos..."
+             LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
              OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ConceptoResponse"
@@ -50,8 +50,8 @@
     private ConceptoResponse item = new() { Activo = true };
 
     private string dialogTitle => Id.HasValue ? "Editar Partida Presupuestal" : "Nueva Partida Presupuestal";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,7 +87,7 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Partida presupuestal actualizada correctamente" : "Partida presupuestal creada correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Partida presupuestal actualizada correctamente" : "Partida presupuestal creada correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

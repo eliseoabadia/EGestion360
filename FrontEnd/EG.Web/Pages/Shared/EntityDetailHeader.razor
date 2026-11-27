@@ -63,8 +63,8 @@
     [Parameter] public string? StatusText { get; set; }
     [Parameter] public Color StatusColor { get; set; } = Color.Success;
     [Parameter] public string BackTooltip { get; set; } = "Regresar";
-    [Parameter] public string EditTooltip { get; set; } = "Editar";
-    [Parameter] public string DeleteTooltip { get; set; } = "Eliminar";
+    [Parameter] public string EditTooltip { get; set; } = EG.Common.ApplicationText.Actions.Edit;
+    [Parameter] public string DeleteTooltip { get; set; } = EG.Common.ApplicationText.Actions.Delete;
     [Parameter] public bool CanUpdate { get; set; }
     [Parameter] public bool CanDelete { get; set; }
     [Parameter] public bool IsBusy { get; set; }

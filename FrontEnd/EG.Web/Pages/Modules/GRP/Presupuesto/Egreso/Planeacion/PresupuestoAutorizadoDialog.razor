@@ -773,9 +773,9 @@
     private string DialogBodyClass => IsReadOnly
         ? "presupuesto-autorizado-dialog is-readonly"
         : "presupuesto-autorizado-dialog is-editable";
-    private string actionText => IsAuthorizationFlow ? "Autorizar y guardar" : Id.HasValue ? "Actualizar" : "Crear";
-    private string cancelText => IsReadOnly ? "Cerrar" : "Cancelar";
-    private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => IsAuthorizationFlow ? "Autorizar y guardar" : Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string cancelText => IsReadOnly ? EG.Common.ApplicationText.Actions.Close : EG.Common.ApplicationText.Actions.Cancel;
+    private string processingText => IsAuthorizationFlow ? "Autorizando..." : Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private Color actionColor => IsAuthorizationFlow ? Color.Success : Color.Primary;
     private string actionIcon => IsAuthorizationFlow ? Icons.Material.Filled.Verified : Icons.Material.Filled.Save;
     private string MonthlyAmountHelpText => IsReadOnly
@@ -940,7 +940,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

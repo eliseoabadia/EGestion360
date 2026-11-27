@@ -10,9 +10,9 @@
 <BaseCrudDialog TItem="SolicitudSuficienciaDetalleResponse"
                 Title="Editar Detalle Solicitud Suficiencia"
                 MaxWidth="MaxWidth.Large"
-                ActionText="Actualizar"
-                ProcessingText="Actualizando..."
-                LoadingMessage="Cargando datos..."
+                ActionText="@EG.Common.ApplicationText.Actions.Update"
+                ProcessingText="@EG.Common.ApplicationText.Status.Updating"
+                LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="SolicitudSuficienciaDetalleResponse"

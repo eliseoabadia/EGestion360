@@ -22,7 +22,7 @@
                 MaxWidth="MaxWidth.Large"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos..."
+                LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                 CanConfirm="@CanConfirmDialog"
                 OnConfirm="GuardarCambiosAsync">
 
@@ -298,8 +298,8 @@
     private List<PreviewItem> _previewItems = new();
 
     private string dialogTitle => Id.HasValue ? "Editar Solicitud Suficiencia" : "Generar Solicitud Suficiencia";
-    private string actionText => Id.HasValue ? "Actualizar" : "Generar";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Generando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Generar";
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : "Generando...";
     private bool IsRequisicionLocked => Id.HasValue || RequisicionId > 0;
     private bool IsHeaderLocked => Id.HasValue && item.BloqueadaPorAutorizacion;
     private bool CanConfirmDialog => Id.HasValue || _previewOk;
@@ -515,7 +515,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

@@ -277,7 +277,7 @@
 
     private static string ModuleState(LicenseModuleStatusResponse module) => module.StateCode switch
     {
-        "LIC_ALLOWED" => "Activo",
+        "LIC_ALLOWED" => EG.Common.ApplicationText.Status.Active,
         "LIC_MODULE_DISABLED" => "Apagado localmente",
         "LIC_MODULE_EXPIRED" => "Vencido",
         "LIC_MODULE_NOT_STARTED" => "Pendiente de inicio",

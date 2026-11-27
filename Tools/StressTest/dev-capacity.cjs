@@ -11,7 +11,10 @@ if (!['localhost', '127.0.0.1', '[::1]'].includes(base.hostname)) throw Error('O
 const levels = (args.levels ?? '1,5,10,20,40,80').split(',').map(Number);
 const seconds = Number(args.seconds ?? 20), think = Number(args.think ?? 1000);
 if (levels.some(n => !Number.isInteger(n) || n < 1 || n > 200) || seconds < 5 || seconds > 120 || think < 0) throw Error('Invalid bounded load settings.');
-const session = args.session ? JSON.parse(fs.readFileSync(args.session, 'utf8')) : {};
+// Prefer stdin so credentials never need a file or command-line argument.
+const session = args['session-stdin'] === 'true'
+  ? JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''))
+  : args.session ? JSON.parse(fs.readFileSync(args.session, 'utf8')) : {};
 let token = session.token ?? '';
 if (token.startsWith('"')) token = JSON.parse(token);
 token = token.replace(/^Bearer /i, '');

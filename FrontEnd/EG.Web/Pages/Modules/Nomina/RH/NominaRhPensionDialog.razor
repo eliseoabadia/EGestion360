@@ -10,7 +10,7 @@
                 Title="@DialogTitle"
                 MaxWidth="MaxWidth.Large"
                 ActionText="@ActionText"
-                ProcessingText="Guardando..."
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando pension..."
                 OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="NominaRhPensionResponse" @ref="form" ShowHeader="false">
@@ -114,7 +114,7 @@
     private BaseEntityForm<NominaRhPensionResponse> form = null!;
     private NominaRhPensionResponse item = new() { Activo = true, FechaInicio = DateTime.Today };
     private string DialogTitle => Id.HasValue ? "Editar pension" : "Nueva pension";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
     private string CuentaContableTexto => string.Join(" - ", new[] { item.CuentaContable, item.CuentaContableDescripcion }.Where(value => !string.IsNullOrWhiteSpace(value)));
     private DateTime? FechaDocumento
     {
@@ -137,7 +137,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

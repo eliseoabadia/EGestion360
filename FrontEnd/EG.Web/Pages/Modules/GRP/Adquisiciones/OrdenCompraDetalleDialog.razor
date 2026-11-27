@@ -166,8 +166,8 @@
     private LookupItem? _selectedRequisicionDetalle;
 
     private string dialogTitle => Id.HasValue ? "Editar Detalle OC" : "Nuevo Detalle OC";
-    private string actionText => Id.HasValue ? "Actualizar" : "Agregar";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Agregando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Agregar";
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : "Agregando...";
     private string SelectedBienText => string.IsNullOrWhiteSpace(item.BienClaveNombre)
         ? TextOrDash(item.TipoBienDescripcion)
         : item.BienClaveNombre;
@@ -210,7 +210,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

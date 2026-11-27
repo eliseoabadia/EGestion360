@@ -89,7 +89,7 @@
                         Size="Size.Small"
                         OnClick="@(() => AutorizarOrden(cell.Item))" />
                         </MudTooltip>
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Disabled="@IsLocked(cell.Item)"
@@ -97,7 +97,7 @@
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidOrdenCompra))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Disabled="@IsLocked(cell.Item)"
@@ -275,7 +275,7 @@
             <Columns>
                 <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Disabled="@IsSelectedLocked"
@@ -283,7 +283,7 @@
                         Color="Color.Primary"
                         OnClick="@(() => EditDetalle(cell.Item.PkidOrdenCompraDetalle))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Disabled="@IsSelectedLocked"
@@ -342,7 +342,7 @@
             <Columns>
                 <TemplateColumn T="OrdenCompraPartidaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Disabled="@IsSelectedLocked"
@@ -350,7 +350,7 @@
                         Color="Color.Primary"
                         OnClick="@(() => EditPartida(cell.Item.PkidOrdenCompraPartida))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Disabled="@IsSelectedLocked"
@@ -523,7 +523,7 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -550,7 +550,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -587,7 +587,7 @@
     {
         if (!CanDelete)
         {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.DeleteDenied, Severity.Warning);
             return;
         }
 
@@ -630,7 +630,7 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 

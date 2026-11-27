@@ -93,7 +93,7 @@
                         Color="Color.Success"
                         Size="Size.Small"
                         OnClick="@(() => Autorizar(cell.Item))" >Autorizar contrato</MudButton>
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Disabled="@IsLocked(cell.Item)"
@@ -101,7 +101,7 @@
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidContrato))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Disabled="@IsLocked(cell.Item)"

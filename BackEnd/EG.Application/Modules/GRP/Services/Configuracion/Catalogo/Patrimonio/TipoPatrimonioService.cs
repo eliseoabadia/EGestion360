@@ -195,7 +195,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                     {
                         "PkidTipoPatrimonio" => isAscending ? query.OrderBy(e => e.PkidTipoPatrimonio) : query.OrderByDescending(e => e.PkidTipoPatrimonio),
                         "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
-                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        EG.Common.Constants.EntityFields.Active => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
                         _ => query.OrderBy(e => e.Descripcion)
                     };
                 }

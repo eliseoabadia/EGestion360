@@ -515,8 +515,8 @@
     private bool _loadingEmpresasUsuario;
 
     private string dialogTitle => Id.HasValue ? "Editar Usuario" : "Nuevo Usuario";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     private LookupItem? _selectedPersona;
     private string _personaNombreCompleto = string.Empty;

@@ -4,7 +4,7 @@
 <BaseCrudDialog TItem="MenuItemsResponse" @ref="dialog"
                 Title="@(MenuId.HasValue ? "Editar menú" : "Nuevo menú")"
                 Subtitle="@ContextDescription" MaxWidth="MaxWidth.Medium"
-                ActionText="@(MenuId.HasValue ? "Actualizar" : "Crear")"
+                ActionText="@(MenuId.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create)"
                 CanConfirm="@(!loading && loaded && !saving)" OnConfirm="SaveMenuAsync">
     @if (loading)
     {

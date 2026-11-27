@@ -581,7 +581,7 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 

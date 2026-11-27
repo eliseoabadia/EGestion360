@@ -50,8 +50,8 @@
                                                        RegistroTitulo="@TextOrDash(context.Item.NumFactura)"
                                                        RegistroDescripcion="@($"{TextOrDash(context.Item.NumeroContrato)} | {TextOrDash(context.Item.ProveedorNombre)}")" />
                                 <MudTooltip Text="Enviar a autorizacion"><MudIconButton Icon="@Icons.Material.Filled.RequestQuote" Visible="@CanAuthorize" Disabled="@(!CanGenerateClc(context.Item))" Size="Size.Small" Color="Color.Success" OnClick="@(() => GenerateClc(context.Item))" /></MudTooltip>
-                                <MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidFactura))" /></MudTooltip>
-                                <MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Primary" OnClick="@(() => EditItem(context.Item.PkidFactura))" /></MudTooltip>
+                                <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Disabled="@IsLocked(context.Item)" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteItem(context.Item.PkidFactura))" /></MudTooltip>
                             </CellTemplate></TemplateColumn>
                             
                             <PropertyColumn T="FacturaResponse" TProperty="string" Property="x => x.NumFactura" Title="Factura" Identifier="NumFactura" />

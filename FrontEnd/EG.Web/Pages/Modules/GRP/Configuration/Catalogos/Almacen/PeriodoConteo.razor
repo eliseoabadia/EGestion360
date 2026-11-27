@@ -112,13 +112,13 @@
             <Columns>
                 <TemplateColumn Resizable="false" T="PeriodoConteoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
                     <CellTemplate>
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate"
                                            Disabled="@(!EsEstatus(context.Item, "Pendiente"))"
                                            Color="Color.Primary" Size="Size.Small"
                                            OnClick="@(() => EditItem(context.Item.PkidPeriodoConteo))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete"
                                            Disabled="@(!EsEstatus(context.Item, "Pendiente"))"
                                            Color="Color.Error" Size="Size.Small"
@@ -146,7 +146,7 @@
                         {
                             <MudTooltip Text="Cerrar o aprobar conteo">
                                 <MudIconButton Icon="@Icons.Material.Filled.Lock" Color="Color.Error" Size="Size.Small"
-                                               OnClick="@(() => EjecutarTransicion(context.Item, "CerrarConteo", "Cerrar", "cerrar", Color.Error))" />
+                                               OnClick="@(() => EjecutarTransicion(context.Item, "CerrarConteo", EG.Common.ApplicationText.Actions.Close, "cerrar", Color.Error))" />
                             </MudTooltip>
                         }
                     </CellTemplate>

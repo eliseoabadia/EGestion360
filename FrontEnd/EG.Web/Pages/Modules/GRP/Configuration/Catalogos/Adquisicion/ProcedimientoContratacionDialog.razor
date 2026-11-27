@@ -10,7 +10,7 @@
                  MaxWidth="MaxWidth.Small"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
+                 LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ProcedimientoContratacionResponse"
@@ -46,8 +46,8 @@
     private ProcedimientoContratacionResponse item = new() { Activo = true };
 
     private string dialogTitle => Id.HasValue ? "Editar Procedimiento de Contratación" : "Nuevo Procedimiento de Contratación";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,7 +91,7 @@
 
             if (success)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Procedimiento de Contratación actualizado correctamente" : "Procedimiento de Contratación creado correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Procedimiento de Contratación actualizado correctamente" : "Procedimiento de Contratación creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

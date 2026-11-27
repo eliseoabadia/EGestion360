@@ -165,7 +165,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Presupuestales
             return sortLabel?.ToLowerInvariant() switch
             {
                 "pkidanio" => "PkidAnio",
-                "activo" => "Activo",
+                "activo" => EG.Common.Constants.EntityFields.Active,
                 "fechacreacion" => "FechaCreacion",
                 "descripcion" => "Clave",
                 "" or null => "Clave",

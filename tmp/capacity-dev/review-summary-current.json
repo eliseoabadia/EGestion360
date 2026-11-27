@@ -1,0 +1,85 @@
+{
+  "GeneratedUtc": "2026-11-27T03:20:26.5996463Z",
+  "Environment": "Development",
+  "CommonTextCatalog": "BackEnd/EG.Common/ApplicationText.cs",
+  "DesktopMenuRoutes": 274,
+  "MobileRepresentativeRoutes": 8,
+  "NavigationMethod": "Authenticated DOM navigation and UI checks, without submitting forms",
+  "VisualLimitations": "Route checks do not validate every edit workflow or report generation; representative screenshots inspected.",
+  "FiscalYearRegression": "Verified selected year 2026 in header and New Program dialog without false warning; context load is gated and year storage operations are versioned.",
+  "Capacity": {
+    "TopStage": {
+      "users": 80,
+      "requests": 1584,
+      "failed": 0,
+      "p50Ms": 5,
+      "p95Ms": 18,
+      "p99Ms": 28,
+      "maxMs": 57,
+      "requestsPerSecond": 75.37,
+      "passed": true,
+      "endpoints": {
+        "Requisicion": {
+          "requests": 318,
+          "failed": 0,
+          "p50Ms": 7,
+          "p95Ms": 18,
+          "p99Ms": 26,
+          "maxMs": 47
+        },
+        "OrdenCompra": {
+          "requests": 316,
+          "failed": 0,
+          "p50Ms": 4,
+          "p95Ms": 12,
+          "p99Ms": 18,
+          "maxMs": 56
+        },
+        "Poliza": {
+          "requests": 317,
+          "failed": 0,
+          "p50Ms": 4,
+          "p95Ms": 12,
+          "p99Ms": 21,
+          "maxMs": 56
+        },
+        "Bien": {
+          "requests": 317,
+          "failed": 0,
+          "p50Ms": 12,
+          "p95Ms": 25,
+          "p99Ms": 36,
+          "maxMs": 57
+        },
+        "NomRhEmpleado": {
+          "requests": 316,
+          "failed": 0,
+          "p50Ms": 2,
+          "p95Ms": 6,
+          "p99Ms": 12,
+          "maxMs": 17
+        }
+      },
+      "failures": []
+    },
+    "Requests": 3102.0,
+    "MaximumCapacityReached": false,
+    "Failures": 0.0,
+    "SameAuthenticatedProfile": true,
+    "VirtualUsers": 80
+  },
+  "SqlSampling": {
+    "MaximumBlocked": 0.0,
+    "MaximumLongerThan5s": 0.0,
+    "Samples": 87,
+    "IntervalSeconds": 2,
+    "ServerDeadlockCounterDelta": 0
+  },
+  "SelectedTestsPassed": 57,
+  "MobileHeaderThemesVerified": [
+    "Claro",
+    "Oscuro",
+    "Morena"
+  ],
+  "SharedTextConsumersChanged": 305
+}

@@ -88,7 +88,7 @@ namespace EG.Application.Services.Adquisicion
                 var dto = response.Adapt<TDto>();
                 SetProperty(dto, "UsuarioCreacion", usuarioActual);
                 SetProperty(dto, "FechaCreacion", DateTime.Now);
-                SetProperty(dto, "Activo", true);
+                SetProperty(dto, EG.Common.Constants.EntityFields.Active, true);
 
                 await _service.AddAsync(dto);
 

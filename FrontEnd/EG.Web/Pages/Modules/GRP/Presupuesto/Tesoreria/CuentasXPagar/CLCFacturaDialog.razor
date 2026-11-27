@@ -72,8 +72,8 @@
     private BaseEntityForm<CLCFacturaResponse> form = null!;
     private CLCFacturaResponse item = new() { Activo = true };
     private string Title => Id.HasValue ? "Editar factura CLC" : "Nueva factura CLC";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private int? SelectedFacturaId
     {
         get => item.FkidFacturaPres > 0 ? item.FkidFacturaPres : null;
@@ -88,10 +88,10 @@
     private string FacturaDetalleText => string.Join(" - ", new[] { item.PartidaClave, item.PartidaDescripcion }
         .Where(value => !string.IsNullOrWhiteSpace(value)));
     private Dictionary<string, object>? FacturaFilters => item.FkidEmpresaSis > 0
-        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
-        : new Dictionary<string, object> { ["Activo"] = true };
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, [EG.Common.Constants.EntityFields.Active] = true }
+        : new Dictionary<string, object> { [EG.Common.Constants.EntityFields.Active] = true };
     private Dictionary<string, object>? FacturaDetalleFilters => item.FkidFacturaPres > 0
-        ? new Dictionary<string, object> { ["FkidFacturaPres"] = item.FkidFacturaPres, ["Activo"] = true }
+        ? new Dictionary<string, object> { ["FkidFacturaPres"] = item.FkidFacturaPres, [EG.Common.Constants.EntityFields.Active] = true }
         : null;
 
     protected override async Task OnInitializedAsync()
@@ -118,7 +118,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

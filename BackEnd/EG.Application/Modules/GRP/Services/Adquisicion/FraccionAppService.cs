@@ -251,7 +251,7 @@ namespace EG.Application.Services.Adquisicion
                         "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
                         "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
                         "NombreArticulo" or "ArticuloDescripcion" => isAscending ? query.OrderBy(e => e.ArticuloDescripcion) : query.OrderByDescending(e => e.ArticuloDescripcion),
-                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        EG.Common.Constants.EntityFields.Active => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
                         _ => query.OrderBy(e => e.Clave)
                     };
                 }

@@ -30,14 +30,14 @@
                 <Columns>
                     <TemplateColumn Resizable="false" T="ProveedorResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false">
                         <CellTemplate>
-                            <MudTooltip Text="Editar">
+                            <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Visible="@CanUpdate"
                                                Color="Color.Primary"
                                                Size="Size.Small"
                                                OnClick="@(() => EditItem(context.Item.PkidProveedor))" />
                             </MudTooltip>
-                            <MudTooltip Text="Eliminar">
+                            <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Visible="@CanDelete"
                                                Color="Color.Error"

@@ -69,14 +69,14 @@
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@TextOrDash(cell.Item.Nombre)"
                         RegistroDescripcion="@TextOrDash(cell.Item.Descripcion)" />
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidEstudioMercado))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@CanDelete"
                         Color="Color.Error"
@@ -155,7 +155,7 @@
                                            RegistroDescripcion="@TextOrDash(SelectedEstudio.Descripcion)" />
 
 
-                    <MudTooltip Text="Actualizar">
+                    <MudTooltip Text="@EG.Common.ApplicationText.Actions.Update">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
                                        Size="Size.Small"
@@ -582,7 +582,7 @@
 
         if (!HasSelectedAnio())
         {
-            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 

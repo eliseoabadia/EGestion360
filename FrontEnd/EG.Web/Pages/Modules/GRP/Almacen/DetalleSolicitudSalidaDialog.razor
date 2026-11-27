@@ -144,8 +144,8 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     private string DialogTitle => ModoEntrega ? "Actualizar entrega" : Id.HasValue ? "Editar bien solicitado" : "Agregar bien a solicitud";
-    private string ActionText => ModoEntrega ? "Guardar entrega" : Id.HasValue ? "Actualizar" : "Agregar bien";
-    private string ProcessingText => ModoEntrega ? "Guardando entrega..." : Id.HasValue ? "Actualizando..." : "Agregando...";
+    private string ActionText => ModoEntrega ? "Guardar entrega" : Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Agregar bien";
+    private string ProcessingText => ModoEntrega ? "Guardando entrega..." : Id.HasValue ? EG.Common.ApplicationText.Status.Updating : "Agregando...";
     private string SelectedBienText => _almacenSeleccionado == null
         ? item.TipoBienDescripcion ?? string.Empty
         : $"{_almacenSeleccionado.TipoBienClave} - {_almacenSeleccionado.TipoBienDescripcion}".Trim(' ', '-');
@@ -182,7 +182,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

@@ -131,8 +131,8 @@
     private DateTime? _fechaRequerida;
 
     private string DialogTitle => Id.HasValue ? "Editar solicitud de salida" : "Nueva solicitud de salida";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear solicitud";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Crear solicitud";
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -166,7 +166,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

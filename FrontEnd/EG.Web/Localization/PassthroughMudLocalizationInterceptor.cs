@@ -15,7 +15,7 @@ public sealed class PassthroughMudLocalizationInterceptor : ILocalizationInterce
         ["MudDataGrid_Columns"] = "Columnas",
         ["MudDataGrid_ShowColumnOptions"] = "Opciones de columnas",
         ["MudDataGrid_Filter"] = "Filtrar",
-        ["MudDataGrid_Clear"] = "Limpiar",
+        ["MudDataGrid_Clear"] = EG.Common.ApplicationText.Actions.Clear,
         ["MudDataGrid_Apply"] = "Aplicar",
         ["MudDataGrid_Sort"] = "Ordenar",
         ["MudDataGrid_Group"] = "Agrupar",

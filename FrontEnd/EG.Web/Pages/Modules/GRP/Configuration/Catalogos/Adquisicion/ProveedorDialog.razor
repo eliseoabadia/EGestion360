@@ -17,7 +17,7 @@
                 DialogClass="proveedor-dialog crud-dialog-wide"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos..."
+                LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                 OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="ProveedorResponse"
@@ -258,8 +258,8 @@
     private LookupItem? _selectedMunicipio;
 
     private string dialogTitle => Id.HasValue ? "Editar Proveedor" : "Nuevo Proveedor";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {

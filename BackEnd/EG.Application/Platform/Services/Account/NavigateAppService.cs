@@ -25,7 +25,7 @@ namespace EG.Application.Services.Account
             EnsureCurrentUser(userId);
             // 🔧 VALIDACIÓN
             if (userId <= 0)
-                throw new ArgumentException("El usuario seleccionado no es válido.");
+                throw new ArgumentException(EG.Common.ApplicationText.Validation.InvalidUser);
 
             try
             {
@@ -134,7 +134,7 @@ namespace EG.Application.Services.Account
         {
             EnsureCurrentUser(userId);
             if (userId <= 0)
-                throw new ArgumentException("El usuario seleccionado no es válido.");
+                throw new ArgumentException(EG.Common.ApplicationText.Validation.InvalidUser);
 
             try
             {
@@ -150,7 +150,7 @@ namespace EG.Application.Services.Account
         {
             if (userId != _userContext.GetCurrentUserId())
             {
-                throw new UnauthorizedAccessException("Solo puedes consultar tu propio menú y permisos.");
+                throw new UnauthorizedAccessException(EG.Common.ApplicationText.Permissions.OwnNavigationOnly);
             }
         }
     }

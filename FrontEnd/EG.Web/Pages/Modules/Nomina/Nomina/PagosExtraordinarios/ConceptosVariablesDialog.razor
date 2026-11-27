@@ -17,7 +17,7 @@
                 Title="@DialogTitle"
                 MaxWidth="MaxWidth.Large"
                 ActionText="@ActionText"
-                ProcessingText="Guardando..."
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando concepto variable..."
                 OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="NomConceptoVariableResponse" @ref="form" ShowHeader="false">
@@ -118,7 +118,7 @@
     private LookupItem? selectedPeriodo;
 
     private string DialogTitle => Id.HasValue ? "Editar concepto variable" : "Nuevo concepto variable";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
 
     protected override async Task OnInitializedAsync()
     {
@@ -303,7 +303,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

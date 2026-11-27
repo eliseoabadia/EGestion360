@@ -41,9 +41,9 @@ namespace EG.Web.Extensions
             new IconoItem { Nombre = "Documento", Valor = "FaDocument", Categoria = "Archivos", MaterialIcon = Icons.Material.Filled.Article, BootstrapIcon = "bi bi-file-earmark-text" },
             
             new IconoItem { Nombre = "Agregar", Valor = "FaPlus", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Add, BootstrapIcon = "bi bi-plus-lg" },
-            new IconoItem { Nombre = "Editar", Valor = "FaEdit", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Edit, BootstrapIcon = "bi bi-pencil" },
-            new IconoItem { Nombre = "Eliminar", Valor = "FaTrash", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Delete, BootstrapIcon = "bi bi-trash" },
-            new IconoItem { Nombre = "Guardar", Valor = "FaSave", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Save, BootstrapIcon = "bi bi-save" },
+            new IconoItem { Nombre = EG.Common.ApplicationText.Actions.Edit, Valor = "FaEdit", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Edit, BootstrapIcon = "bi bi-pencil" },
+            new IconoItem { Nombre = EG.Common.ApplicationText.Actions.Delete, Valor = "FaTrash", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Delete, BootstrapIcon = "bi bi-trash" },
+            new IconoItem { Nombre = EG.Common.ApplicationText.Actions.Save, Valor = "FaSave", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Save, BootstrapIcon = "bi bi-save" },
             new IconoItem { Nombre = "Buscar", Valor = "FaSearch", Categoria = "Acciones", MaterialIcon = Icons.Material.Filled.Search, BootstrapIcon = "bi bi-search" },
             
             new IconoItem { Nombre = "Gr\u00e1fico Barras", Valor = "FaChartBar", Categoria = "Reportes", MaterialIcon = Icons.Material.Filled.BarChart, BootstrapIcon = "bi bi-bar-chart" },

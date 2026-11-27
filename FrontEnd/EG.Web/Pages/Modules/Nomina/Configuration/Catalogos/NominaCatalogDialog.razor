@@ -104,9 +104,9 @@
     private TItem item = new();
     private readonly Dictionary<string, LookupItem?> lookupValues = new(StringComparer.OrdinalIgnoreCase);
 
-    private string dialogTitle => Id.HasValue ? "Editar registro" : "Nuevo registro";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string dialogTitle => Id.HasValue ? EG.Common.ApplicationText.Records.Edit : EG.Common.ApplicationText.Records.New;
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     private IEnumerable<PropertyInfo> EditableProperties => typeof(TItem).GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Where(p => p.CanRead && p.CanWrite && !IsIgnoredProperty(p))
@@ -430,7 +430,7 @@
     }
 
     private static LookupItem FindStaticLookup(IReadOnlyList<LookupItem> source, int id)
-        => source.FirstOrDefault(item => item.Id == id) ?? new LookupItem { Id = id, Text = "Registro relacionado" };
+        => source.FirstOrDefault(item => item.Id == id) ?? new LookupItem { Id = id, Text = EG.Common.ApplicationText.Records.Related };
 
     private static ComboLookupResult LoadStaticLookupPage(IReadOnlyList<LookupItem> source, int page, int pageSize, string filter)
     {
@@ -464,7 +464,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 
@@ -500,7 +500,7 @@
         }
 
         return property.Name is "ClaveNombre"
-            or "Activo"
+            or EG.Common.Constants.EntityFields.Active
             or "LegacyId"
             or "TipoNomina"
             or "FormaCalculoDescripcion"
@@ -628,7 +628,7 @@
 
     private void SetActivoValue(bool value)
     {
-        var property = typeof(TItem).GetProperty("Activo");
+        var property = typeof(TItem).GetProperty(EG.Common.Constants.EntityFields.Active);
         property?.SetValue(item, value);
     }
 

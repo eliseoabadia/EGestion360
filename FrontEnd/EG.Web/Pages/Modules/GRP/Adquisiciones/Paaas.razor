@@ -65,14 +65,14 @@
                         FkidEmpresaSis="@cell.Item.FkidEmpresaSis"
                         RegistroTitulo="@cell.Item.Descripcion"
                         RegistroDescripcion="@($"{TextOrDash(cell.Item.ClaveNombre)} · {TextOrDash(cell.Item.AreaNombre)}")" />
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@(CanUpdate && !cell.Item.BloqueadoPorEstudioMercado)"
                         Color="Color.Primary"
                         Size="Size.Small"
                         OnClick="@(() => EditItem(cell.Item.PkidPaaas))" />
                         </MudTooltip>
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@(CanDelete && !cell.Item.BloqueadoPorEstudioMercado)"
                         Color="Color.Error"
@@ -144,7 +144,7 @@
                                              Size="Size.Small"
                                              Color="@(SelectedPaaa.Activo ? Color.Success : Color.Error)"
                                              Variant="Variant.Filled">
-                                        @(SelectedPaaa.Activo ? "Activo" : "Inactivo")
+                                        @(SelectedPaaa.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive)
                                     </MudChip>
                                 </div>
                                 <MudText Typo="Typo.caption" Class="paaa-subtitle">
@@ -554,7 +554,7 @@
             {
                 Elements.Clear();
                 TotalCount = 0;
-                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+                Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
                 return new TableData<PaaaResponse> { Items = Elements, TotalItems = TotalCount };
             }
 
@@ -673,13 +673,13 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 
         if (!HasSelectedAnio())
         {
-            Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 
@@ -737,13 +737,13 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
         if (!HasSelectedAnio())
         {
-            Snackbar.Add("Selecciona un año presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 
@@ -768,7 +768,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 

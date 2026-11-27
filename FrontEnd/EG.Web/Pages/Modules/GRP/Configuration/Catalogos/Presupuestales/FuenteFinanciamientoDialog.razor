@@ -10,7 +10,7 @@
                  MaxWidth="MaxWidth.Small"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
+                 LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="FuenteFinanciamientoResponse"
@@ -47,8 +47,8 @@
     private FuenteFinanciamientoResponse item = new() { Activo = true };
 
     private string dialogTitle => Id.HasValue ? "Editar Fuente de Financiamiento" : "Nueva Fuente de Financiamiento";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +84,7 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? (dialogTitle.Contains("Editar") ? "Fuente de Financiamiento actualizada correctamente" : "Fuente de Financiamiento creada correctamente"), Severity.Success);
+                Snackbar.Add(response.Message ?? (dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Fuente de Financiamiento actualizada correctamente" : "Fuente de Financiamiento creada correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

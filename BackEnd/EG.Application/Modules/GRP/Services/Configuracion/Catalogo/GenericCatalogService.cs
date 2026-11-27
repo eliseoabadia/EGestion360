@@ -26,7 +26,7 @@ namespace EG.Application.Modules.GRP.Services.Configuracion.Catalogo
         {
             SetProperty(dto, "UsuarioCreacion", usuarioId);
             SetProperty(dto, "FechaCreacion", DateTime.Now);
-            SetProperty(dto, "Activo", true, onlyWhenDefault: true);
+            SetProperty(dto, EG.Common.Constants.EntityFields.Active, true, onlyWhenDefault: true);
 
             await Service.AddAsync(dto);
             var id = GetIdValue(dto);

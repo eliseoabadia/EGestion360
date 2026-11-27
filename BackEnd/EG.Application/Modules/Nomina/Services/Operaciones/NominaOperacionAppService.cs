@@ -365,7 +365,7 @@ IF OBJECT_ID(N'[NOM].[Vacacion]', N'U') IS NOT NULL AND COL_LENGTH(N'NOM.Vacacio
                 Descripcion = GetString(reader, "Descripcion"),
                 Comentario = GetString(reader, "Comentario"),
                 Observaciones = GetString(reader, "Observaciones"),
-                Activo = GetBool(reader, "Activo"),
+                Activo = GetBool(reader, EG.Common.Constants.EntityFields.Active),
                 TotalCount = GetInt(reader, "TotalCount")
             };
 

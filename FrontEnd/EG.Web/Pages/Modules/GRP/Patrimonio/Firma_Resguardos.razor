@@ -376,7 +376,7 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -400,7 +400,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -447,7 +447,7 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 

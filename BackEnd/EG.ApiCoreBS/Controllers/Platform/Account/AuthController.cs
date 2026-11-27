@@ -70,7 +70,7 @@ namespace EG.ApiCoreBS.Controllers.Account
                         "0",
                         clientIp);
 
-                    return Unauthorized(Error(response?.Message ?? "Credenciales incorrectas", ApiResponseCode.Unauthorized));
+                    return Unauthorized(Error(response?.Message ?? EG.Common.ApplicationText.Validation.InvalidCredentials, ApiResponseCode.Unauthorized));
                 }
             }
             catch (ArgumentException ex)

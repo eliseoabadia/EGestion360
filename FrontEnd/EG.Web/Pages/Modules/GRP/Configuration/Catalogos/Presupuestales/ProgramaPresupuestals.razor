@@ -54,7 +54,7 @@
         {
             item.Clave,
             item.Descripcion,
-            Estatus = item.Activo ? "Activo" : "Inactivo",
+            Estatus = item.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive,
             item.UsuarioCreacion,
             FechaCreacion = item.FechaCreacion?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty,
             item.UsuarioModificacion,

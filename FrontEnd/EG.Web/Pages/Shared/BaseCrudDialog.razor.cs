@@ -14,9 +14,9 @@ public partial class BaseCrudDialog<TItem>
     [Parameter] public string? DialogClass { get; set; }
     [Parameter] public Color ActionColor { get; set; } = Color.Primary;
     [Parameter] public string ActionIcon { get; set; } = Icons.Material.Filled.Save;
-    [Parameter] public string ActionText { get; set; } = "Guardar";
-    [Parameter] public string CancelText { get; set; } = "Cancelar";
-    [Parameter] public string ProcessingText { get; set; } = "Guardando...";
+    [Parameter] public string ActionText { get; set; } = EG.Common.ApplicationText.Actions.Save;
+    [Parameter] public string CancelText { get; set; } = EG.Common.ApplicationText.Actions.Cancel;
+    [Parameter] public string ProcessingText { get; set; } = EG.Common.ApplicationText.Status.Saving;
     [Parameter] public string LoadingMessage { get; set; } = "Cargando...";
     [Parameter] public bool CanConfirm { get; set; } = true;
     [Parameter] public bool ShowConfirmButton { get; set; } = true;

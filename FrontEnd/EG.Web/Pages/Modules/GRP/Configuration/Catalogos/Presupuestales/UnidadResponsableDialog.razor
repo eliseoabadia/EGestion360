@@ -11,7 +11,7 @@
                  MaxWidth="MaxWidth.Small"
                  ActionText="@actionText"
                  ProcessingText="@processingText"
-                 LoadingMessage="Cargando datos..."
+                 LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                  OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="UnidadResponsableResponse"
@@ -54,8 +54,8 @@
         : !string.IsNullOrEmpty(NombrePadre)
             ? $"Nueva Unidad Responsable (hijo de: {NombrePadre})"
             : "Nueva Unidad Responsable";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,7 +103,7 @@
 
             if (success)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Unidad Responsable actualizada correctamente" : "Unidad Responsable creada correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Unidad Responsable actualizada correctamente" : "Unidad Responsable creada correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

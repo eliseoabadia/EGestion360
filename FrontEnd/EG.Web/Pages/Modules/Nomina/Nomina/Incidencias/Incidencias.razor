@@ -50,7 +50,7 @@
             <Columns>
                 <TemplateColumn T="VwRhIncidenciaResponse" Title="Acciones" Identifier="__actions" Sortable="false" Filterable="false" Hideable="false" Resizable="false">
                     <CellTemplate Context="cell">
-                        <MudTooltip Text="@(cell.Item.Activo == true ? "Ver incidencia" : "Editar")">
+                        <MudTooltip Text="@(cell.Item.Activo == true ? "Ver incidencia" : EG.Common.ApplicationText.Actions.Edit)">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                         Visible="@CanUpdate"
                         Color="@(cell.Item.Activo == true ? Color.Info : Color.Primary)"
@@ -63,7 +63,7 @@
                         EntidadId="@cell.Item.PkidIncidencia"
                         RegistroTitulo="@TextOrDash(cell.Item.NombreCompleto)"
                         RegistroDescripcion="@TextOrDash(cell.Item.TipoIncidenciaDescripcion)" />
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                         Visible="@(CanDelete && cell.Item.Activo != true)"
                         Color="Color.Error"
@@ -128,7 +128,7 @@
                         </div>
                     </CellTemplate>
                 </TemplateColumn>
-                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="Activo" PropertyName="Activo" SortBy="x => x.Activo">
+                <TemplateColumn T="VwRhIncidenciaResponse" Title="Estado" Identifier="@EG.Common.Constants.EntityFields.Active" PropertyName="@EG.Common.Constants.EntityFields.Active" SortBy="x => x.Activo">
                     <CellTemplate Context="cell">
                         <div @ondblclick="@(() => EditItem(cell.Item.PkidIncidencia))">
                         <!-- FIX: Se agregó T="string" -->

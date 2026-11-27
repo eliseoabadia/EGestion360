@@ -193,8 +193,8 @@
 
     private bool TipoBienLocked => TipoBienId.HasValue && TipoBienId.Value > 0;
     private string DialogTitle => Id.HasValue ? "Editar entrada de almacen" : "Nueva entrada de almacen";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Registrar entrada";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Registrando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Registrar entrada";
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : "Registrando...";
     private string ContextMessage => OrdenDetalleId.HasValue
         ? "Entrada ligada a una orden de compra. Se conserva la referencia del detalle para trazabilidad."
         : string.Empty;
@@ -246,7 +246,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

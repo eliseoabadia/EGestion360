@@ -520,7 +520,7 @@ namespace EG.Application.Services.SoporteDocumental
             VersionDocumento = GetInt32(reader, "VersionDocumento"),
             EsImagen = GetBool(reader, "EsImagen"),
             EsPdf = GetBool(reader, "EsPdf"),
-            Activo = GetBool(reader, "Activo"),
+            Activo = GetBool(reader, EG.Common.Constants.EntityFields.Active),
             CT_CreatedBy = GetInt32(reader, "CT_CreatedBy"),
             CT_CreatedDate = GetDateTime(reader, "CT_CreatedDate"),
             CT_ModifiedBy = GetNullableInt(reader, "CT_ModifiedBy"),
@@ -541,7 +541,7 @@ namespace EG.Application.Services.SoporteDocumental
             Ancho = GetNullableDecimal(reader, "Ancho"),
             Alto = GetNullableDecimal(reader, "Alto"),
             Color = GetString(reader, "Color"),
-            Activo = GetBool(reader, "Activo"),
+            Activo = GetBool(reader, EG.Common.Constants.EntityFields.Active),
             CT_CreatedBy = GetInt32(reader, "CT_CreatedBy"),
             CT_CreatedDate = GetDateTime(reader, "CT_CreatedDate")
         };

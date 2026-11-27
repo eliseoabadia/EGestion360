@@ -51,7 +51,7 @@ public partial class GenericDataGrid<TItem>
     [Parameter] public int PageSize { get; set; } = 10;
     [Parameter] public SortDirection InitialSortDirection { get; set; } = SortDirection.Ascending;
     [Parameter] public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
-    [Parameter] public string LoadingMessage { get; set; } = "Cargando datos...";
+    [Parameter] public string LoadingMessage { get; set; } = EG.Common.ApplicationText.Status.LoadingData;
     [Parameter] public string ActionLoadingMessage { get; set; } = "Procesando...";
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? ToolbarActions { get; set; }

@@ -56,8 +56,8 @@
     private bool _formLoading = true;
 
     private string dialogTitle => Id.HasValue ? "Editar movimiento contable" : "Nuevo movimiento contable";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     protected override async Task OnInitializedAsync()

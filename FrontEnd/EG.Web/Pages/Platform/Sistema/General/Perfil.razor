@@ -68,7 +68,7 @@
                     @SelectedEmpresaName
                 </MudChip>
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Icon="@Icons.Material.Filled.VerifiedUser">
-                    @(userProfile.UsuarioActivo ? "Activo" : "Inactivo")
+                    @(userProfile.UsuarioActivo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive)
                 </MudChip>
                 @if (IsSelfProfileRoute)
                 {

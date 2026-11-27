@@ -96,14 +96,14 @@
                                                           Tooltip="Editar diseno del reporte de poliza"
                                                           Color="Color.Primary"
                                                           Visible="@CanUpdate" />
-                                <MudTooltip Text="Editar">
+                                <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Visible="@CanUpdate"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
                                                    OnClick="@(() => EditItem(context.Item.PkidPoliza))" />
                                 </MudTooltip>
-                                <MudTooltip Text="Eliminar">
+                                <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Visible="@CanDelete"
                                                    Color="Color.Error"
@@ -217,7 +217,7 @@
                                        Class="ml-2" />
                     </MudTooltip>
 
-                    <MudTooltip Text="Actualizar">
+                    <MudTooltip Text="@EG.Common.ApplicationText.Actions.Update">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                        Color="Color.Default"
                                        Size="Size.Small"

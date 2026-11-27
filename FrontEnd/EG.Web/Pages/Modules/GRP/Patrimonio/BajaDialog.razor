@@ -191,8 +191,8 @@
     private static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
     private string dialogTitle => Id.HasValue ? "Editar baja patrimonial" : "Nueva baja patrimonial";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear solicitud";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Crear solicitud";
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private string DialogContextText => BienId > 0
         ? $"Bien precargado: {TextOrDash(BienDescripcion)}. Solo captura el motivo y el tipo de baja."
         : "Selecciona un bien disponible y registra el motivo operativo de la baja.";
@@ -232,7 +232,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

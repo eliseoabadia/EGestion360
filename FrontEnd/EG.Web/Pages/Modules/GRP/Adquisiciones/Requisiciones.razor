@@ -179,7 +179,7 @@
                     </MudText>
                     <MudSpacer />
                     <MudChip T="string" Size="Size.Small" Color="@(SelectedRequisicion.Activo ? Color.Success : Color.Error)">
-                        @(SelectedRequisicion.Activo ? "Activo" : "Inactivo")
+                        @(SelectedRequisicion.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive)
                     </MudChip>
                     <MudChip T="string"
                              Size="Size.Small"
@@ -482,7 +482,7 @@
             {
                 Elements.Clear();
                 TotalCount = 0;
-                Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+                Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
                 return new TableData<RequisicionResponse> { Items = Elements, TotalItems = TotalCount };
             }
 
@@ -538,7 +538,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -574,7 +574,7 @@
     {
         if (!CanDelete)
         {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.DeleteDenied, Severity.Warning);
             return;
         }
 
@@ -617,13 +617,13 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 
         if (!HasSelectedAnio())
         {
-            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 
@@ -672,7 +672,7 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 
@@ -827,7 +827,7 @@
     {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -981,7 +981,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -1119,7 +1119,7 @@
 
         if (!HasSelectedAnio())
         {
-            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 
@@ -1388,7 +1388,7 @@
     {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 

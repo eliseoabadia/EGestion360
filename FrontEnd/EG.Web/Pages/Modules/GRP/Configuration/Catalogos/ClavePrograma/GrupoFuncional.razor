@@ -78,7 +78,7 @@
     {
         if (!CanDelete)
         {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.DeleteDenied, Severity.Warning);
             return;
         }
 

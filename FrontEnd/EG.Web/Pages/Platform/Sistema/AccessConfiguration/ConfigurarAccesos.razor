@@ -924,7 +924,7 @@
     private bool CanSaveRoleMenus => !_saving && _dirty && !string.IsNullOrWhiteSpace(_roleName) && (_isNewRole ? _canCreate : _canUpdate);
     private bool CanSaveUserRoles => !_saving && _userRoleDirty && _selectedAccessUserDetail != null && _canUpdate;
     private bool CanSave => _activePanelIndex == 0 ? CanSaveUserRoles : CanSaveRoleMenus;
-    private string SaveButtonText => _saving ? "Guardando..." : _activePanelIndex == 0 ? "Guardar usuario" : "Guardar rol";
+    private string SaveButtonText => _saving ? EG.Common.ApplicationText.Status.Saving : _activePanelIndex == 0 ? "Guardar usuario" : "Guardar rol";
     private AccessProfileOption? SelectedAccessProfile => _accessProfiles.FirstOrDefault(profile => profile.Prefix == _selectedAccessProfilePrefix);
     private string RoleLookupLabel => SelectedAccessProfile == null ? "Rol" : $"Rol {SelectedAccessProfile.Prefix}xx";
     private string ClaimsPanelSubtitle => SelectedAccessProfile == null
@@ -1850,8 +1850,8 @@
         "view-menu" => "Menu",
         "excel" => "Excel",
         "new" => "Nuevo",
-        "update" => "Editar",
-        "delete" => "Eliminar",
+        "update" => EG.Common.ApplicationText.Actions.Edit,
+        "delete" => EG.Common.ApplicationText.Actions.Delete,
         "authorize" => "Autorizar",
         "view" => "Ver",
         _ => action

@@ -12,7 +12,7 @@
     MaxWidth="MaxWidth.Small"
     ActionText="@actionText"
     ProcessingText="@processingText"
-    LoadingMessage="Cargando datos..."
+    LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
     OnConfirm="GuardarCambiosAsync">
 
     <BaseEntityForm TEntity="TipoPatrimonioResponse"
@@ -39,8 +39,8 @@
     private TipoPatrimonioResponse item = new() { Activo = true };
 
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Patrimonio" : "Nuevo Tipo de Patrimonio";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +84,7 @@
 
             if (success)
             {
-                Snackbar.Add(dialogTitle.Contains("Editar") ? "Tipo de patrimonio actualizado correctamente" : "Tipo de patrimonio creado correctamente", Severity.Success);
+                Snackbar.Add(dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Tipo de patrimonio actualizado correctamente" : "Tipo de patrimonio creado correctamente", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

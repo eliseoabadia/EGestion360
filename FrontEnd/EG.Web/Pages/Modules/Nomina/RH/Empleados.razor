@@ -78,7 +78,7 @@
             <section class="rh-detail-shell" @key="selectedEmployee.Id">
                 <EntityDetailHeader Title="@TextOrDash(selectedEmployee.ClaveNombre)"
                                     Subtitle="@BuildEmployeeSubtitle(selectedEmployee)"
-                                    StatusText="Activo"
+                                    StatusText="@EG.Common.ApplicationText.Status.Active"
                                     BackTooltip="Regresar a empleados"
                                     EditTooltip="Editar empleado"
                                     DeleteTooltip="Eliminar empleado"

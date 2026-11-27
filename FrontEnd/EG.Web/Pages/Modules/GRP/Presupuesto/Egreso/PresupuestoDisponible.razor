@@ -311,13 +311,13 @@
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 
         if (!AnioStateService.AnioId.HasValue)
         {
-            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 

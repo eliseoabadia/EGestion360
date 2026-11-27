@@ -63,7 +63,7 @@ public sealed class ApiExceptionMiddleware
             {
                 success = false,
                 message = isForbidden
-                    ? "No tienes permiso para acceder a este recurso."
+                    ? EG.Common.ApplicationText.Permissions.ResourceDenied
                     : isNotFound
                     ? "No se encontró el registro solicitado."
                     : isInvalidRequest

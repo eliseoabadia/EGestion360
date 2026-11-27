@@ -62,10 +62,10 @@
                       ColumnTitleFunc="GetColumnLabel"
                       CellValueFunc="@((item, column) => FormatValue(column.GetValue(item)))">
             <RowActions Context="item">
-                    <MudTooltip Text="Editar">
+                    <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(item.PkidTablaFiscal))" />
                     </MudTooltip>
-                    <MudTooltip Text="Eliminar">
+                    <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(item.PkidTablaFiscal))" />
                     </MudTooltip>
             </RowActions>
@@ -278,7 +278,7 @@
         {
             if (!CanCreate)
             {
-                Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+                Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
                 return;
             }
 
@@ -301,7 +301,7 @@
         {
             if (!CanUpdate)
             {
-                Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+                Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
                 return;
             }
 

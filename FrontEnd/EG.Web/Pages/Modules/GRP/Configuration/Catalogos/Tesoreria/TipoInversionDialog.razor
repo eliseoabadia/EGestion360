@@ -18,8 +18,8 @@
     private BaseEntityForm<TipoInversionResponse> form = null!;
     private TipoInversionResponse item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Tipo de Inversión" : "Nuevo Tipo de Inversión";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {

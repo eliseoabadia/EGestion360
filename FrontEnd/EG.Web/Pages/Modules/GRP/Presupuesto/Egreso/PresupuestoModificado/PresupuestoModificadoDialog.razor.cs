@@ -23,8 +23,8 @@ public partial class PresupuestoModificadoDialog : IDisposable
     private int requestVersion;
 
     private string dialogTitle => Id.HasValue ? "Editar presupuesto modificado" : "Nuevo presupuesto modificado";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private string TipoTexto => TipoAdecuacionId switch
     {
         1 => "Adecuación compensada",

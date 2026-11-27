@@ -69,8 +69,8 @@
     private TItem item = new();
 
     private string DialogTitle => Id.HasValue ? "Editar registro PBR" : "Nuevo registro PBR";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     private IEnumerable<PropertyInfo> EditableProperties => typeof(TItem)
         .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -105,7 +105,7 @@
         await form.Validate();
         if (!form.IsValid)
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 
@@ -133,7 +133,7 @@
 
     private void SetDefaultValues()
     {
-        SetIfExists("Activo", true);
+        SetIfExists(EG.Common.Constants.EntityFields.Active, true);
         SetIfExists("Estatus", "BORRADOR");
         SetIfExists("Sentido", "Ascendente");
     }
@@ -235,7 +235,7 @@
         }
 
         return property.Name is
-            "Activo" or
+            EG.Common.Constants.EntityFields.Active or
             "FechaCreacion" or
             "UsuarioCreacion" or
             "FechaModificacion" or

@@ -121,7 +121,7 @@
                                            RegistroTitulo="@($"Solicitud de suficiencia · {SelectedSolicitud.FechaSolicitud:dd/MM/yyyy}")"
                                            RegistroDescripcion="@TextOrDash(SelectedSolicitud.RequisicionDescripcion)" />
 
-                    <MudTooltip Text="Actualizar">
+                    <MudTooltip Text="@EG.Common.ApplicationText.Actions.Update">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="RefreshSelectedAndDetails" Class="ml-1" />
                     </MudTooltip>
                 </MudPaper>

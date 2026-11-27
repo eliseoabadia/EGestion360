@@ -2,7 +2,7 @@
 
 <BaseCrudDialog TItem="MenuItemsResponse" @ref="dialog" Title="Eliminar menú"
                 MaxWidth="MaxWidth.Small" ActionColor="Color.Error" ActionIcon="@Icons.Material.Filled.Delete"
-                ActionText="Eliminar" ProcessingText="Eliminando..."
+                ActionText="@EG.Common.ApplicationText.Actions.Delete" ProcessingText="Eliminando..."
                 CanConfirm="@(!loading && menu != null && menu.TieneSubmenus == 0)" OnConfirm="DeleteMenuAsync">
     @if (loading)
     {

@@ -30,10 +30,10 @@
                       SearchStringChanged="(s) => SearchString = s"
                       OnSearch="OnSearch">
             <Columns>
-                <TemplateColumn Resizable="false" T="NomParentescoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(context.Item.PkidParentesco))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(context.Item.PkidParentesco))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="NomParentescoResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => EditItem(context.Item.PkidParentesco))" /></MudTooltip><MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" Disabled="@IsBusy" OnClick="@(() => DeleteItem(context.Item.PkidParentesco))" /></MudTooltip></CellTemplate></TemplateColumn>
                 
                 <PropertyColumn T="NomParentescoResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
-                <PropertyColumn T="NomParentescoResponse" TProperty="bool" Property="x => x.Activo" Title="Activo" Identifier="Activo" />
+                <PropertyColumn T="NomParentescoResponse" TProperty="bool" Property="x => x.Activo" Title="@EG.Common.ApplicationText.Status.Active" Identifier="@EG.Common.Constants.EntityFields.Active" />
             </Columns>
         </GenericDataGrid>
     </MudContainer>

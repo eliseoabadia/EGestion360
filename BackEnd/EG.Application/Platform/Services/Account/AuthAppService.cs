@@ -53,7 +53,7 @@ namespace EG.Application.Services.Account
                     {
                         IsAuthenticated = false,
                         AccessToken = string.Empty,
-                        Message = "Credenciales incorrectas"
+                        Message = EG.Common.ApplicationText.Validation.InvalidCredentials
                     };
                 }
 

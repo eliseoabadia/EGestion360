@@ -10,7 +10,7 @@
                 Title="@DialogTitle"
                 MaxWidth="MaxWidth.Large"
                 ActionText="@ActionText"
-                ProcessingText="Guardando..."
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando contrato..."
                 OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="NominaRhContratoResponse" @ref="form" ShowHeader="false">
@@ -113,7 +113,7 @@
     };
 
     private string DialogTitle => Id.HasValue ? "Editar contrato laboral" : "Nuevo contrato laboral";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
     private DateTime? FechaInicio
     {
         get => item.FechaInicio.ToDateTime(TimeOnly.MinValue);
@@ -142,7 +142,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

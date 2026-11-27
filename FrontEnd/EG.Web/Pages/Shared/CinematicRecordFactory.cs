@@ -218,7 +218,7 @@ public static class CinematicRecordFactory
             Section("03", "Trazabilidad",
                 Field("Creación", DateTimeText(item.FechaCreacion)),
                 Field("Última modificación", DateTimeText(item.FechaModificacion)),
-                Field("Estado del registro", item.Activo ? "Activo" : "Inactivo"))
+                Field("Estado del registro", item.Activo ? EG.Common.ApplicationText.Status.Active : EG.Common.ApplicationText.Status.Inactive))
         ]
     };
 

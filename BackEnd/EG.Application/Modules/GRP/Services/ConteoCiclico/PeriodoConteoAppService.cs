@@ -144,7 +144,7 @@ namespace EG.Application.Services.ConteoCiclico
             var estatus = await _context.EstatusPeriodos
                 .Where(e => e.Activo)
                 .OrderByDescending(e => e.Nombre.Contains("Abierto"))
-                .ThenByDescending(e => e.Nombre.Contains("Activo"))
+                .ThenByDescending(e => e.Nombre.Contains(EG.Common.ApplicationText.Status.Active))
                 .ThenBy(e => e.PkidEstatusPeriodo)
                 .Select(e => e.PkidEstatusPeriodo)
                 .FirstOrDefaultAsync();

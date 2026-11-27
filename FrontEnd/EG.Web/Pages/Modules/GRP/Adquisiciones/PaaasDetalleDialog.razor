@@ -109,8 +109,8 @@
 
     private bool IsEdit => Item?.PkidPaaasdetalle > 0;
     private string dialogTitle => IsEdit ? "Editar Tipo de Bien" : "Agregar Tipo de Bien";
-    private string actionText => IsEdit ? "Actualizar" : "Guardar";
-    private string processingText => IsEdit ? "Actualizando..." : "Guardando...";
+    private string actionText => IsEdit ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Save;
+    private string processingText => IsEdit ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Saving;
 
     protected override async Task OnInitializedAsync()
     {

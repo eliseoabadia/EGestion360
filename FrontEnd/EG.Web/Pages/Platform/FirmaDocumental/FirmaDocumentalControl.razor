@@ -100,7 +100,7 @@
                                     <MudText Typo="Typo.body1" Class="ml-2" Style="font-weight: 750;">@provider.Nombre</MudText>
                                     <MudSpacer />
                                     <MudChip T="string" Size="Size.Small" Color="@(provider.Disponible ? Color.Success : Color.Default)">
-                                        @(provider.Disponible ? "Activo" : "Pendiente")
+                                        @(provider.Disponible ? EG.Common.ApplicationText.Status.Active : "Pendiente")
                                     </MudChip>
                                 </div>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Codigo</MudText>

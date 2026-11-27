@@ -12,8 +12,8 @@
                 Title="@DialogTitle"
                 CatalogMode="true"
                 MaxWidth="MaxWidth.Medium"
-                ActionText="Guardar"
-                ProcessingText="Guardando..."
+                ActionText="@EG.Common.ApplicationText.Actions.Save"
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando catalogo..."
                 OnConfirm="GuardarCambiosAsync">
     <MudForm @ref="form">
@@ -224,7 +224,7 @@
         await form.Validate();
         if (!form.IsValid)
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

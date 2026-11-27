@@ -127,7 +127,7 @@ namespace EG.Web.Services
                 return new ApiResponse<TResponse>
                 {
                     Success = false,
-                    Message = "Registro no válido",
+                    Message = EG.Common.ApplicationText.Records.Invalid,
                     Code = "INVALID_ID"
                 };
             }

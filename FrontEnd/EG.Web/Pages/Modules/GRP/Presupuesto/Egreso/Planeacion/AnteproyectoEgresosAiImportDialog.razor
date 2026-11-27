@@ -627,7 +627,7 @@
 
         if (!HasSelectedAnio)
         {
-            Snackbar.Add("Selecciona un anio presupuestal en el encabezado.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.FiscalYear.SelectionRequired, Severity.Warning);
             return;
         }
 

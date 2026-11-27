@@ -534,7 +534,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Tipo_Retiro",
             "/Presupuesto/Tesorería/Inversiones/Tipo_Retiro");
@@ -546,7 +546,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Instrumentos_Inversion",
             "/Presupuesto/Tesoreria/Instrumentos_Inversion",
@@ -559,7 +559,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Cuenta_Bancaria",
             "/Presupuesto/Tesorería/Inversiones/Cuenta_Bancaria");
@@ -571,7 +571,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Tipo_Plazos",
             "/Presupuesto/Tesorería/Inversiones/Tipo_Plazos");
@@ -583,7 +583,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Banco",
             "/Presupuesto/Tesorería/Inversiones/Banco");
@@ -595,7 +595,7 @@ public static class ScreenGuidanceCatalog
                 "Nuevo registro abre la captura si tu perfil tiene permiso.",
                 "Guardar conserva las validaciones de campos y relaciones del catálogo.",
             ],
-            "Nuevo registro",
+            EG.Common.ApplicationText.Records.New,
             null),
             "/Presupuesto/Tesoreria/Inversiones/Intermediarios_Financiero",
             "/Presupuesto/Tesorería/Inversiones/Intermediarios_Financiero");

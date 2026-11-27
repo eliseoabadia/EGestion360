@@ -96,8 +96,8 @@
 
     private MatrizIngresoResponse _item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Matriz de Ingresos" : "Nueva Matriz de Ingresos";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private bool _loading = true;
 
     private LookupItem? _selectedPrograma;
@@ -201,7 +201,7 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? (dialogTitle.Contains("Editar") ? "Matriz de ingresos actualizada correctamente" : "Matriz de ingresos creada correctamente"), Severity.Success);
+                Snackbar.Add(response.Message ?? (dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Matriz de ingresos actualizada correctamente" : "Matriz de ingresos creada correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

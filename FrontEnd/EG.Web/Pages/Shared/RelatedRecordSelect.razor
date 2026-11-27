@@ -48,7 +48,7 @@
             return;
         }
 
-        var text = string.IsNullOrWhiteSpace(SelectedText) ? "Registro seleccionado" : SelectedText;
+        var text = string.IsNullOrWhiteSpace(SelectedText) ? EG.Common.ApplicationText.Records.Selected : SelectedText;
         if (_selected?.Id != SelectedId || !string.Equals(_selected.Text, text, StringComparison.Ordinal))
         {
             _selected = new LookupItem { Id = SelectedId.Value, Text = text };
@@ -87,7 +87,7 @@
             items.Add(new LookupItem
             {
                 Id = id,
-                Text = string.IsNullOrWhiteSpace(text) ? "Registro sin descripción" : text
+                Text = string.IsNullOrWhiteSpace(text) ? EG.Common.ApplicationText.Records.MissingDescription : text
             });
         }
 

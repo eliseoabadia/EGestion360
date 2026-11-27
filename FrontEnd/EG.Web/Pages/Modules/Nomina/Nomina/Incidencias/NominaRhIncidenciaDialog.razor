@@ -13,7 +13,7 @@
                 Title="@DialogTitle"
                 MaxWidth="MaxWidth.Large"
                 ActionText="@ActionText"
-                ProcessingText="Guardando..."
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando incidencia..."
                 CanConfirm="@(!IsReadOnly)"
                 OnConfirm="SaveAsync">
@@ -159,7 +159,7 @@
         ? (IsReadOnly ? "Ver incidencia" : "Editar incidencia")
         : "Nueva incidencia";
 
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
 
     private DateTime? Fecha
     {
@@ -253,7 +253,7 @@
             return FormatPeriodoText(lookup);
         }
 
-        return "Periodo sin descripción";
+        return EG.Common.ApplicationText.Records.PeriodMissingDescription;
     }
 
     private async Task<NominaRhLookupResponse?> FindPeriodoAsync(int periodoId)
@@ -305,7 +305,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 
@@ -368,7 +368,7 @@
         }
 
         return string.IsNullOrWhiteSpace(item.Descripcion)
-            ? "Periodo sin descripción"
+            ? EG.Common.ApplicationText.Records.PeriodMissingDescription
             : item.Descripcion;
     }
 

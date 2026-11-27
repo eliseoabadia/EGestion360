@@ -28,7 +28,7 @@
                       OnSearch="OnSearch">
 
             <Columns>
-                <TemplateColumn Resizable="false" T="UnidadResponsableResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Agregar hijo"><MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Error" Size="Size.Small" Visible="@CanCreate" OnClick="@(() => CrearHijoArea(context.Item.PkidUnidadResponsable, context.Item.Descripcion))" /></MudTooltip><MudTooltip Text="Editar"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidUnidadResponsable))" /></MudTooltip><MudTooltip Text="Eliminar"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidUnidadResponsable))" /></MudTooltip></CellTemplate></TemplateColumn>
+                <TemplateColumn Resizable="false" T="UnidadResponsableResponse" Title="Acciones" Sortable="false" Filterable="false" Hideable="false"><CellTemplate><MudTooltip Text="Agregar hijo"><MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Error" Size="Size.Small" Visible="@CanCreate" OnClick="@(() => CrearHijoArea(context.Item.PkidUnidadResponsable, context.Item.Descripcion))" /></MudTooltip><MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" Visible="@CanUpdate" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditItem(context.Item.PkidUnidadResponsable))" /></MudTooltip><MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" Visible="@CanDelete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item.PkidUnidadResponsable))" /></MudTooltip></CellTemplate></TemplateColumn>
                 
                 <PropertyColumn T="UnidadResponsableResponse" TProperty="string" Property="x => x.Clave" Title="Clave" Identifier="Clave" />
                 <PropertyColumn T="UnidadResponsableResponse" TProperty="string" Property="x => x.Descripcion" Title="Descripción" Identifier="Descripcion" />
@@ -80,7 +80,7 @@
         {
             if (!CanCreate)
             {
-                Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+                Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
                 return;
             }
 

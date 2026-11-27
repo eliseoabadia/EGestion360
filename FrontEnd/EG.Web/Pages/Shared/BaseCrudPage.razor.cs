@@ -320,7 +320,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
         if (!CanCreate)
         {
-            Snackbar.Add("No tienes permisos para crear", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.CreateDenied, Severity.Warning);
             return;
         }
 
@@ -368,7 +368,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
         if (!CanUpdate)
         {
-            Snackbar.Add("No tienes permisos para editar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.EditDenied, Severity.Warning);
             return;
         }
 
@@ -417,7 +417,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
         {
         if (!CanDelete)
         {
-            Snackbar.Add("No tienes permisos para eliminar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.DeleteDenied, Severity.Warning);
             return;
         }
 
@@ -541,7 +541,7 @@ public abstract class BaseCrudPage<TItem, TResponse> : ComponentBase
     {
         if (!CanExport)
         {
-            Snackbar.Add("No tienes permisos para exportar", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Permissions.ExportDenied, Severity.Warning);
             return;
         }
 

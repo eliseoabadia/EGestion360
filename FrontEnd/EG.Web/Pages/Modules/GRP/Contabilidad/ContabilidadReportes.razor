@@ -391,7 +391,7 @@
     {
         if (string.Equals(_config.IdParameter, "PKIdPoliza", StringComparison.OrdinalIgnoreCase))
         {
-            var filters = new Dictionary<string, object> { ["Activo"] = true };
+            var filters = new Dictionary<string, object> { [EG.Common.Constants.EntityFields.Active] = true };
             var response = await PolizaService.GetAllPaginadoAsync(page, pageSize, filter, "ClavePoliza", SortDirection.Descending, filters);
             var items = response?.Items?.Select(poliza => new LookupItem
             {
@@ -410,7 +410,7 @@
                 filter,
                 "Clave",
                 SortDirection.Ascending,
-                new Dictionary<string, object> { ["Activo"] = true });
+                new Dictionary<string, object> { [EG.Common.Constants.EntityFields.Active] = true });
             var items = response?.Items?.Select(proyecto => new LookupItem
             {
                 Id = proyecto.PkidPy,
@@ -439,7 +439,7 @@
     private static string AccountLabel(CuentaContableResponse account)
         => string.Join(" - ", new[] { account.Cuenta, account.Descripcion }.Where(value => !string.IsNullOrWhiteSpace(value)));
 
-    private static Dictionary<string, object> ActiveAccountFilters => new() { ["Activo"] = true };
+    private static Dictionary<string, object> ActiveAccountFilters => new() { [EG.Common.Constants.EntityFields.Active] = true };
 
     private async Task LoadReportContextAsync()
     {

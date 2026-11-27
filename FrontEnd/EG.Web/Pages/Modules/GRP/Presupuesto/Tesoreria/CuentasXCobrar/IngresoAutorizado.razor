@@ -47,7 +47,7 @@
                     <TemplateColumn T="IngresoAutorizadoResponse" Title="Acciones" Resizable="false" Sortable="false" Filterable="false" Hideable="false">
                       <CellTemplate>
                         <div class="ingresos-actions">
-                        <MudTooltip Text="Editar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Edit">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Visible="@(CanUpdate && !context.Item.EstaAutorizado)"
                                            Disabled="@IsBusy"
@@ -76,7 +76,7 @@
                                                EntidadId="@context.Item.PkidIngresoAutorizado"
                                                RegistroTitulo="@TextOrDash(context.Item.ProgramaClaveNombre)"
                                                RegistroDescripcion="@TextOrDash(context.Item.Descripcion)" />
-                        <MudTooltip Text="Eliminar">
+                        <MudTooltip Text="@EG.Common.ApplicationText.Actions.Delete">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Visible="@(CanDelete && !context.Item.EstaAutorizado)"
                                            Disabled="@IsBusy"

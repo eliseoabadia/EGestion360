@@ -165,7 +165,17 @@
                     tabindex="@(_drawerOpen ? "0" : "-1")"></button>
             <main class="main-content">
                 <div class="content-wrapper">
-                    @Body
+                    @if (_shellInitialized)
+                    {
+                        @Body
+                    }
+                    else
+                    {
+                        <div role="status" class="d-flex align-center justify-center pa-6">
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-3" />
+                            <MudText>@ApplicationText.FiscalYear.LoadingContext</MudText>
+                        </div>
+                    }
                 </div>
             </main>
         </div>
@@ -1413,15 +1423,33 @@
             row-gap: 4px;
         }
 
+        .modern-app-bar .mud-toolbar {
+            flex-wrap: wrap;
+            align-content: center;
+            gap: 4px 8px;
+        }
+
+        .appbar-spacer {
+            display: none;
+        }
+
         .user-section {
-            flex: 1 1 100%;
-            justify-content: flex-end;
+            flex: 0 0 100%;
+            min-height: 44px;
+            justify-content: flex-start;
             overflow-x: auto;
             scrollbar-width: none;
         }
 
         .header-left {
-            flex: 1 1 auto;
+            flex: 0 0 100%;
+            min-height: 36px;
+        }
+
+        .anio-header-select {
+            width: 130px;
+            min-width: 130px;
+            flex: 0 0 130px;
         }
 
         .app-branding {

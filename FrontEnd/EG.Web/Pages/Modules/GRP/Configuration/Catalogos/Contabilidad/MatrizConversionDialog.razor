@@ -17,7 +17,7 @@
                 CatalogMode="false"
                 ActionText="@actionText"
                 ProcessingText="@processingText"
-                LoadingMessage="Cargando datos..."
+                LoadingMessage="@EG.Common.ApplicationText.Status.LoadingData"
                 OnConfirm="GuardarCambiosAsync">
 
     @if (_loading)
@@ -112,8 +112,8 @@
 
     private MatrizConversionResponse _item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Matriz de Conversión" : "Nueva Matriz de Conversión";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
     private bool _loading = true;
 
     private LookupItem? _selectedPrograma;
@@ -251,7 +251,7 @@
 
             if (response?.Success == true)
             {
-                Snackbar.Add(response.Message ?? (dialogTitle.Contains("Editar") ? "Matriz actualizada correctamente" : "Matriz creada correctamente"), Severity.Success);
+                Snackbar.Add(response.Message ?? (dialogTitle.Contains(EG.Common.ApplicationText.Actions.Edit) ? "Matriz actualizada correctamente" : "Matriz creada correctamente"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

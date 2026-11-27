@@ -198,7 +198,7 @@ namespace EG.Application.Services.Configuracion.Catalogo.Patrimonio
                         "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
                         "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
                         "Descripmovto" => isAscending ? query.OrderBy(e => e.Descripmovto) : query.OrderByDescending(e => e.Descripmovto),
-                        "Activo" => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
+                        EG.Common.Constants.EntityFields.Active => isAscending ? query.OrderBy(e => e.Activo) : query.OrderByDescending(e => e.Activo),
                         _ => query.OrderBy(e => e.Descripcion)
                     };
                 }

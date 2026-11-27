@@ -18,8 +18,8 @@
     private BaseEntityForm<TipoPagoSFResponse> form = null!;
     private TipoPagoSFResponse item = new() { Activo = true };
     private string dialogTitle => Id.HasValue ? "Editar Tipo Pago SF" : "Nuevo Tipo Pago SF";
-    private string actionText => Id.HasValue ? "Actualizar" : "Crear";
-    private string processingText => Id.HasValue ? "Actualizando..." : "Creando...";
+    private string actionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
+    private string processingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Creating;
 
     protected override async Task OnInitializedAsync()
     {

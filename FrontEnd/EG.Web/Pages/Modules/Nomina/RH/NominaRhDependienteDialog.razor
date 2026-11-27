@@ -9,7 +9,7 @@
                 Title="@DialogTitle"
                 MaxWidth="MaxWidth.Medium"
                 ActionText="@ActionText"
-                ProcessingText="Guardando..."
+                ProcessingText="@EG.Common.ApplicationText.Status.Saving"
                 LoadingMessage="Cargando dependiente..."
                 OnConfirm="SaveAsync">
     <BaseEntityForm TEntity="NominaRhDependienteResponse" @ref="form" ShowHeader="false">
@@ -54,7 +54,7 @@
     private BaseEntityForm<NominaRhDependienteResponse> form = null!;
     private NominaRhDependienteResponse item = new() { Activo = true };
     private string DialogTitle => Id.HasValue ? "Editar dependiente" : "Nuevo dependiente";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Crear";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : EG.Common.ApplicationText.Actions.Create;
     private DateTime? FechaNacimiento
     {
         get => item.FechaNacimiento?.ToDateTime(TimeOnly.MinValue);
@@ -76,7 +76,7 @@
     {
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

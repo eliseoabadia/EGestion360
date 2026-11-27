@@ -133,16 +133,16 @@
     private string SolicitudText => string.IsNullOrWhiteSpace(item.RequisicionDescripcion) ? string.Empty : item.RequisicionDescripcion;
     private string AutorizadorText => string.IsNullOrWhiteSpace(item.AutorizadoPorNombre) ? string.Empty : item.AutorizadoPorNombre;
     private Dictionary<string, object> SolicitudFilters => item.FkidEmpresaSis > 0
-        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
-        : new Dictionary<string, object> { ["Activo"] = true };
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, [EG.Common.Constants.EntityFields.Active] = true }
+        : new Dictionary<string, object> { [EG.Common.Constants.EntityFields.Active] = true };
     private Dictionary<string, object> AutorizadorFilters => item.FkidEmpresaSis > 0
-        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, ["Activo"] = true }
-        : new Dictionary<string, object> { ["Activo"] = true };
+        ? new Dictionary<string, object> { ["FkidEmpresaSis"] = item.FkidEmpresaSis, [EG.Common.Constants.EntityFields.Active] = true }
+        : new Dictionary<string, object> { [EG.Common.Constants.EntityFields.Active] = true };
 
     private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
     private string Title => Id.HasValue ? "Editar autorizacion" : "Nueva autorizacion";
-    private string ActionText => Id.HasValue ? "Actualizar" : "Guardar autorizacion";
-    private string ProcessingText => Id.HasValue ? "Actualizando..." : "Guardando...";
+    private string ActionText => Id.HasValue ? EG.Common.ApplicationText.Actions.Update : "Guardar autorizacion";
+    private string ProcessingText => Id.HasValue ? EG.Common.ApplicationText.Status.Updating : EG.Common.ApplicationText.Status.Saving;
 
     protected override async Task OnInitializedAsync()
     {
@@ -186,7 +186,7 @@
 
         if (!await form.ValidateAsync())
         {
-            Snackbar.Add("Completa los campos requeridos.", Severity.Warning);
+            Snackbar.Add(EG.Common.ApplicationText.Validation.RequiredFields, Severity.Warning);
             return;
         }
 

@@ -7,10 +7,10 @@ namespace EG.Web.Models.Enums
         [Display(Name = "Todos")]
         Todos,
 
-        [Display(Name = "Activo")]
+        [Display(Name = EG.Common.ApplicationText.Status.Active)]
         Activo,
 
-        [Display(Name = "Inactivo")]
+        [Display(Name = EG.Common.ApplicationText.Status.Inactive)]
         Inactivo
     }
 }

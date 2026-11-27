@@ -3,6 +3,11 @@ namespace EG.Common
 {
     public static class Constants
     {
+        public static class EntityFields
+        {
+            public const string Active = "Activo";
+        }
+
         #region Constants
 
         public const string KEY_USERID = "UserId";

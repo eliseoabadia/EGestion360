@@ -86,7 +86,7 @@ namespace EG.Application.Services.Nomina
             try
             {
                 var dto = response.Adapt<TDto>();
-                SetProperty(dto, "Activo", true);
+                SetProperty(dto, EG.Common.Constants.EntityFields.Active, true);
                 SetProperty(dto, "UsuarioCreacion", usuarioActual);
                 SetProperty(dto, "FechaCreacion", DateTime.Now);
                 SetProperty(dto, "UsuarioModificacion", null);
@@ -177,7 +177,7 @@ namespace EG.Application.Services.Nomina
                 _setId(dto, id);
                 CopyProperty(existing, dto, "UsuarioCreacion");
                 CopyProperty(existing, dto, "FechaCreacion");
-                SetProperty(dto, "Activo", false);
+                SetProperty(dto, EG.Common.Constants.EntityFields.Active, false);
                 SetProperty(dto, "UsuarioModificacion", usuarioActual);
                 SetProperty(dto, "FechaModificacion", DateTime.Now);
 
