@@ -2,6 +2,7 @@ namespace EG.Domain.DTOs.Responses.Adquisicion
 {
     public class RequisicionResponse
     {
+        public RequisitionJourney? Journey { get; set; }
         public int PkidRequisicion { get; set; }
         public int FkidEmpresaSis { get; set; }
         public int FkidPersonaNom { get; set; }

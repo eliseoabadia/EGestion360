@@ -5,21 +5,22 @@
         <span class="process-assistant-icon"><MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" /></span>
         <div>
             <span>@Eyebrow</span>
-            <strong>Qué falta y quién puede resolverlo</strong>
-            <small>Diagnóstico calculado con el estado actual de @ContextLabel.</small>
+            <strong>@Assistance.Title</strong>
+            <small>@ContextLabel · @Assistance.Owner</small>
         </div>
         <MudChip T="string" Size="Size.Small" Color="@Assistance.Color" Variant="Variant.Outlined">@Assistance.Status</MudChip>
     </div>
     <div class="process-assistant-body">
-        <div class="process-assistant-next">
-            <span>Siguiente acción</span>
-            <strong>@Assistance.Title</strong>
-            <p>@Assistance.Detail</p>
-        </div>
-        <dl class="process-assistant-routing">
-            <div><dt>Dónde</dt><dd>@Assistance.MenuPath</dd></div>
-            <div><dt>Responsable</dt><dd>@Assistance.Owner</dd></div>
-        </dl>
+        <NextTaskPanel Next="@Assistance.Title" Owner="@Assistance.Owner"
+                       UserTask="@Assistance.ActionLabel" />
+        <ContextSummaryDialog Title="@EG.Common.ApplicationText.Summary.ProcessDetails"
+                              ButtonText="@EG.Common.ApplicationText.Summary.ProcessDetails">
+            <div class="process-assistant-next"><strong>@Assistance.Title</strong><p>@Assistance.Detail</p></div>
+            <dl class="process-assistant-routing">
+                <div><dt>Dónde</dt><dd>@Assistance.MenuPath</dd></div>
+                <div><dt>Responsable</dt><dd>@Assistance.Owner</dd></div>
+            </dl>
+        </ContextSummaryDialog>
         <div class="process-assistant-actions">
             <MudButton Variant="Variant.Filled"
                        Color="@Assistance.Color"

@@ -5,6 +5,35 @@ namespace EG.Common;
 /// </summary>
 public static class ApplicationText
 {
+    public static class NextTask
+    {
+        public const string Next = "Qué sigue";
+        public const string Owner = "Quién lo hace";
+        public const string Yours = "Qué puedes hacer tú";
+        public const string SelectRecord = "Confirma el contexto y consulta los datos de esta pantalla. Selecciona un registro si necesitas revisar su detalle.";
+        public const string UnknownOwner = "Se confirma al consultar el expediente y los roles asignados.";
+        public const string ReadOnly = "Consulta los datos. Las acciones que no permite tu perfil no estarán disponibles.";
+        public const string AvailableActions = "Usa las acciones disponibles según tu perfil y el estado del registro.";
+        public const string FillForm = "Completa los campos requeridos y revisa los datos antes de confirmar.";
+        public const string CaptureOwner = "La persona que está realizando esta captura.";
+        public const string ConfirmThenContinue = "Confirma con el botón del formulario. Si hay datos inválidos, corrige los campos indicados.";
+    }
+    public static class Summary
+    {
+        public const string QuickHelp = "Guía rápida";
+        public const string ProcessDetails = "Detalle del proceso";
+        public const string Title = "Resumen del registro";
+        public const string Open = "Ver resumen";
+    }
+    public static class Journey
+    {
+        public const string Title = "¿Dónde va esta requisición?";
+        public const string Unavailable = "No se pudo confirmar el seguimiento. Actualiza el expediente para consultarlo.";
+        public const string Recorded = "Comprobado";
+        public const string Partial = "Parcial";
+        public const string Pending = "Pendiente";
+        public const string Scope = "El seguimiento refleja los documentos relacionados. Una palomita no confirma por sí sola el pago total del expediente.";
+    }
     public static class Connection
     {
         public const string StartupUnavailable = "No pudimos conectar con el servidor para cargar tu espacio de trabajo. Comprueba que la API esté iniciada y vuelve a intentar.";

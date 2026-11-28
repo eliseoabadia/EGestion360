@@ -1,0 +1,14 @@
+.journey { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--mud-palette-lines-default); }
+.journey h3 { font-size: 1.1rem; margin: 0 0 16px; }
+.journey ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.journey li { display: flex; gap: 10px; padding: 12px; border-radius: 10px; border: 1px solid var(--mud-palette-lines-default); min-width: 0; }
+.journey-marker { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; border: 1px solid currentColor; }
+.recorded .journey-marker { color: var(--mud-palette-success); background: var(--mud-palette-success-hover); }
+.pending .journey-marker { color: var(--mud-palette-text-secondary); }
+.journey li > div { display: grid; gap: 4px; min-width: 0; }
+.journey strong { font-size: .85rem; }
+.journey li span:not(.journey-marker), .journey small, .journey p { font-size: .75rem; color: var(--mud-palette-text-secondary); line-height: 1.4; }
+.journey small { overflow-wrap: break-word; }
+.journey p { margin: 14px 0 0; }
+@media(max-width:600px) { .journey ol { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:400px) { .journey ol { grid-template-columns: minmax(0,1fr); } }

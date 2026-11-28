@@ -44,6 +44,9 @@
 
         @if (!loading)
         {
+            <NextTaskPanel Next="@(ShowConfirmButton ? EG.Common.ApplicationText.NextTask.FillForm : EG.Common.ApplicationText.NextTask.ReadOnly)"
+                           Owner="@EG.Common.ApplicationText.NextTask.CaptureOwner"
+                           UserTask="@(ShowConfirmButton ? EG.Common.ApplicationText.NextTask.ConfirmThenContinue : EG.Common.ApplicationText.NextTask.ReadOnly)" />
             <CascadingValue Value="this" Name="BaseDialog">
                 <MudPaper Class="@DialogShellCssClass" Elevation="2">
                     @ChildContent

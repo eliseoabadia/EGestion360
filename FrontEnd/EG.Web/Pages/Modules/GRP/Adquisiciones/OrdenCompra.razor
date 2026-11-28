@@ -1,4 +1,4 @@
-﻿@page "/Adquisiciones/Orden_Compra"
+@page "/Adquisiciones/Orden_Compra"
 @using System.Globalization
 @using System.Net.Http.Json
 @using EG.Dommain.DTOs.Responses
@@ -35,7 +35,8 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div class="summary-strip">
+                <ContextSummaryDialog Title="Resumen de órdenes">
+<div class="summary-strip">
                     <div>
                         <span class="summary-label">Total visible</span>
                         <strong>@Money(Elements.Sum(x => x.Total))</strong>
@@ -53,6 +54,7 @@
                         <strong>@Elements.Count(x => x.EstaAutorizada).ToString("N0", NumberCulture)</strong>
                     </div>
                 </div>
+</ContextSummaryDialog>
 
                 <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="OrdenCompraResponse"
@@ -188,7 +190,7 @@
                 </MudPaper>
 
 
-                <OperationActionPanel Title="Revisa y completa la orden" Description="@(IsSelectedLocked ? "Orden bloqueada para cambios: consulta los bienes y partidas." : "Bienes, importes y partidas se cargan juntos. Revisa el contenido antes de autorizar.")" Icon="@Icons.Material.Filled.ShoppingCart">
+                <OperationActionPanel Compact="true" Owner="@(IsSelectedLocked ? "Almacén revisa las recepciones; Compras da seguimiento a la orden." : "Compras prepara la orden; el usuario autorizador revisa su contenido.")" NextStep="@(IsSelectedLocked ? "Consulta la recepción para conocer lo recibido y lo que falta por entregar." : "Completa y revisa bienes, importes y partidas antes de solicitar la autorización.")" UserTask="@(IsSelectedLocked ? "Consulta bienes y partidas. Abre Recepción sólo si tu perfil lo permite; la orden está bloqueada para cambios." : "Usa las acciones habilitadas para tu perfil. La autorización valida los requisitos del expediente.")" Title="Revisa y completa la orden" Description="@(IsSelectedLocked ? "Orden bloqueada para cambios: consulta los bienes y partidas." : "Bienes, importes y partidas se cargan juntos. Revisa el contenido antes de autorizar.")" Icon="@Icons.Material.Filled.ShoppingCart">
                 <Actions>
                 @if (CanCreate) {
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddShoppingCart" Disabled="@IsSelectedLocked" OnClick="AddDetalle">Agregar bien</MudButton>
@@ -207,7 +209,8 @@
                 </HelpContent>
                 </OperationActionPanel>
 
-                <MudCard Elevation="1" Style="flex-shrink: 0;">
+                <ContextSummaryDialog Title="Contexto de la orden" ContextText="@($"{SelectedOrden.FechaOrdenCompra:dd/MM/yyyy} · {Money(SelectedOrden.Total)}")">
+<MudCard Elevation="1" Style="flex-shrink: 0;">
                     <MudCardContent Style="padding: 8px 12px;">
                         <MudGrid Spacing="1">
                             <MudItem xs="12" md="3">
@@ -254,6 +257,7 @@
                         </MudGrid>
                     </MudCardContent>
                 </MudCard>
+</ContextSummaryDialog>
 
                 <MudGrid Spacing="2" Class="operation-related-grid" Style="overflow: visible; min-height: 0;">
                     <MudItem xs="12" lg="7" Class="d-flex flex-column" Style="min-height: 0;">

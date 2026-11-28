@@ -1,4 +1,4 @@
-﻿@page "/Adquisiciones/Cotizacion"
+@page "/Adquisiciones/Cotizacion"
 @using System.Globalization
 @using EG.Dommain.DTOs.Responses
 @using EG.Domain.DTOs.Responses.Adquisicion
@@ -31,7 +31,8 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div class="summary-strip">
+                <ContextSummaryDialog Title="Resumen de cotizaciones">
+<div class="summary-strip">
                     <div>
                         <span class="summary-label">Cotizaciones</span>
                         <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
@@ -45,6 +46,7 @@
                         <strong>@Money(Elements.Sum(x => x.TotalCotizado))</strong>
                     </div>
                 </div>
+</ContextSummaryDialog>
 
                 <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="CotizacionResponse"
@@ -196,7 +198,7 @@
                 </MudPaper>
 
 
-                <OperationActionPanel Title="Prepara y recibe la cotización" Description="Los bienes se cargan al abrir. Captura varios conceptos juntos y registra la respuesta del proveedor." Icon="@Icons.Material.Filled.RequestQuote">
+                <OperationActionPanel Compact="true" Owner="Compras coordina la solicitud; el proveedor proporciona sus precios." NextStep="@(SelectedCotizacion.TotalDetalles <= 0 ? "Agrega los bienes que se van a cotizar." : "Revisa que todos los bienes tengan precio antes de continuar con la suficiencia.")" UserTask="@(CanUpdate ? "Captura los bienes o registra los precios recibidos con las acciones disponibles." : "Consulta los bienes y pide seguimiento al responsable de Compras.")" Title="Prepara y recibe la cotización" Description="Los bienes se cargan al abrir. Captura varios conceptos juntos y registra la respuesta del proveedor." Icon="@Icons.Material.Filled.RequestQuote">
                 <Actions>
                 @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PostAdd" OnClick="AddDetalle">Capturar bienes</MudButton> }
                 @if (CanUpdate) { <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.AttachMoney" Disabled="@(SelectedCotizacion.TotalDetalles <= 0)" OnClick="OpenRecepcionCotizacion">Recibir precios</MudButton> }
@@ -213,7 +215,8 @@
                 </HelpContent>
                 </OperationActionPanel>
 
-                <MudPaper Elevation="1" Class="summary-panel">
+                <ContextSummaryDialog Title="Contexto de la cotización" ContextText="@($"{SelectedCotizacion.TotalDetalles:N0} bienes · {Money(SelectedCotizacion.TotalCotizado)}")">
+<MudPaper Elevation="1" Class="summary-panel">
                     <MudGrid Spacing="2">
                         <MudItem xs="6" sm="3" md="2">
                             <MudText Typo="Typo.caption" Color="Color.Tertiary">Solicitud</MudText>
@@ -253,6 +256,7 @@
                         </MudItem>
                     </MudGrid>
                 </MudPaper>
+</ContextSummaryDialog>
 
                 <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid TItem="CotizacionDetalleResponse"

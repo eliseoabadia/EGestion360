@@ -253,6 +253,15 @@ public sealed class PurchasingJourneySqlTests
             Assert.True(ledgerLines.Sum(item => item.ImporteDebe ?? 0m) > 0m);
             Assert.Equal(ledgerLines.Sum(item => item.ImporteDebe ?? 0m),
                 ledgerLines.Sum(item => item.ImporteHaber ?? 0m));
+            var trace = await EG.Business.Services.Adquisicion.RequisitionJourneyReader.ReadAsync(
+                context, requisition.PkidRequisicion, 1, 2026);
+            Assert.Equal(9, trace.Steps.Count);
+            Assert.All(trace.Steps.Take(6), step => Assert.True(step.Recorded, step.Label));
+            Assert.All(trace.Steps.Skip(6), step => Assert.False(step.Recorded, step.Label));
+            Assert.Empty((await EG.Business.Services.Adquisicion.RequisitionJourneyReader.ReadAsync(
+                context, requisition.PkidRequisicion, int.MaxValue, 2026)).Steps);
+            Assert.Empty((await EG.Business.Services.Adquisicion.RequisitionJourneyReader.ReadAsync(
+                context, requisition.PkidRequisicion, 1, 2030)).Steps);
             await transaction.RollbackAsync();
         }
         context.ChangeTracker.Clear();

@@ -127,6 +127,12 @@ namespace EG.Business.Services.Adquisicion
                     records.Add(result.Data);
 
                 await ApplyWorkflowStateAsync(records);
+                if (records.Count > 0)
+                {
+                    var journey = await RequisitionJourneyReader.ReadAsync(_context, id,
+                        _userContext.GetCurrentEmpresaId(), _userContext.GetCurrentAnioPresupuestalId());
+                    foreach (var record in records) record.Journey = journey;
+                }
             }
 
             return result;

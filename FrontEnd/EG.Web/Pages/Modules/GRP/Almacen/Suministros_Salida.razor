@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Suministros_Salida"
+@page "/Almacen/Suministros_Salida"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Pages.Shared
@@ -22,14 +22,17 @@
                     CanCreate="false"
                     OnRefresh="RefreshAll" />
 
-        <div class="summary-strip">
+        <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Solicitudes visibles</span> <strong>@TotalCount.ToString("N0", NumberCulture)</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
             <div><span>Solicitudes visibles</span><strong>@TotalCount.ToString("N0", NumberCulture)</strong></div>
             <div><span>Pendiente visible</span><strong>@Qty(Elements.Sum(x => x.TotalPendiente))</strong></div>
             <div><span>Entregado visible</span><strong>@Qty(Elements.Sum(x => x.TotalEntregado))</strong></div>
             <div><span>Entidad</span><strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong></div>
-        </div>
+        </div></ChildContent>
+</ContextSummaryDialog>
 
-        <OperationActionPanel Title="Consulta y registra las entregas" Description="La primera solicitud de esta página se abre al cargar. Revisa cantidades autorizadas, entregadas y pendientes." Icon="@Icons.Material.Filled.LocalShipping">
+        <OperationActionPanel Compact="true" Title="Consulta y registra las entregas" Description="La primera solicitud de esta página se abre al cargar. Revisa cantidades autorizadas, entregadas y pendientes." Icon="@Icons.Material.Filled.LocalShipping">
                 <HelpContent>
                 <ol>
                 <li>Pulsa cualquier fila para cargar sus bienes. La solicitud elegida queda resaltada.</li>

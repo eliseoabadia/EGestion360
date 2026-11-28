@@ -1,0 +1,6 @@
+.next-task { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,.8fr) minmax(0,1.3fr); gap: 14px; padding: 10px 14px; margin-bottom: 10px; border-left: 3px solid var(--mud-palette-info); border-radius: 8px; background: var(--mud-palette-surface); }
+.next-task > div { min-width: 0; }
+.next-task span { display: block; margin-bottom: 4px; font-size: .72rem; font-weight: 700; color: var(--mud-palette-info); }
+.next-task strong, .next-task p { margin: 0; font-size: .8rem; line-height: 1.5; color: var(--mud-palette-text-primary); overflow-wrap: break-word; }
+@media(max-width:850px) { .next-task { grid-template-columns: minmax(0,1fr); gap: 8px; } }
+.next-task { width: 100%; flex-basis: 100%; box-sizing: border-box; }

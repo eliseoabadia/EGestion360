@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Bajas"
+@page "/Patrimonio/Bajas"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -28,7 +28,7 @@
                         OnCreate="CreateItem"
                         OnRefresh="() => table.ReloadData()" />
 
-<OperationActionPanel Title="Revisa y aplica la baja" Description="Consulta el bien, motivo y estatus antes de aplicar la baja patrimonial." Icon="@Icons.Material.Filled.RemoveCircleOutline">
+<OperationActionPanel Compact="true" Title="Revisa y aplica la baja" Description="Consulta el bien, motivo y estatus antes de aplicar la baja patrimonial." Icon="@Icons.Material.Filled.RemoveCircleOutline">
                 <Actions>
                 @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateItem">Nueva solicitud de baja</MudButton> }
                 </Actions>
@@ -40,7 +40,9 @@
                 </ol>
                 </HelpContent>
                 </OperationActionPanel>
-            <div class="summary-strip">
+            <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Valor visible</span> <strong>@Money(Elements.Sum(x => x.ValorActual ?? 0m))</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
                 <div>
                     <span class="summary-label">Valor visible</span>
                     <strong>@Money(Elements.Sum(x => x.ValorActual ?? 0m))</strong>
@@ -57,7 +59,8 @@
                     <span class="summary-label">Entidad</span>
                     <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
                 </div>
-            </div>
+            </div></ChildContent>
+</ContextSummaryDialog>
 
             <MudChip T="string" Size="Size.Small" Color="@(AnioStateService.AnioId is > 0 ? Color.Info : Color.Error)" Variant="Variant.Outlined" Class="mb-2 align-self-start">
                 Año presupuestal: @(AnioStateService.AnioClave?.ToString() ?? "No seleccionado")

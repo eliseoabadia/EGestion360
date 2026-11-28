@@ -23,7 +23,9 @@
                     OnCreate="CreateItem"
                     OnRefresh="() => table.ReloadData()" />
 
-        <div class="summary-strip">
+        <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Valor visible</span> <strong>@Money(Elements.Sum(x => x.Costo ?? 0m))</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
             <div>
                 <span>Valor visible</span>
                 <strong>@Money(Elements.Sum(x => x.Costo ?? 0m))</strong>
@@ -40,7 +42,8 @@
                 <span>Entidad</span>
                 <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
             </div>
-        </div>
+        </div></ChildContent>
+</ContextSummaryDialog>
 
         <div Style="flex-grow: 1; min-height: 0;">
             <GenericDataGrid FillAvailableHeight="false" TItem="AlmacenResponse"

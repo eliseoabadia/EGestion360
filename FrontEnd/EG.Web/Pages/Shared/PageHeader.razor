@@ -57,6 +57,15 @@
     }
 </section>
 
+@if (ShowNextTask && guidance is null)
+{
+    <NextTaskPanel Next="@(NextStep ?? EG.Common.ApplicationText.NextTask.SelectRecord)"
+                   Owner="@(NextOwner ?? EG.Common.ApplicationText.NextTask.UnknownOwner)"
+                   UserTask="@(NextUserTask ?? (ShowCreateButton && CanCreate && OnCreate.HasDelegate
+                       ? $"Busca un registro o usa {EffectiveCreateText} para iniciar una captura."
+                       : EG.Common.ApplicationText.NextTask.ReadOnly))" />
+}
+
 @if (guidance is not null)
 {
     <OperationActionPanel Title="@guidance.Title" Description="@guidance.Description" Icon="@Icons.Material.Filled.Info">
@@ -83,6 +92,10 @@
     [Parameter] public EventCallback OnCreate { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }
     [Parameter] public RenderFragment? AdditionalButtons { get; set; }
+    [Parameter] public bool ShowNextTask { get; set; } = true;
+    [Parameter] public string? NextStep { get; set; }
+    [Parameter] public string? NextOwner { get; set; }
+    [Parameter] public string? NextUserTask { get; set; }
 
     private bool actionInProgress;
     private ScreenGuidance? guidance;

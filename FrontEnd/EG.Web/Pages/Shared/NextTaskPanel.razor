@@ -1,0 +1,13 @@
+@using EG.Common
+
+<section class="next-task" aria-label="Orientación para continuar">
+    <div><span>@ApplicationText.NextTask.Next</span><strong>@Next</strong></div>
+    <div><span>@ApplicationText.NextTask.Owner</span><p>@Owner</p></div>
+    <div><span>@ApplicationText.NextTask.Yours</span><p>@UserTask</p></div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Next { get; set; } = string.Empty;
+    [Parameter] public string Owner { get; set; } = ApplicationText.NextTask.UnknownOwner;
+    [Parameter] public string UserTask { get; set; } = ApplicationText.NextTask.AvailableActions;
+}

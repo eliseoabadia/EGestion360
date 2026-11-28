@@ -1,4 +1,4 @@
-﻿@page "/Almacen/Solicitudes_Salida"
+@page "/Almacen/Solicitudes_Salida"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Almacen
 @using EG.Web.Pages.Shared
@@ -24,7 +24,9 @@
                     OnCreate="CreateItem"
                     OnRefresh="RefreshAll" />
 
-        <div class="summary-strip">
+        <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Solicitudes</span> <strong>@TotalCount.ToString("N0", NumberCulture)</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
             <div>
                 <span>Solicitudes</span>
                 <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
@@ -41,9 +43,10 @@
                 <span>Entidad</span>
                 <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
             </div>
-        </div>
+        </div></ChildContent>
+</ContextSummaryDialog>
 
-<OperationActionPanel Title="Prepara la salida de almacén" Description="La primera solicitud de esta página se prepara al cargar. Pulsa otra fila para ver sus bienes." Icon="@Icons.Material.Filled.LocalShipping">
+<OperationActionPanel Compact="true" Title="Prepara la salida de almacén" Description="La primera solicitud de esta página se prepara al cargar. Pulsa otra fila para ver sus bienes." Icon="@Icons.Material.Filled.LocalShipping">
                 <Actions>
                 @if (CanCreate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@(selectedSolicitud is null || !CanWork(selectedSolicitud))" OnClick="AgregarDetalle">Agregar bien</MudButton> } @if (CanAuthorize) { <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Verified" Disabled="@(selectedSolicitud is null || !CanWork(selectedSolicitud))" OnClick="@(() => AutorizarSolicitud(selectedSolicitud!))">Autorizar solicitud</MudButton> }
                 <ModuleShortcut Module="Almacen" SubModule="Suministros_Salida" Href="/Almacen/Suministros_Salida" Text="Suministros de salida" />

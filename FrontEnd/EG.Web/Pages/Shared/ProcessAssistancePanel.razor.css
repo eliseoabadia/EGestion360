@@ -25,6 +25,8 @@
 .process-assistant-routing div { display: grid; gap: 1px; }
 .process-assistant-routing dd { margin: 0; }
 .process-assistant-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.process-assistant-body { justify-content: space-between; flex-wrap: wrap; padding-top: 7px; padding-bottom: 7px; }
+.process-assistant-routing { margin-top: 14px; }
 
 @media (max-width: 900px) {
     .process-assistant-body { align-items: stretch; flex-direction: column; }

@@ -1,0 +1,32 @@
+@using MudBlazor
+
+<div class="context-summary-trigger">
+    @if (PreviewContent is not null)
+    {
+        <div class="context-summary-preview">@PreviewContent</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(ContextText))
+    {
+        <span>@ContextText</span>
+    }
+    <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Info"
+               OnClick="() => visible = true" aria-haspopup="dialog">@ButtonText</MudButton>
+</div>
+<MudDialog @bind-Visible="visible" Options="Options">
+    <TitleContent><MudText Typo="Typo.h6">@Title</MudText></TitleContent>
+    <DialogContent><div class="context-summary-body">@ChildContent</div></DialogContent>
+    <DialogActions><MudButton Color="Color.Primary" OnClick="() => visible = false">@EG.Common.ApplicationText.Actions.Close</MudButton></DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public string Title { get; set; } = EG.Common.ApplicationText.Summary.Title;
+    [Parameter] public string ButtonText { get; set; } = EG.Common.ApplicationText.Summary.Open;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? PreviewContent { get; set; }
+    [Parameter] public string? ContextText { get; set; }
+    private bool visible;
+    private static readonly DialogOptions Options = new()
+    {
+        FullWidth = true, MaxWidth = MaxWidth.Medium, CloseButton = true, CloseOnEscapeKey = true
+    };
+}

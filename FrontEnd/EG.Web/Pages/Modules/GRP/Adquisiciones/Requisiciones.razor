@@ -1,4 +1,4 @@
-﻿@page "/Adquisiciones/Requisicion"
+@page "/Adquisiciones/Requisicion"
 @page "/Adquisiciones/Requisicion/{RequisicionId:int}"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
@@ -203,7 +203,9 @@
                     </ProgressiveActions>
                 </MudPaper>
 
-                <MudCard Elevation="1" Class="requisition-summary-card">
+                <ContextSummaryDialog Title="Contexto de la requisición" ContextText="@($"{TextOrDash(SelectedRequisicion.AreaNombre)} · {MoneyOrDash(SelectedRequisicion.Importe)}")">
+                    <RequisitionJourneyView Journey="@SelectedRequisicion.Journey" />
+<MudCard Elevation="1" Class="requisition-summary-card">
                     <MudCardContent Class="requisition-summary-content">
                         <MudGrid Spacing="1">
                             <MudItem xs="12" md="3">
@@ -251,6 +253,7 @@
                         </MudGrid>
                     </MudCardContent>
                 </MudCard>
+</ContextSummaryDialog>
 
                 @{ var diagnosis = DiagnoseRequisition(SelectedRequisicion); }
                 <ProcessAssistancePanel Assistance="@diagnosis"

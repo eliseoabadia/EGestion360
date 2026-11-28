@@ -1,4 +1,4 @@
-﻿@page "/Adquisiciones/Solicitud_Suficiencia"
+@page "/Adquisiciones/Solicitud_Suficiencia"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Adquisicion
 @using EG.Web.Pages.Shared
@@ -26,7 +26,9 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div class="summary-strip">
+                <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Solicitudes</span> <strong>@TotalCount.ToString("N0", NumberCulture)</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
                     <div>
                         <span>Solicitudes</span>
                         <strong>@TotalCount.ToString("N0", NumberCulture)</strong>
@@ -39,7 +41,8 @@
                         <span>Borradores en página</span>
                         <strong>@Elements.Count(x => x.Estatus == 1).ToString("N0", NumberCulture)</strong>
                     </div>
-                </div>
+                </div></ChildContent>
+</ContextSummaryDialog>
 
                 <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid FillAvailableHeight="false" TItem="SolicitudSuficienciaResponse"
@@ -149,9 +152,14 @@
                     </MudTooltip>
                 </MudPaper>
 
-                <OperationActionPanel Title="Revisa la solicitud presupuestal" Description="@(SelectedSolicitud.BloqueadaPorAutorizacion ? "La solicitud está bloqueada por autorización. Puedes consultar su distribución." : "Los bienes y su distribución se muestran al abrir; revisa el importe y la partida de cada concepto.")" Icon="@Icons.Material.Filled.RuleFolder">
+                <OperationActionPanel Compact="true"
+                    Title="@(SelectedSolicitud.Estatus == 3 ? "Suficiencia autorizada" : "Solicitud en revisión")"
+                    Description="@(SelectedSolicitud.Estatus == 3 ? "Presupuesto debe verificar el compromiso antes de emitir la orden. Su estado todavía debe consultarse." : SelectedSolicitud.BloqueadaPorAutorizacion ? "Consulta con Presupuesto el resultado de la autorización en curso." : "Revisar importes y distribución antes de continuar con la autorización.")"
+                    Owner="Presupuesto; Compras continúa cuando se cumplan las autorizaciones."
+                    UserTask="@(SelectedSolicitud.BloqueadaPorAutorizacion ? "Consulta la autorización o solicita seguimiento a Presupuesto. Esta solicitud no se puede editar." : CanUpdate ? "Revisa los bienes y corrige la solicitud si es necesario antes de la autorización." : "Consulta la solicitud y pide la revisión al responsable de Presupuesto.")"
+                    Icon="@Icons.Material.Filled.RuleFolder">
                 <Actions>
-                @if (CanUpdate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Disabled="@SelectedSolicitud.BloqueadaPorAutorizacion" OnClick="@(() => EditItem(SelectedSolicitud.PkidSolicitudSuficiencia))">Editar solicitud</MudButton> }
+                @if (CanUpdate && !SelectedSolicitud.BloqueadaPorAutorizacion) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(() => EditItem(SelectedSolicitud.PkidSolicitudSuficiencia))">Editar solicitud</MudButton> }
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshSelectedAndDetails">Actualizar</MudButton>
                 <ModuleShortcut Module="Presupuesto_Comprometido" SubModule="Autorizacion_Suficiencia" Href="/Presupuesto/Egreso/Presupuesto_Comprometido/Autorizacion_Suficiencia" Text="Consultar autorizaciones" />
                 </Actions>

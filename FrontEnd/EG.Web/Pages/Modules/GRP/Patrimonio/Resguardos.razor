@@ -1,4 +1,4 @@
-﻿@page "/Patrimonio/Resguardos"
+@page "/Patrimonio/Resguardos"
 @using System.Globalization
 @using EG.Domain.DTOs.Responses.Patrimonio
 @using EG.Web.Contracts
@@ -30,7 +30,9 @@
                             OnCreate="CreateItem"
                             OnRefresh="() => table.ReloadData()" />
 
-                <div class="summary-strip">
+                <ContextSummaryDialog Title="Resumen de la consulta">
+<PreviewContent><span class="summary-label">Valor visible</span> <strong>@Money(Elements.Sum(x => x.ValorActualResguardado ?? 0m))</strong></PreviewContent>
+<ChildContent><div class="summary-strip">
                     <div>
                         <span class="summary-label">Valor visible</span>
                         <strong>@Money(Elements.Sum(x => x.ValorActualResguardado ?? 0m))</strong>
@@ -47,7 +49,8 @@
                         <span class="summary-label">Entidad</span>
                         <strong>@TextOrDash(SucursalStateService.EmpresaNombre)</strong>
                     </div>
-                </div>
+                </div></ChildContent>
+</ContextSummaryDialog>
 
                 <div Style="flex: 0 0 auto; overflow: visible; min-height: 0;">
                     <GenericDataGrid FillAvailableHeight="false" TItem="ResguardoResponse"
@@ -173,7 +176,7 @@
                                            RegistroDescripcion="@($"{TextOrDash(SelectedResguardo.PersonaNombre)} | {TextOrDash(SelectedResguardo.AreaNombre)}")" />
                 </MudPaper>
 
-<OperationActionPanel Title="Consulta y captura de resguardo" Description="Los bienes asignados y el responsable se muestran al abrir el resguardo." Icon="@Icons.Material.Filled.Inventory2">
+<OperationActionPanel Compact="true" Title="Consulta y captura de resguardo" Description="Los bienes asignados y el responsable se muestran al abrir el resguardo." Icon="@Icons.Material.Filled.Inventory2">
                 <Actions>
                 @if (CanUpdate) { <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddCircle" OnClick="OpenAgregarBienDialog">Agregar bien</MudButton> }
                 </Actions>

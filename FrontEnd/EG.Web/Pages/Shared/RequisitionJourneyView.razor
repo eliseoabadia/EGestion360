@@ -1,0 +1,27 @@
+@using EG.Domain.DTOs.Responses.Adquisicion
+@using MudBlazor
+
+<section class="journey" aria-label="Seguimiento de la requisición">
+    <h3>@EG.Common.ApplicationText.Journey.Title</h3>
+    @if (Journey is null || Journey.Steps.Count == 0)
+    {
+        <p>@EG.Common.ApplicationText.Journey.Unavailable</p>
+    }
+    else
+    {
+        <ol>
+            @foreach (var step in Journey.Steps)
+            {
+                <li class="@(step.Recorded ? "recorded" : "pending")">
+                    <span class="journey-marker" aria-hidden="true">@(step.Recorded ? "✓" : step.Partial ? "◐" : "○")</span>
+                    <div><strong>@step.Label</strong><span>@(step.Recorded ? EG.Common.ApplicationText.Journey.Recorded : step.Partial ? EG.Common.ApplicationText.Journey.Partial : EG.Common.ApplicationText.Journey.Pending)</span><small>@step.Detail</small></div>
+                </li>
+            }
+        </ol>
+        <p>@EG.Common.ApplicationText.Journey.Scope</p>
+    }
+</section>
+
+@code {
+    [Parameter] public RequisitionJourney? Journey { get; set; }
+}

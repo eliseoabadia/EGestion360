@@ -1,19 +1,25 @@
 @using Microsoft.AspNetCore.Components
 @using MudBlazor
 
-<section class="operation-action-panel" aria-label="@Title">
+<section class="operation-action-panel @(Compact ? "operation-action-compact" : string.Empty)" aria-label="@Title">
     <div class="operation-action-heading">
         <span class="operation-action-icon"><MudIcon Icon="@Icon" /></span>
         <div class="operation-action-copy">
             <h2>@Title</h2>
-            <p>@Description</p>
         </div>
         @if (Actions is not null)
         {
             <div class="operation-action-buttons">@Actions</div>
         }
+        @if (Compact && HelpContent is not null)
+        {
+            <ContextSummaryDialog Title="@Title" ButtonText="@EG.Common.ApplicationText.Summary.QuickHelp">
+                <div class="operation-action-help-content">@HelpContent</div>
+            </ContextSummaryDialog>
+        }
     </div>
-    @if (HelpContent is not null)
+    <NextTaskPanel Next="@(NextStep ?? Description)" Owner="@Owner" UserTask="@UserTask" />
+    @if (!Compact && HelpContent is not null)
     {
         <details class="operation-action-help">
             <summary><MudIcon Icon="@Icons.Material.Filled.HelpOutline" Size="Size.Small" /> Guía rápida</summary>
@@ -28,4 +34,8 @@
     [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Assignment;
     [Parameter] public RenderFragment? Actions { get; set; }
     [Parameter] public RenderFragment? HelpContent { get; set; }
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public string? NextStep { get; set; }
+    [Parameter] public string Owner { get; set; } = EG.Common.ApplicationText.NextTask.UnknownOwner;
+    [Parameter] public string UserTask { get; set; } = EG.Common.ApplicationText.NextTask.AvailableActions;
 }
