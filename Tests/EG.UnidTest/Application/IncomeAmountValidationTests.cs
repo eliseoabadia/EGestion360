@@ -1,4 +1,5 @@
-using EG.Application.Services.PresupuestoModificado;
+﻿
+using EG.Business.Services.PresupuestoModificado;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
 using EG.UnidTest.Support;
 using System.Globalization;
@@ -11,7 +12,7 @@ public sealed class IncomeAmountValidationTests
     public async Task MissingHeaderDateInJsonCannotBeReplacedByToday()
     {
         var request = System.Text.Json.JsonSerializer.Deserialize<IngreAdecuacionResponse>("{\"FkidAnioSis\":1}")!;
-        var service = new IngreAdecuacionAppService(null!, null!, null!, new FixedUserContext(7, 3));
+        var service = new IngreAdecuacionOperationsService(null!, null!, null!, new FixedUserContext(7, 3));
         var result = await service.CreateAsync(request, 7);
         Assert.False(result.Success);
         Assert.Equal("VALIDATION", result.Code);
@@ -24,7 +25,7 @@ public sealed class IncomeAmountValidationTests
     {
         var request = System.Text.Json.JsonSerializer.Deserialize<IngreAdecuacionDetalleResponse>(
             "{\"FkidIngreAdecuacionPres\":1,\"FkidIngresoAutorizadoPres\":2,\"FkidTipoMovimientoPres\":3,\"Enero\":1}")!;
-        var service = new IngreAdecuacionDetalleAppService(null!, null!, null!, new FixedUserContext(7, 3));
+        var service = new IngreAdecuacionDetalleOperationsService(null!, null!, null!, new FixedUserContext(7, 3));
         var result = await service.CreateAsync(request, 7);
         Assert.False(result.Success);
         Assert.Equal("VALIDATION", result.Code);
@@ -42,7 +43,7 @@ public sealed class IncomeAmountValidationTests
     {
         var request = Valid();
         typeof(IngreAdecuacionDetalleResponse).GetProperty(month)!.SetValue(request, -0.01m);
-        var service = new IngreAdecuacionDetalleAppService(null!, null!, null!, new FixedUserContext(7, 3));
+        var service = new IngreAdecuacionDetalleOperationsService(null!, null!, null!, new FixedUserContext(7, 3));
         var result = await service.CreateAsync(request, 7);
         Assert.False(result.Success);
         Assert.Equal("VALIDATION", result.Code);

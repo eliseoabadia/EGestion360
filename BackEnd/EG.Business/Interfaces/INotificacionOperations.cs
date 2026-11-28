@@ -1,0 +1,15 @@
+﻿using EG.Common.GenericModel;
+using EG.Domain.DTOs.Responses.General;
+
+namespace EG.Business.Interfaces;
+
+public interface INotificacionOperations
+{
+    Task<PagedResult<NotificacionResumenResponse>> GetResumenAsync(int usuarioId);
+    Task<PagedResult<NotificacionUsuarioResponse>> GetMisNotificacionesAsync(int usuarioId, int take = 30, bool soloPendientes = false);
+    Task<PagedResult<NotificacionUsuarioResponse>> GetConversacionAsync(long notificacionDestinoId, int usuarioId);
+    Task<PagedResult<bool>> MarcarLeidaAsync(long notificacionDestinoId, int usuarioId);
+    Task<PagedResult<bool>> AtenderAsync(long notificacionDestinoId, int usuarioId);
+    Task<PagedResult<bool>> ResponderAsync(long notificacionDestinoId, int usuarioId, string mensaje);
+    Task<PagedResult<bool>> SolicitarAyudaProcesoAsync(int usuarioId, SolicitudAyudaProcesoRequest request);
+}

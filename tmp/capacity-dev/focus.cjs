@@ -1,1 +1,0 @@
-const{chromium}=require('C:/Desarrollo/Desarrollo/FullStack/GE.UNI360/tmp/validacion-nf013-nf018-playwright/node_modules/playwright');(async()=>{const b=await chromium.connectOverCDP('http://127.0.0.1:52422');try{for(const p of b.contexts().flatMap(c=>c.pages()))if(p.url().startsWith('http://localhost:5242'))await p.bringToFront();}finally{await b.close();}})();

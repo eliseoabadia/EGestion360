@@ -1,4 +1,4 @@
-using EG.Common.GenericModel;
+﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Responses.Adquisicion;
 

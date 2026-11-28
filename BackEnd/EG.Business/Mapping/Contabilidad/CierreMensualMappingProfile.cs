@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Responses.Contabilidad;
+﻿using EG.Domain.DTOs.Responses.Contabilidad;
 using EG.Infraestructure.Models;
 using Mapster;
 

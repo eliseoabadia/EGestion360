@@ -112,7 +112,7 @@
 
                 <div class="purchase-path-heading">
                     <div><span>Camino a tu orden</span><strong>Cuatro pasos, en este orden</strong></div>
-                    <small>El contrato es posterior y sólo aplica cuando el procedimiento lo requiere.</small>
+                    <small>@EG.Common.Modules.PurchasingModule.CommitmentGuidance</small>
                 </div>
 
                 <div class="purchase-path">
@@ -355,7 +355,7 @@
         new("01", "Requisición", "Describe lo que necesitas, cantidades, fechas e importe estimado.", "Solicitante, área, posición presupuestal y bienes ligados a una partida.", "Administración para el solicitante; Presupuesto para saldo; Almacén/Contabilidad para el bien.", Icons.Material.Filled.Article, "/Adquisiciones/Requisicion"),
         new("02", "Cotización", "Solicita y registra precios, vigencia y condiciones de los proveedores.", "Requisición completa, partidas que sumen el importe y proveedores activos.", "Compras o Padrón de proveedores.", Icons.Material.Filled.RequestQuote, "/Adquisiciones/Cotizacion"),
         new("03", "Suficiencia", "Envía el expediente para validar que existe recurso presupuestal.", "Cotización con todos los bienes y precios capturados.", "Área de Presupuesto para revisar o autorizar.", Icons.Material.Filled.AssignmentTurnedIn, "/Adquisiciones/Solicitud_Suficiencia"),
-        new("04", "Orden de compra", "Emite la orden con proveedor, partidas, cantidades y total autorizados.", "Suficiencia autorizada y proveedor seleccionado.", "Compras; si la suficiencia está detenida, Presupuesto.", Icons.Material.Filled.ShoppingCart, "/Adquisiciones/Orden_Compra")
+        new("04", "Orden de compra", "Emite la orden con proveedor, partidas, cantidades y total autorizados.", EG.Common.Modules.PurchasingModule.AuthorizedOrderRequirements, "Compras y Presupuesto para revisar las autorizaciones.", Icons.Material.Filled.ShoppingCart, "/Adquisiciones/Orden_Compra")
     ];
 
     private const string UsersConfigurationRoute = "/configuracion/sistema/usuarios";

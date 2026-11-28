@@ -1,52 +1,17 @@
-using Microsoft.EntityFrameworkCore;
-using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
+﻿using EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria;
 using EG.Application.Modules.GRP.Services.Configuracion.Catalogo;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Tesoreria;
 using EG.Domain.DTOs.Responses.Tesoreria;
-using EG.Infraestructure.Models;
+namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria;
+public class TipoMonedaService(global::EG.Business.Services.Configuracion.Catalogo.Tesoreria.TipoMonedaServiceOperations service) : global::EG.Application.Interfaces.Configuracion.Catalogo.Tesoreria.ITipoMonedaService
 
-namespace EG.ApiCoreBS.Services.Configuracion.Catalogo.Tesoreria
 {
-    public class TipoMonedaService : GenericCatalogService<TipoMonedum, TipoMonedaDto, TipoMonedaResponse>, ITipoMonedaService
-    {
-        public TipoMonedaService(GenericService<TipoMonedum, TipoMonedaDto, TipoMonedaResponse> service)
-            : base(service)
-        {
-            service.AddInclude(entity => entity.FkidPaisSisNavigation);
-            service.AddRelationFilter(nameof(TipoMonedum.FkidPaisSisNavigation), [nameof(Paise.Nombre)]);
-        }
-
-        public override async Task<PagedResult<TipoMonedaResponse>> GetAllPaginadoAsync(PagedRequest request)
-        {
-            await EnsurePesoMexicanoAsync();
-            request.SortLabel = request.SortLabel == "PaisNombre"
-                ? nameof(Paise.Nombre)
-                : request.SortLabel;
-
-            return await base.GetAllPaginadoAsync(request);
-        }
-
-        private async Task EnsurePesoMexicanoAsync()
-        {
-            var moneda = await Service.GetQueryWithIncludes(x => x.CodigoIso4217 == "MXN")
-                .FirstOrDefaultAsync();
-
-            if (moneda != null)
-            {
-                return;
-            }
-
-            await Service.AddAsync(new TipoMonedaDto
-            {
-                FkidPaisSis = 1,
-                Descripcion = "Peso Mexicano",
-                CodigoIso4217 = "MXN",
-                Simbolo = "$",
-                Decimales = 2,
-                Activo = true
-            });
-        }
-    }
+    public global::System.Threading.Tasks.Task<global::EG.Common.GenericModel.PagedResult<global::EG.Domain.DTOs.Responses.Tesoreria.TipoMonedaResponse>> GetAllPaginadoAsync(global::EG.Common.GenericModel.PagedRequest request) => service.GetAllPaginadoAsync(request);
+    public global::System.Threading.Tasks.Task<global::EG.Domain.DTOs.Responses.Tesoreria.TipoMonedaResponse?> GetByIdAsync(global::System.Int32 id) => service.GetByIdAsync(id);
+    public global::System.Threading.Tasks.Task<global::EG.Domain.DTOs.Responses.Tesoreria.TipoMonedaResponse> CreateAsync(global::EG.Domain.DTOs.Requests.Tesoreria.TipoMonedaDto dto, global::System.Int32 usuarioId) => service.CreateAsync(dto, usuarioId);
+    public global::System.Threading.Tasks.Task<global::EG.Domain.DTOs.Responses.Tesoreria.TipoMonedaResponse?> UpdateAsync(global::System.Int32 id, global::EG.Domain.DTOs.Requests.Tesoreria.TipoMonedaDto dto, global::System.Int32 usuarioId) => service.UpdateAsync(id, dto, usuarioId);
+    public global::System.Threading.Tasks.Task DeleteAsync(global::System.Int32 id) => service.DeleteAsync(id);
+    public global::System.Threading.Tasks.Task<global::System.Object> GetAllPaginadoAsync(global::System.Int32 page, global::System.Int32 pageSize, global::System.String? sortBy, global::System.String? sortDirection, global::System.String? filter) => service.GetAllPaginadoAsync(page, pageSize, sortBy, sortDirection, filter);
 }

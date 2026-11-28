@@ -1,4 +1,4 @@
-using Mapster;
+ï»¿using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
@@ -40,7 +40,7 @@ namespace EG.Business.Mapping.General
                 .Map(dest => dest.Latitud, src => src.Latitud)
                 .Map(dest => dest.Longitud, src => src.Longitud)
 
-                // Propiedades adicionales de la vista (información enriquecida)
+                // Propiedades adicionales de la vista (informaciï¿½n enriquecida)
                 .Map(dest => dest.NombreEmpresa, src => src.NombreEmpresa)
                 //.Map(dest => dest.RfcEmpresa, src => src.Rfc)
                 .Map(dest => dest.NombreEstado, src => src.NombreEstado)

@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 using EG.Domain.DTOs.Responses.ConteoCiclico;
 using EG.Infraestructure.Models;

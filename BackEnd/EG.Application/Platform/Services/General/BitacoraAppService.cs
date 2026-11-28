@@ -1,4 +1,4 @@
-using EG.Application.Interfaces.General;
+﻿using EG.Application.Interfaces.General;
 using EG.Business.Interfaces;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Seguridad;

@@ -71,10 +71,10 @@ namespace EG.Web.Services
                     : rawToken;
 
                 // Construir petición GET usando el HttpClient inyectado y adjuntar header en el HttpRequestMessage
-                var request = new HttpRequestMessage(HttpMethod.Get, $"api/Navigate/{_userId}");
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"api/Navigate/{_userId}");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenValue);
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                using HttpResponseMessage response = await _httpClient.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -105,6 +105,11 @@ namespace EG.Web.Services
                     "La API no pudo cargar el menu. UserId={UserId}; StatusCode={StatusCode}",
                     _userId,
                     (int)response.StatusCode);
+            }
+            catch (HttpRequestException ex)
+            {
+                resultado.Message = EG.Common.ApplicationText.Connection.StartupUnavailable;
+                _logger.LogError(ex, "No fue posible conectar con la API para cargar el menu.");
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-using EG.Common.GenericModel;
+﻿using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Seguridad;
 using EG.Domain.DTOs.Responses.Seguridad;
 

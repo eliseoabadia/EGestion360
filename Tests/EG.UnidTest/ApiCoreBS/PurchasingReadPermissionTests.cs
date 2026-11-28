@@ -7,6 +7,13 @@ namespace EG.UnidTest.ApiCoreBS;
 
 public sealed class PurchasingReadPermissionTests
 {
+    [Fact]
+    public void RequesterLookupRequiresRequisitionPermission()
+    {
+        var attributes = typeof(RequisicionController).GetMethod(nameof(RequisicionController.GetRequesters))!
+            .GetCustomAttributes(typeof(AuthorizeAttribute), true).Cast<AuthorizeAttribute>();
+        Assert.Contains(attributes, attribute => attribute.Policy == PurchasingPermissions.RequisitionRead);
+    }
     public static IEnumerable<object[]> ReadActions => new[]
     {
         (typeof(OrdenCompraController), PurchasingPermissions.OrderRead),

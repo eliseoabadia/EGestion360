@@ -59,6 +59,11 @@
                     <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Size="Size.Small" />
                     <span>@_loadError</span>
                 </div>
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="ReloadWorkspace">
+                    @EG.Common.ApplicationText.Connection.RetryStartup
+                </MudButton>
             }
             else if (!string.IsNullOrWhiteSpace(_searchText) && !IsCollapsed)
             {

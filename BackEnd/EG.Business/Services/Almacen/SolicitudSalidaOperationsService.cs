@@ -1,0 +1,519 @@
+﻿using EG.Business.Interfaces;
+using EG.Business.Services;
+using EG.Common.GenericModel;
+using EG.Common.Modules;
+using EG.Domain.DTOs.Requests.Almacen;
+using EG.Domain.DTOs.Responses.Almacen;
+using EG.Domain.Interfaces;
+using EG.Infraestructure.Models;
+using Mapster;
+using Microsoft.EntityFrameworkCore;
+
+namespace EG.Business.Services.Almacen
+{
+    public class SolicitudSalidaOperationsService : ISolicitudSalidaOperations
+    {
+        private readonly GenericService<SolicitudSalidum, SolicitudSalidaDto, SolicitudSalidaResponse> _service;
+        private readonly GenericService<VwSolicitudSalidum, SolicitudSalidaDto, SolicitudSalidaResponse> _serviceView;
+        private readonly EGestionContext _context;
+        private readonly IUserContextService _userContext;
+
+        public SolicitudSalidaOperationsService(
+            GenericService<SolicitudSalidum, SolicitudSalidaDto, SolicitudSalidaResponse> service,
+            GenericService<VwSolicitudSalidum, SolicitudSalidaDto, SolicitudSalidaResponse> serviceView,
+            EGestionContext context,
+            IUserContextService userContext)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            _context = context;
+            _userContext = userContext;
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> GetAllAsync()
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var items = (await _serviceView.GetAllAsync())
+                .Where(x => x.FkidEmpresaSis == empresaId)
+                .ToList();
+            await ApplyAggregateFlagsAsync(items);
+            return Success(items, "Solicitudes de salida obtenidas correctamente", items.Count);
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> GetByIdAsync(int id)
+        {
+            var empresaId = _userContext.GetCurrentEmpresaId();
+            var item = await _serviceView.GetQueryWithIncludes()
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.FkidEmpresaSis == empresaId);
+            if (item == null)
+            {
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
+            }
+
+            var response = item.Adapt<SolicitudSalidaResponse>();
+            await ApplyAggregateFlagsAsync(new List<SolicitudSalidaResponse> { response });
+
+            return new PagedResult<SolicitudSalidaResponse>
+            {
+                Success = true,
+                Message = "Solicitud de salida encontrada",
+                Code = "SUCCESS",
+                Data = response,
+                Items = new List<SolicitudSalidaResponse> { response },
+                TotalCount = 1
+            };
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> CreateAsync(SolicitudSalidaResponse response, int usuarioActual)
+        {
+            var validation = await NormalizeAndValidateAsync(response, isCreate: true);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            var entity = new SolicitudSalidum();
+            ApplyValues(entity, response);
+            entity.Activo = true;
+            entity.Autorizado = false;
+            entity.FechaAutorizacion = null;
+            entity.UsuarioAutorizacion = null;
+            entity.FechaCreacion = DateTime.Now;
+            entity.UsuarioCreacion = usuarioActual;
+
+            try
+            {
+                _context.SolicitudSalida.Add(entity);
+                await _context.SaveChangesAsync();
+                var result = await GetByIdAsync(entity.PkidSolicitudSalida);
+                result.Message = "Solicitud de salida registrada correctamente.";
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return Failure<SolicitudSalidaResponse>($"Error al registrar solicitud de salida: {GetError(ex)}");
+            }
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> UpdateAsync(int id, SolicitudSalidaResponse response, int usuarioActual)
+        {
+            var current = await _context.SolicitudSalida
+                .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
+
+            if (current == null)
+            {
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
+            }
+
+            if (IsLocked(current))
+            {
+                return Failure<SolicitudSalidaResponse>("La solicitud ya fue autorizada o esta en estatus final y no puede modificarse.", "LOCKED");
+            }
+
+            response.PkidSolicitudSalida = id;
+            var validation = await NormalizeAndValidateAsync(response, isCreate: false);
+            if (validation != null)
+            {
+                return validation;
+            }
+
+            response.Folio = string.IsNullOrWhiteSpace(response.Folio) ? current.Folio ?? string.Empty : response.Folio;
+            ApplyValues(current, response);
+            current.FechaModificacion = DateTime.Now;
+            current.UsuarioModificacion = usuarioActual;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                var refreshed = await GetByIdAsync(id);
+                refreshed.Message = "Solicitud de salida actualizada correctamente.";
+                return refreshed;
+            }
+            catch (Exception ex)
+            {
+                return Failure<SolicitudSalidaResponse>($"Error al actualizar solicitud de salida: {GetError(ex)}");
+            }
+        }
+
+        public async Task<PagedResult<bool>> DeleteAsync(int id)
+        {
+            var current = await _context.SolicitudSalida
+                .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
+
+            if (current == null)
+            {
+                return BoolFailure($"Solicitud de salida no encontrada.", "NOT_FOUND");
+            }
+
+            if (IsLocked(current))
+            {
+                return BoolFailure("La solicitud ya fue autorizada o esta en estatus final y no puede eliminarse.", "LOCKED");
+            }
+
+            var tieneDetalles = await _context.DetalleSolicitudSalida
+                .AnyAsync(x => x.FkidSolicitudSalidaAlma == id && x.Activo);
+            if (tieneDetalles)
+            {
+                return BoolFailure("Elimina primero los bienes solicitados antes de borrar la solicitud.", "HAS_CHILDREN");
+            }
+
+            current.Activo = false;
+            current.FechaModificacion = DateTime.Now;
+            current.UsuarioModificacion = _userContext.GetCurrentUserId();
+            await _context.SaveChangesAsync();
+
+            return new PagedResult<bool>
+            {
+                Success = true,
+                Message = "Solicitud de salida eliminada correctamente.",
+                Code = "SUCCESS",
+                Data = true,
+                Items = new List<bool> { true },
+                TotalCount = 1
+            };
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> AutorizarAsync(int id, int usuarioActual)
+        {
+            var current = await _context.SolicitudSalida
+                .Include(x => x.FkidEstatusSolicitudSalidaAlmaNavigation)
+                .FirstOrDefaultAsync(x => x.PkidSolicitudSalida == id && x.Activo && x.FkidEmpresaSis == _userContext.GetCurrentEmpresaId());
+
+            if (current == null)
+            {
+                return Failure<SolicitudSalidaResponse>($"Solicitud de salida no encontrada.", "NOT_FOUND");
+            }
+
+            if (IsLocked(current))
+            {
+                return Failure<SolicitudSalidaResponse>("La solicitud ya fue autorizada o esta en estatus final.", "LOCKED");
+            }
+
+            var tieneDetalles = await _context.DetalleSolicitudSalida
+                .AnyAsync(x => x.FkidSolicitudSalidaAlma == id && x.Activo);
+            if (!tieneDetalles)
+            {
+                return Failure<SolicitudSalidaResponse>("Agrega al menos un bien antes de autorizar la solicitud.");
+            }
+
+            var estatusAutorizadoId = await GetAuthorizedStatusIdAsync();
+
+            current.Autorizado = true;
+            current.FechaAutorizacion = DateTime.Now;
+            current.UsuarioAutorizacion = usuarioActual;
+            if (estatusAutorizadoId.HasValue)
+            {
+                current.FkidEstatusSolicitudSalidaAlma = estatusAutorizadoId.Value;
+            }
+
+            current.FechaModificacion = DateTime.Now;
+            current.UsuarioModificacion = usuarioActual;
+            await _context.SaveChangesAsync();
+
+            var result = await GetByIdAsync(id);
+            result.Message = "Solicitud de salida autorizada correctamente.";
+            return result;
+        }
+
+        public async Task<PagedResult<SolicitudSalidaResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            try
+            {
+                if (!EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "FkidAnioSis", out var anioId) || anioId <= 0)
+                {
+                    return Failure<SolicitudSalidaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
+                }
+
+                var empresaId = _userContext.GetCurrentEmpresaId();
+                var query = _serviceView.GetQueryWithIncludes()
+                    .Where(x => x.FkidEmpresaSis == empresaId && x.FkidAnioSis == anioId);
+
+                if (EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "FkidAreaSolicitaSis", out var areaSolicitaId))
+                {
+                    query = query.Where(x => x.FkidAreaSolicitaSis == areaSolicitaId);
+                }
+
+                if (EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "FkidAreaEntregaSis", out var areaEntregaId))
+                {
+                    query = query.Where(x => x.FkidAreaEntregaSis == areaEntregaId);
+                }
+
+                if (EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "FkidEstatusSolicitudSalidaAlma", out var estatusId))
+                {
+                    query = query.Where(x => x.FkidEstatusSolicitudSalidaAlma == estatusId);
+                }
+
+                if (EG.Common.GenericModel.PagedFilterReader.TryGetBool(request, "Autorizado", out var autorizado))
+                {
+                    query = query.Where(x => x.Autorizado == autorizado);
+                }
+
+                var filtro = request.Filtro?.Trim();
+                if (!string.IsNullOrWhiteSpace(filtro))
+                {
+                    query = query.Where(x =>
+                        (x.Folio != null && x.Folio.Contains(filtro)) ||
+                        (x.Solicitante != null && x.Solicitante.Contains(filtro)) ||
+                        (x.Justificacion != null && x.Justificacion.Contains(filtro)) ||
+                        (x.AreaSolicitaNombre != null && x.AreaSolicitaNombre.Contains(filtro)) ||
+                        (x.AreaEntregaNombre != null && x.AreaEntregaNombre.Contains(filtro)) ||
+                        (x.EstatusDescripcion != null && x.EstatusDescripcion.Contains(filtro)));
+                }
+
+                query = ApplySort(query, request.SortLabel, request.SortDirection);
+                var total = await query.CountAsync();
+                var page = Math.Max(1, request.Page);
+                var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
+                var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                var responses = items.Adapt<List<SolicitudSalidaResponse>>();
+                await ApplyAggregateFlagsAsync(responses);
+
+                return Success(responses, "Solicitudes de salida obtenidas correctamente", total);
+            }
+            catch (Exception ex)
+            {
+                return Failure<SolicitudSalidaResponse>($"Error al obtener solicitudes de salida: {GetError(ex)}");
+            }
+        }
+
+        private async Task<PagedResult<SolicitudSalidaResponse>?> NormalizeAndValidateAsync(SolicitudSalidaResponse response, bool isCreate)
+        {
+            response.FkidEmpresaSis = _userContext.GetCurrentEmpresaId();
+
+            if (response.FkidEmpresaSis <= 0)
+            {
+                return Failure<SolicitudSalidaResponse>("Debe existir una empresa seleccionada.");
+            }
+
+            if (!response.FkidAnioSis.HasValue || response.FkidAnioSis.Value <= 0)
+            {
+                return Failure<SolicitudSalidaResponse>("Debe seleccionar un ejercicio presupuestal.", "YEAR_REQUIRED");
+            }
+
+            var anio = await _context.Anios.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PkidAnio == response.FkidAnioSis.Value && x.Activo);
+            if (anio == null)
+            {
+                return Failure<SolicitudSalidaResponse>("El ejercicio presupuestal seleccionado no existe o está inactivo.");
+            }
+
+            if (!response.FkidAreaSolicitaSis.HasValue || response.FkidAreaSolicitaSis.Value <= 0)
+            {
+                return Failure<SolicitudSalidaResponse>("Debe seleccionar el area solicitante.");
+            }
+
+            if (!response.FkidAreaEntregaSis.HasValue || response.FkidAreaEntregaSis.Value <= 0)
+            {
+                return Failure<SolicitudSalidaResponse>("Debe seleccionar el area que entrega.");
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Solicitante))
+            {
+                return Failure<SolicitudSalidaResponse>("Debe capturar el solicitante.");
+            }
+
+            if (string.IsNullOrWhiteSpace(response.Justificacion))
+            {
+                return Failure<SolicitudSalidaResponse>("Debe capturar la justificacion.");
+            }
+
+            var fechaSolicitudValidation = RequiredDateRules.Validate(response.FechaSolicitud, "solicitud");
+            if (fechaSolicitudValidation != null)
+            {
+                return Failure<SolicitudSalidaResponse>(fechaSolicitudValidation, "VALIDATION");
+            }
+
+            if (response.FechaSolicitud.Year != anio.Clave)
+            {
+                return Failure<SolicitudSalidaResponse>("La fecha de solicitud debe pertenecer al ejercicio presupuestal seleccionado.");
+            }
+
+            var areasUsuario = await _context.VwUsuarioPersonaAreas.AsNoTracking()
+                .Where(x => x.PkIdUsuario == _userContext.GetCurrentUserId() && x.UsuarioActivo && x.PersonaActivo == true && x.AreaActivo == true && x.PkidArea.HasValue)
+                .Select(x => x.PkidArea!.Value)
+                .Distinct()
+                .ToListAsync();
+            if (areasUsuario.Count > 0 &&
+                (!areasUsuario.Contains(response.FkidAreaSolicitaSis.Value) || !areasUsuario.Contains(response.FkidAreaEntregaSis.Value)))
+            {
+                return Failure<SolicitudSalidaResponse>("Las áreas seleccionadas deben estar asignadas al usuario actual.", "AREA_FORBIDDEN");
+            }
+            response.Folio = string.IsNullOrWhiteSpace(response.Folio)
+                ? await BuildFolioAsync(response)
+                : response.Folio.Trim();
+            var maximumFolioLength = _context.Model.FindEntityType(typeof(SolicitudSalidum))!
+                .FindProperty(nameof(SolicitudSalidum.Folio))!.GetMaxLength();
+            if (maximumFolioLength.HasValue && response.Folio.Length > maximumFolioLength.Value)
+            {
+                return Failure<SolicitudSalidaResponse>(EG.Common.ApplicationText.Validation.MaximumLength(
+                    EG.Common.ApplicationText.Validation.Folio, maximumFolioLength.Value), "VALIDATION");
+            }
+            response.FkidEstatusSolicitudSalidaAlma = response.FkidEstatusSolicitudSalidaAlma <= 0
+                ? await GetInitialStatusIdAsync()
+                : response.FkidEstatusSolicitudSalidaAlma;
+            response.Observaciones ??= string.Empty;
+            response.Activo = true;
+
+            return null;
+        }
+
+        private async Task<int> GetInitialStatusIdAsync()
+        {
+            var status = await _context.EstatusSolicitudSalida
+                .Where(x => x.Activo)
+                .OrderBy(x => x.Orden)
+                .FirstOrDefaultAsync();
+            return status?.PkidEstatusSolicitudSalida ?? 1;
+        }
+
+        private async Task<string> BuildFolioAsync(SolicitudSalidaResponse response)
+        {
+            var year = response.FechaSolicitud.Year;
+            var next = await _context.SolicitudSalida.CountAsync(x =>
+                x.FkidEmpresaSis == response.FkidEmpresaSis &&
+                x.FkidAnioSis == response.FkidAnioSis) + 1;
+            return $"SAL-{year}-{next:00000}";
+        }
+
+        private async Task<int?> GetAuthorizedStatusIdAsync()
+        {
+            var status = await _context.EstatusSolicitudSalida
+                .Where(x => x.Activo && !x.EsFinal && x.Descripcion.ToUpper().Contains("AUTORIZ"))
+                .OrderBy(x => x.Orden)
+                .FirstOrDefaultAsync();
+
+            return status?.PkidEstatusSolicitudSalida;
+        }
+
+        private static void ApplyValues(SolicitudSalidum entity, SolicitudSalidaResponse response)
+        {
+            entity.FkidEmpresaSis = response.FkidEmpresaSis;
+            entity.FkidAnioSis = response.FkidAnioSis;
+            entity.FkidAreaSolicitaSis = response.FkidAreaSolicitaSis;
+            entity.FkidAreaEntregaSis = response.FkidAreaEntregaSis;
+            entity.FkidEstatusSolicitudSalidaAlma = response.FkidEstatusSolicitudSalidaAlma;
+            entity.Folio = response.Folio ?? string.Empty;
+            entity.FechaSolicitud = DateOnly.FromDateTime(response.FechaSolicitud);
+            entity.FechaRequerida = response.FechaRequerida.HasValue ? DateOnly.FromDateTime(response.FechaRequerida.Value) : null;
+            entity.Solicitante = response.Solicitante ?? string.Empty;
+            entity.Justificacion = response.Justificacion ?? string.Empty;
+            entity.Observaciones = response.Observaciones ?? string.Empty;
+        }
+
+        private async Task ApplyAggregateFlagsAsync(IList<SolicitudSalidaResponse> items)
+        {
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            var ids = items.Select(x => x.PkidSolicitudSalida).ToList();
+            var statusIds = items.Select(x => x.FkidEstatusSolicitudSalidaAlma).Distinct().ToList();
+            var finalStatus = await _context.EstatusSolicitudSalida
+                .Where(x => statusIds.Contains(x.PkidEstatusSolicitudSalida))
+                .Select(x => new { x.PkidEstatusSolicitudSalida, x.EsFinal })
+                .ToListAsync();
+            var totals = await _context.DetalleSolicitudSalida
+                .Where(x => ids.Contains(x.FkidSolicitudSalidaAlma) && x.Activo)
+                .GroupBy(x => x.FkidSolicitudSalidaAlma)
+                .Select(g => new
+                {
+                    SolicitudId = g.Key,
+                    Count = g.Count(),
+                    Solicitado = g.Sum(x => x.CantidadSolicitada),
+                    Autorizado = g.Sum(x => x.CantidadAutorizada ?? 0m),
+                    Entregado = g.Sum(x => x.CantidadEntregada ?? 0m),
+                    Pendiente = g.Sum(x => x.CantidadPendiente)
+                })
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.EsFinal = finalStatus.FirstOrDefault(x => x.PkidEstatusSolicitudSalida == item.FkidEstatusSolicitudSalidaAlma)?.EsFinal ?? false;
+                var total = totals.FirstOrDefault(x => x.SolicitudId == item.PkidSolicitudSalida);
+                if (total != null)
+                {
+                    item.TotalDetalles = total.Count;
+                    item.TotalSolicitado = total.Solicitado;
+                    item.TotalAutorizado = total.Autorizado;
+                    item.TotalEntregado = total.Entregado;
+                    item.TotalPendiente = total.Pendiente;
+                }
+            }
+        }
+
+        private static bool IsLocked(SolicitudSalidum entity) =>
+            entity.Autorizado || entity.FkidEstatusSolicitudSalidaAlmaNavigation?.EsFinal == true;
+
+        private static bool TryGetYearFilter(PagedRequest request, out int anio)
+        {
+            if (!EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "Anio", out anio) &&
+                !EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "Year", out anio) &&
+                !EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "IdAnio", out anio) &&
+                !EG.Common.GenericModel.PagedFilterReader.TryGetInt(request, "idAnio", out anio))
+            {
+                return false;
+            }
+
+            return anio >= 2000 && anio <= 2100;
+        }
+
+        private static IQueryable<VwSolicitudSalidum> ApplySort(IQueryable<VwSolicitudSalidum> query, string? sortLabel, string? sortDirection)
+        {
+            var desc = sortDirection?.Contains("Desc", StringComparison.OrdinalIgnoreCase) == true;
+            return sortLabel switch
+            {
+                "Folio" => desc ? query.OrderByDescending(x => x.Folio) : query.OrderBy(x => x.Folio),
+                "FechaSolicitud" => desc ? query.OrderByDescending(x => x.FechaSolicitud) : query.OrderBy(x => x.FechaSolicitud),
+                "Solicitante" => desc ? query.OrderByDescending(x => x.Solicitante) : query.OrderBy(x => x.Solicitante),
+                "EstatusDescripcion" => desc ? query.OrderByDescending(x => x.EstatusDescripcion) : query.OrderBy(x => x.EstatusDescripcion),
+                _ => query.OrderByDescending(x => x.FechaSolicitud).ThenByDescending(x => x.PkidSolicitudSalida)
+            };
+        }
+
+        private static PagedResult<T> Success<T>(IList<T> items, string message, int total)
+        {
+            return new PagedResult<T>
+            {
+                Success = true,
+                Message = message,
+                Code = "SUCCESS",
+                Items = items,
+                TotalCount = total
+            };
+        }
+
+        private static PagedResult<T> Failure<T>(string message, string code = "ERROR")
+        {
+            return new PagedResult<T>
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                TotalCount = 0
+            };
+        }
+
+        private static PagedResult<bool> BoolFailure(string message, string code = "ERROR")
+        {
+            return new PagedResult<bool>
+            {
+                Success = false,
+                Message = message,
+                Code = code,
+                Data = false,
+                TotalCount = 0
+            };
+        }
+
+        private static string GetError(Exception ex)
+        {
+            new EG.Logger.Log4NetLogger(typeof(SolicitudSalidaOperationsService)).LogError("Error en solicitud de salida", ex);
+            return ex is EG.Common.Exceptions.UserVisibleException visible
+                ? EG.Common.UserFacingMessageSanitizer.SafeOrFallback(visible.UserMessage, EG.Common.UserFacingMessages.UnexpectedError)
+                : EG.Common.UserFacingMessages.UnexpectedError;
+        }
+    }
+}

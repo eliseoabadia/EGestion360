@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Requests.CuentasXPagar;
+﻿using EG.Domain.DTOs.Requests.CuentasXPagar;
 using EG.Domain.DTOs.Responses.CuentasXPagar;
 using EG.Infraestructure.Models;
 using Mapster;

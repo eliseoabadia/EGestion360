@@ -1,0 +1,19 @@
+﻿using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.General;
+using EG.Domain.DTOs.Responses;
+using EG.Domain.DTOs.Responses.General;
+
+namespace EG.Business.Interfaces
+{
+    public interface IDepartamentoService
+    {
+        Task<PagedResult<DepartamentoResponse>> GetAllAsync();
+        Task<DepartamentoResponse> GetByIdAsync(int id);
+        Task<PagedResult<DepartamentoResponse>> GetAllPaginadoAsync(PagedRequest request);
+        Task<PagedResult<DepartamentoResponse>> GetAllByEmpresaAsync(int empresaId);
+        Task<DepartamentoResponse> CreateAsync(DepartamentoResponse dto, int usuarioActual);
+        Task<DepartamentoResponse> UpdateAsync(int id, DepartamentoResponse dto, int usuarioActual);
+        Task DeleteAsync(int id);
+        Task<PagedResult<DepartamentoResponse>> BuscarAsync(BusquedaRequest request);
+    }
+}

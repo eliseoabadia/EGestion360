@@ -1,4 +1,4 @@
-using EG.Application.Services.ConteoCiclico;
+﻿using EG.Domain.Rules;
 using EG.Domain.DTOs.Requests.ConteoCiclico;
 
 namespace EG.UnidTest.Application;

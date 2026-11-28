@@ -14,6 +14,9 @@ public partial class EGestionContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
+        // Protege ediciones concurrentes sin modificar el esquema generado.
+        modelBuilder.Entity<Almacen>().Property(movement => movement.Cantidad).IsConcurrencyToken();
+        modelBuilder.Entity<Almacen>().Property(movement => movement.FechaModificacion).IsConcurrencyToken();
         modelBuilder.Entity<IngresoClcFacturaReadModel>().HasNoKey().ToSqlQuery("""
             SELECT v.PKIdCLCFactura AS PkidClcfactura, v.FKIdEmpresa_SIS AS FkidEmpresaSis,
                 v.EmpresaNombre, v.FKIdCLC_PRES AS FkidClcPres, v.NumCLC AS NumClc,

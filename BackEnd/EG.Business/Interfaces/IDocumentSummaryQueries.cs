@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Requests.SoporteDocumental;
+﻿using EG.Domain.DTOs.Requests.SoporteDocumental;
 using EG.Domain.DTOs.Responses.SoporteDocumental;
 
 namespace EG.Business.Interfaces;

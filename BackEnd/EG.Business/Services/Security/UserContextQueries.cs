@@ -1,4 +1,4 @@
-using EG.Domain.Interfaces;
+﻿using EG.Domain.Interfaces;
 using EG.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 

@@ -26,6 +26,10 @@ public static class UserFacingMessageSanitizer
         "invalid column name",
         "incorrect syntax near",
         "statement conflicted with the",
+        "string or binary data would be truncated",
+        "the statement has been terminated",
+        "linea:",
+        "línea:",
         "foreign key constraint",
         " at eg.",
         ".cs:line ",
@@ -49,5 +53,21 @@ public static class UserFacingMessageSanitizer
         return string.IsNullOrWhiteSpace(message) || LooksTechnical(message)
             ? fallback
             : message.Trim();
+    }
+
+    public static string FromStoredProcedure(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return UserFacingMessages.UnexpectedError;
+
+        // Existing SQL procedures wrap business errors in application/line metadata.
+        // Extract only that documented envelope; unknown technical content stays private.
+        var envelope = System.Text.RegularExpressions.Regex.Match(message,
+            @"\A(?:[^\r\n]*\r?\n)?Error:\s*(?<message>.*?)\s+L[ií]nea:\s*\d+\s*\z",
+            System.Text.RegularExpressions.RegexOptions.Singleline |
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase,
+            TimeSpan.FromMilliseconds(100));
+        return SafeOrFallback(envelope.Success ? envelope.Groups["message"].Value : message,
+            UserFacingMessages.UnexpectedError);
     }
 }

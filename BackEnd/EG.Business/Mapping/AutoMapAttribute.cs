@@ -1,4 +1,4 @@
-namespace EG.Business.Mapping
+﻿namespace EG.Business.Mapping
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class AutoMapAttribute : Attribute

@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Services.Adquisicion;

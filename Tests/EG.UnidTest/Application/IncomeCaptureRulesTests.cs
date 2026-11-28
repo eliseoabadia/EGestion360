@@ -1,4 +1,5 @@
-using EG.Application.Services.PresupuestoModificado;
+﻿
+using EG.Business.Services.PresupuestoModificado;
 using EG.Common.GenericModel;
 using EG.Common.Exceptions;
 using EG.Domain.DTOs.Responses.PresupuestoModificado;
@@ -101,14 +102,14 @@ public sealed class IncomeCaptureRulesTests
     }
 
     private sealed class Header(IngreAdecuacionResponse current)
-        : IngreAdecuacionAppService(null!, null!, null!, new FixedUserContext(7, 3))
+        : IngreAdecuacionOperationsService(null!, null!, null!, new FixedUserContext(7, 3))
     {
         public Task ValidateBeforeProcedureAsync(IngreAdecuacionResponse response) => ValidateUpdateAsync(1, response, default);
         public override Task<PagedResult<IngreAdecuacionResponse>> GetByIdAsync(int id) =>
             Task.FromResult(new PagedResult<IngreAdecuacionResponse> { Success = true, Data = current });
     }
 
-    private sealed class Detail() : IngreAdecuacionDetalleAppService(null!, null!, null!, new FixedUserContext(7, 3))
+    private sealed class Detail() : IngreAdecuacionDetalleOperationsService(null!, null!, null!, new FixedUserContext(7, 3))
     {
         public Task ValidateBeforeProcedureAsync(IngreAdecuacionDetalleResponse response) => ValidateUpdateAsync(1, response, default);
         public override Task<PagedResult<IngreAdecuacionDetalleResponse>> GetByIdAsync(int id) =>

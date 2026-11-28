@@ -1,4 +1,4 @@
-using Mapster;
+ï»¿using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
@@ -65,7 +65,7 @@ namespace EG.Business.Mapping.General
             //    .Map(dest => dest.ModifiedDateTime, src => src.ModifiedDateTime);
             config.NewConfig<Menu, MenuItemsDto>().TwoWays();
 
-            // Si necesitas mapear desde VwMenu a MenuItemsDto (útil para actualizaciones)
+            // Si necesitas mapear desde VwMenu a MenuItemsDto (ï¿½til para actualizaciones)
             config.NewConfig<VwMenu, MenuItemsDto>()
                 .Map(dest => dest.PkidMenu, src => src.PkidMenu)
                 .Map(dest => dest.Nombre, src => src.Nombre)

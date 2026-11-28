@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Patrimonio;
 using EG.Infraestructure.Models;

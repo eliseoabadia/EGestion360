@@ -1,4 +1,4 @@
-using EG.Application.Services.General;
+﻿using EnvioWorkflowService = EG.Business.Services.General.EnvioWorkflowOperationsService;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infrastructure;
 using EG.Infraestructure.Models;

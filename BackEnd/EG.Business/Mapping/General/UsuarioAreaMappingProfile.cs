@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 

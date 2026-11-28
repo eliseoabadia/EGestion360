@@ -20,25 +20,39 @@
     <PageTitle>Recepción de pedidos · EGestion360</PageTitle>
     <PageHeader Title="Recepción de pedidos" Subtitle="Selecciona una orden, captura la cantidad y confirma la entrada." Icon="@Icons.Material.Filled.MoveToInbox" Kicker="MÓDULO OPERATIVO" ShowCreateButton="false" OnRefresh="RefreshAll">
         <AdditionalButtons>
+            @if (selectedOrden is not null)
+            {
+                <div class="receipt-header-order"><strong>@OrderLabel</strong><span>@selectedOrden.ProveedorNombre</span><small>@selectedOrden.FechaOrdenCompra.ToString("dd MMM yyyy", NumberCulture) · @selectedOrden.Total.ToString("C2", NumberCulture)</small></div>
+            }
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleOrders" StartIcon="@Icons.Material.Filled.SwapHoriz" aria-expanded="@showOrders">@(showOrders ? "Ocultar órdenes" : "Cambiar orden")</MudButton>
+            <MudButton Variant="Variant.Text" OnClick="() => showSummary = true" aria-haspopup="dialog">Ver resumen</MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@(!CanReceive)" OnClick="FocusReceiptAsync">Nueva recepción</MudButton>
         </AdditionalButtons>
     </PageHeader>
 
-    <section class="receipt-metrics" aria-label="Resumen de recepción">
+    <MudDialog @bind-Visible="showSummary" Options="SummaryDialogOptions">
+        <TitleContent><MudText Typo="Typo.h6">Resumen de recepción</MudText></TitleContent>
+        <DialogContent>
+    <section class="receipt-metrics receipt-summary-modal" aria-label="Resumen de recepción">
         <article><MudIcon Icon="@Icons.Material.Filled.ShoppingCart" /><div><span>Órdenes autorizadas</span><strong>@TotalCount.ToString("N0")</strong><small>Resultado de la búsqueda actual</small></div></article>
         <article><MudIcon Icon="@Icons.Material.Filled.Inventory2" /><div><span>Renglones de la orden</span><strong>@detalleTotal.ToString("N0")</strong><small>@OrderLabel</small></div></article>
         <article><MudIcon Icon="@Icons.Material.Filled.PendingActions" /><div><span>Renglones pendientes visibles</span><strong>@detalles.Count(x => Pending(x) > 0)</strong><small>En esta página de la orden</small></div></article>
         <article><MudIcon Icon="@Icons.Material.Filled.LocalShipping" /><div><span>Bien seleccionado</span><strong>@(selectedDetalle is null ? "—" : Qty(Pending(selectedDetalle)))</strong><small>@(selectedDetalle is null ? "Selecciona un bien" : $"{selectedDetalle.UnidadMedida} por recibir")</small></div></article>
     </section>
 
+
+        </DialogContent>
+        <DialogActions><MudButton Color="Color.Primary" OnClick="() => showSummary = false">Cerrar</MudButton></DialogActions>
+    </MudDialog>
+
     @if (!string.IsNullOrWhiteSpace(loadError))
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">@loadError</MudAlert>
     }
 
-    <div class="receipt-workspace">
+    <div class="receipt-workspace" hidden="@(!showCapture)">
         <section class="receipt-panel quick-receipt" aria-labelledby="quick-receipt-title">
-            <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.Bolt" /><div><h2 id="quick-receipt-title">Recepción rápida</h2><p>La orden y el primer renglón pendiente se preparan al cargar.</p></div></header>
+            <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.Bolt" /><div><h2 id="quick-receipt-title">Recepción rápida</h2><p>Captura la cantidad del bien seleccionado.</p></div><MudButton Disabled="@saving" OnClick="() => showCapture = false">Ocultar captura</MudButton></header>
             <MudForm @ref="receiptForm"><div class="receipt-panel-body">
                 <div class="receipt-path" aria-label="Proceso de recepción"><span class="@(selectedOrden is null ? "" : "ready")">1 · Orden</span><span class="@(selectedDetalle is null ? "" : "ready")">2 · Bien</span><span>3 · Cantidad y confirmación</span></div>
                 <div class="receipt-fields">
@@ -70,47 +84,21 @@
                 <p class="receipt-note">La entrada toma el bien, la unidad y el costo de la orden. Puedes agregar factura, ubicación o lote en “Más datos de la entrada”.</p>
             </div></MudForm>
         </section>
-        <section class="receipt-panel priority-panel" aria-labelledby="priority-title">
-            <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.Layers" /><div><h2 id="priority-title">Órdenes para recibir</h2><p>Fechas de entrega próximas en la página actual.</p></div></header>
-            <div class="receipt-panel-body priority-list">
-                @foreach (var order in PriorityOrders)
-                {
-                    <button type="button" class="priority-order @(selectedOrden?.PkidOrdenCompra == order.PkidOrdenCompra ? "selected" : "")" disabled="@(saving || contextRefreshing)" @onclick="() => SelectOrden(order)" aria-pressed="@(selectedOrden?.PkidOrdenCompra == order.PkidOrdenCompra)">
-                        <MudIcon Icon="@Icons.Material.Filled.LocalShipping" />
-                        <span><strong>@order.NumeroOrdenCompra</strong><small>@order.ProveedorNombre</small><em>@DeliveryLabel(order)</em></span>
-                        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
-                    </button>
-                }
-                @if (ordersReady && Elements.Count == 0)
-                {
-                    <div class="receipt-empty-guide" role="note">
-                        <MudIcon Icon="@Icons.Material.Filled.AssignmentTurnedIn" Color="Color.Primary" />
-                        <strong>No hay órdenes autorizadas para recibir</strong>
-                        <p>Confirma la empresa y el ejercicio del encabezado. Si son correctos, Compras debe preparar y autorizar la orden.</p>
-                        @if (ReceiptAuth.HasPermission("Adquisiciones", "OrdenCompra", "view") || ReceiptAuth.HasPermission("Adquisiciones", "OrdenCompra", "view-menu"))
-                        {
-                            <MudButton Href="/Adquisiciones/Orden_Compra" Color="Color.Primary" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ShoppingCart">Abrir órdenes de compra</MudButton>
-                        }
-                        <MudButton Color="Color.Primary" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" Disabled="@contextRefreshing" OnClick="RefreshAll">Volver a consultar</MudButton>
-                    </div>
-                }
-                <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ExpandMore" OnClick="ToggleOrders">@(showOrders ? "Ocultar listado" : $"Ver listado de órdenes ({TotalCount:N0})")</MudButton>
-            </div>
-        </section>
+
     </div>
 
     <section class="receipt-panel receipt-lines">
-        <header class="receipt-panel-heading"><MudIcon Icon="@Icons.Material.Filled.ViewList" /><div><h2>Renglones de la orden seleccionada</h2><p>@OrderLabel · @(selectedOrden?.ProveedorNombre ?? "Sin proveedor seleccionado")</p></div>
+        <header class="receipt-panel-heading receipt-lines-heading"><div><span>Selecciona un renglón pendiente para registrar su entrada.</span></div>
             @if (selectedOrden is not null)
             {
                 <DocumentSupportButton Modulo="Almacen" SubModulo="Recepcion_Pedidos" Controlador="OrdenCompra" EntidadId="@selectedOrden.PkidOrdenCompra" FkidEmpresaSis="@selectedOrden.FkidEmpresaSis" RegistroTitulo="@OrderLabel" RegistroDescripcion="@selectedOrden.ProveedorNombre" />
             }
         </header>
-        <GenericDataGrid TItem="OrdenCompraDetalleResponse" @ref="detalleTable" Title="Bienes por recibir" FillAvailableHeight="false" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="OnDetalleSearch" SearchPlaceholder="Buscar clave o descripción…" PageSize="5" PageSizeOptions="new[] { 5, 10, 20, 50 }">
+        <GenericDataGrid TItem="OrdenCompraDetalleResponse" @ref="detalleTable" Title="Bienes de la orden" Eyebrow="RECEPCIÓN Y SEGUIMIENTO" ColumnResizeMode="ResizeMode.None" FillAvailableHeight="false" ServerDataFunc="LoadDetalleData" SearchString="@detalleSearch" SearchStringChanged="s => detalleSearch = s" OnSearch="OnDetalleSearch" SearchPlaceholder="Buscar clave o descripción…" PageSize="5" PageSizeOptions="new[] { 5, 10, 20, 50 }">
             <Columns>
-                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion"><CellTemplate><strong>@context.Item.TipoBienCodigoClave</strong><div>@context.Item.TipoBienDescripcion</div></CellTemplate></TemplateColumn>
-                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadSolicitada" Title="Solicitada" />
-                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadRecibida" Title="Recibida" />
+                <TemplateColumn T="OrdenCompraDetalleResponse" Title="Bien" Identifier="TipoBienDescripcion" PropertyName="TipoBienDescripcion" SortBy="x => x.TipoBienDescripcion"><CellTemplate><div class="receipt-item"><strong>@context.Item.TipoBienCodigoClave</strong><span>@context.Item.TipoBienDescripcion</span></div></CellTemplate></TemplateColumn>
+                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadSolicitada" Format="N4" Title="Solicitada" />
+                <PropertyColumn T="OrdenCompraDetalleResponse" TProperty="decimal" Property="x => x.CantidadRecibida" Format="N4" Title="Recibida" />
                 <TemplateColumn T="OrdenCompraDetalleResponse" Title="Pendiente" Sortable="false"><CellTemplate><MudChip T="string" Color="@(Pending(context.Item) > 0 ? Color.Warning : Color.Success)" Size="Size.Small">@Qty(Pending(context.Item))</MudChip></CellTemplate></TemplateColumn>
                 <TemplateColumn T="OrdenCompraDetalleResponse" Title="Avance" Sortable="false"><CellTemplate><div class="receipt-progress"><MudProgressLinear Value="@Progress(context.Item)" Color="Color.Success" Rounded="true" /><span>@Progress(context.Item).ToString("0")%</span></div></CellTemplate></TemplateColumn>
                 <TemplateColumn T="OrdenCompraDetalleResponse" Title="Acción" Sortable="false" Filterable="false" Hideable="false" Resizable="false"><CellTemplate>

@@ -1,0 +1,146 @@
+﻿using EG.Business.Services.Adquisicion;
+using EG.Business.Services.PresupuestoModificado;
+using Mapster;
+using EG.Business.Services;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.Presupuestales;
+using EG.Domain.DTOs.Responses.Presupuestales;
+using EG.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EG.Business.Services.Catalogos.ClavePrograma
+{
+    public class FnServiceOperations : global::EG.Business.Interfaces.Operations.IFnService
+    {
+        private readonly GenericService<Fn, FnDto, FnResponse> _service;
+        private readonly GenericService<VwFn, FnDto, FnResponse> _serviceView;
+        public FnServiceOperations(GenericService<Fn, FnDto, FnResponse> service, GenericService<VwFn, FnDto, FnResponse> serviceView)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            ConfigureService();
+            ConfigureValidations();
+        }
+
+        private void ConfigureService()
+        {
+            _service.AddInclude(f => f.FkidGfPresNavigation);
+            _service.AddInclude(f => f.UsuarioCreacionNavigation);
+        }
+
+        private void ConfigureValidations()
+        {
+            _service.AddValidationRule("UniqueClave", async (dto) =>
+            {
+                var fnDto = dto as FnDto;
+                if (fnDto == null)
+                    return true;
+                return !_service.GetQueryWithIncludes().Any(e => e.Clave == fnDto.Clave && e.Activo);
+            });
+            _service.AddValidationRuleWithId("UniqueClaveUpdate", async (dto, id) =>
+            {
+                var fnDto = dto as FnDto;
+                if (fnDto == null || !id.HasValue)
+                    return true;
+                return !_service.GetQueryWithIncludes().Any(e => e.Clave == fnDto.Clave && e.PkidFn != id.Value && e.Activo);
+            });
+        }
+
+        public async Task<IEnumerable<FnResponse>> GetAllAsync()
+        {
+            return await _serviceView.GetAllAsync();
+        }
+
+        public async Task<FnResponse?> GetByIdAsync(int id)
+        {
+            return await _serviceView.GetByIdAsync(id);
+        }
+
+        public async Task<FnResponse> AddAsync(FnDto dto, int usuarioId)
+        {
+            dto.UsuarioCreacion = usuarioId;
+            dto.FechaCreacion = DateTime.UtcNow;
+            await _service.AddAsync(dto);
+            return await GetByIdAsync(dto.PkidFn) ?? dto.Adapt<FnResponse>();
+        }
+
+        public async Task UpdateAsync(int id, FnDto dto, int usuarioId)
+        {
+            var existing = await _serviceView.GetByIdAsync(id);
+            dto.UsuarioCreacion = existing?.UsuarioCreacion ?? usuarioId;
+            dto.FechaCreacion = existing?.FechaCreacion ?? DateTime.UtcNow;
+            await _service.UpdateAsync(id, dto);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var blockReason = await GetDeleteBlockReasonAsync(id);
+            if (!string.IsNullOrWhiteSpace(blockReason))
+            {
+                throw new InvalidOperationException(blockReason);
+            }
+
+            await _service.DeleteAsync(id);
+        }
+
+        public async Task<string?> GetDeleteBlockReasonAsync(int id)
+        {
+            var usage = await _service.GetQueryWithIncludes(e => e.PkidFn == id).Select(e => new { HasSubFunciones = e.Sfs.Any(sf => sf.Activo), HasProgramas = e.Programas.Any(programa => programa.Activo) }).FirstOrDefaultAsync();
+            if (usage == null)
+            {
+                return null;
+            }
+
+            return (usage.HasSubFunciones, usage.HasProgramas) switch
+            {
+                (true, true) => "No se puede eliminar la funcion porque tiene subfunciones y programas activos asociados.",
+                (true, false) => "No se puede eliminar la funcion porque tiene subfunciones activas asociadas.",
+                (false, true) => "No se puede eliminar la funcion porque tiene programas activos asociados.",
+                _ => null
+            };
+        }
+
+        public async Task<PagedResult<FnResponse>> GetAllPaginadoAsync(PagedRequest request)
+        {
+            var query = _serviceView.GetQueryWithIncludes();
+            if (!string.IsNullOrWhiteSpace(request.Filtro))
+            {
+                query = query.Where(e => e.Clave.ToString().Contains(request.Filtro) || e.Descripcion.Contains(request.Filtro) || e.ClaveNombre.Contains(request.Filtro) || e.Gfclave.ToString().Contains(request.Filtro) || e.Gfdescripcion.Contains(request.Filtro) || e.GfclaveNombre.Contains(request.Filtro));
+            }
+
+            if (!string.IsNullOrEmpty(request.SortLabel))
+            {
+                var isAscending = request.SortDirection?.ToString().ToLower() == "asc";
+                query = request.SortLabel switch
+                {
+                    "PkidFn" => isAscending ? query.OrderBy(e => e.PkidFn) : query.OrderByDescending(e => e.PkidFn),
+                    "Clave" => isAscending ? query.OrderBy(e => e.Clave) : query.OrderByDescending(e => e.Clave),
+                    "Descripcion" => isAscending ? query.OrderBy(e => e.Descripcion) : query.OrderByDescending(e => e.Descripcion),
+                    "GfClave" => isAscending ? query.OrderBy(e => e.Gfclave) : query.OrderByDescending(e => e.Gfclave),
+                    "GfDescripcion" => isAscending ? query.OrderBy(e => e.Gfdescripcion) : query.OrderByDescending(e => e.Gfdescripcion),
+                    _ => query.OrderBy(e => e.Clave)};
+            }
+
+            var totalItems = await query.CountAsync();
+            var items = await query.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToListAsync();
+            return new PagedResult<FnResponse>
+            {
+                Items = items.Adapt<List<FnResponse>>(),
+                TotalCount = totalItems,
+                Success = true,
+                Message = "OK",
+                Code = "SUCCESS"
+            };
+        }
+
+        public async Task<bool> CanAddAsync(FnDto dto)
+        {
+            return await _service.CanAddAsync(dto);
+        }
+
+        public async Task<bool> CanUpdateAsync(int id, FnDto dto)
+        {
+            return await _service.CanUpdateAsync(id, dto);
+        }
+    }
+}

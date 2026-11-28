@@ -1,4 +1,4 @@
-using EG.Dommain.DTOs.Responses;
+﻿using EG.Dommain.DTOs.Responses;
 using EG.Infraestructure.Models;
 
 namespace EG.Business.Interfaces

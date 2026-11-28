@@ -1,4 +1,4 @@
-using Mapster;
+ï»¿using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
@@ -29,7 +29,7 @@ namespace EG.Business.Mapping.General
                 .Map(dest => dest.EmpresaFechaModificacion, src => src.EmpresaFechaModificacion)
                 .Map(dest => dest.EmpresaUsuarioModificacion, src => src.EmpresaUsuarioModificacion)
                 // Los campos de Estado ya coinciden por nombre (PkidEstado, EstadoNombre, etc.)
-                .TwoWays(); // Si necesitas mapear de Response a VwEstadoEmpresa (no es común)
+                .TwoWays(); // Si necesitas mapear de Response a VwEstadoEmpresa (no es comï¿½n)
 
             // Response -> DTO (para crear/actualizar desde el frontend)
             // Ignoramos propiedades que no existen en EmpresaDto
@@ -40,7 +40,7 @@ namespace EG.Business.Mapping.General
                 .Map(dest => dest.UsuarioCreacion, src => src.EmpresaUsuarioCreacion)
                 .Map(dest => dest.FechaModificacion, src => src.EmpresaFechaModificacion)
                 .Map(dest => dest.UsuarioModificacion, src => src.EmpresaUsuarioModificacion)
-                // Ignorar campos que no están en el DTO
+                // Ignorar campos que no estï¿½n en el DTO
                 .Ignore(dest => dest.PkidEmpresa) // se asigna aparte
                 .IgnoreNullValues(true);
         }

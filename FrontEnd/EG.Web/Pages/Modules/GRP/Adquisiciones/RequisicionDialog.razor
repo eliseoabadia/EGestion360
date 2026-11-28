@@ -13,7 +13,6 @@
 @using MudBlazor
 
 @inject IGenericCrudService<RequisicionResponse> Service
-@inject IGenericCrudService<UsuarioAreaResponse> AreaService
 @inject IGenericCrudService<EgresoDisponibleResponse> DisponibleService
 @inject IGenericCrudService<OrcoProyectoResponse> ProyectoService
 @inject IGenericCrudService<ProgramaResponse> ProgramaService
@@ -555,7 +554,7 @@
             return _requesterAreaCache;
         }
 
-        var response = await AreaService.GetAllAsync();
+        var response = await Http.GetFromJsonAsync<EG.Common.GenericModel.PagedResult<UsuarioAreaResponse>>(PurchasingModule.RequestersEndpoint);
         if (response?.Success != true)
         {
             return response?.Items?.ToList() ?? new List<UsuarioAreaResponse>();

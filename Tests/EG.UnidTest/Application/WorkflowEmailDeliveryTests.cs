@@ -1,5 +1,5 @@
-using EG.Application.Interfaces.General;
-using EG.Application.Services.General;
+﻿using EG.Business.Interfaces;
+using EG.Business.Services.General;
 using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.General;
@@ -71,7 +71,7 @@ public sealed class WorkflowEmailDeliveryTests
     private static Task<PagedResult<EmailSendResponse>> Send(Email email, Workflow workflow) =>
         WorkflowEmailDelivery.SendClaimedAsync(email, workflow, "TEST", 1, Guid.NewGuid(), new());
 
-    private sealed class Email(PagedResult<EmailSendResponse>? response) : IEmailService
+    private sealed class Email(PagedResult<EmailSendResponse>? response) : IEmailOperations
     {
         public int Calls { get; private set; }
         public Task<PagedResult<EmailSendResponse>> SendAsync(EmailMessageRequest request, CancellationToken cancellationToken = default)
@@ -81,7 +81,7 @@ public sealed class WorkflowEmailDeliveryTests
         }
     }
 
-    private sealed class Workflow(bool failCompletion = false) : IEnvioWorkflowService
+    private sealed class Workflow(bool failCompletion = false) : IEnvioWorkflowOperations
     {
         public int Completions { get; private set; }
         public int Cancellations { get; private set; }

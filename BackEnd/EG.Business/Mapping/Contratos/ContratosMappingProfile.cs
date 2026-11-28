@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Requests.Contratos;
+﻿using EG.Domain.DTOs.Requests.Contratos;
 using EG.Domain.DTOs.Responses.Contratos;
 using EG.Infraestructure.Models;
 using Mapster;

@@ -1,158 +1,20 @@
-using Mapster;
+﻿using Mapster;
 using EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma;
 using EG.Business.Services;
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Requests.Presupuestales;
 using EG.Domain.DTOs.Responses.Presupuestales;
-using EG.Infraestructure.Models;
-using Microsoft.EntityFrameworkCore;
+namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma;
+public class SfService(global::EG.Business.Services.Catalogos.ClavePrograma.SfServiceOperations service) : global::EG.Application.Interfaces.Configuracion.Catalogo.ClavePrograma.ISfService
 
-namespace EG.ApiCoreBS.Services.Catalogos.ClavePrograma
 {
-    public class SfService : ISfService
-    {
-        private readonly GenericService<Sf, SubFuncionDto, SubFuncionResponse> _service;
-        private readonly GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> _serviceView;
-        public SfService(
-            GenericService<Sf, SubFuncionDto, SubFuncionResponse> service,
-            GenericService<VwSubFuncion, SubFuncionDto, SubFuncionResponse> serviceView)
-        {
-            _service = service;
-            _serviceView = serviceView;
-            ConfigureService();
-            ConfigureValidations();
-        }
-
-        private void ConfigureService()
-        {
-            _service.AddInclude(s => s.FkidFnPresNavigation);
-            _service.AddInclude(s => s.UsuarioCreacionNavigation);
-        }
-
-        private void ConfigureValidations()
-        {
-            _service.AddValidationRule("UniqueClave", async (dto) =>
-            {
-                var sfDto = dto as SubFuncionDto;
-                if (sfDto == null) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(e => e.Clave == sfDto.Clave && e.Activo);
-            });
-
-            _service.AddValidationRuleWithId("UniqueClaveUpdate", async (dto, id) =>
-            {
-                var sfDto = dto as SubFuncionDto;
-                if (sfDto == null || !id.HasValue) return true;
-                return !_service.GetQueryWithIncludes()
-                    .Any(e => e.Clave == sfDto.Clave && e.PkidSf != id.Value && e.Activo);
-            });
-        }
-
-        public async Task<IEnumerable<SubFuncionResponse>> GetAllAsync()
-        {
-            return await _serviceView.GetAllAsync();
-        }
-
-        public async Task<SubFuncionResponse?> GetByIdAsync(int id)
-        {
-            return await _serviceView.GetByIdAsync(id);
-        }
-
-        public async Task<SubFuncionResponse> AddAsync(SubFuncionDto dto, int usuarioId)
-        {
-            dto.UsuarioCreacion = usuarioId;
-            dto.FechaCreacion = DateTime.UtcNow;
-            await _service.AddAsync(dto);
-            var entities = await _service.GetAllAsync();
-            return entities.LastOrDefault();
-        }
-
-        public async Task UpdateAsync(int id, SubFuncionDto dto, int usuarioId)
-        {
-            dto.UsuarioCreacion = usuarioId;
-            dto.FechaCreacion = DateTime.UtcNow;
-            await _service.UpdateAsync(id, dto);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var blockReason = await GetDeleteBlockReasonAsync(id);
-            if (!string.IsNullOrWhiteSpace(blockReason))
-            {
-                throw new InvalidOperationException(blockReason);
-            }
-
-            await _service.DeleteAsync(id);
-        }
-
-        public async Task<string?> GetDeleteBlockReasonAsync(int id)
-        {
-            var usage = await _service.GetQueryWithIncludes(e => e.PkidSf == id)
-                .Select(e => new
-                {
-                    HasProgramas = e.Programas.Any(programa => programa.Activo)
-                })
-                .FirstOrDefaultAsync();
-
-            if (usage == null)
-            {
-                throw new KeyNotFoundException($"Sf no encontrado");
-            }
-
-            return usage.HasProgramas
-                ? "No se puede eliminar la subfuncion porque tiene programas activos asociados."
-                : null;
-        }
-
-        public async Task<PagedResult<SubFuncionResponse>> GetAllPaginadoAsync(PagedRequest request)
-        {
-            var query = _serviceView.GetQueryWithIncludes();
-
-            if (!string.IsNullOrWhiteSpace(request.Filtro))
-            {
-                query = query.Where(e =>
-                    e.SubFuncionClave.ToString().Contains(request.Filtro) ||
-                    e.SubFuncionDescripcion.Contains(request.Filtro) ||
-                    e.FuncionClave.ToString().Contains(request.Filtro) ||
-                    e.FuncionDescripcion.Contains(request.Filtro));
-            }
-
-            if (!string.IsNullOrEmpty(request.SortLabel))
-            {
-                var isAscending = request.SortDirection?.ToString().ToLower() == "asc";
-                query = request.SortLabel switch
-                {
-                    "PkidSf" => isAscending ? query.OrderBy(e => e.PkidSf) : query.OrderByDescending(e => e.PkidSf),
-                    "Clave" => isAscending ? query.OrderBy(e => e.SubFuncionClave) : query.OrderByDescending(e => e.SubFuncionClave),
-                    "Descripcion" => isAscending ? query.OrderBy(e => e.SubFuncionDescripcion) : query.OrderByDescending(e => e.SubFuncionDescripcion),
-                    _ => query.OrderBy(e => e.SubFuncionClave)
-                };
-            }
-
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<SubFuncionResponse>
-            {
-                Items = items.Adapt<List<SubFuncionResponse>>(),
-                TotalCount = totalItems,
-                Success = true,
-                Message = "OK",
-                Code = "SUCCESS"
-            };
-        }
-
-        public async Task<bool> CanAddAsync(SubFuncionDto dto)
-        {
-            return await _service.CanAddAsync(dto);
-        }
-
-        public async Task<bool> CanUpdateAsync(int id, SubFuncionDto dto)
-        {
-            return await _service.CanUpdateAsync(id, dto);
-        }
-    }
+    public global::System.Threading.Tasks.Task<global::System.Collections.Generic.IEnumerable<global::EG.Domain.DTOs.Responses.Presupuestales.SubFuncionResponse>> GetAllAsync() => service.GetAllAsync();
+    public global::System.Threading.Tasks.Task<global::EG.Domain.DTOs.Responses.Presupuestales.SubFuncionResponse?> GetByIdAsync(global::System.Int32 id) => service.GetByIdAsync(id);
+    public global::System.Threading.Tasks.Task<global::EG.Domain.DTOs.Responses.Presupuestales.SubFuncionResponse> AddAsync(global::EG.Domain.DTOs.Requests.Presupuestales.SubFuncionDto dto, global::System.Int32 usuarioId) => service.AddAsync(dto, usuarioId);
+    public global::System.Threading.Tasks.Task UpdateAsync(global::System.Int32 id, global::EG.Domain.DTOs.Requests.Presupuestales.SubFuncionDto dto, global::System.Int32 usuarioId) => service.UpdateAsync(id, dto, usuarioId);
+    public global::System.Threading.Tasks.Task DeleteAsync(global::System.Int32 id) => service.DeleteAsync(id);
+    public global::System.Threading.Tasks.Task<global::System.String?> GetDeleteBlockReasonAsync(global::System.Int32 id) => service.GetDeleteBlockReasonAsync(id);
+    public global::System.Threading.Tasks.Task<global::EG.Common.GenericModel.PagedResult<global::EG.Domain.DTOs.Responses.Presupuestales.SubFuncionResponse>> GetAllPaginadoAsync(global::EG.Common.GenericModel.PagedRequest request) => service.GetAllPaginadoAsync(request);
+    public global::System.Threading.Tasks.Task<global::System.Boolean> CanAddAsync(global::EG.Domain.DTOs.Requests.Presupuestales.SubFuncionDto dto) => service.CanAddAsync(dto);
+    public global::System.Threading.Tasks.Task<global::System.Boolean> CanUpdateAsync(global::System.Int32 id, global::EG.Domain.DTOs.Requests.Presupuestales.SubFuncionDto dto) => service.CanUpdateAsync(id, dto);
 }

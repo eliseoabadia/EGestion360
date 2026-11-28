@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using EG.Common;
 using EG.Common.GenericModel;
 using EG.Domain.Interfaces;

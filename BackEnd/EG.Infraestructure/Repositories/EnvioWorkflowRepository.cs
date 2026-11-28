@@ -4,6 +4,7 @@ using EG.Domain.DTOs.Responses.General;
 using EG.Infraestructure.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EG.Infrastructure;
 
@@ -64,6 +65,7 @@ public sealed class EnvioWorkflowRepository : IEnvioWorkflowRepository
         try
         {
             await using var command = connection.CreateCommand();
+            command.Transaction = _context.Database.CurrentTransaction?.GetDbTransaction();
             command.CommandText = $"""
                 SELECT EntidadId, Estado, FechaEnvio, FechaRechazo, MotivoRechazo
                 FROM [SIS].[EnvioWorkflow]
@@ -260,6 +262,7 @@ public sealed class EnvioWorkflowRepository : IEnvioWorkflowRepository
         try
         {
             await using var command = connection.CreateCommand();
+            command.Transaction = _context.Database.CurrentTransaction?.GetDbTransaction();
             command.CommandText = """
                 SELECT COUNT(1)
                 FROM [SIS].[EnvioWorkflow]

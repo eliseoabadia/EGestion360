@@ -1,4 +1,4 @@
-using EG.Business.Interfaces;
+﻿using EG.Business.Interfaces;
 
 using EG.Common.GenericModel;
 using EG.Domain.DTOs.Responses.Adquisicion;

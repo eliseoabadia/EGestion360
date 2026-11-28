@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Requests.Adquisicion;
+﻿using EG.Domain.DTOs.Requests.Adquisicion;
 using EG.Domain.DTOs.Requests.Patrimonio;
 using EG.Domain.DTOs.Responses.Adquisicion;
 using EG.Domain.DTOs.Responses.Patrimonio;

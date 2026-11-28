@@ -32,6 +32,13 @@ namespace EG.ApiCoreBS.Controllers.Catalogos.Adquisicion
             return Ok(result);
         }
 
+        [HttpGet(EG.Common.Modules.PurchasingModule.RequestersAction)]
+        [Authorize(Policy = EG.Common.Modules.PurchasingPermissions.RequisitionRead)]
+        public async Task<ActionResult<PagedResult<EG.Domain.DTOs.Responses.General.UsuarioAreaResponse>>> GetRequesters()
+        {
+            return Ok(await _appService.GetRequestersAsync());
+        }
+
         [HttpGet("{id}")]
         [Authorize(Policy = "Adquisiciones|Requisicion|view")]
         public async Task<ActionResult<PagedResult<RequisicionResponse>>> GetById(int id)

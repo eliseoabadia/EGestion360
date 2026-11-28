@@ -17,6 +17,7 @@ namespace EG.Web.Layout;
 
 public partial class DynamicMenu
 {
+    private void ReloadWorkspace() => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     private readonly Dictionary<int, bool> _expandedStates = new();
     private readonly Dictionary<int, MenuItem> _itemsById = new();
     private readonly Dictionary<int, int?> _parentById = new();

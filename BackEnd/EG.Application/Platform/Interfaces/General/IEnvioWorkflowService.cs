@@ -1,4 +1,4 @@
-using EG.Domain.DTOs.Responses.General;
+﻿using EG.Domain.DTOs.Responses.General;
 
 namespace EG.Application.Interfaces.General;
 
@@ -31,8 +31,3 @@ public interface IEnvioWorkflowService
         string? motivo,
         CancellationToken cancellationToken = default);
 }
-
-public sealed record EnvioWorkflowClaimResult(
-    bool Claimed,
-    Guid? OperationToken,
-    EnvioWorkflowEstadoResponse State);

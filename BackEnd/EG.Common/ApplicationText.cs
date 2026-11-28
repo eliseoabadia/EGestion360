@@ -5,6 +5,11 @@ namespace EG.Common;
 /// </summary>
 public static class ApplicationText
 {
+    public static class Connection
+    {
+        public const string StartupUnavailable = "No pudimos conectar con el servidor para cargar tu espacio de trabajo. Comprueba que la API esté iniciada y vuelve a intentar.";
+        public const string RetryStartup = "Volver a cargar";
+    }
     public static class Workflow
     {
         public const string DeliveryUnconfirmed = "El envío requiere revisión: no se pudo confirmar su resultado. Verifica la entrega antes de intentar reenviarlo.";
@@ -53,6 +58,10 @@ public static class ApplicationText
 
     public static class Validation
     {
+        public static string MaximumLength(string field, int maximum) => $"{field} no puede exceder {maximum} caracteres.";
+        public const string Folio = "El folio";
+        public const string ReceiptRejected = "No se pudo aplicar la recepción: revisa el saldo pendiente, la empresa y el ejercicio de la orden.";
+        public const string ConcurrentChange = "El registro fue modificado por otro usuario. Recarga la información antes de guardar nuevamente.";
         public const string RequiredFields = "Completa los campos requeridos.";
         public const string InvalidUser = "El usuario seleccionado no es válido.";
         public const string InvalidCredentials = "Credenciales incorrectas";

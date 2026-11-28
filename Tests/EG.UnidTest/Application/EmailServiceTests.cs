@@ -1,4 +1,4 @@
-using EG.Application.Services.General;
+﻿using EmailService = EG.Business.Services.General.EmailOperationsService;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.Settings;
 using Microsoft.Extensions.Logging.Abstractions;

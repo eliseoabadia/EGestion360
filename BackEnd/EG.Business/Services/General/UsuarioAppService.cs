@@ -1,0 +1,308 @@
+﻿using EG.Business.Services.Adquisicion;
+using EG.Business.Services.PresupuestoModificado;
+using Mapster;
+using EG.Business.Services;
+using EG.Common.GenericModel;
+using EG.Domain.DTOs.Requests.General;
+using EG.Dommain.DTOs.Responses;
+using EG.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EG.Business.Services.General
+{
+    public class UsuarioOperationsService : global::EG.Business.Interfaces.Operations.IUsuarioOperations
+    {
+        private readonly GenericService<Usuario, UsuarioDto, UsuarioResponse> _service;
+        private readonly GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> _serviceView;
+        public UsuarioOperationsService(GenericService<Usuario, UsuarioDto, UsuarioResponse> service, GenericService<VwUsuarioEmpresa, UsuarioDto, UsuarioResponse> serviceView)
+        {
+            _service = service;
+            _serviceView = serviceView;
+            ConfigureService();
+            ConfigureValidations();
+        }
+
+        private void ConfigureService()
+        {
+            // Includes de primer nivel
+            _service.AddInclude(u => u.FkidEmpresaSisNavigation);
+            _service.AddInclude(u => u.FkidPersonaNomNavigation);
+            _service.AddInclude(u => u.PerfilUsuarioUsuarioCreacionNavigations);
+            _service.AddInclude(u => u.UsuarioSucursalUsuarioCreacionNavigations);
+            // Filtros de relación
+            _service.AddRelationFilter("Empresa", new List<string> { "Nombre", "Rfc" });
+            _service.AddRelationFilter("PerfilUsuario", new List<string> { "Rol", "NivelAcceso" });
+            _service.AddRelationFilter("UsuarioSucursals", new List<string> { "FkidSucursalNavigation.Nombre", "FkidSucursalNavigation.Codigo" });
+            // Filtros para la vista
+            _serviceView.AddRelationFilter("Sucursal", new List<string> { "NombreSucursal", "CodigoSucursal", "AliasSucursal" });
+            _serviceView.AddRelationFilter("Empresa", new List<string> { "NombreEmpresa", "RfcEmpresa" });
+        }
+
+        private void ConfigureValidations()
+        {
+            // REGLA 1: Email único (creación)
+            _service.AddValidationRule("UniqueEmail", async (dto) =>
+            {
+                var usuarioDto = dto as UsuarioDto;
+                if (usuarioDto == null || string.IsNullOrWhiteSpace(usuarioDto.Email))
+                    return true;
+                var exists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidPersonaNomNavigation != null && u.FkidPersonaNomNavigation.CorreoElectronico != null && u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == usuarioDto.Email.ToLower() && u.Activo);
+                return !exists;
+            });
+            // REGLA 2: Email único (actualización)
+            _service.AddValidationRuleWithId("UniqueEmailUpdate", async (dto, id) =>
+            {
+                var usuarioDto = dto as UsuarioDto;
+                if (usuarioDto == null || !id.HasValue || string.IsNullOrWhiteSpace(usuarioDto.Email))
+                    return true;
+                var exists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidPersonaNomNavigation != null && u.FkidPersonaNomNavigation.CorreoElectronico != null && u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == usuarioDto.Email.ToLower() && u.PkIdUsuario != id.Value && u.Activo);
+                return !exists;
+            });
+            // REGLA 3: PayrollId único por empresa (creación)
+            _service.AddValidationRule("UniquePayrollId", async (dto) =>
+            {
+                var usuarioDto = dto as UsuarioDto;
+                if (usuarioDto == null || string.IsNullOrWhiteSpace(usuarioDto.PayrollId))
+                    return true;
+                var exists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidEmpresaSis == usuarioDto.FkidEmpresaSis && u.PayrollId.ToLower() == usuarioDto.PayrollId.ToLower() && u.Activo);
+                return !exists;
+            });
+            // REGLA 4: PayrollId único por empresa (actualización)
+            _service.AddValidationRuleWithId("UniquePayrollIdUpdate", async (dto, id) =>
+            {
+                var usuarioDto = dto as UsuarioDto;
+                if (usuarioDto == null || !id.HasValue || string.IsNullOrWhiteSpace(usuarioDto.PayrollId))
+                    return true;
+                var exists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidEmpresaSis == usuarioDto.FkidEmpresaSis && u.PayrollId.ToLower() == usuarioDto.PayrollId.ToLower() && u.PkIdUsuario != id.Value && u.Activo);
+                return !exists;
+            });
+            // REGLA 5: Empresa válida
+            _service.AddValidationRule("ValidCompany", async (dto) =>
+            {
+                var usuarioDto = dto as UsuarioDto;
+                return usuarioDto?.FkidEmpresaSis > 0;
+            });
+        }
+
+        public async Task<PagedResult<UsuarioResponse>> GetAllAsync()
+        {
+            try
+            {
+                var result = await _serviceView.GetAllAsync();
+                var response = result.Adapt<List<UsuarioResponse>>();
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuarios obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = response,
+                    TotalCount = response.Count
+                };
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en GetAllAsync: {ex.Message}", ex);
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    //Items = new(),
+                    TotalCount = 0
+                };
+            }
+        }
+
+        public async Task<UsuarioResponse> GetByIdAsync(int id)
+        {
+            try
+            {
+                var usuario = await _serviceView.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
+                return usuario;
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en GetByIdAsync: {ex.Message}", ex);
+                return null;
+            }
+        }
+
+        public async Task<PagedResult<UsuarioResponse>> GetAllPaginadoAsync(PagedRequest pageRequest, Func<UsuarioResponse, bool> predicate = null)
+        {
+            try
+            {
+                _serviceView.ClearConfiguration();
+                ConfigureService();
+                var result = await _serviceView.GetAllPaginadoAsync(pageRequest);
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuarios obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = result.Items,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en GetAllPaginadoAsync: {ex.Message}", ex);
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    //Items = new(),
+                    TotalCount = 0
+                };
+            }
+        }
+
+        public async Task<PagedResult<UsuarioResponse>> GetByEmpresaIdAsync(int empresaId)
+        {
+            try
+            {
+                var result = await _serviceView.GetAllPaginadoAsync(new PagedRequest { Page = 1, PageSize = 1000 }, u => u.IdEmpresa == empresaId && u.UsuarioActivo);
+                var response = result.Items.Adapt<List<UsuarioResponse>>();
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = true,
+                    Message = "Usuarios por empresa obtenidos correctamente",
+                    Code = "SUCCESS",
+                    Items = response,
+                    TotalCount = result.TotalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en GetByEmpresaIdAsync: {ex.Message}", ex);
+                return new PagedResult<UsuarioResponse>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = "ERROR",
+                    //Items = new(),
+                    TotalCount = 0
+                };
+            }
+        }
+
+        public async Task<UsuarioResponse> CreateAsync(UsuarioDto dto, int usuarioActual)
+        {
+            try
+            {
+                if (dto == null)
+                    throw new ArgumentNullException(nameof(dto), "Los datos del usuario son requeridos");
+                // Validar campos obligatorios mínimos
+                if (dto.FkidEmpresaSis <= 0)
+                    throw new ArgumentException("Debe seleccionar una empresa");
+                // Preparar DTO
+                dto.FechaCreacion = DateTime.Now;
+                dto.UsuarioCreacion = usuarioActual;
+                dto.Activo = true;
+                dto.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.ToLower().Trim();
+                dto.FkidPersonaNom = dto.FkidPersonaNom.GetValueOrDefault() > 0 ? dto.FkidPersonaNom : null;
+                // Validar todas las reglas de negocio
+                if (!await _service.CanAddAsync(dto))
+                {
+                    // Validar email único
+                    var emailExists = !string.IsNullOrWhiteSpace(dto.Email) && await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidPersonaNomNavigation != null && u.FkidPersonaNomNavigation.CorreoElectronico != null && u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() && u.Activo);
+                    if (emailExists)
+                        throw new InvalidOperationException($"El email '{dto.Email}' ya está registrado para otro usuario activo");
+                    // Validar PayrollId único por empresa
+                    if (!string.IsNullOrWhiteSpace(dto.PayrollId))
+                    {
+                        var payrollExists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidEmpresaSis == dto.FkidEmpresaSis && u.PayrollId.ToLower() == dto.PayrollId.ToLower() && u.Activo);
+                        if (payrollExists)
+                            throw new InvalidOperationException($"El Payroll ID '{dto.PayrollId}' ya está registrado para otro usuario activo en esta empresa");
+                    }
+
+                    throw new InvalidOperationException("No se pudo crear el usuario con los datos capturados");
+                }
+
+                // Guardar usuario
+                await _service.AddAsync(dto);
+                // Obtener usuario creado
+                var usuarioCreado = await _serviceView.GetByIdAsync(dto.PkIdUsuario, idPropertyName: "PkIdUsuario");
+                return usuarioCreado;
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en CreateAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<UsuarioResponse> UpdateAsync(int id, UsuarioDto dto, int usuarioActual)
+        {
+            try
+            {
+                if (dto == null)
+                    throw new ArgumentNullException(nameof(dto), "Los datos del usuario son requeridos");
+                if (id <= 0)
+                    throw new ArgumentException("ID de usuario inválido", nameof(id));
+                // Validar campos obligatorios
+                if (dto.FkidEmpresaSis <= 0)
+                    throw new ArgumentException("Debe seleccionar una empresa");
+                // Preparar DTO
+                dto.PkIdUsuario = id;
+                dto.FechaModificacion = DateTime.Now;
+                dto.UsuarioModificacion = usuarioActual;
+                dto.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.ToLower().Trim();
+                dto.FkidPersonaNom = dto.FkidPersonaNom.GetValueOrDefault() > 0 ? dto.FkidPersonaNom : null;
+                // Validar todas las reglas de negocio (con ID)
+                if (!await _service.CanUpdateAsync(id, dto))
+                {
+                    // Validar email único
+                    var emailExists = !string.IsNullOrWhiteSpace(dto.Email) && await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidPersonaNomNavigation != null && u.FkidPersonaNomNavigation.CorreoElectronico != null && u.FkidPersonaNomNavigation.CorreoElectronico.ToLower() == dto.Email.ToLower() && u.PkIdUsuario != id && u.Activo);
+                    if (emailExists)
+                        throw new InvalidOperationException($"El email '{dto.Email}' ya está registrado para otro usuario activo");
+                    // Validar PayrollId único
+                    if (!string.IsNullOrWhiteSpace(dto.PayrollId))
+                    {
+                        var payrollExists = await _service.GetQueryWithIncludes().AnyAsync(u => u.FkidEmpresaSis == dto.FkidEmpresaSis && u.PayrollId.ToLower() == dto.PayrollId.ToLower() && u.PkIdUsuario != id && u.Activo);
+                        if (payrollExists)
+                            throw new InvalidOperationException($"El Payroll ID '{dto.PayrollId}' ya está registrado para otro usuario activo en esta empresa");
+                    }
+
+                    throw new InvalidOperationException("No se pudo actualizar el usuario con los datos capturados");
+                }
+
+                // Actualizar usuario
+                await _service.UpdateAsync(id, dto);
+                // Obtener usuario actualizado
+                var usuarioActualizado = await _serviceView.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
+                return usuarioActualizado;
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en UpdateAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int id, int usuarioActual)
+        {
+            try
+            {
+                if (id <= 0)
+                    throw new ArgumentException("ID de usuario inválido", nameof(id));
+                // Obtener usuario
+                var _usuario = await _service.GetByIdAsync(id, idPropertyName: "PkIdUsuario");
+                var usuario = _usuario.Adapt<UsuarioDto>();
+                if (usuario == null)
+                    throw new InvalidOperationException("Usuario no encontrado");
+                // Marcar como inactivo (soft delete)
+                usuario.Activo = false;
+                usuario.FechaModificacion = DateTime.Now;
+                usuario.UsuarioModificacion = usuarioActual;
+                await _service.UpdateAsync(id, usuario);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //Log4NetLogger.Error($"Error en DeleteAsync: {ex.Message}", ex);
+                throw;
+            }
+        }
+    }
+}

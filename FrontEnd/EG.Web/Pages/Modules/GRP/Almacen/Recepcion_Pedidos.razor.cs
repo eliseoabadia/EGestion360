@@ -16,6 +16,14 @@ public partial class Recepcion_Pedidos
     private MudNumericField<decimal?>? quantityField;
     private MudForm? receiptForm;
     private bool validating;
+    private bool showSummary, showCapture, pendingCaptureFocus;
+    private static readonly DialogOptions SummaryDialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
     private OrdenCompraResponse? selectedOrden;
     private OrdenCompraDetalleResponse? selectedDetalle;
     private List<OrdenCompraDetalleResponse> detalles = [];
@@ -68,6 +76,12 @@ public partial class Recepcion_Pedidos
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+        if (pendingCaptureFocus && !disposed)
+        {
+            pendingCaptureFocus = false;
+            if (CanReceive && quantityField is not null)
+                await quantityField.FocusAsync();
+        }
         if (!disposed && pendingDetailsRefresh && detalleTable is not null)
         {
             pendingDetailsRefresh = false;
@@ -184,7 +198,10 @@ public partial class Recepcion_Pedidos
     }
     private async Task FocusReceiptAsync()
     {
-        if (CanReceive && quantityField is not null) await quantityField.FocusAsync();
+        if (!CanReceive) return;
+        showCapture = true;
+        pendingCaptureFocus = true;
+        await InvokeAsync(StateHasChanged);
     }
     private void ResetCapture()
     {

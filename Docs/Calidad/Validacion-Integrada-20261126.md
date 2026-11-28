@@ -1,5 +1,7 @@
 # Validación integrada del plan — 26 de noviembre de 2026
 
+Actualización: este documento conserva la evidencia histórica. El avance y cierre verificado de los cuatro pendientes está en [Cierre-cuatro-pendientes-20261127.md](Cierre-cuatro-pendientes-20261127.md), incluida la separación global de persistencia, el recorrido completo de compras y la revisión visual nueva.
+
 Entorno: desarrollo local. Revisión realizada por el mismo agente, por indicación del usuario, sin delegar en otra IA. No hubo despliegue, commits, push, respaldos de código ni envíos de correo reales.
 
 ## 1. Diagnóstico y estado de los siete puntos

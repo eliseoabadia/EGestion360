@@ -1,4 +1,4 @@
-
+﻿
 using Mapster;
 using EG.Domain.DTOs.Requests.General;
 using EG.Domain.DTOs.Responses.General;
